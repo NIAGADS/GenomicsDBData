@@ -1,6 +1,6 @@
 {
     "file": {
-	"path": "$PROJECT_HOME/NiagadsData/Ontology/lib/obo",
+	"path": "$PROJECT_HOME/GenomicsDBData/Ontology/lib/obo",
 	"file": "niagads.obo",
 	"preprocess_directory": "$SHARED_DATA_DIR/ontologies/niagads"
     },

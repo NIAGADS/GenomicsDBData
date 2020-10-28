@@ -2,7 +2,7 @@
 ## $Id: InsertVariantFrequencyResult.pm.pm $
 ##
 
-package NiagadsData::Load::Plugin::InsertVariantFrequencyResult;
+package GenomicsDBData::Load::Plugin::InsertVariantFrequencyResult;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use strict;

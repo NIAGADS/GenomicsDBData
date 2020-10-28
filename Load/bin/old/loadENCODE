@@ -126,6 +126,6 @@ ga GUS::Community::Plugin::InsertSegmentResult --inFile ${FILE_PATH}/wgEncodeAwg
 #link related tracks to a 'study'
 #note: primary keys will change with future loads
 
-#ga GUS::Supported::Plugin::LoadGusXml --file $PROJECT_HOME/NiagadsData/Load/lib/xml/encode-hm.xml
-#ga GUS::Supported::Plugin::LoadGusXml --file $PROJECT_HOME/NiagadsData/Load/lib/xml/encode-tfbs.xml
-#ga GUS::Supported::Plugin::LoadGusXml --file $PROJECT_HOME/NiagadsData/Load/lib/xml/encode-dnas.xml
+#ga GUS::Supported::Plugin::LoadGusXml --file $PROJECT_HOME/GenomicsDBData/Load/lib/xml/encode-hm.xml
+#ga GUS::Supported::Plugin::LoadGusXml --file $PROJECT_HOME/GenomicsDBData/Load/lib/xml/encode-tfbs.xml
+#ga GUS::Supported::Plugin::LoadGusXml --file $PROJECT_HOME/GenomicsDBData/Load/lib/xml/encode-dnas.xml

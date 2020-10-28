@@ -2,7 +2,7 @@
 ## $Id: LoadMergedVariants.pm $
 ##
 
-package NiagadsData::Load::Plugin::LoadMergedVariants;
+package GenomicsDBData::Load::Plugin::LoadMergedVariants;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use strict;

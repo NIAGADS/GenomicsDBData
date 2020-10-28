@@ -19,7 +19,7 @@
 	{
 	    "plugin": {
 		"skip":true,
-		"name": "NiagadsData::Load::Plugin::InsertProtocolAppNode",
+		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
 		"parameters" : {
 		    "type": "Function analysis",
 		    "subtype": "sequence_variant_effect",
@@ -33,7 +33,7 @@
 	{
 	    "plugin": {
 
-		"name": "NiagadsData::Load::Plugin::InsertVariantCADDScore",
+		"name": "GenomicsDBData::Load::Plugin::InsertVariantCADDScore",
 		"parameters" : {
 		    "caddFile": "@file.path/@file.cadd_file",
 		    "indelCaddFile": "@file.path/@file.indel_file",

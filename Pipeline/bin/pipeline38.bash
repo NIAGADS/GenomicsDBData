@@ -18,7 +18,7 @@ loadResource --config $CONFIG_DIR/reference_databases/hg38_genes.json --load xdb
 loadResource --config $CONFIG_DIR/reference_databases/hg38_genes.json --preprocess --verbose > $DATA_DIR/logs/load_hg38_genes_preprocess.log 2>&1
 loadResource --config $CONFIG_DIR/reference_databases/hg38_genes.json --load data --commit > $DATA_DIR/logs/load_hg38_genes.log 2>&1
 
-ga CBILDataCommon::Load::Plugin::LoadGeneFromGeneFeature --comment "CBILDataCommon::Load::Plugin::LoadGeneFromGeneFeature" --commit > $DATA_DIR/logs/load_gene_from_gene_feature.log 2>&1
+ga GenomicsDBData::Load::Plugin::LoadGeneFromGeneFeature --comment "GenomicsDBData::Load::Plugin::LoadGeneFromGeneFeature" --commit > $DATA_DIR/logs/load_gene_from_gene_feature.log 2>&1
 
 # HGNC
 

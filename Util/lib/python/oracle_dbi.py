@@ -3,7 +3,7 @@ from __future__ import print_function
 import sys
 import cx_Oracle
 
-from CBILDataCommon.Util.utils import warning
+from GenomicsDBData.Util.utils import warning
 
 def createDbh(connectionString):
     # user@password/dsn

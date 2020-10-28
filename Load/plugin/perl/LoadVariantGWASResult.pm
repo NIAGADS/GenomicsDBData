@@ -2,17 +2,17 @@
 ## $Id: LoadVariantGWASResult.pm.pm $
 ##
 
-package NiagadsData::Load::Plugin::LoadVariantGWASResult;
+package GenomicsDBData::Load::Plugin::LoadVariantGWASResult;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use strict;
 use GUS::PluginMgr::Plugin;
 use POSIX qw(strftime);
 
-use Package::Alias VariantAnnotator => 'NiagadsData::Load::VariantAnnotator';
-use Package::Alias Utils => 'NiagadsData::Load::Utils';
-use Package::Alias PluginUtils => 'NiagadsData::Load::PluginUtils';
-use Package::Alias VariantLoadUtils => 'NiagadsData::Load::VariantLoadUtils';
+use Package::Alias VariantAnnotator => 'GenomicsDBData::Load::VariantAnnotator';
+use Package::Alias Utils => 'GenomicsDBData::Load::Utils';
+use Package::Alias PluginUtils => 'GenomicsDBData::Load::PluginUtils';
+use Package::Alias VariantLoadUtils => 'GenomicsDBData::Load::VariantLoadUtils';
 
 use JSON::XS;
 use Data::Dumper;
@@ -1152,7 +1152,7 @@ sub generateInsertStr {
 	       );
 
 
-  push(@values, NiagadsData::Load::Utils::getCurrentTime());
+  push(@values, GenomicsDBData::Load::Utils::getCurrentTime());
   push(@values, $self->{housekeeping});
   my $str = join("|", @values);
   return "$str\n";

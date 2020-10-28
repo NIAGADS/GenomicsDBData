@@ -2,7 +2,7 @@
     "file": {
 	"annotationFile": "$DATA_DIR/Roadmap/Enhancers/roadmap_enhancers-metadata.txt",
 	"directory": "$DATA_DIR/Roadmap/Enhancers",
-	"bedFieldJsonFile": "$GUS_HOME/data/NiagadsData/Pipeline/GADB_bed_file_key.json"
+	"bedFieldJsonFile": "$GUS_HOME/data/GenomicsDBData/Pipeline/GADB_bed_file_key.json"
     },
     "external_database": {
 	"name": "ROADMAP Epigenomics Project",
@@ -16,7 +16,7 @@
     "preprocess": [
 	{"comment": "not really preprocessing but necessary to do it independently",
 	    "plugin": {
-		"name": "NiagadsData::Load::Plugin::InsertStudy",
+		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
 		"parameters": {
 		    "name": "ROADMAP Epigenomics Project",
 		    "description": "The NIH Roadmap Epigenomics Mapping Consortium is a public resource of human epigenomic data, which includes high-quality, genome-wide maps of several key histone modifications, chromatin accessibility, DNA methylation and mRNA expression across 100s of human cell types and tissues.  The core-15 state chromatin state learning subset defines significant combinatorial interactions between different chromatin marks in their spatial context (chromatin states) across 127 epigenomes, inferred using ChromHMM v1.10 (Ernst et al., 2012), which is based on a multivariate Hidden Markov Model.",
@@ -31,7 +31,7 @@
 
 	{
 	    "plugin": {
-		"name": "NiagadsData::Load::Plugin::InsertFeatureScoreResultFromBED",
+		"name": "GenomicsDBData::Load::Plugin::InsertFeatureScoreResultFromBED",
 		"parameters": {
 		    "annotationFile": "@file.annotationFile",
 		    "fileDir": "@file.directory",

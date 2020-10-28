@@ -40,10 +40,10 @@ if [ ${GENERATE_LOAD_FILES} = true ] ; then
 fi
 
 if [ ${LOAD_DATA} = true ] ; then
-    comment="ga NiagadsData::Load::Plugin::InsertVariantEffectRankings --file ${FILE_PATH}/niagads_variant_effect_rank.csv"
-    ga NiagadsData::Load::Plugin::InsertVariantEffectRankings --file ${FILE_PATH}/niagads_variant_effect_rank.csv --comment "${COMMENT}" ${COMMIT}  > load_variant_effect_rankings.log 2>&1
+    comment="ga GenomicsDBData::Load::Plugin::InsertVariantEffectRankings --file ${FILE_PATH}/niagads_variant_effect_rank.csv"
+    ga GenomicsDBData::Load::Plugin::InsertVariantEffectRankings --file ${FILE_PATH}/niagads_variant_effect_rank.csv --comment "${COMMENT}" ${COMMIT}  > load_variant_effect_rankings.log 2>&1
 
-    FILE=$PROJECT_HOME/NiagadsData/Load/data/SnpEff_effect_rank.txt
- comment="ga NiagadsData::Load::Plugin::InsertVariantEffectRankings --file ${FILE}"
-    ga NiagadsData::Load::Plugin::InsertVariantEffectRankings --file ${FILE} --comment "${COMMENT}" ${COMMIT}  > load_snpeff_variant_effect_rankings.log 2>&1
+    FILE=$PROJECT_HOME/GenomicsDBData/Load/data/SnpEff_effect_rank.txt
+ comment="ga GenomicsDBData::Load::Plugin::InsertVariantEffectRankings --file ${FILE}"
+    ga GenomicsDBData::Load::Plugin::InsertVariantEffectRankings --file ${FILE} --comment "${COMMENT}" ${COMMIT}  > load_snpeff_variant_effect_rankings.log 2>&1
 fi

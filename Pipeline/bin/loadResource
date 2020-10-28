@@ -14,7 +14,7 @@ import json
 import csv
 
 from os import path, listdir, environ
-from CBILDataCommon.Util.utils import warning, die, create_dir, xstr, qw, execute_cmd, ascii_safe_str
+from GenomicsDBData.Util.utils import warning, die, create_dir, xstr, qw, execute_cmd, ascii_safe_str
 
 ENVIRONMENTAL_VARS = ['GUS_HOME', 'PROJECT_HOME', 'DATA_DIR', 'GENOME_BUILD', 'SHARED_DATA_DIR', 'CONFIG_DIR']
 

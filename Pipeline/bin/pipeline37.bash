@@ -25,7 +25,7 @@ loadResource --config $CONFIG_DIR/reference_databases/hg19_genome.json --load da
 
 # Create bin Index Reference
 
-# ga CBILDataCommon::Load::Plugin::InsertBinIndexRef --comment "ga CBILDataCommon::Load::Plugin::InsertBinIndexRef" --commit > $DATA_DIR/logs/load_bin_index_reference.log 2>&1
+# ga GenomicsDBData::Load::Plugin::InsertBinIndexRef --comment "ga GenomicsDBData::Load::Plugin::InsertBinIndexRef" --commit > $DATA_DIR/logs/load_bin_index_reference.log 2>&1
 
 
 # Gene Reference
@@ -193,160 +193,160 @@ loadResource -c $CONFIG_DIR/reference_databases/gwas_catalog.json --load --commi
 
 
 # NG00027
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00027.json --load xdbr --verbose --commit > $DATA_DIR/logs/datasets/load_NIAGADS_DATASET_xdbr.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00027.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00027_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00027.json --load data --params '{"findNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00027_find_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00027.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00027_annotate_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00027.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00027_preprocess_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00027.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00027_load_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00027.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00027_load_result.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load xdbr --verbose --commit > $DATA_DIR/logs/datasets/load_NIAGADS_DATASET_xdbr.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00027_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load data --params '{"findNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00027_find_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00027_annotate_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00027_preprocess_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00027_load_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00027_load_result.log 2>&1
 
 
 # NG00036
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00036.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00036_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00036.json --load data --params '{"findNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00036_find_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00036.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00036_annotate_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00036.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00036_preprocess_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00036.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00036_load_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00036.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00036_load_result.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00036.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00036_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00036.json --load data --params '{"findNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00036_find_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00036.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00036_annotate_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00036.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00036_preprocess_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00036.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00036_load_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00036.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00036_load_result.log 2>&1
 
 
 # NG00039
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00039.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00039_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00039.json --load data --params '{"findNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00039_find_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00039.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00039_annotate_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00039.json --load data --params '{"preprocessAnnotatedNovelVariants":"true","skipMetaseqIdValidation":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00039_preprocess_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00039.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00039_load_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00039.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00039_load_result.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00039.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00039_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00039.json --load data --params '{"findNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00039_find_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00039.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00039_annotate_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00039.json --load data --params '{"preprocessAnnotatedNovelVariants":"true","skipMetaseqIdValidation":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00039_preprocess_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00039.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00039_load_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00039.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00039_load_result.log 2>&1
 
 # NG00040 -- TODO
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00040.json --preprocess --commit --verbose > $DATA_DIR/logs/preprocess_NG00040.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00040.json --preprocess --commit --verbose > $DATA_DIR/logs/preprocess_NG00040.log 2>&1
 
 # NG00041
 
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00041.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00041_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00041.json --load data --params '{"findNovelVariants":"true"}' --verbose --foreach LEWY,NP_CONS,CAA,LEWY_5 > $DATA_DIR/logs/datasets/load_NG00041_find_novel_variants1.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00041.json --load data --params '{"findNovelVariants":"true"}' --verbose --foreach NP_RELAX,NFT_BGROUPS,HS  > $DATA_DIR/logs/datasets/load_NG00041_find_novel_variants2.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00041.json --load data --params '{"findNovelVariants":"true"}' --verbose --foreach NFT_BSTAGES,NP,VBI,LEWY_3 > $DATA_DIR/logs/datasets/load_NG00041_find_novel_variants3.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00041.json --load data --params '{"findNovelVariants":"true"}' --verbose --foreach NP_CERAD,VBI_3,STATUS > $DATA_DIR/logs/datasets/load_NG00041_find_novel_variants4.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00041.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00041_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00041.json --load data --params '{"findNovelVariants":"true"}' --verbose --foreach LEWY,NP_CONS,CAA,LEWY_5 > $DATA_DIR/logs/datasets/load_NG00041_find_novel_variants1.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00041.json --load data --params '{"findNovelVariants":"true"}' --verbose --foreach NP_RELAX,NFT_BGROUPS,HS  > $DATA_DIR/logs/datasets/load_NG00041_find_novel_variants2.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00041.json --load data --params '{"findNovelVariants":"true"}' --verbose --foreach NFT_BSTAGES,NP,VBI,LEWY_3 > $DATA_DIR/logs/datasets/load_NG00041_find_novel_variants3.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00041.json --load data --params '{"findNovelVariants":"true"}' --verbose --foreach NP_CERAD,VBI_3,STATUS > $DATA_DIR/logs/datasets/load_NG00041_find_novel_variants4.log 2>&1
 
 
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00041.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00041_annotate_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00041.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00041_preprocess_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00041.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00041_load_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00041.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00041_load_result.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00041.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00041_annotate_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00041.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00041_preprocess_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00041.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00041_load_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00041.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00041_load_result.log 2>&1
 
 # NG00045
 
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00045.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00045_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00045.json --load data --params '{"findNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00045_find_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00045.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00045_annotate_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00045.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00045_preprocess_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00045.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00045_load_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00045.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00045_load_result.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00045.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00045_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00045.json --load data --params '{"findNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00045_find_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00045.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00045_annotate_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00045.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00045_preprocess_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00045.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00045_load_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00045.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00045_load_result.log 2>&1
 
 
 # NG00048
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00048.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00048_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00048.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00048_find_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00048.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00048_annotate_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00048.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00048_preprocess_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00048.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00048_load_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00048.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00048_load_result.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00048.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00048_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00048.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00048_find_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00048.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00048_annotate_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00048.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00048_preprocess_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00048.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00048_load_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00048.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00048_load_result.log 2>&1
 
 
 # NG00049
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00049.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00049_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00049.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00049_find_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00049.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00049_annotate_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00049.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00049_preprocess_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00049.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00049_load_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00049.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00049_load_result.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00049.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00049_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00049.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00049_find_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00049.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00049_annotate_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00049.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00049_preprocess_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00049.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00049_load_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00049.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00049_load_result.log 2>&1
 
 
 # NG00052
 
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00052.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00052_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00052.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00052_find_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00052.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00052_annotate_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00052.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00052_preprocess_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00052.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00052_load_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00052.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00052_load_result.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00052.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00052_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00052.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00052_find_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00052.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00052_annotate_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00052.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00052_preprocess_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00052.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00052_load_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00052.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00052_load_result.log 2>&1
 
 # NG00053
 
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00053.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00053_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00053.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00053_find_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00053.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00053_annotate_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00053.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00053_preprocess_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00053.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00053_load_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00053.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00053_load_result.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00053.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00053_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00053.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00053_find_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00053.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00053_annotate_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00053.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00053_preprocess_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00053.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00053_load_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00053.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00053_load_result.log 2>&1
 
 # NG00055
 
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00055.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00055_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00055.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00055_find_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00055.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00055_annotate_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00055.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00055_preprocess_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00055.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00055_load_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00055.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00055_load_result.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00055.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00055_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00055.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00055_find_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00055.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00055_annotate_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00055.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00055_preprocess_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00055.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00055_load_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00055.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00055_load_result.log 2>&1
 
 # NG00056
 
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00056.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00056_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00056.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00056_find_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00056.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00056_annotate_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00056.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00056_preprocess_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00056.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00056_load_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00056.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00056_load_result.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00056.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00056_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00056.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00056_find_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00056.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00056_annotate_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00056.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00056_preprocess_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00056.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00056_load_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00056.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00056_load_result.log 2>&1
 
 # NG00058
 
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00058.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00058_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00058.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00058_find_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00058.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00058_annotate_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00058.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00058_preprocess_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00058.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00058_load_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00058.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00058_load_result.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00058.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00058_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00058.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00058_find_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00058.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00058_annotate_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00058.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00058_preprocess_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00058.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00058_load_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00058.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00058_load_result.log 2>&1
 
 # NG00073
 
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00073.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00073_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00073.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00073_find_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00073.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00073_annotate_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00073.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00073_preprocess_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00073.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00073_load_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00073.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00073_load_result.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00073.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00073_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00073.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00073_find_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00073.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00073_annotate_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00073.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00073_preprocess_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00073.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00073_load_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00073.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00073_load_result.log 2>&1
 
 # NG00074 -- TODO
 
 # NG00075
 
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00075.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00075_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00075.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00075_find_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00075.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00075_annotate_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00075.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00075_preprocess_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00075.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00075_load_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00075.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00075_load_result.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00075.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00075_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00075.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00075_find_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00075.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00075_annotate_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00075.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00075_preprocess_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00075.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00075_load_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00075.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00075_load_result.log 2>&1
 
 
 # NG00076
 
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00076.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00076_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00076.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00076_find_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00076.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00076_annotate_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00076.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00076_preprocess_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00076.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00076_load_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00076.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00076_load_result.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00076.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00076_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00076.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00076_find_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00076.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00076_annotate_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00076.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00076_preprocess_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00076.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00076_load_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00076.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00076_load_result.log 2>&1
 
 # NG00078
 
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00078.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00078_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00078.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00078_find_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00078.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00078_annotate_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00078.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00078_preprocess_novel_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00078.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00078_load_variants.log 2>&1
-loadResource -c /home/allenem/gus4_genomics/project_home/NiagadsData/Pipeline/config/datasets/NG00078.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00078_load_result.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00078.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00078_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00078.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00078_find_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00078.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00078_annotate_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00078.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00078_preprocess_novel_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00078.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00078_load_variants.log 2>&1
+loadResource -c /home/allenem/gus4_genomics/project_home/GenomicsDBData/Pipeline/config/datasets/NG00078.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00078_load_result.log 2>&1
 
 
 

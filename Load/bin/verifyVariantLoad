@@ -3,8 +3,8 @@
 
 import json
 import argparse
-from CBILDataCommon.Util.postgres_dbi import Database
-from CBILDataCommon.Util.utils import die, warning, get_opener
+from GenomicsDBData.Util.postgres_dbi import Database
+from GenomicsDBData.Util.utils import die, warning, get_opener
 
 
 def verify_variants():

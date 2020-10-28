@@ -3,7 +3,7 @@
 	"path": "$DATA_DIR/GENCODE",
 	"gene_gff": "gencode.v19.annotation.gff3",
 	"protein_fasta": "gencode.v19.pc_translations.fa",
-	"chr_map": "$PROJECT_HOME/CBILDataCommon/Load/data/chr_map_gencode19_grch37_p13.txt"
+	"chr_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode19_grch37_p13.txt"
     },
     "external_database": {
 	"name": "GENCODE",
@@ -91,7 +91,7 @@
 
 	{
 	    "plugin": {
-		"name": "CBILDataCommon::Load::Plugin::LoadGeneFromGeneFeature"
+		"name": "GenomicsDBData::Load::Plugin::LoadGeneFromGeneFeature"
 	    }    
 	}
     ],

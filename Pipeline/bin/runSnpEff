@@ -11,7 +11,7 @@ import argparse
 
 from subprocess import call
 from os import path, listdir
-from CBILDataCommon.Util.utils import warning, die, create_dir, xstr, qw, execute_cmd
+from GenomicsDBData.Util.utils import warning, die, create_dir, xstr, qw, execute_cmd
 
 def split_vcf():
     ''' split vcf by chromosome'''

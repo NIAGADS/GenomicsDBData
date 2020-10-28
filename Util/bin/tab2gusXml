@@ -11,7 +11,7 @@ from __future__ import with_statement
 
 import argparse
 
-from CBILDataCommon.Util.utils import xstr, die, warning
+from GenomicsDBData.Util.utils import xstr, die, warning
 
 def parse_tab_delim_file(fileName):
     ''' 

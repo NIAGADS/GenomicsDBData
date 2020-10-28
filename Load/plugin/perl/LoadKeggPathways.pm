@@ -1,4 +1,4 @@
-package NiagadsData::Load::Plugin::LoadKeggPathways;
+package GenomicsDBData::Load::Plugin::LoadKeggPathways;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use strict;
@@ -10,7 +10,7 @@ use File::Map qw(map_file);
 
 use Data::Dumper;
 use GUS::PluginMgr::Plugin;
-use NiagadsData::Load::KEGGReader;
+use GenomicsDBData::Load::KEGGReader;
 use GUS::Model::SRes::Pathway;
 use GUS::Model::SRes::PathwayNode;
 use GUS::Model::DoTS::Gene;
@@ -210,7 +210,7 @@ sub loadDiseasePathways {
 sub loadPathway {
   my ($self, $pathwayFile) = @_;
 
-  my $preader = NiagadsData::Load::KEGGReader->new($pathwayFile);
+  my $preader = GenomicsDBData::Load::KEGGReader->new($pathwayFile);
   my $pathwayObj = $preader->read();
   my $name = $pathwayObj->{NAME};
   my $sourceId = $pathwayObj->{SOURCE_ID};

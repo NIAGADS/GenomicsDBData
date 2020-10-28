@@ -13,8 +13,8 @@ from os import environ, path
 
 # from $GUS_HOME/lib/python --> add to python path
 
-from CBILDataCommon.Util.postgres_dbi import Database
-from CBILDataCommon.Util.utils import qw, warning, verify_path, die, execute_cmd
+from GenomicsDBData.Util.postgres_dbi import Database
+from GenomicsDBData.Util.utils import qw, warning, verify_path, die, execute_cmd
 
 
 def run_sql():

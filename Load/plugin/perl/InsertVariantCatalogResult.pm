@@ -2,7 +2,7 @@
 ## $Id: InsertVariantCatalogResult.pm.pm $
 ##
 
-package NiagadsData::Load::Plugin::InsertVariantCatalogResult;
+package GenomicsDBData::Load::Plugin::InsertVariantCatalogResult;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use strict;

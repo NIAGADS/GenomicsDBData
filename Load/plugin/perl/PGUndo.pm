@@ -1,4 +1,4 @@
-package CBILDataCommon::Util::Plugin::PGUndo;
+package GenomicsDBData::Util::Plugin::PGUndo;
 
 @ISA = qw(GUS::PluginMgr::Plugin);
 

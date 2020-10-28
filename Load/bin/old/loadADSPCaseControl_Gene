@@ -92,9 +92,9 @@ if [ ${LOAD_DATA} = true ] ; then
 	echo "Loading ${PAN_SOURCE_IDS[$i]}"
 	CONFIG_FILE=${CONFIG_FILE_PATH}/${PAN_SOURCE_IDS[$i]/"NG000XX_"/""}.json
 	echo "with config: $CONFIG_FILE"
-	COMMENT="ga NiagadsData::Load::Plugin::LoadGeneTraitAssociationResult --dir ${FILE_PATH} --config $CONFIG_FILE --useGeneSymbol"
+	COMMENT="ga GenomicsDBData::Load::Plugin::LoadGeneTraitAssociationResult --dir ${FILE_PATH} --config $CONFIG_FILE --useGeneSymbol"
 	echo "${COMMENT}"
-	ga NiagadsData::Load::Plugin::LoadGeneTraitAssociationResult --dir ${FILE_PATH} --config $CONFIG_FILE --useGeneSymbol --comment "${COMMENT}" ${COMMIT} > load_gene_trait_association_result_${PAN_SOURCE_IDS[$i]}.log 2>&1 
+	ga GenomicsDBData::Load::Plugin::LoadGeneTraitAssociationResult --dir ${FILE_PATH} --config $CONFIG_FILE --useGeneSymbol --comment "${COMMENT}" ${COMMIT} > load_gene_trait_association_result_${PAN_SOURCE_IDS[$i]}.log 2>&1 
     done
 fi
 

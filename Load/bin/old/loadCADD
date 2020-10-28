@@ -94,9 +94,9 @@ if [ ${LOAD_DATA} = true ] ; then
     do
 	if [ ${c} = ${CHR} ] || [ ${CHR} = "all" ] ; then
 	    echo "Loading CADD for chr${c}"
-	    COMMENT="CHR: ${c} - ga NiagadsData::Load::Plugin::LoadSeqVariationResult --file ${PREPROCESS_FILE_PATH}/results_seqvariation_CADD_${c}.csv --extDbRlsSpec \"${EXTDBRLS}\" --name \"CADD v1.2\" --description \"CADDv1.2 raw and phred-normalized scores\" --sourceId ${ACCESSION}  --subtypeSourceRef operation_3226 --variantSource CADD --useNaFeatureId"
+	    COMMENT="CHR: ${c} - ga GenomicsDBData::Load::Plugin::LoadSeqVariationResult --file ${PREPROCESS_FILE_PATH}/results_seqvariation_CADD_${c}.csv --extDbRlsSpec \"${EXTDBRLS}\" --name \"CADD v1.2\" --description \"CADDv1.2 raw and phred-normalized scores\" --sourceId ${ACCESSION}  --subtypeSourceRef operation_3226 --variantSource CADD --useNaFeatureId"
 	    echo "Running ${COMMENT}"
-	    ga NiagadsData::Load::Plugin::LoadSeqVariationResult --file ${PREPROCESS_FILE_PATH}/results_seqvariation_CADD_${c}.csv --extDbRlsSpec "${EXTDBRLS}" --name "CADD v1.2" --description "CADDv1.2 raw and phred-normalized scores" --sourceId ${ACCESSION}  --subtypeSourceRef operation_3226 --useNaFeatureId  --variantSource CADD  --comment "${COMMENT}" ${COMMIT} > load_seqvariationresult_cadd_chr${c}.log 2>&1
+	    ga GenomicsDBData::Load::Plugin::LoadSeqVariationResult --file ${PREPROCESS_FILE_PATH}/results_seqvariation_CADD_${c}.csv --extDbRlsSpec "${EXTDBRLS}" --name "CADD v1.2" --description "CADDv1.2 raw and phred-normalized scores" --sourceId ${ACCESSION}  --subtypeSourceRef operation_3226 --useNaFeatureId  --variantSource CADD  --comment "${COMMENT}" ${COMMIT} > load_seqvariationresult_cadd_chr${c}.log 2>&1
 	fi
     done
 fi

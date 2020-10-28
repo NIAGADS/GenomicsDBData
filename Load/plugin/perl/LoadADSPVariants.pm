@@ -2,7 +2,7 @@
 ## $Id: LoadADSPVariants.pm $
 ##
 
-package NiagadsData::Load::Plugin::LoadADSPVariants;
+package GenomicsDBData::Load::Plugin::LoadADSPVariants;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use strict;
@@ -15,10 +15,10 @@ use List::MoreUtils qw(first_index zip);
 use GUS::Supported::GusConfig;
 use DBD::Pg;
 
-use Package::Alias VariantAnnotator => 'NiagadsData::Load::VariantAnnotator';
-use Package::Alias Utils => 'NiagadsData::Load::Utils';
-use Package::Alias PluginUtils => 'NiagadsData::Load::PluginUtils';
-use Package::Alias VariantLoadUtils => 'NiagadsData::Load::VariantLoadUtils';
+use Package::Alias VariantAnnotator => 'GenomicsDBData::Load::VariantAnnotator';
+use Package::Alias Utils => 'GenomicsDBData::Load::Utils';
+use Package::Alias PluginUtils => 'GenomicsDBData::Load::PluginUtils';
+use Package::Alias VariantLoadUtils => 'GenomicsDBData::Load::VariantLoadUtils';
 
 use GUS::Model::NIAGADS::Variant;
 use GUS::Model::DoTS::ExternalNASequence;

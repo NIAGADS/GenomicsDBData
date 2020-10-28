@@ -2,7 +2,7 @@
     "file": {
 	"annotationFile": "$DATA_DIR/FANTOM5/fantom5-metadata.txt",
 	"directory": "$DATA_DIR/FANTOM5/predefined_transcribed_enhancers",
-	"bedFieldJsonFile": "$GUS_HOME/data/NiagadsData/Pipeline/GADB_bed_file_key.json"
+	"bedFieldJsonFile": "$GUS_HOME/data/GenomicsDBData/Pipeline/GADB_bed_file_key.json"
     },
     "external_database": {
 	"name": "FANTOM5 Human Enhancer Atlas",
@@ -16,7 +16,7 @@
     "preprocess": [
 	{"comment": "not really preprocessing but necessary to do it independently",
 	    "plugin": {
-		"name": "NiagadsData::Load::Plugin::InsertStudy",
+		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
 		"parameters": {
 		    "name": "FANTOM5 Human Transcribed Enhancer Atlas: Predefined Enhancers",
 		    "description": "An atlas of active, in vivo bidirectionally transcribed enhancers across the human body defined using the FANTOM5 panel of tissue and primary cell samples. Identifies more than 40,000 enhancer candidates from over 800 human cell and tissue samples.  Paired data tracks are available for each biosource: enhancers expressed in the sample and possibly others, enhancers positively differentially expressed in a specific sample compared to all others.",
@@ -32,7 +32,7 @@
 
 	{
 	    "plugin": {
-		"name": "NiagadsData::Load::Plugin::InsertFeatureScoreResultFromBED",
+		"name": "GenomicsDBData::Load::Plugin::InsertFeatureScoreResultFromBED",
 		"parameters": {
 		    "annotationFile": "@file.annotationFile",
 		    "fileDir": "@file.directory",

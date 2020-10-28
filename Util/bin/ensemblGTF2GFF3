@@ -14,7 +14,7 @@ import sys
 import gzip
 import re
 
-from CBILDataCommon.Util.utils import warning, qw, die
+from GenomicsDBData.Util.utils import warning, qw, die
 from collections import defaultdict
 from collections import OrderedDict
 

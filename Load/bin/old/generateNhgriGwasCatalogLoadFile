@@ -16,8 +16,8 @@ import csv
 import json
 from decimal import Decimal
 
-from CBILDataCommon.Util.postgres_dbi import Database
-from CBILDataCommon.Util.utils import qw, warning, die, xstr, xstrN
+from GenomicsDBData.Util.postgres_dbi import Database
+from GenomicsDBData.Util.utils import qw, warning, die, xstr, xstrN
 
 VARIANT_MATCH_SQL="""
 	SELECT v.variant_id, ref_allele, alt_allele

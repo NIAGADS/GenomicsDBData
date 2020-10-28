@@ -12,7 +12,7 @@ import argparse
 import os.path as path
 import csv
 
-from CBILDataCommon.Util.utils import warning
+from GenomicsDBData.Util.utils import warning
 
 def generate_load_file():
     '''

@@ -6,7 +6,7 @@ import csv
 from os import getcwd, path
 
 from openpyxl import Workbook as wb, load_workbook
-from CBILDataCommon.Util.utils import warning, die, qw, xstr
+from GenomicsDBData.Util.utils import warning, die, qw, xstr
 
 def get_worksheet_names(workbook, print2stderr=False):
     '''

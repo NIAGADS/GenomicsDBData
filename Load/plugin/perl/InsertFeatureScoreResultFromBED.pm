@@ -1,7 +1,7 @@
 ## InsertFeatureScoreResultFromBED Plugin
 ## $Id: InsertFeatureScoreResultFromBED.pm $
 
-package NiagadsData::Load::Plugin::InsertFeatureScoreResultFromBED;
+package GenomicsDBData::Load::Plugin::InsertFeatureScoreResultFromBED;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use GUS::PluginMgr::Plugin;
@@ -18,7 +18,7 @@ use GUS::Model::Study::Characteristic;
 use GUS::Model::Study::ProtocolAppNode;
 use GUS::Model::Results::FeatureScore;
 
-use Package::Alias VariantAnnotator => 'NiagadsData::Load::VariantAnnotator';
+use Package::Alias VariantAnnotator => 'GenomicsDBData::Load::VariantAnnotator';
 
 my $TYPE="Functional genomics";
 

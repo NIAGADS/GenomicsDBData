@@ -206,7 +206,7 @@
     "load": [
 	{
 	    "plugin": {
-		"name": "NiagadsData::Load::Plugin::InsertStudy",
+		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
 		"skip":true,
 		"parameters": {
 		    "attribution": "Beecham et al. 2014",
@@ -221,7 +221,7 @@
 	    "foreach" : true,
 	    "plugin": {
 		"skip": true,
-		"name": "NiagadsData::Load::Plugin::InsertProtocolAppNode",
+		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
 		"parameters" : {
 		    "attribution": "Beecham et al. 2014",
 		    "type": "Genetic variation",
@@ -238,7 +238,7 @@
 	{
 	    "foreach": true,
 	    "plugin": {
-		"name": "NiagadsData::Load::Plugin::LoadVariantGWASResult",
+		"name": "GenomicsDBData::Load::Plugin::LoadVariantGWASResult",
 		"parameters": {
 		    "file": "foreach",
 		    "sourceId": "foreach",

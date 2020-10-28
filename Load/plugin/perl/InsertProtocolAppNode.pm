@@ -2,7 +2,7 @@
 ## $Id: InsertProtocolAppNode.pm $
 ##
 
-package NiagadsData::Load::Plugin::InsertProtocolAppNode;
+package GenomicsDBData::Load::Plugin::InsertProtocolAppNode;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use strict;

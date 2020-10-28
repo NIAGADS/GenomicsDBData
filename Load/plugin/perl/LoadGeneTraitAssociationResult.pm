@@ -1,4 +1,4 @@
-package NiagadsData::Load::Plugin::LoadGeneTraitAssociationResult;
+package GenomicsDBData::Load::Plugin::LoadGeneTraitAssociationResult;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use strict;

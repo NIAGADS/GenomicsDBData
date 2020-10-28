@@ -11,8 +11,8 @@ from __future__ import print_function
 import argparse
 from sys import stdout
 
-from CBILDataCommon.Util.postgres_dbi import Database
-from CBILDataCommon.Util.utils import warning
+from GenomicsDBData.Util.postgres_dbi import Database
+from GenomicsDBData.Util.utils import warning
 
 VARIANT_ID_SQL = """SELECT source_id, primary_key
 FROM DoTS.SnpFeature WHERE source_id = %s

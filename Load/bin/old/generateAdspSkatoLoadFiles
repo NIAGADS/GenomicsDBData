@@ -13,7 +13,7 @@ import argparse
 import os.path as path
 import csv
 
-from CBILDataCommon.Util.utils import qw, xstr, warning
+from GenomicsDBData.Util.utils import qw, xstr, warning
 
 POPULATIONS = ['Global', 'NHW', 'Hispanic']
 FIELDS = qw('p pmin rho cmaf nmiss nsnps errflag')

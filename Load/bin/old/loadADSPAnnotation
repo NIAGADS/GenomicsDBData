@@ -170,7 +170,7 @@ fi
 
 if [ ${LOAD_TABLES} = true ] ; then
     echo "Loading supporting tables"
-    tab2gusXml -i ${PROJECT_HOME}/NiagadsData/Load/data/annotation_types.txt --table "NIAGADS::AnnotationType" > ${FILE_PATH}/annotation_types.xml
+    tab2gusXml -i ${PROJECT_HOME}/GenomicsDBData/Load/data/annotation_types.txt --table "NIAGADS::AnnotationType" > ${FILE_PATH}/annotation_types.xml
     COMMENT="GUS::Supported::Plugin::LoadGusXml --file ${FILE_PATH}/annotation_types.xml"
     ga GUS::Supported::Plugin::LoadGusXml --file ${FILE_PATH}/annotation_types.xml --comment "${COMMENT}" ${COMMIT}
 fi
@@ -208,11 +208,11 @@ if [ ${LOAD_DATA} = true ] ; then
 
     echo "${LOG_FILE_PREFIX}"
 
-    COMMENT="ga NiagadsData::Load::Plugin::LoadAdspVepResult --file ${FILE_PATH}/original_files/${FILE_PREFIX}${FILE_SUFFIX}.gz  --extDbRlsSpec \"${NAME}|${VERSION}\" --vepExtDbRlsSpec \"${VEP_NAME}|${VEP_VERSION}\"  --name \"ADSP Annotation Working Group Ensembl Variant Effect Prediction (VEP) for ${DATASET_NAME}\" --description 'Ensembl VEP80 Predicted consequence and associated information for all relevant Ensembl transcript models' --sourceId ADSP_${DATASET}_VEP --preprocessDir ${FILE_PATH}/preprocess --dataset ${DATASET} ${PREPROCESS} --ignoreMergedSnps"
+    COMMENT="ga GenomicsDBData::Load::Plugin::LoadAdspVepResult --file ${FILE_PATH}/original_files/${FILE_PREFIX}${FILE_SUFFIX}.gz  --extDbRlsSpec \"${NAME}|${VERSION}\" --vepExtDbRlsSpec \"${VEP_NAME}|${VEP_VERSION}\"  --name \"ADSP Annotation Working Group Ensembl Variant Effect Prediction (VEP) for ${DATASET_NAME}\" --description 'Ensembl VEP80 Predicted consequence and associated information for all relevant Ensembl transcript models' --sourceId ADSP_${DATASET}_VEP --preprocessDir ${FILE_PATH}/preprocess --dataset ${DATASET} ${PREPROCESS} --ignoreMergedSnps"
 
     echo "Running ${COMMENT} ${COMMIT}"
     echo ""
-    ga NiagadsData::Load::Plugin::LoadAdspVepResult --file ${FILE_PATH}/original_files/${FILE_PREFIX}${FILE_SUFFIX}.gz --extDbRlsSpec "${NAME}|${VERSION}" --vepExtDbRlsSpec "${VEP_NAME}|${VEP_VERSION}"  --name "ADSP Annotation Working Group Ensembl Variant Effect Prediction (VEP) for ${DATASET_NAME}" --description 'Ensembl VEP80 Predicted consequence and associated information for all relevant Ensembl transcript models' --sourceId ADSP_${DATASET}_VEP --preprocessDir ${FILE_PATH}/preprocess --dataset ${DATASET} ${PREPROCESS} --ignoreMergedSnps --comment "${COMMENT}"  ${COMMIT} > ${LOG_FILE_PREFIX}_${DATASET}_vep.log 2>&1
+    ga GenomicsDBData::Load::Plugin::LoadAdspVepResult --file ${FILE_PATH}/original_files/${FILE_PREFIX}${FILE_SUFFIX}.gz --extDbRlsSpec "${NAME}|${VERSION}" --vepExtDbRlsSpec "${VEP_NAME}|${VEP_VERSION}"  --name "ADSP Annotation Working Group Ensembl Variant Effect Prediction (VEP) for ${DATASET_NAME}" --description 'Ensembl VEP80 Predicted consequence and associated information for all relevant Ensembl transcript models' --sourceId ADSP_${DATASET}_VEP --preprocessDir ${FILE_PATH}/preprocess --dataset ${DATASET} ${PREPROCESS} --ignoreMergedSnps --comment "${COMMENT}"  ${COMMIT} > ${LOG_FILE_PREFIX}_${DATASET}_vep.log 2>&1
 # --skipUpdateExistingVariants 
 fi
 

@@ -2,7 +2,7 @@
 ## $Id: InsertRecordGWASCounts.pm $
 ##
 
-package NiagadsData::Load::Plugin::InsertRecordGWASCounts;
+package GenomicsDBData::Load::Plugin::InsertRecordGWASCounts;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use strict;

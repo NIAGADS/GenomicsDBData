@@ -1,4 +1,4 @@
-<project name="NiagadsData" default="Installation" basedir=".">
+<project name="GenomicsDBData" default="Installation" basedir=".">
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo  Dependencies  oooooooooooooooooooooooooo -->
@@ -23,7 +23,7 @@
   <!-- oooooooooooooooooooooooooo    Checkout    oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="NiagadsData-ChildCheckout">
+  <target name="GenomicsDBData-ChildCheckout">
     <available file="../GUS" type="dir" property="GUS.present" />
     <antcall target="GUS-Checkout" />
   </target>
@@ -33,7 +33,7 @@
   <!-- oooooooooooooooooooooooooo    Update    oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="NiagadsData-ChildUpdate" >
+  <target name="GenomicsDBData-ChildUpdate" >
     <ant target="defaultProjectUpdate">
       <property name="project" value="GUS"/>
     </ant>
@@ -43,11 +43,11 @@
   <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="NiagadsData-Installation" depends="GUS-Installation,
-                                            NiagadsData/Load-Installation,
-                                            NiagadsData/Util-Installation,
-                                            NiagadsData/Pipeline-Installation,
-					    NiagadsData/Ontology-Installation">
+  <target name="GenomicsDBData-Installation" depends="GUS-Installation,
+                                            GenomicsDBData/Load-Installation,
+                                            GenomicsDBData/Util-Installation,
+                                            GenomicsDBData/Pipeline-Installation,
+					    GenomicsDBData/Ontology-Installation">
 
     <ant target="defaultProjectInstall"/>
   </target>  
@@ -55,8 +55,8 @@
 
   <!-- oooooooooooooooooo  Installation Postprocess  ooooooooooooooooooooo -->
 
-  <target name="NiagadsData-Installation-postprocess">
-    <echo message="Postprocessing the NiagadsData installation"/>
+  <target name="GenomicsDBData-Installation-postprocess">
+    <echo message="Postprocessing the GenomicsDBData installation"/>
 
     <replace dir="${targetDir}/bin" 
              propertyFile="${targetDir}/config/replacements.prop" > 
@@ -69,30 +69,30 @@
 
   <!-- ooooooooooooooooooooooo  Install Components  ooooooooooooooooooooooo -->
 
-  <target name="NiagadsData/Load-Installation" depends="ProjectTree">
+  <target name="GenomicsDBData/Load-Installation" depends="ProjectTree">
     <ant target="defaultComponentInstall">
-      <property name="project" value="NiagadsData"/>
+      <property name="project" value="GenomicsDBData"/>
       <property name="component" value="Load"/>
     </ant>
   </target>  
 
-  <target name="NiagadsData/Pipeline-Installation" depends="ProjectTree">
+  <target name="GenomicsDBData/Pipeline-Installation" depends="ProjectTree">
     <ant target="defaultComponentInstall">
-      <property name="project" value="NiagadsData"/>
+      <property name="project" value="GenomicsDBData"/>
       <property name="component" value="Pipeline"/>
     </ant>
   </target>  
 
- <target name="NiagadsData/Util-Installation" depends="ProjectTree">
+ <target name="GenomicsDBData/Util-Installation" depends="ProjectTree">
     <ant target="defaultComponentInstall">
-      <property name="project" value="NiagadsData"/>
+      <property name="project" value="GenomicsDBData"/>
       <property name="component" value="Util"/>
     </ant>
   </target>  
 
- <target name="NiagadsData/Ontology-Installation" depends="ProjectTree">
+ <target name="GenomicsDBData/Ontology-Installation" depends="ProjectTree">
     <ant target="defaultComponentInstall">
-      <property name="project" value="NiagadsData"/>
+      <property name="project" value="GenomicsDBData"/>
       <property name="component" value="Ontology"/>
     </ant>
   </target>  
@@ -101,7 +101,7 @@
   <!-- oooooooooooooooooooooooooo  Distributable  ooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="NiagadsData-Distributable" depends="ProjectTree">
+  <target name="GenomicsDBData-Distributable" depends="ProjectTree">
 
     <copy todir="${targetDir}">
       <fileset dir="${projectsDir}" >

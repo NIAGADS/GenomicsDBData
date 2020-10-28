@@ -18,7 +18,7 @@
     "load": [
 	{
 	    "plugin": {
-		"name": "CBILDataCommon::Load::Plugin::InsertCBILGoAssociation",
+		"name": "GenomicsDBData::Load::Plugin::InsertCBILGoAssociation",
 		"parameters": {
 		    "annotationFile": "@file.path/@external_database.release_date/data/annotations/@file.annotation",
 		    "entityMetadataFile": "@file.entity_map",

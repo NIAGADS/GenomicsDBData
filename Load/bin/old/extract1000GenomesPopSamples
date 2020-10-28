@@ -14,7 +14,7 @@ from os import path
 import argparse
 import csv
 
-# from CBILDataCommon.Util.utils import qw, warning, xstr
+# from GenomicsDBData.Util.utils import qw, warning, xstr
 
 def extract_samples():
     ''' extract samples '''

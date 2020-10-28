@@ -2,7 +2,7 @@
 ## $Id: LoadGeneFromGeneFeature.pm $
 ##
 
-package NiagadsData::Load::Plugin::LoadGeneFromGeneFeature;
+package GenomicsDBData::Load::Plugin::LoadGeneFromGeneFeature;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use strict;

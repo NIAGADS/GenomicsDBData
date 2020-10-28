@@ -94,7 +94,7 @@
 	{
 	    "foreach" : true,
 	    "plugin": {
-		"name": "NiagadsData::Load::Plugin::InsertProtocolAppNode",
+		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
 		"parameters" : {
 		    "type": "Genetic variation",
 		    "subtype": "allele frequency",
@@ -109,7 +109,7 @@
 	{
 	    "foreach": true,
 	    "plugin": {
-		"name": "NiagadsData::Load::Plugin::InsertVariantFrequencyResult",
+		"name": "GenomicsDBData::Load::Plugin::InsertVariantFrequencyResult",
 		"parameters": {
 		    "file": "foreach",
 		    "sourceId": "foreach"

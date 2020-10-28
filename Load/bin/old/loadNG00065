@@ -17,9 +17,9 @@ from os import path, listdir
 from subprocess import check_output, CalledProcessError
 from decimal import Decimal
 
-from CBILDataCommon.Util.utils import warning, die, create_dir, xstr, qw
-from CBILDataCommon.Util.postgres_dbi import Database
-from CBILDataCommon.Util.gus_dbi import fetch_ontology_term_id
+from GenomicsDBData.Util.utils import warning, die, create_dir, xstr, qw
+from GenomicsDBData.Util.postgres_dbi import Database
+from GenomicsDBData.Util.gus_dbi import fetch_ontology_term_id
 
 def parse_config():
     ''' parse JSON config file '''
@@ -161,7 +161,7 @@ def load_gene():
                 if not args.preprocess and not args.extractPvalues:
                     baseName = fileName.replace('.csv', '')
                     loadFileName = path.join(config['preprocess_directory'], fileName.replace('.csv','_niagads_gene_trait_association.csv'))
-                    cmd = ['ga', 'NiagadsData::Load::Plugin::LoadGeneTraitAssociationResult', '--file', loadFileName]
+                    cmd = ['ga', 'GenomicsDBData::Load::Plugin::LoadGeneTraitAssociationResult', '--file', loadFileName]
                     comment = cmd # b/c the quotes are too difficult to track in the rest
                     cmd.extend(['--sourceId', baseName])
                     cmd.extend(['--name', generate_name(baseName)])
@@ -355,7 +355,7 @@ def load_variants():
                 if not args.preprocess and not args.extractPvalues:
                     baseName = fileName.replace('.csv', '')
                     loadFileName = path.join(config['preprocess_directory'], fileName.replace('.csv','_results_seqvariation.csv'))
-                    cmd = ['ga', 'NiagadsData::Load::Plugin::LoadSeqVariationResult', '--file', loadFileName]
+                    cmd = ['ga', 'GenomicsDBData::Load::Plugin::LoadSeqVariationResult', '--file', loadFileName]
                     cmd.extend(['--checkAltVariantIds', '--ignoreMergedSnps']) 
                     # cmd.extend(['--skipMissingVariants')# for now skip indels
                     comment = cmd # b/c the quotes are too difficult to track in the rest

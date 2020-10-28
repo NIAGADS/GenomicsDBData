@@ -11,8 +11,8 @@ from __future__ import print_function
 import argparse
 from sys import stdout
 
-from CBILDataCommon.Util.postgres_dbi import Database
-from CBILDataCommon.Util.utils import warning, xstr, qw
+from GenomicsDBData.Util.postgres_dbi import Database
+from GenomicsDBData.Util.utils import warning, xstr, qw
 
 DATASET_SQL = """SELECT source_id, protocol_app_node_id, name, attribution
 FROM Study.ProtocolAppNode WHERE source_id LIKE 'NG0%'"""

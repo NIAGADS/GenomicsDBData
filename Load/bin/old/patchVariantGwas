@@ -15,8 +15,8 @@ import sys
 
 from collections import OrderedDict
 from os import path
-from CBILDataCommon.Util.utils import xstr, warning, die
-from CBILDataCommon.Util.postgres_dbi import Database
+from GenomicsDBData.Util.utils import xstr, warning, die
+from GenomicsDBData.Util.postgres_dbi import Database
 
 UPDATE_SQL = """UPDATE Results.VariantGWAS
 SET bin_index = v.bin_index, metaseq_id = v.metaseq_id, source_id = v.source_id

@@ -16,7 +16,7 @@
     "load": [
 	{
 	    "plugin": {
-		"name": "NiagadsData::Load::Plugin::LoadReactomePathways",
+		"name": "GenomicsDBData::Load::Plugin::LoadReactomePathways",
 		"parameters": {
 		    "species": "Homo sapiens",
 		    "file": "@file.path/@file.file",

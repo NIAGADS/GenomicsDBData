@@ -2,7 +2,7 @@
 ## $Id: InsertTrackManhattan.pm $
 ##
 
-package NiagadsData::Load::Plugin::InsertTrackManhattan;
+package GenomicsDBData::Load::Plugin::InsertTrackManhattan;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use strict;

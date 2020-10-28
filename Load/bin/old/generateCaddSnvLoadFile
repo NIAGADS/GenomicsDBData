@@ -17,8 +17,8 @@ import csv
 import json
 import pysam
 
-from CBILDataCommon.Util.utils import qw, xstr, warning, die
-from CBILDataCommon.Util.postgres_dbi import Database
+from GenomicsDBData.Util.utils import qw, xstr, warning, die
+from GenomicsDBData.Util.postgres_dbi import Database
 
 SQL = """SELECT find_variant_by_position(%s, %s)"""
 

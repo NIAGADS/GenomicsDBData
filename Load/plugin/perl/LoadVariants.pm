@@ -2,7 +2,7 @@
 ## $Id: LoadVariants.pm $
 ##
 
-package NiagadsData::Load::Plugin::LoadVariants;
+package GenomicsDBData::Load::Plugin::LoadVariants;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use strict;
@@ -11,10 +11,10 @@ use Data::Dumper;
 
 use JSON::XS;
 
-use Package::Alias VariantAnnotator => 'NiagadsData::Load::VariantAnnotator';
-use Package::Alias Utils => 'NiagadsData::Load::Utils';
-use Package::Alias PluginUtils => 'NiagadsData::Load::PluginUtils';
-use Package::Alias VariantLoadUtils => 'NiagadsData::Load::VariantLoadUtils';
+use Package::Alias VariantAnnotator => 'GenomicsDBData::Load::VariantAnnotator';
+use Package::Alias Utils => 'GenomicsDBData::Load::Utils';
+use Package::Alias PluginUtils => 'GenomicsDBData::Load::PluginUtils';
+use Package::Alias VariantLoadUtils => 'GenomicsDBData::Load::VariantLoadUtils';
 
 use GUS::Model::NIAGADS::Variant;
 

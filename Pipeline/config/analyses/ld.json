@@ -90,7 +90,7 @@
 	    "foreach" : true,
 	    "plugin": {
 		"skip": true,
-		"name": "NiagadsData::Load::Plugin::InsertProtocolAppNode",
+		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
 		"parameters" : {
 		    "type": "Genetic variation",
 		    "subtype": "Linkage analysis",
@@ -105,7 +105,7 @@
 	{
 	    "foreach": true,
 	    "plugin": {
-		"name": "NiagadsData::Load::Plugin::InsertVariantLDResult",
+		"name": "GenomicsDBData::Load::Plugin::InsertVariantLDResult",
 		"parameters": {
 		    "dir": "foreach",
 		    "sourceId": "foreach",

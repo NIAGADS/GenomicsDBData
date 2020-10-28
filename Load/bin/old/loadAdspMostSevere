@@ -67,9 +67,9 @@ if [ ${PREPROCESS} = true ] ; then
 	for ANALYSIS in "${ANALYSIS_SOURCE_IDS[@]}"
 	do
 	    echo "Preprocessing ${DATASETS[$i]}: ${ANALYSIS}"
-	    COMMENT="ga NiagadsData::Load::Plugin::LoadAdspMostSevereVEP --file ${FILE_PATH}/${FILES[$i]} --extDbRlsSpec \"${NAME}|${VERSION}\" --preprocessDir ${PREPROCESS_DIR} --dataset \"${DATASETS[$i]}\" --preprocess --protocolSourceIdPrefix ${ANALYSIS}"
+	    COMMENT="ga GenomicsDBData::Load::Plugin::LoadAdspMostSevereVEP --file ${FILE_PATH}/${FILES[$i]} --extDbRlsSpec \"${NAME}|${VERSION}\" --preprocessDir ${PREPROCESS_DIR} --dataset \"${DATASETS[$i]}\" --preprocess --protocolSourceIdPrefix ${ANALYSIS}"
 	    echo "Running ${COMMENT}"
-	    ga NiagadsData::Load::Plugin::LoadAdspMostSevereVEP --file ${FILE_PATH}/${FILES[$i]} --extDbRlsSpec "${NAME}|${VERSION}" --preprocessDir ${PREPROCESS_DIR} --dataset "${DATASETS[$i]}" --preprocess  --protocolSourceIdPrefix ${ANALYSIS} --comment "${COMMENT}" > preprocess_adsp_most_severe_vep_${ABBREVS[$i]}_${ANALYSIS}.log 2>&1
+	    ga GenomicsDBData::Load::Plugin::LoadAdspMostSevereVEP --file ${FILE_PATH}/${FILES[$i]} --extDbRlsSpec "${NAME}|${VERSION}" --preprocessDir ${PREPROCESS_DIR} --dataset "${DATASETS[$i]}" --preprocess  --protocolSourceIdPrefix ${ANALYSIS} --comment "${COMMENT}" > preprocess_adsp_most_severe_vep_${ABBREVS[$i]}_${ANALYSIS}.log 2>&1
 	done
     done
 fi
@@ -87,9 +87,9 @@ if [ ${LOAD_DATA} = true ] ; then
 	for ANALYSIS in "${ANALYSIS_SOURCE_IDS[@]}"
 	do
 	    echo "Loading ${DATASETS[$i]}: ${ANALYSIS}"
-	    COMMENT="ga NiagadsData::Load::Plugin::LoadAdspMostSevereVEP --file ${FILE_PATH}/${FILES[$i]} --extDbRlsSpec \"${NAME}|${VERSION}\" --preprocessDir ${PREPROCESS_DIR} --dataset \"${DATASETS[$i]}\" --protocolSourceIdPrefix ${ANALYSIS}"
+	    COMMENT="ga GenomicsDBData::Load::Plugin::LoadAdspMostSevereVEP --file ${FILE_PATH}/${FILES[$i]} --extDbRlsSpec \"${NAME}|${VERSION}\" --preprocessDir ${PREPROCESS_DIR} --dataset \"${DATASETS[$i]}\" --protocolSourceIdPrefix ${ANALYSIS}"
 	    echo "Running ${COMMENT}"
-	    ga NiagadsData::Load::Plugin::LoadAdspMostSevereVEP --file ${FILE_PATH}/${FILES[$i]} --extDbRlsSpec "${NAME}|${VERSION}" --preprocessDir ${PREPROCESS_DIR} --dataset "${DATASETS[$i]}" --protocolSourceIdPrefix ${ANALYSIS} --comment "${COMMENT}" ${COMMIT} > load_adsp_most_severe_vep_${ABBREVS[$i]}_${ANALYSIS}.log 2>&1
+	    ga GenomicsDBData::Load::Plugin::LoadAdspMostSevereVEP --file ${FILE_PATH}/${FILES[$i]} --extDbRlsSpec "${NAME}|${VERSION}" --preprocessDir ${PREPROCESS_DIR} --dataset "${DATASETS[$i]}" --protocolSourceIdPrefix ${ANALYSIS} --comment "${COMMENT}" ${COMMIT} > load_adsp_most_severe_vep_${ABBREVS[$i]}_${ANALYSIS}.log 2>&1
 	done
     done
 fi

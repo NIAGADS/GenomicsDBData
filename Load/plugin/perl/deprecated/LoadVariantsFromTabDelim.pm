@@ -2,7 +2,7 @@
 ## $Id: LoadVariantsFromTabDelim.pm $
 ##
 
-package NiagadsData::Load::Plugin::LoadVariantsFromTabDelim;
+package GenomicsDBData::Load::Plugin::LoadVariantsFromTabDelim;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use strict;
@@ -13,7 +13,7 @@ use JSON;
 use List::MoreUtils qw(first_index);
 
 
-use Package::Alias VariantAnnotator => 'NiagadsData::Load::VariantAnnotator';
+use Package::Alias VariantAnnotator => 'GenomicsDBData::Load::VariantAnnotator';
 
 use GUS::Model::NIAGADS::Variant;
 use GUS::Model::DoTS::ExternalNASequence;

@@ -19,7 +19,7 @@ import re
 from decimal import Decimal
 from itertools import islice
 
-from CBILDataCommon.Util.utils import qw, warning, xstr, die
+from GenomicsDBData.Util.utils import qw, warning, xstr, die
 
 '''
 IlmnID,Name,IlmnStrand,SNP,AddressA_ID,AlleleA_ProbeSeq,AddressB_ID,AlleleB_ProbeSeq,GenomeBuild,Chr,MapInfo,Ploidy,Species,Source,SourceVersion,SourceStrand,SourceSeq,TopGenomicSeq,BeadSetID

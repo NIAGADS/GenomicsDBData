@@ -2,7 +2,7 @@
 ## $Id: LoadVariantsFromVcf.pm $
 ##
 
-package NiagadsData::Load::Plugin::LoadVariantsFromVcf;
+package GenomicsDBData::Load::Plugin::LoadVariantsFromVcf;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use strict;
@@ -13,7 +13,7 @@ use JSON;
 use Scalar::Util qw(looks_like_number);
 use POSIX qw(strftime);
 
-use Package::Alias VariantAnnotator => 'NiagadsData::Load::VariantAnnotator';
+use Package::Alias VariantAnnotator => 'GenomicsDBData::Load::VariantAnnotator';
 
 use GUS::Model::NIAGADS::Variant;
 use GUS::Model::DoTS::ExternalNASequence;

@@ -101,7 +101,7 @@
 	{
 	    "plugin": {
 		"skip": true,
-		"name": "NiagadsData::Load::Plugin::InsertProtocolAppNode",
+		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
 		"parameters" : {
 		    "type": "Function analysis",
 		    "subtype": "sequence_variant_effect",
@@ -115,7 +115,7 @@
 	{
 	    "foreach": true,
 	    "plugin": {
-		"name": "NiagadsData::Load::Plugin::LoadVepResultFromJson",
+		"name": "GenomicsDBData::Load::Plugin::LoadVepResultFromJson",
 		"parameters": {
 		    "rankingFile": "@file.consequence_ranking",
 		    "sourceId": "VEP",

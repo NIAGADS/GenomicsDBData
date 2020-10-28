@@ -31,7 +31,7 @@
     "load": [
 	{
 	    "plugin": {
-		"name": "NiagadsData::Load::Plugin::LoadADSPVariants",
+		"name": "GenomicsDBData::Load::Plugin::LoadADSPVariants",
 		"parameters": {
 		    "fileDir" : "@file.path",
 		    "filePattern": "@file.pattern",

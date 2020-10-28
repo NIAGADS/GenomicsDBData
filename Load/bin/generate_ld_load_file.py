@@ -21,8 +21,8 @@ import csv
 import multiprocessing
 from concurrent.futures import ProcessPoolExecutor
 
-from CBILDataCommon.Util.utils import qw, xstr, warning, die, verify_path
-from CBILDataCommon.Util.postgres_dbi import Database
+from GenomicsDBData.Util.utils import qw, xstr, warning, die, verify_path
+from GenomicsDBData.Util.postgres_dbi import Database
 
 
 def generate_load_file(fileName):

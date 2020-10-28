@@ -102,8 +102,8 @@ if [ ${GENERATE_LOAD_FILES} = true ] ; then
     for c in ${CHROMOSOMES}
     do
 	echo "loading chromomsome ${c}"
-	COMMENT="ga NiagadsData::Load::Plugin::LoadSnpEffVEPVcf --vcfFile ${VEP_RESULT_PATH}/vep_chr${c}.vcf --statFile ${VEP_RESULT_PATH}/   --vep \"${VEP_NAME}|${VEP_VERSION}|${VEP_DESCRIPTION}|${VEP_URI}\" --preprocess --preprocessDir ${VEP_RESULT_PATH} --loadFile niagads_predictedvarianteffect_chr${c}_load.csv"
-	ga NiagadsData::Load::Plugin::LoadSnpEffVEPVcf --vcfFile ${VEP_RESULT_PATH}/vep_chr${c}.vcf --statFile ${VEP_RESULT_PATH}/statfile_chr${c}.genes.txt   --vep "${VEP_NAME}|${VEP_VERSION}|${VEP_DESCRIPTION}|${VEP_URI}" --preprocess --preprocessDir ${VEP_RESULT_PATH} --loadFile niagads_predictedvarianteffect_chr${c}_load.csv  --comment "${COMMENT}"  > generate_snpeff_vep_load_file_chr${c}.log 2>&1 &
+	COMMENT="ga GenomicsDBData::Load::Plugin::LoadSnpEffVEPVcf --vcfFile ${VEP_RESULT_PATH}/vep_chr${c}.vcf --statFile ${VEP_RESULT_PATH}/   --vep \"${VEP_NAME}|${VEP_VERSION}|${VEP_DESCRIPTION}|${VEP_URI}\" --preprocess --preprocessDir ${VEP_RESULT_PATH} --loadFile niagads_predictedvarianteffect_chr${c}_load.csv"
+	ga GenomicsDBData::Load::Plugin::LoadSnpEffVEPVcf --vcfFile ${VEP_RESULT_PATH}/vep_chr${c}.vcf --statFile ${VEP_RESULT_PATH}/statfile_chr${c}.genes.txt   --vep "${VEP_NAME}|${VEP_VERSION}|${VEP_DESCRIPTION}|${VEP_URI}" --preprocess --preprocessDir ${VEP_RESULT_PATH} --loadFile niagads_predictedvarianteffect_chr${c}_load.csv  --comment "${COMMENT}"  > generate_snpeff_vep_load_file_chr${c}.log 2>&1 &
     done
 fi
 
@@ -111,8 +111,8 @@ if [ ${LOAD_DATA} = true ] ; then
     for c in ${CHROMOSOMES}
     do
 	echo "preprocessing chromomsome ${c}"
-	COMMENT="ga NiagadsData::Load::Plugin::LoadSnpEffVEPVcf --vcfFile ${VEP_RESULT_PATH}/vep_chr${c}.vcf --statFile ${VEP_RESULT_PATH}/  --vep \"${VEP_NAME}|${VEP_VERSION}|${VEP_DESCRIPTION}|${VEP_URI}\" --preprocessDir ${VEP_RESULT_PATH} --loadFile niagads_predictedvarianteffect_chr${c}_load.csv"
-	ga NiagadsData::Load::Plugin::LoadSnpEffVEPVcf --vcfFile ${VEP_RESULT_PATH}/vep_chr${c}.vcf --statFile ${VEP_RESULT_PATH}/statfile_chr${c}.genes.txt  --vep "${VEP_NAME}|${VEP_VERSION}|${VEP_DESCRIPTION}|${VEP_URI}" --preprocessDir ${VEP_RESULT_PATH} --loadFile niagads_predictedvarianteffect_chr${c}_load.csv --comment "${COMMENT}" ${COMMIT} > load_snpeff_vep_chr${c}.log 2>&1
+	COMMENT="ga GenomicsDBData::Load::Plugin::LoadSnpEffVEPVcf --vcfFile ${VEP_RESULT_PATH}/vep_chr${c}.vcf --statFile ${VEP_RESULT_PATH}/  --vep \"${VEP_NAME}|${VEP_VERSION}|${VEP_DESCRIPTION}|${VEP_URI}\" --preprocessDir ${VEP_RESULT_PATH} --loadFile niagads_predictedvarianteffect_chr${c}_load.csv"
+	ga GenomicsDBData::Load::Plugin::LoadSnpEffVEPVcf --vcfFile ${VEP_RESULT_PATH}/vep_chr${c}.vcf --statFile ${VEP_RESULT_PATH}/statfile_chr${c}.genes.txt  --vep "${VEP_NAME}|${VEP_VERSION}|${VEP_DESCRIPTION}|${VEP_URI}" --preprocessDir ${VEP_RESULT_PATH} --loadFile niagads_predictedvarianteffect_chr${c}_load.csv --comment "${COMMENT}" ${COMMIT} > load_snpeff_vep_chr${c}.log 2>&1
     done
 fi
 

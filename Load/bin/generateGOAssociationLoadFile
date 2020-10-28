@@ -12,7 +12,7 @@ import argparse
 import os.path as path
 import gzip
 
-from CBILDataCommon.Util.utils import qw, warning, die, xstr
+from GenomicsDBData.Util.utils import qw, warning, die, xstr
 
 def parse_mapping():
     '''

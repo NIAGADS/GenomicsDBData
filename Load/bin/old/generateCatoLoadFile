@@ -12,7 +12,7 @@ import os.path as path
 import csv
 import json
 
-from CBILDataCommon.Util.utils import qw, warning, xstr
+from GenomicsDBData.Util.utils import qw, warning, xstr
 
 
 def generate_load_file():

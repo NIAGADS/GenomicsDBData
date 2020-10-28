@@ -1,4 +1,4 @@
-package NiagadsData::Load::Utils;
+package GenomicsDBData::Load::Utils;
 
 use POSIX qw(strftime);
 use Time::HiRes;

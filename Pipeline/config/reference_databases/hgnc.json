@@ -27,7 +27,7 @@
     "load": [
 	{
 	    "plugin" : {
-		"name": "CBILDataCommon::Load::Plugin::InsertJsonGeneInfo",
+		"name": "GenomicsDBData::Load::Plugin::InsertJsonGeneInfo",
 		"parameters": {
 		    "file": "@file.path/hgnc_gene_annotation.csv",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version"

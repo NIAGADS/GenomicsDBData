@@ -14,8 +14,8 @@ from subprocess import check_call
 
 # from $GUS_HOME/lib/python --> add to python path
 
-from CBILDataCommon.Util.postgres_dbi import Database
-from CBILDataCommon.Util.utils import qw, warning, verify_path, die
+from GenomicsDBData.Util.postgres_dbi import Database
+from GenomicsDBData.Util.utils import qw, warning, verify_path, die
 
 """
 PLEASE READ BEFORE ADDING TO THE SQLFILES LISTS

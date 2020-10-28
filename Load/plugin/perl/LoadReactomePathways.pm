@@ -1,4 +1,4 @@
-package NiagadsData::Load::Plugin::LoadReactomePathways;
+package GenomicsDBData::Load::Plugin::LoadReactomePathways;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use strict;

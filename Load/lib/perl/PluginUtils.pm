@@ -1,4 +1,4 @@
-package NiagadsData::Load::PluginUtils;
+package GenomicsDBData::Load::PluginUtils;
 
 use JSON::XS;
 

@@ -14,7 +14,7 @@ import csv
 import re
 import json
 
-from CBILDataCommon.Util.utils import qw, xstr, warning, die
+from GenomicsDBData.Util.utils import qw, xstr, warning, die
 
 def parseValue(value):
     '''

@@ -12,7 +12,7 @@ import csv
 import gzip
 import numpy
 
-from CBILDataCommon.Util.utils import warning
+from GenomicsDBData.Util.utils import warning
 
 
 #data = numpy.random.random(100)

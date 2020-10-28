@@ -1,7 +1,7 @@
-package NiagadsData::Load::VariantLoadUtils;
+package GenomicsDBData::Load::VariantLoadUtils;
 use Data::Dumper;
-use NiagadsData::Load::Utils;
-use NiagadsData::Load::PluginUtils;
+use GenomicsDBData::Load::Utils;
+use GenomicsDBData::Load::PluginUtils;
 
 my $HOUSEKEEPING_FIELDS = PluginUtils::getHouseKeepingSql();
 
@@ -126,12 +126,12 @@ sub generateCopyStr {
 		$isAdspVariant ? 1 : 'NULL');
 
   if ($annotation) {
-    push(@values, NiagadsData::Load::Utils::to_json($annotation));
+    push(@values, GenomicsDBData::Load::Utils::to_json($annotation));
   }
   else {
     push(@values, 'NULL');
   }
-  push(@values, NiagadsData::Load::Utils::getCurrentTime());
+  push(@values, GenomicsDBData::Load::Utils::getCurrentTime());
   push(@values, $plugin->{housekeeping});
 
   my $str = join "|", @values;
@@ -142,7 +142,7 @@ sub generateCopyStr {
 
 sub niagadsVariantUpdateValuesStr {
   my ($recordPK, $annotation, $isAdspVariant) = @_;
-  my $aStr = NiagadsData::Load::Utils::to_json($annotation);
+  my $aStr = GenomicsDBData::Load::Utils::to_json($annotation);
   my $vflag = ($isAdspVariant) ? "1::boolean" : "NULL";
   return "('$recordPK', '$aStr', $vflag )";
 }
@@ -156,7 +156,7 @@ sub updateGenomicsDbFlags {
       return ($newFlag);
     }
 
-    if (!NiagadsData::Load::Utils::arrayContains($newFlag, @oldFlags)) {# already in list due to update/broken load
+    if (!GenomicsDBData::Load::Utils::arrayContains($newFlag, @oldFlags)) {# already in list due to update/broken load
       push(@oldFlags, $newFlag);
     }
     return @oldFlags;
@@ -179,7 +179,7 @@ sub annotatedVariantUpdateGwsValueStr {
 
   my $newAnnotation = {};
 
-  my $oldAnnotation = NiagadsData::Load::PluginUtils::fetchValueById($recordPK, $selectQh);
+  my $oldAnnotation = GenomicsDBData::Load::PluginUtils::fetchValueById($recordPK, $selectQh);
 
   if ($oldAnnotation) {
     my $json = JSON->new;
@@ -193,7 +193,7 @@ sub annotatedVariantUpdateGwsValueStr {
 
   # $plugin->log($recordPK . Dumper($newAnnotation));
 
-  my $updatedAnnotation = NiagadsData::Load::Utils::to_json($newAnnotation);
+  my $updatedAnnotation = GenomicsDBData::Load::Utils::to_json($newAnnotation);
   $updatedAnnotation =~ s/'/''/g; # escape single quotes in json string
 
   return "('$recordPK', '$updatedAnnotation')";
@@ -219,7 +219,7 @@ sub generateUpdatedAvAnnotationStr {
   }
 
   my $newAnnotation = ($qcResult) ? {$adspFlag => $qcResult} : $qcStatus;
-  my $oldAnnotation = NiagadsData::Load::PluginUtils::fetchValueById($recordPK, $selectQh);
+  my $oldAnnotation = GenomicsDBData::Load::PluginUtils::fetchValueById($recordPK, $selectQh);
   if ($oldAnnotation) {
     my $json = JSON->new;
     $oldAnnotation = $json->decode($oldAnnotation) 
@@ -230,7 +230,7 @@ sub generateUpdatedAvAnnotationStr {
   my @genomicsDbFlags = updateGenomicsDbFlags($newAnnotation, $adspFlag);
   $newAnnotation->{GenomicsDB} = \@genomicsDbFlags;
 
-  my $updatedAnnotation = NiagadsData::Load::Utils::to_json($newAnnotation);
+  my $updatedAnnotation = GenomicsDBData::Load::Utils::to_json($newAnnotation);
   $updatedAnnotation =~ s/'/''/g; # escape single quotes in json string
 
   return $updatedAnnotation;

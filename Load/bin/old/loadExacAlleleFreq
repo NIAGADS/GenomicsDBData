@@ -86,13 +86,13 @@ if [ ${LOAD_DATA} = true ] ; then
 	if [ ${POPULATION} = "${ABBREVS[$i]}" ] || [ ${POPULATION} = "all" ] ; then
 	    echo "Population: ${POPULATIONS[$i]}: ${ABBREVS[$i]}"
 	
-	    COMMENT="ga NiagadsData::Load::Plugin::InsertPopulationProtocolAppNode --population \"${POPULATIONS[$i]}\" --abbrev ${ABBREVS[$i]} --source ExAC_${ABBREVS[$i]} --description \"allele frequency calculated as the allele count (AC) divided by the chromosome count (AN) for the ${POPULATIONS[$i]} population; see http://exac.broadinstitute.org/faq\" --extDbRlsSpec \"${EXTDBRLS}\""
+	    COMMENT="ga GenomicsDBData::Load::Plugin::InsertPopulationProtocolAppNode --population \"${POPULATIONS[$i]}\" --abbrev ${ABBREVS[$i]} --source ExAC_${ABBREVS[$i]} --description \"allele frequency calculated as the allele count (AC) divided by the chromosome count (AN) for the ${POPULATIONS[$i]} population; see http://exac.broadinstitute.org/faq\" --extDbRlsSpec \"${EXTDBRLS}\""
 	    echo "Running ${COMMENT}"
-	    ga NiagadsData::Load::Plugin::InsertPopulationProtocolAppNode --population "${POPULATIONS[$i]}" --abbrev ${ABBREVS[$i]} --source ExAC_${ABBREVS[$i]} --description "allele frequency calculated as the allele count (AC) divided by the chromosome count (AN) for the ${POPULATIONS[$i]} population; see http://exac.broadinstitute.org/faq" --extDbRlsSpec "${EXTDBRLS}" --comment "${COMMENT}" ${COMMIT} > load_population_${ABBREVS[$i]}.log 2>&1
+	    ga GenomicsDBData::Load::Plugin::InsertPopulationProtocolAppNode --population "${POPULATIONS[$i]}" --abbrev ${ABBREVS[$i]} --source ExAC_${ABBREVS[$i]} --description "allele frequency calculated as the allele count (AC) divided by the chromosome count (AN) for the ${POPULATIONS[$i]} population; see http://exac.broadinstitute.org/faq" --extDbRlsSpec "${EXTDBRLS}" --comment "${COMMENT}" ${COMMIT} > load_population_${ABBREVS[$i]}.log 2>&1
 	    
-	    COMMENT="ga NiagadsData::Load::Plugin::InsertVariantAlleleFrequency --file ${PREPROCESS_FILE_PATH}/niagads_variantallelefrequency_exacfreq_${ABBREVS[$i]}.csv --extDbRlsSpec \"${EXTDBRLS}\" --population ${ABBREVS[$i]} --popExtDbRlsSpec \"${EXTDBRLS}\""
+	    COMMENT="ga GenomicsDBData::Load::Plugin::InsertVariantAlleleFrequency --file ${PREPROCESS_FILE_PATH}/niagads_variantallelefrequency_exacfreq_${ABBREVS[$i]}.csv --extDbRlsSpec \"${EXTDBRLS}\" --population ${ABBREVS[$i]} --popExtDbRlsSpec \"${EXTDBRLS}\""
 	    echo "Running ${COMMENT}"
-	    ga NiagadsData::Load::Plugin::InsertVariantAlleleFrequency --file ${PREPROCESS_FILE_PATH}/niagads_variantallelefrequency_exacfreq_${ABBREVS[$i]}.csv --extDbRlsSpec "${EXTDBRLS}" --population ${ABBREVS[$i]} --popExtDbRlsSpec "${EXTDBRLS}"  --comment "${COMMENT}" ${COMMIT}  > load_exac_vaf_${ABBREVS[$i]}.log 2>&1
+	    ga GenomicsDBData::Load::Plugin::InsertVariantAlleleFrequency --file ${PREPROCESS_FILE_PATH}/niagads_variantallelefrequency_exacfreq_${ABBREVS[$i]}.csv --extDbRlsSpec "${EXTDBRLS}" --population ${ABBREVS[$i]} --popExtDbRlsSpec "${EXTDBRLS}"  --comment "${COMMENT}" ${COMMIT}  > load_exac_vaf_${ABBREVS[$i]}.log 2>&1
 	fi
     done
 fi

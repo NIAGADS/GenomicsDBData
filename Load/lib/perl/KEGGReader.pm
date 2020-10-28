@@ -1,4 +1,4 @@
-package NiagadsData::Load::KEGGReader;
+package GenomicsDBData::Load::KEGGReader;
 use base qw(GUS::Supported::MetabolicPathwayReader);
 
 use strict;

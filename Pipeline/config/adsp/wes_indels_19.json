@@ -32,7 +32,7 @@
     "load": [
 	{
 	    "plugin": {
-		"name": "NiagadsData::Load::Plugin::LoadVariants",
+		"name": "GenomicsDBData::Load::Plugin::LoadVariants",
 		"parameters": {
 		    "fileDir": "@file.path",
 		    "file" : "unique_variants.txt",

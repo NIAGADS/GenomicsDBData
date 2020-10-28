@@ -30,7 +30,7 @@
     "load": [
 	{
 	    "plugin": {
-		"name": "NiagadsData::Load::Plugin::InsertProtocolAppNode",
+		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
 		"parameters" : {
 		    "type": "Genetic variation",
 		    "subtype": "GWAS summary statistics",
@@ -43,7 +43,7 @@
 	}, 
 	{
 	    "plugin": {
-		"name": "NiagadsData::Load::Plugin::InsertVariantCatalogResult",
+		"name": "GenomicsDBData::Load::Plugin::InsertVariantCatalogResult",
 		"parameters": {
 		    "file": "@file.path/@file.preprocess_file",
 		    "sourceId": "@external_database.accession"

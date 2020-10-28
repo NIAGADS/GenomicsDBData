@@ -2,7 +2,7 @@
 ## $Id: InsertStudy.pm $
 ##
 
-package NiagadsData::Load::Plugin::InsertStudy;
+package GenomicsDBData::Load::Plugin::InsertStudy;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use strict;

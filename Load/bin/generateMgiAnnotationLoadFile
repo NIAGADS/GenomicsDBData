@@ -15,7 +15,7 @@ import csv
 import json
 
 
-from CBILDataCommon.Util.utils import qw, warning, die, xstr
+from GenomicsDBData.Util.utils import qw, warning, die, xstr
 
 
 def build_evidence_json(row):

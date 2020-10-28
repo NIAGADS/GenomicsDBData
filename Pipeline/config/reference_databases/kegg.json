@@ -17,7 +17,7 @@
     "load": [
 	{
 	    "plugin": {
-		"name": "NiagadsData::Load::Plugin::LoadKeggPathways",
+		"name": "GenomicsDBData::Load::Plugin::LoadKeggPathways",
 		"parameters": {
 		    "pathwaysFileDir": "@file.path",
 		    "diseaseMapFile": "@file.path+/human_diseases.json",

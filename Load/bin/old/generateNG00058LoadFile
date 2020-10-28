@@ -17,7 +17,7 @@ import os.path as path
 import csv
 import json
 from decimal import Decimal
-from CBILDataCommon.Util.utils import qw, xstr, warning, die, truncate
+from GenomicsDBData.Util.utils import qw, xstr, warning, die, truncate
 
 
 def parse_position(marker):

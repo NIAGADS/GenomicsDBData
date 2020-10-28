@@ -83,15 +83,15 @@ if [ ${LOAD_DATA} = true ] ; then
 
 	POP_ABBREV=${DATASETS[$i]}
 
-	COMMENT="ga NiagadsData::Load::Plugin::InsertPopulationProtocolAppNode --population \"${POPULATION}\" --abbrev ${POP_ABBREV} --source ADSP --description \"${DESCRIPTION}\" --extDbRlsSpec \"${NAME}|${VERSION}\""
+	COMMENT="ga GenomicsDBData::Load::Plugin::InsertPopulationProtocolAppNode --population \"${POPULATION}\" --abbrev ${POP_ABBREV} --source ADSP --description \"${DESCRIPTION}\" --extDbRlsSpec \"${NAME}|${VERSION}\""
 	echo "Running ${COMMENT}"
-	ga NiagadsData::Load::Plugin::InsertPopulationProtocolAppNode --population "${POPULATION}" --abbrev ${POP_ABBREV} --source ADSP --description "${DESCRIPTION}" --extDbRlsSpec "${NAME}|${VERSION}" --comment "${COMMENT}" ${COMMIT} > insert_population_pan_${POP_ABBREV}.log 2>&1
+	ga GenomicsDBData::Load::Plugin::InsertPopulationProtocolAppNode --population "${POPULATION}" --abbrev ${POP_ABBREV} --source ADSP --description "${DESCRIPTION}" --extDbRlsSpec "${NAME}|${VERSION}" --comment "${COMMENT}" ${COMMIT} > insert_population_pan_${POP_ABBREV}.log 2>&1
 
 	echo "Loading AlleleFreq data"
   
-	COMMENT="ga NiagadsData::Load::Plugin::InsertVariantAlleleFrequency --file ${FILE_PATH}/niagads_variantallelefrequency_adsp_${DATASETS[$i]}.csv --extDbRlsSpec \"${NAME}|${VERSION}\" --population ${POP_ABBREV} --popExtDbRlsSpec \"${NAME}|${VERSION}\" --checkAltVariantIds"
+	COMMENT="ga GenomicsDBData::Load::Plugin::InsertVariantAlleleFrequency --file ${FILE_PATH}/niagads_variantallelefrequency_adsp_${DATASETS[$i]}.csv --extDbRlsSpec \"${NAME}|${VERSION}\" --population ${POP_ABBREV} --popExtDbRlsSpec \"${NAME}|${VERSION}\" --checkAltVariantIds"
     echo "Running ${COMMENT}"
-    ga NiagadsData::Load::Plugin::InsertVariantAlleleFrequency --file ${FILE_PATH}/niagads_variantallelefrequency_adsp_${DATASETS[$i]}.csv --extDbRlsSpec "${NAME}|${VERSION}" --population ${POP_ABBREV} --popExtDbRlsSpec "${NAME}|${VERSION}" --checkAltVariantIds  --comment "${COMMENT}" ${COMMIT}  > load_vaf_${DATASETS[$i]}.log 2>&1
+    ga GenomicsDBData::Load::Plugin::InsertVariantAlleleFrequency --file ${FILE_PATH}/niagads_variantallelefrequency_adsp_${DATASETS[$i]}.csv --extDbRlsSpec "${NAME}|${VERSION}" --population ${POP_ABBREV} --popExtDbRlsSpec "${NAME}|${VERSION}" --checkAltVariantIds  --comment "${COMMENT}" ${COMMIT}  > load_vaf_${DATASETS[$i]}.log 2>&1
     done
     
 

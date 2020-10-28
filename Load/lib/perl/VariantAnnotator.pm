@@ -1,6 +1,6 @@
 # utility functions for generating variant annotations (e.g., allele strings, start/end locations)
 
-package NiagadsData::Load::VariantAnnotator;
+package GenomicsDBData::Load::VariantAnnotator;
 
 use strict;
 
@@ -12,7 +12,7 @@ use JSON;
 use DBD::Pg;
 use Vcf;
 
-use NiagadsData::Load::Utils qw(truncateStr);
+use GenomicsDBData::Load::Utils qw(truncateStr);
 
 my $METASEQ_SQL = "SELECT * FROM find_variant_by_metaseq_id(?::text, FALSE)";
 my $SINGLE_METASEQ_SQL = "SELECT * FROM find_earliest_variant_by_metaseq_id(?::text, TRUE)";

@@ -45,7 +45,7 @@
     "load": [
 	{
 	    "plugin": {
-		"name": "NiagadsData::Load::Plugin::LoadMergedVariants",
+		"name": "GenomicsDBData::Load::Plugin::LoadMergedVariants",
 		"parameters": {
 		    "file": "@file.path/@file.file",
 		}

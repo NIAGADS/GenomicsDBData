@@ -15,7 +15,7 @@
     "load": [
 	{
 	    "plugin": {
-		"name": "CBILDataCommon::Load::Plugin::InsertGoReferences",
+		"name": "GenomicsDBData::Load::Plugin::InsertGoReferences",
 		"parameters": {
 		    "file": "@file.path/@file.file",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version"

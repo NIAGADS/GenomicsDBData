@@ -2,7 +2,7 @@
 ## $Id: LoadSeqVariationResult.pm $
 ##
 
-package NiagadsData::Load::Plugin::LoadSeqVariationResult;
+package GenomicsDBData::Load::Plugin::LoadSeqVariationResult;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use strict;

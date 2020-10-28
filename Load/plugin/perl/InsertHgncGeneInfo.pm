@@ -2,7 +2,7 @@
 ## $Id: InsertHgncGeneInfo.pm $
 ## 
 
-package NiagadsData::Load::Plugin::InsertHgncGeneInfo;
+package GenomicsDBData::Load::Plugin::InsertHgncGeneInfo;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use strict;

@@ -11,8 +11,8 @@ from __future__ import print_function
 import argparse
 
 from os import path
-from CBILDataCommon.Util.postgres_dbi import Database
-from CBILDataCommon.Util.utils import warning
+from GenomicsDBData.Util.postgres_dbi import Database
+from GenomicsDBData.Util.utils import warning
 
 SQL="""
 SELECT g.gene_symbol, g.source_id AS ensembl_id, g.annotation->>'entrez_id' AS entrez_id, 

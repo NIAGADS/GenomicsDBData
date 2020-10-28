@@ -2,7 +2,7 @@
 ## $Id: InsertVariantAlleleFrequency.pm $
 ##
 
-package NiagadsData::Load::Plugin::InsertVariantAlleleFrequency;
+package GenomicsDBData::Load::Plugin::InsertVariantAlleleFrequency;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use strict;

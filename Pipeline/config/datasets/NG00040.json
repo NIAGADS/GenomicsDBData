@@ -75,7 +75,7 @@
 	{
 	    "foreach": true,
 	    "plugin": {
-		"name": "NiagadsData::Load::Plugin::InsertVariantGWASResult",
+		"name": "GenomicsDBData::Load::Plugin::InsertVariantGWASResult",
 		"parameters": {
 		    "preprocess": true,
 		    "file": "foreach",
@@ -101,7 +101,7 @@
     "load": [
 	{
 	    "plugin": {
-		"name": "NiagadsData::Load::Plugin::InsertStudy",
+		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
 		"parameters": {
 		    "name": "Multi-ethnic exome array: AD, FTP, and PSP",
 		    "attribution": "Chen et al. 2015",
@@ -114,7 +114,7 @@
 	{
 	    "foreach" : true,
 	    "plugin": {
-		"name": "NiagadsData::Load::Plugin::InsertProtocolAppNode",
+		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
 		"parameters" : {
 		    "attribution": "Chen et al. 2015",
 		    "type": "Genetic variation",
@@ -131,7 +131,7 @@
 	{
 	    "foreach": true,
 	    "plugin": {
-		"name": "NiagadsData::Load::Plugin::InsertVariantGWASResult",
+		"name": "GenomicsDBData::Load::Plugin::InsertVariantGWASResult",
 		"parameters": {
 		    "file": "foreach",
 		    "preprocessDir": "@file.path/@file.accession",
