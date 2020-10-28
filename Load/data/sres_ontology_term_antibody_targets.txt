@@ -1,0 +1,25 @@
+ontology_term_id	name	display_term	category
+2082	H3K27_acetylation_site	H3K27ac	antibody target
+235651	histone H2A.Z	H2A.Z	antibody target
+1738	H3K9_acetylation_site	H3K9ac	antibody target
+1746	H3K79_dimethylation_site	H3K79me2	antibody target
+1744	H3K27_trimethylation_site	H3K27me3	antibody target
+1742	H3K9_trimethylation_site	H3K9me3	antibody target
+233280	transcriptional repressor CTCF	CTCF	antibody target
+241066	RE1-silencing transcription factor	REST	antibody target
+244685	transcriptional repressor protein YY1	YY1	antibody target
+244273	upstream stimulatory factor 1	USF1	antibody target
+243167	transcription initiation factor TFIID subunit 1	TAF1	antibody target
+234904	forkhead box protein P2	FOXP2	antibody target
+229293	trans-acting T-cell-specific transcription factor GATA-3	GATA3	antibody target
+235108	endothelial transcription factor GATA-2	GATA2	antibody target
+1740	H3K4_monomethylation_site 	H3K4me1	antibody target
+242042	paired amphipathic helix protein Sin3a	SIN3A	antibody target
+1741	H3K4_trimethylation	H3K4me3	antibody target
+1759	H3K36_trimethylation_site	H3K36me3	antibody target
+240841	double-strand-break repair protein rad21	RAD21	antibody target
+1756	H3K27_acylation_site	H3K27ac	antibody target
+234539	histone-lysine N-methyltransferase EZH2	EZH2	antibody target
+1760	H3K4_dimethylation_site	H3K4me2	antibody target
+1748	H4K20_monomethylation_site	H4K20me1	antibody target
+240170	DNA-directed RNA polymerase II subunit RPB1	POLR2A	antibody target

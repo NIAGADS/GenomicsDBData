@@ -1,0 +1,25 @@
+dbref_id	resource_type	resource_full_name	resource_abbrev	url
+ccds_id	nucleotide sequences	NCBI CCDS Database	CCDS	https://www.ncbi.nlm.nih.gov/CCDS/CcdsBrowse.cgi?REQUEST=CCDS&DATA=
+cosmic	clinical	Catalogue of Somatic Mutations in Cancer	COSMIC	https://cancer.sanger.ac.uk/cosmic/gene/analysis?ln=
+ena	nucleotide sequences	European Nucleotide Archive	ENA	https://www.ebi.ac.uk/ena/data/view/
+ena	nucleotide sequences	GenBank	GenBank	https://www.ncbi.nlm.nih.gov/nuccore/
+ensembl_gene_id	gene	Ensembl	Ensembl GRCh37 Archive	http://grch37.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=
+entrez_id	gene	NCBI Gene Database	Entrez Gene	https://www.ncbi.nlm.nih.gov/gene/
+gene_family_id	gene overview	HUGO Gene Nomenclature Committee	HGNC Gene Family	https://www.genenames.org/cgi-bin/genefamilies/set/
+hgnc_id	gene	HUGO Gene Nomenclature Committee	HGNC	https://www.genenames.org/cgi-bin/gene_symbol_report?hgnc_id=
+mgd_id	homolog	Mouse Genome Informatics	MGI	http://www.informatics.jax.org/marker/
+mgi_id	homolog	Mouse Genome Informatics	MGI	http://www.informatics.jax.org/marker/
+mirbase	nucleotide sequences	miRBase	miRBase	http://www.mirbase.org/cgi-bin/mirna_entry.pl?acc=
+omim_id	clinical	OMIM Catalog of Human Genes and Genetic Disorders	OMIM	https://www.omim.org/entry/
+orphanet	clinical	Portal for rare diseases and orphan drugs	orphanet	http://www.orpha.net/consor/cgi-bin/OC_Exp.php?Lng=GB&Expert=
+pubmed_id	references	PubMed	PubMed	https://www.ncbi.nlm.nih.gov/pubmed/
+refseq_accession	nucleotide sequences	NCBI RefSeq	RefSeq	https://www.ncbi.nlm.nih.gov/nuccore/
+rgd_id	homolog	Rat Genome Database	RGD	https://rgd.mcw.edu/rgdweb/report/gene/main.html?id=
+rna_central_ids	nucleotide sequences	RNAcentral: non-coding RNA sequence database	RNAcentral	http://rnacentral.org/rna/
+ucsc_id	gene	UCSC 	UCSC 	https://genome.cse.ucsc.edu/cgi-bin/hgGene?db=hg19&org=Human&hgg_type=knownGene&hgg_gene=
+ucsc_id	gene	UCSC 	Genome Browser	https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19&position=
+uniprot_ids	protein	UniProt	UniProt	http://www.uniprot.org/uniprot/
+uniprot_ids	protein	InterPro	InterPro	https://www.ebi.ac.uk/interpro/protein/
+uniprot_ids	protein	Protein Data Bank in Europe	PDBe	https://www.ebi.ac.uk/pdbe/entry/search/index?uniprot_accession:
+vega_id	gene	VEGA archive	VEGA	https://vega.sanger.ac.uk/Homo_sapiens/Gene/Summary?db=core;g=
+gnomad	gene	Genome Aggregation Database	gnomAD	https://gnomad.broadinstitute.org/gene/

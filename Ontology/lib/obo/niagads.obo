@@ -1,0 +1,421 @@
+format-version: 1.2
+default-namespace: niagads
+ontology: niagads.obo
+
+[Term]
+id: OBI_0000905
+name: sequence feature annotation
+def: "Information about a sequence feature"
+
+[Term]
+id: OBI_0000794
+name: transcription factor binding site
+def: "Sequence feature annotation for a transcription factor binding site."
+is_a: OBI_0000905 ! sequence feature annotation
+
+[Term]
+id: NO_0000003
+name: DNAse hypersensitive region
+def: "Sequence feature annotation for a region that is hypersensitive to DNase digestion when packaged as chromatin."
+is_a: OBI_0000905 ! sequence feature annotation
+
+[Term]
+id: NO_0000004
+name: histone peak
+def: "Sequence feature annotation for a region where a specific type of histone is found usually based on recognition by an antibody to a particular histone modification or variant."
+is_a: OBI_0000905 ! sequence feature annotation
+
+[Term]
+id: NO_0000005
+name: expressed enhancer
+def: "Sequence feature annotation for an enhancer region that is also transcribed."
+is_a: OBI_0000905 ! sequence feature annotation
+
+[Term]
+id: NO_0000006
+name: specifically expressed enhancer
+def: "Sequence feature annotation for an enhancer region that is transcribed selectively in certain cell populations."
+is_a: OBI_0000905 ! sequence feature annotation
+
+[Term]
+id: NO_0000007
+name: TSS-associated expressed enhancer
+def: "Sequence feature annotation for an enhancer region that is transcribed and associated with a transcription start site."
+is_a: OBI_0000905 ! sequence feature annotation
+
+[Term]
+id: NO_0000008
+name: variant annotation
+def: "Information about a sequence feature associated with a known variant"
+is_a: OBI_0000905 ! sequence feature annotation
+
+[Term]
+id: NO_0000009
+name: gene annotation
+def: "Information about a gene feature."
+is_a: OBI_0000905 ! sequence feature annotation
+
+[Term]
+id: NO_0000010
+name: GWAS summary statistics
+def: "summary statistics from meta-analysis of related Genome-wide association studies"
+is_a: OBI_0000905 ! sequence feature annotation
+is_a: NO_0000008 ! variant annotation
+
+[Term]
+id: NO_0000011
+name: disease susceptibility trait
+def: "sequence feature annotation reflecting disease susceptibility"
+is_a: OBI_0000905 ! sequence feature annotation
+is_a: NO_0000008 ! variant annotation
+
+[Term]
+id: NO_0000012
+name: effect and predicted effect impact
+def: "predicted effect of a variant on a genomic region"
+is_a: OBI_0000905 ! sequence feature annotation
+is_a: NO_0000008 ! variant annotation
+
+[Term]
+id: NO_0000013
+name: APOE adjusted
+def: "statistical adjustment for APOE e-4 allele status"
+
+[Term]
+id: NO_0000014
+name: Braak Stage I
+def: "stage 1 in the evolution of Parkinson's disease-related pathology: lesions in the dorsal IX/X motor nucleus and/or intermediate reticular zone; in Alzheimer's disease: neurofibrillary tangles are restricted to the transentorhinal region of the brain"
+
+[Term]
+id: NO_0000015
+name: Braak Stage II
+def: "stage 2 in the evolution of Parkinson's disease-related pathology: pathology of stage I plus lesions in caudal raphe nuclei, gigantocellular reticular nucleus, and coeruleus-subcoeruleus complex; in Alzheimer's disease: pathology of stage I, plus tangle density increases and the pathology extends into the entorhinal region"
+
+[Term]
+id: NO_0000016
+name: Braak Stage III
+def: "stage 3 in the evolution of Parkinson's disease-related pathology: pathology of stage II plus midbrain lesions, in particular in the pars compacta of the substantia nigra; in Alzheimer's disease: pathology of stage II plus, pathology in the outer and inner entorhinal and transentorhinal cellular layers worsens, and lesions extend into the adjoining neocortical association areas of the fusiform (occipito-temporal) gyrus"
+
+[Term]
+id: NO_0000017
+name: Braak Stage IV
+def: "stage 4 in the evolution of Parkinson's disease-related pathology: pathology of stage III plus prosencephalic lesions. Cortical involvement is confined to the temporal mesocortex (transentorhinal region) and allocortex (CA2-plexus). The neocortex is unaffected; in Alzheimer's disease: pathology of stage III, plus density of the lesions increases in both the entorhinal region and fusiform gyrus  with a gradual decrease of the pallid lines; neurofibrillary pathology now extends up to the medial temporal gyrus"
+
+[Term]
+id: NO_0000018
+name: Braak Stage V
+def: "stage 5 in the evolution of Parkinson's disease-related pathology: pathology of stage IV plus lesions in high order sensory association areas of the neocortex and prefrontal neocortex; in Alzheimer's disease: pathology of stage IV, plus lesions extend widely into the occipital lobe and appear in the peristriate region"
+
+
+[Term]
+id: NO_0000019
+name: Braak Stage VI
+def: "stage 6 in the evolution of PD-related pathology: pathology of stage V plus lesions in first order sensory association areas of the neocortex and premotor areas, occasionally mild changes in primary sensory areas and the primary motor field; in Alzheimer's disease: pathology of stage V, plus lesions are visible even in the parastriate and striate areas of the occipital neocortex"
+
+[Term]
+id: NO_0000020
+name: Braak Group: none
+def: "no neurofibrillary tangles"
+
+[Term]
+id: NO_0000021
+name: Braak Group: transentorhinal
+def: "Braak stages I/II"
+
+[Term]
+id: NO_0000022
+name: Braak Group: limbic
+def: "Braak stages III/IV"
+
+[Term]
+id: NO_0000023
+name: Braak Group: isocortical
+def: "Braak stages V/VI"
+
+[Term]
+id: NO_0000024
+name: Braak Groups
+def: "four category split of the Braak Stages: none: no neurofibrillary tangles; transentorhinal: Braak stages I/II; limbic: Braak stages III/IV; isocortical: Braak Stages V/VI"
+
+[Term]
+id: NO_0000025
+name: Braak Stages
+def: "stages marking evolution of Parkison's disease-related pathology and distribution of neurofibrillary tangles in the brain; later adapted for Alzheimer's disease-related pathology (Braak 1993: PMID 8121624)"
+
+[Term]
+id: NO_0000026
+name: CERAD score
+def: "Consortium to establish a Registry for Alzheimer's disease (CERAD) score for density of euritic plaques in the brain: none, sparse (A), moderate (B), frequent (C)"
+
+[Term]
+id: HP_0100256
+name: neuritic plaques
+def: "extracellular deposits of amyloid in the gray matter of the brain"
+
+[Term]
+id: HP_0002185
+name: neurofibrillary tangles
+def: "Pathological protein aggregates formed by hyperphosphorylation of a microtubule-associated protein known as tau, causing it to aggregate in an insoluble form"
+
+[Term]
+id: HP_0100315
+name: Lewy body disease
+def: "A progressive form of dementia characterized by the presence of protein deposits called Lewy bodies in the midbrain and cerebral cortex, and loss of cholinergic and dopaminergic neurons. The signs and symptoms overlap with Alzheimer and Parkinson disease"
+
+[Term]
+id: EFO_0006792
+name: Lewy body dementia
+def: "synonym: Lewy body disease"
+
+
+[Term]
+id: HP_0011970
+name: cerebral amyloid angiopathy
+def: "Amyloid deposition in the walls of leptomeningeal and cortical arteries, arterioles, and less often capillaries and veins of the central nervous system."
+
+[Term]
+id: NO_0000027
+name: H3K4me2
+
+[Term]
+id: NO_0000028
+name: H3K36me3
+
+[Term]
+id: NO_0000029
+name: H3K79me2
+
+[Term]
+id: NO_000030
+name: H3K9ac
+
+[Term]
+id: NO_0000031
+name: H3K9me3
+
+[Term]
+id: NO_0000032
+name: H4K20me1
+
+[Term]
+id: SIO:000129
+name: ontology document
+def: "a document that contains an ontology"
+
+[Term]
+id: SIO_000754
+name: database table
+def: "a set of named columns with zero or more rows composed of cells that contain column values and is part of a database"
+
+[Term]
+id: NO_0000033
+name: NH-A (Lonza CC-2565)
+def: "Normal human astrocyte cell-line"
+
+[Term]
+id: NO_0000034
+name: Ha-h (ScienCell 1830)
+def: "Human astrocytes-hippocampal"
+
+[Term]
+id: NO_0000035
+name: Ha-sp (ScienCell 1820)
+def: "Human astrocytes-spinal chord"
+
+[Term]
+id: NO_0000036
+name: D721
+def: "Medulloblastoma (aka D721), surgical resection from a patient with medulloblastoma as described by Darrell Bigner (1997)"
+
+[Term]
+id: OGMS_0000073
+name: diagnosis
+def: "The representation of a conclusion of a diagnostic process."
+
+[Term]
+id: NO_0000037
+name: autopsy-based diagnosis
+def: "A diagnosis that is generated by a diagnostic process occurring during the performance of an autopsy."
+is_a: OGMS_0000073 ! diagnosis
+
+[Term]
+id: NO_0000038
+name: late onset Alzheimer's disease
+def: "Alzheimer's disease with an onset of clincal symptoms after the age of 65 years."
+
+[Term]
+id: subClassOf
+name: subClassOf
+def: "a relationship type such that the subject is a subclass of the predicate"
+
+[Term]
+id: CLO_0001915
+name: BE(2)-C cell
+def: "BE(2)-C is a clone of the SK-N-BE(2) neuroblastoma cell line (see ATCC CRL-2271) that was established in November of 1972 from a bone marrow biopsy taken from child with disseminated neuroblastoma after repeated courses of chemotherapy and radiotherapy"
+
+[Term]
+id: CLO_0008425
+name: PFSK-1 cell
+def: "tissue: brain, cerebral hemisphere; disease: malignant primitive neuroectodermal tumor"
+
+[Term]
+id: CLO_0009058
+name: SK-N-MC cell
+def: "tissue: brain; derived from metastatic site: supra-orbital area; disease: neuroepithelioma (brain primary)"
+
+[Term]
+id: CLO_0009059
+name: SK-N-SH cell
+def: "tissue: brain; derived from metastatic site: bone marrow; disease: neuroepithelioma (brain primary)"
+
+[Term]
+id: CLO_0009464
+name: U-87 MG cell
+def: "tissue: brain; disease: glioblastoma, astrocytoma"
+
+[Term]
+id: DOID_171
+name: neuroectodermal tumor
+
+[Term]
+id: NO_0000040
+name: East Asian
+
+[Term]
+id: NO_0000041
+name: European
+
+[Term]
+id: NO_0000042
+name: South Asian
+
+[Term]
+id: NO_0000043
+name: Ad Mixed American
+
+[Term]
+id: NO_0000044
+name: Global
+def: "All individuals from a group of populations"
+
+[Term]
+id:  NO_0000045
+name: Finnish
+
+[Term]
+id:  NO_0000046
+name: African/African American
+
+[Term]
+id:  NO_0000047
+name: Other ethnicity
+def: "ethnicity that does not unambiguously cluster with the major populations (e.g., EUR, EAS, AFR, SAS, AMR) in a principal components analysis"
+
+[Term]
+id:  NO_0000048
+name: Non-Finnish European
+
+
+[Term]
+id: NO_0000049
+name: DISTINCT_REF_ALT
+def: "FAIL: present in both Broad and Baylor, but alleles differ"
+is_a: operation_3675 ! "Variant filtering"
+
+
+[Term]
+id: NO_0000050
+name: BOTH_failed
+def: "FAIL: failed in both Broad and Baylor"
+is_a: operation_3675 ! "Variant filtering"
+
+[Term]
+id: NO_0000051
+name: BOTH_passed
+def: "PASS: pass in both Broad and Baylor"
+is_a: operation_3675 ! "Variant filtering"
+
+[Term]
+id: NO_0000052
+name: BAYLOR_failed_BROAD_uncalled
+def: "FAIL: present in Baylor, failed; uncalled in Broad"
+is_a: operation_3675 ! "Variant filtering"
+
+[Term]
+id: NO_0000053
+name: BAYLOR_passed_BROAD_uncalled
+def: "PASS: present in Baylor, passed; uncalled in Broad"
+is_a: operation_3675 ! "Variant filtering"
+
+[Term]
+id: NO_0000054
+name: BROAD_failed_BAYLOR_passed
+def: "PASS: present in both, failed in Broad, passed in Baylor"
+is_a: operation_3675 ! "Variant filtering"
+
+[Term]
+id: NO_0000055
+name: BROAD_passed_BAYLOR_failed
+def: "PASS: present in both, passed in Broad, failed in Baylor"
+is_a: operation_3675 ! "Variant filtering"
+
+[Term]
+id: NO_0000056
+name: BROAD_passed_BAYLOR_uncalled 
+def: "PASS: present in Broad, passed; uncalled in Baylor"
+is_a: operation_3675 ! "Variant filtering"
+
+[Term]
+id: NO_0000057
+name: BROAD_failed_BAYLOR_uncalled
+def: "FAIL: present in Broad, failed; uncalled in Baylor"
+is_a: operation_3675 ! "Variant filtering"
+
+[Term]
+id: NCIT_C18479
+name: neuropathology
+def: "disease or disorder of the nervous system"
+
+[Term]
+id: NO_0000058
+name: antibody target
+def: "a material entity that has as part some molecular antigen that is recognized by an antibody"
+
+[Term]
+id: NO_0000059
+name: APOE &epsilon;4 carrier
+def: "an individual who is a carrier for the APOE &epsilon;4 allele"
+
+[Term]
+id: NO_0000060
+name: APOE &epsilon;4 non-carrier
+def: "an individual who is not a carrier for the APOE &epsilon;4 allele"
+
+[Term]
+id: NO_0000061
+name: Israeli-Arab
+
+[Term]
+id: NO_0000062
+name: Spanish
+
+[Term]
+id: NO_0000063
+name: Non-Hispanic White
+def: "non-Hispanic (a person of Mexican, Puerto Rican, Cuban, Central or South American or other Spanish culture or origin, regardless of race) subset of Caucasian (person with European, Middle Eastern, or North African ancestral origin who identifies, or is identified, as White)"
+
+[Term]
+id: OBCS_0000040
+name: covariate specification
+def: "a variable specification that specifies a variable used in statistical analysis to correct, adjust, or modify the values of a dependent variable; an independent variable not manipulated by the investigator"
+
+[Term]
+id: NO_0000064
+name: Caribbean Hispanic
+def: "hispanic ancestry; specifically from the Caribbean"
+
+
+	
+
+
+

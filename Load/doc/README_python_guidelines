@@ -1,0 +1,20 @@
+* Guideline for writing Python scripts for accessing the NIAGADS GenomicsDB
+
+shebang = #!/usr/bin/env python2.7
+
+* Recommended imports
+
+from __future__ import print_function
+from __future__ import with_statement
+
+import argparse # parse command line args
+
+import psycopg2 # postgres dbi
+import psycopg2.extras # include DictCursor, which allows fetching results in a keyed-dict format
+
+from subprocess import check_call # runs command and waits for it to complete before proceeding
+from subprocess import Popen # open a pipe (for getting info piped to stdout by a subprocess)
+
+import postgres_dbi as pg # interal postgres connection utils
+
+

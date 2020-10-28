@@ -1,0 +1,28 @@
+{
+    "file": {
+	"path": "$SHARED_DATA_DIR/ontologies/protein_ontology",
+	"file": "pro_reasoned.owl"
+    },
+    "external_database": {
+	"name": "Protein Ontology",
+	"description": "The protein ontology (PRO) serves an external registry of protein identifers by providing an ontological representation of explicitly defined protein-related entities and their relationships.",
+	"version": "57.0",
+	"release_date": "2018-12-05",
+	"download_url": "ftp://ftp.pir.georgetown.edu/databases/ontology/pro_obo/",
+	"id_url": "https://pir.georgetown.edu/pro/",
+	"accession": "PRO",
+	"type": "Ontology and terminology"
+    },
+    "load": [
+	{
+	    "plugin": {
+		"name": "GUS::Supported::Plugin::InsertOntologyTermsAndRelationships",
+		"parameters": {
+		    "inFile": "@file.path/@file.file",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "relTypeExtDbRlsSpec": "Niagads Ontology|current"
+		}
+	    }
+	}
+    ]
+}

@@ -1,0 +1,39 @@
+{ 
+    "file": {
+	"path": "$SHARED_DATA_DIR/hgnc",
+	"file": "hgnc_complete_set.txt"
+    },
+    "external_database": {
+	"name": "HGNC Gene Nomenclature",
+	"version": "2019-02-01",
+	"release_date": "2019-02-01",
+	"download_url": "ftp://ftp.ebi.ac.uk/pub/databases/genenames/new/tsv/",
+	"id_url": "https://www.genenames.org/",
+	"description": "approved gene names and symbols, gene types, and mappings to standard resources",
+	"accession": "HGNC",
+	"type": "Data identity and mapping"
+    },
+    "preprocess": [
+	{
+	    "script": {
+		"name": "generateHgncAnnotationLoadFile",
+		"parameters": {
+		    "dir": "@file.path",
+		    "fileName": "@file.file"
+		}
+	    }
+	}
+    ],
+    "load": [
+	{
+	    "plugin" : {
+		"name": "CBILDataCommon::Load::Plugin::InsertJsonGeneInfo",
+		"parameters": {
+		    "file": "@file.path/hgnc_gene_annotation.csv",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version"
+		}
+	    }
+	}
+    ],
+    "tuning": ["$GUS_HOME/lib/sql/tuning_indexes/sresDbRef.sql", "$GUS_HOME/lib/sql/cbil_schema/mviews/createGeneAttributes_MV.sql"]
+}

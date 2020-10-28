@@ -1,0 +1,121 @@
+#!/usr/bin/env python
+#pylint: disable=invalid-name
+#pylint: disable=no-member
+'''
+Generates MGI Gene Annotation Load File
+'''
+
+from __future__ import with_statement
+from __future__ import print_function
+
+
+import argparse
+import os.path as path
+import csv
+import json
+
+
+from CBILDataCommon.Util.utils import qw, warning, die, xstr
+
+
+def build_evidence_json(row):
+    '''
+    build evidence json
+    '''
+    row = {key : value for key, value in row.iteritems() if value != ""}
+    return json.dumps(row)
+
+
+def parse_gene_model_report():
+    '''
+    parse MGI_Gene_Model_Coord.rpt and extract Ensembl <-> MGI, VEGA, Entrez, symbol
+    map annotaion to mgi so can map to other files
+    '''
+    geneModelFile = path.join(args.inputDir, 'MGI_Gene_Model_Coord.rpt')
+    if not path.isfile(geneModelFile):
+        die("ERROR: Gene Model File " + geneModelFile + " not found.")
+
+    with open(geneModelFile, 'r') as f:
+        reader = csv.DictReader(f, delimiter='\t')
+        for row in reader:
+            gene = row['1. MGI accession id']
+            gene_id = row['11. Ensembl gene id']
+            if gene_id == 'null':
+                # skip if no ensembl equivalent
+                continue
+
+            annotation[gene] = {}
+            annotation[gene]['ensembl_id'] = gene_id
+            annotation[gene]['mgi_id'] = gene
+            
+            gene_id = row['16. VEGA gene id']
+            if gene_id != 'null':
+                annotation[gene]['vega_id'] = gene_id
+
+            gene_id = row['6. Entrez gene id']
+            if gene_id != 'null':
+                annotation[gene]['entrez_id'] = gene_id
+
+            annotation[gene]['symbol'] = row['3. marker symbol']
+
+
+def parse_annotation_file(fileName, fieldMap, mgiIndex = 0, printValue = False):
+    '''
+    extract specified column from file
+    '''
+    warning("Parsing", fileName)
+    annotationFile = path.join(args.inputDir, fileName)
+    if not path.isfile(annotationFile):
+        die("ERROR: File " + annotationFile + " not found.")
+
+    with open(annotationFile, 'r') as f:
+        for line in f:
+            row = line.rstrip().split('\t')
+            mgiId = row[mgiIndex]
+            if mgiId not in annotation:
+                continue
+
+            for field, index in fieldMap.items():
+                if printValue:
+                    warning(field)
+                if len(row) < index:
+                    continue
+                if printValue:
+                    warning(fileName, index, row[index])
+                annotation[mgiId][field] = row[index]
+
+
+def parse_annotation_files():
+    '''
+    parse annotation files and map annotation to ensembl ids
+    '''
+
+    parse_gene_model_report()
+    # parse_annotation_file('MGI_EntrezGene.rpt', {'alias_symbol': 9})
+    parse_annotation_file('MRK_Reference.rpt', {'alias_symbol':3, 'pubmed_id': 4, 'name': 2}, 0)
+    # parse_annotation_file('MGI_InterProDomains.rpt',
+    #                       {'interpro_domain_name': 1,
+    #                        'interpro_domain_id': 0}, mgiIndex=2)
+
+
+def write_load_file():
+    ''' write the load file'''
+    outputFile = path.join(args.outputDir, "mgi_gene_annotation.csv")
+
+    with open(outputFile, 'w') as of:
+        for gene in annotation:
+            ensemblId = annotation[gene]['ensembl_id']
+            del annotation[gene]['ensembl_id']
+            print('\t'.join((ensemblId, json.dumps(annotation[gene]))), file=of)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="generate MGI annotation load file")
+    parser.add_argument('-m', '--inputDir', help="directory containing mgi rpt files")
+    parser.add_argument('-o', '--outputDir', help="working/output directory", required=True)
+
+    args = parser.parse_args()
+
+    annotation = {}
+    parse_annotation_files()
+    write_load_file()

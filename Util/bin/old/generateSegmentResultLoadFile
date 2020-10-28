@@ -1,0 +1,100 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+import sys
+import argparse
+import os
+from utils import warning, xstr
+
+def generateLoadFile(argv):
+  
+    header = ["sequence_source_id", "segment_start"]
+    if argv.endIndex != -1:
+        header.append("segment_end")
+    if argv.pvalueIndex != -1:
+        header.append("p_value")
+    if argv.categoricalValueIndex != -1:
+        header.append("categorical_value")
+    if argv.fdrIndex != -1:
+        header.append("fdr")
+    if argv.scoreIndex != -1:
+        header.append("score1")
+    if argv.geneticLocation:
+        header.append("genetic_location")
+    
+    print("\t".join(header))
+
+    rowCount = 0 
+    with open(argv.filename) as f:
+        if (argv.skipHeader):
+            next(f) # skip header      
+
+        for line in f:
+            rowCount = rowCount + 1
+            line = line.strip()
+            values = line.split("\t")
+       
+            output = []
+            if argv.sequenceIndex != -1:
+                sequenceId = values[argv.sequenceIndex]
+                if argv.prependChr:
+                    sequenceId = 'chr' + sequenceId
+                if argv.geneticLocation:
+                    if sequenceId == 'chr23':
+                        sequenceId = 'chrX'
+                    if sequenceId == 'chr24' or sequenceId == 'chr25':
+                        sequenceId = 'chrY'
+                    if sequenceId == 'chr26':
+                        sequenceId = 'chrM'
+                output.append(sequenceId)
+            if argv.startIndex != -1:
+                output.append(values[argv.startIndex])
+
+            if argv.markerIndexAndDelim:
+                marker = values[int(argv.markerIndexAndDelim[0])]
+                sequenceId, start = marker.split(argv.markerIndexAndDelim[1])
+                output.append('chr' + sequenceId)
+                output.append(start)
+
+            if argv.endIndex != -1:
+                output.append(values[argv.endIndex])
+            if argv.pvalueIndex != -1:
+                output.append(values[argv.pvalueIndex])
+            if argv.categoricalValueIndex != -1:
+                cv = (values[argv.categoricalValueIndex])
+                if argv.toUpperCase:
+                    cv = cv.upper()
+                output.append(cv)
+            if argv.fdrIndex != -1:
+                output.append(values[argv.fdrIndex])
+            if argv.scoreIndex != -1:
+                output.append(values[argv.scoreIndex])
+            if argv.geneticLocation:
+                gl = values[0]
+                gl = (gl[:25] + '..') if len(gl) > 30 else gl # genetic_location field limited to 30 chars
+                output.append(gl)
+
+            print("\t".join(output))
+      
+            if rowCount % 100000 == 0:
+                warning("PROCESSED:", str(rowCount) + " results")
+
+ 
+if __name__ == '__main__':
+    cml_parser = argparse.ArgumentParser()
+    cml_parser.add_argument('-i', '--filename', required=True, help="input file name")
+    cml_parser.add_argument('-q', '--sequenceIndex', type=int, default=-1, help="index of column containing sequence source_id")
+    cml_parser.add_argument('-c', '--categoricalValueIndex', type=int, default=-1, help="index of column containing categorical value")
+    cml_parser.add_argument('-p', '--pvalueIndex', type=int, default=-1, help="index of column containg pvalue")
+    cml_parser.add_argument('-s', '--startIndex', type=int, default=-1, help="index of column containing start location")
+    cml_parser.add_argument('-e', '--endIndex', type=int, default=-1, help="index of column containing end location")
+    cml_parser.add_argument('-m', '--markerIndexAndDelim', type=str, nargs=2, help="index and delimiter of column containing variant marker name (e.g., 1-3423235) from which sequence and location should be extracted")
+    cml_parser.add_argument('-f', '--fdrIndex', type=int, default=-1, help="index of column containing fdr")
+    cml_parser.add_argument('-r', '--scoreIndex', type=int, default=-1, help="index of column containing score")
+    cml_parser.add_argument('-g', '--geneticLocation', action="store_true", help="assume reporter/exome index in column 1")
+    cml_parser.add_argument('-u', '--toUpperCase', action="store_true", help="category values to upper case?")
+    cml_parser.add_argument('-a', '--prependChr', action="store_true", help="prepend 'chr' to sequence ids?")
+    cml_parser.add_argument('-d', '--skipHeader', action="store_true", help="skip header")
+    
+    generateLoadFile(cml_parser.parse_args())
+

@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+
+"""
+run snpeff on each chromosome
+"""
+
+from __future__ import with_statement
+from __future__ import print_function
+
+import argparse
+
+from subprocess import call
+from os import path, listdir
+from CBILDataCommon.Util.utils import warning, die, create_dir, xstr, qw, execute_cmd
+
+def split_vcf():
+    ''' split vcf by chromosome'''
+    cmd = qw('snpSift -Xmx12g split', returnTuple=False)
+    cmd.append(path.join(args.filePath, args.vcf))
+    execute_cmd(cmd, None, False)
+
+
+def run_snpeff():
+    ''' run snpeff '''
+    vcfFiles = [f for f in listdir(args.filePath) if f.endswith('vcf') and f != args.vcf]
+    database = 'GRCh37.75' if 'GRCh37' in args.genomeBuild else args.genomeBuild # deal w/38 later
+
+    cmdBase = qw('snpEff -Xmx12g eff -v -geneId -stats', returnTuple=False)
+
+    for f in vcfFiles:
+        warning("Processing file: " + f)
+        cmd = cmdBase
+        fileName = path.join(args.filePath, f)
+        cmd.append('stats_' + fileName + ".html")
+        cmd.append(database)
+        cmd.append(fileName)
+        warning("EXECUTING:", ' '.join(cmd))
+        with open(path.join(args.filePath, 'annotated_' + f), 'w') as of:
+            call(cmd, stdout=of)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="run snpeff on a vcf")
+    parser.add_argument('--verbose', help="run in verbose mode", action='store_true')
+    parser.add_argument('--genomeBuild', help="genome build", required=True)
+    parser.add_argument('--splitByChromosome', help="split vcf by chromosome", action='store_true')
+    parser.add_argument('--annotate', help="run snpEff annotation", action='store_true')
+    parser.add_argument('--vcf', help="vcf file,; name only; expect it to be uncompressed to be able to split", required=True)
+    parser.add_argument('-c', '--chromosome', help="only run vep on specific chromosome")
+    parser.add_argument('-o', '--filePath', help="file path", required=True)
+
+    args = parser.parse_args()
+
+    if args.splitByChromosome:
+        split_vcf()
+
+    if args.annotate:
+        run_snpeff()

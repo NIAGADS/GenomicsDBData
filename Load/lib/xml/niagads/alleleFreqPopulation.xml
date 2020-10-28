@@ -1,0 +1,187 @@
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>ADSP_WGS_V1_SNV_KAVIAR</protocol_source_id>
+  <source>Kaviar</source>
+  <population>Kaviar</population>
+  <description>frequencies calculated across the Kaviar integrated database of human genomic variation (see http://db.systemsbiology.net/kaviar/ for more information)</description>
+</NIAGADS::AlleleFreqPopulation>
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>ADSP_WES_R3_SNV_KAVIAR</protocol_source_id>
+  <source>Kaviar</source>
+  <population>Kaviar</population>
+  <description>frequencies calculated across an integrated database of human genomic variation (see http://db.systemsbiology.net/kaviar/ for more information)</description>
+</NIAGADS::AlleleFreqPopulation>
+
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>ADSP_WGS_V1_SNV_EXACFREQ_SAS</protocol_source_id>
+  <population>SAS</population>
+  <source>ExAC</source>
+  <description>South Asian</description>
+</NIAGADS::AlleleFreqPopulation>
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>ADSP_WES_R3_SNV_EXACFREQ_SAS</protocol_source_id>
+  <population>SAS</population>
+  <source>ExAC</source>
+  <description>South Asian</description>
+</NIAGADS::AlleleFreqPopulation>
+
+
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>ADSP_WGS_R1_SNV_EXACFREQ_AFR</protocol_source_id>
+  <population>AFR</population>
+  <source>ExAC</source>
+  <description>African/African American</description>
+</NIAGADS::AlleleFreqPopulation>
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>ADSP_WES_R3_SNV_EXACFREQ_AFR</protocol_source_id>
+  <population>AFR</population>
+  <source>ExAC</source>
+  <description>African/African American</description>
+</NIAGADS::AlleleFreqPopulation>
+
+
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>ADSP_WES_R3_SNV_EXACFREQ_EAS</protocol_source_id>
+  <population>EAS</population>
+  <source>ExAC</source>
+  <description>East Asian</description>
+</NIAGADS::AlleleFreqPopulation>
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>ADSP_WGS_V1_SNV_EXACFREQ_EAS</protocol_source_id>
+  <population>EAS</population>
+  <source>ExAC</source>
+  <description>East Asian</description>
+</NIAGADS::AlleleFreqPopulation>
+
+
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>ADSP_WES_R3_SNV_EXACFREQ_FIN</protocol_source_id>
+  <population>FIN</population>
+  <description>Finnish</description>
+  <source>ExAC</source>
+</NIAGADS::AlleleFreqPopulation>
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>ADSP_WGS_V1_SNV_EXACFREQ_FIN</protocol_source_id>
+  <population>FIN</population>
+  <description>Finnish</description>
+  <source>ExAC</source>
+</NIAGADS::AlleleFreqPopulation>
+
+
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>ADSP_WES_R3_SNV_EXACFREQ_AMR</protocol_source_id>
+  <population>AMR</population>
+  <description>Latino</description>
+  <source>ExAC</source>
+</NIAGADS::AlleleFreqPopulation>
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>ADSP_WGS_V1_SNV_EXACFREQ_AMR</protocol_source_id>
+  <population>AMR</population>
+  <description>Latino</description>
+  <source>ExAC</source>
+</NIAGADS::AlleleFreqPopulation>
+
+
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>ADSP_WES_R3_SNV_EXACFREQ_OTH</protocol_source_id>
+  <population>Other</population>
+  <description>individuals that did not unambiguously cluster with major populations (e.g., FIN, NFE, AFR, SAS, EAS, AMR) in a principal components analysis</description>
+  <source>ExAC</source>
+</NIAGADS::AlleleFreqPopulation>
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>ADSP_WGS_V1_SNV_EXACFREQ_OTH</protocol_source_id>
+  <population>Other</population>
+  <description>individuals that did not unambiguously cluster with major populations (e.g., FIN, NFE, AFR, SAS, EAS, AMR) in a principal components analysis</description>
+  <source>ExAC</source>
+</NIAGADS::AlleleFreqPopulation>
+
+
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>ADSP_WGS_V1_SNV_EXACFREQ_NFE</protocol_source_id>
+  <population>NFE</population>
+  <description>NonFinnish European</description>
+  <source>ExAC</source>
+</NIAGADS::AlleleFreqPopulation>
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>ADSP_WES_R3_SNV_EXACFREQ_NFE</protocol_source_id>
+  <population>NFE</population>
+  <description>NonFinnish European</description>
+  <source>ExAC</source>
+</NIAGADS::AlleleFreqPopulation>
+
+
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>ADSP_WGS_V1_SNV_EXACFREQ_Adj</protocol_source_id>
+  <population>ADJ</population>
+  <source>ExAC</source>
+  <description>adjusted total frequency, restricted to individuals with genotype quality (GQ) >= 20 and depth (DP) >= 10</description>
+</NIAGADS::AlleleFreqPopulation>
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>ADSP_WES_R3_SNV_EXACFREQ_Adj</protocol_source_id>
+  <population>ADJ</population>
+  <source>ExAC</source>
+  <description>adjusted total frequency, restricted to individuals with genotype quality (GQ) >= 20 and depth (DP) >= 10</description>
+</NIAGADS::AlleleFreqPopulation>
+
+
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>1000_GENOMES_FREQ_AMR</protocol_source_id>
+  <population>AMR</population>
+  <description>Ad Mixed American</description>
+  <source>1000 Genomes</source>
+</NIAGADS::AlleleFreqPopulation>
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>1000_GENOMES_FREQ_AFR</protocol_source_id>
+  <population>AFR</population>
+  <description>African</description>
+  <source>1000 Genomes</source>
+</NIAGADS::AlleleFreqPopulation>
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>1000_GENOMES_FREQ_EUR</protocol_source_id>
+  <population>EUR</population>
+  <description>European</description>
+  <source>1000 Genomes</source>
+</NIAGADS::AlleleFreqPopulation>
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>1000_GENOMES_FREQ_SAS</protocol_source_id>
+  <population>SAS</population>
+  <description>South Asian</description>
+  <source>1000 Genomes</source>
+</NIAGADS::AlleleFreqPopulation>
+
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>1000_GENOMES_FREQ_EAS</protocol_source_id>
+  <population>EAS</population>
+  <description>East Asian</description>
+  <source>1000 Genomes</source>
+</NIAGADS::AlleleFreqPopulation>
+
+
+<NIAGADS::AlleleFreqPopulation>
+  <protocol_source_id>1000_GENOMES_FREQ_GMAF</protocol_source_id>
+  <population>GMAF</population>
+  <source>1000 Genomes</source>
+  <description>allele frequency across in 1000 Genomes</description>
+</NIAGADS::AlleleFreqPopulation>
+

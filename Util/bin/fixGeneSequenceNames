@@ -1,0 +1,49 @@
+#!/usr/bin/env python2.7
+"""
+"""
+from __future__ import with_statement
+from __future__ import print_function
+
+import argparse
+from utils import warning
+
+def loadMapping(filename):
+    mapping = {}
+    with open(filename, 'r') as f:
+        for line in f:
+            line = line.strip()
+
+            refseqId, chromosome = line.split('\t')
+            mapping[refseqId] = chromosome
+
+    return mapping
+
+def updateGFF3(mapping, filename, bestRefSeqOnly):
+    with open(filename, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line[0] == "#":
+                print(line)
+            else:
+                values = line.split('\t')
+                source = values[1]
+            
+                if bestRefSeqOnly and 'BestRefSeq' not in source:
+                    continue
+
+                if values[0] in mapping:
+                    values[0] = mapping[values[0]]
+                    print('\t'.join(values))
+            
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-m', '--mappingFile', help='mapping of refseq to chromsome number', required=True)
+    parser.add_argument('-g', '--gffFile', help='ncbi top level gff3 file', required=True)
+    parser.add_argument('-b', '--bestRefSeqOnly', help='keep BestRefSeq only', action='store_true')
+    args = parser.parse_args()
+
+    mapping = loadMapping(args.mappingFile)
+    updateGFF3(mapping, args.gffFile, args.bestRefSeqOnly)
+    
+    

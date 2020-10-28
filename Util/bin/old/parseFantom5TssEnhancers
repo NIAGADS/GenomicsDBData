@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+import sys
+import argparse
+import os
+from utils import warning, xstr
+
+def generateLoadFile(filename):
+  
+    header = ["sequence_source_id", "segment_start", "segment_end", "score1", "fdr", "genetic_location", "categorical_value"]
+    
+    print("\t".join(header))
+
+    rowCount = 0 
+    categorical_value = "correlation"
+
+    with open(filename) as f:
+        next(f) # skip header      
+        for line in f:
+            rowCount = rowCount + 1
+            line = line.strip()
+            values = line.split("\t")
+
+            if 'FDR' not in values[3]:
+                continue
+       
+            output = [values[0], values[1], values[2]]
+
+            #warning(values[3])
+            location, transcripts, gene, score1, fdr = values[3].split(";")
+
+            output.append(score1.split(":")[1])
+            output.append(fdr.split(":")[1])
+            output.append(gene)
+            output.append(categorical_value)
+
+            print("\t".join(output))
+      
+            if rowCount % 100000 == 0:
+                warning("PROCESSED:", str(rowCount) + " results")
+
+ 
+if __name__ == '__main__':
+    cml_parser = argparse.ArgumentParser()
+    cml_parser.add_argument('-i', '--filename', required=True, help="input file name")
+    
+    generateLoadFile(cml_parser.parse_args().filename)
+

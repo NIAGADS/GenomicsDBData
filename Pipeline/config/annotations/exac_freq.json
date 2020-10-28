@@ -1,0 +1,142 @@
+{
+    "file": {
+	"path": "$DATA_DIR/ExAC",
+	"preprocess_directory": "$DATA_DIR/ExAC",
+	"file": "ExAC.r0.3.sites.vep.vcf.gz",
+	"comment": "pops=SAS FIN AFR AMR EAS OTH NFE Adj"
+    },
+
+    "foreach": [
+	{
+	    "EAS" : {
+		"file": "@file.preprocess_directory+/preprocess_ExAC_Freq_EAS.txt",
+		"sourceId": "@external_database.accession+_FREQ_EAS",
+		"name": "ExAC Frequencies: EAS",
+		"characteristics": {
+		    "population":"value:EAS|East Asian"
+		}
+	    } 
+	},
+	{
+	    "SAS": {
+		"file": "@file.preprocess_directory+/preprocess_ExAC_Freq_SAS.txt",
+		"sourceId": "@external_database.accession+_FREQ_SAS",
+		"name": "ExAC Frequencies: SAS",
+		"characteristics": {
+		    "population":"value:SAS|South Asian"
+		}
+	    }
+	},
+	{
+	    "FIN": {
+		"file": "@file.preprocess_directory+/preprocess_ExAC_Freq_FIN.txt",
+		"sourceId": "@external_database.accession+_FREQ_FIN",
+		"name": "ExAC Frequencies: FIN",
+		"characteristics": {
+		    "population":"value:FIN|Finnish"
+		}
+	    }
+	},
+	{
+	    "AFR": {
+		"file": "@file.preprocess_directory+/preprocess_ExAC_Freq_AFR.txt",
+		"sourceId": "@external_database.accession+_FREQ_AFR",
+		"name": "ExAC Frequencies: AFR",
+		"characteristics": {
+		    "population":"value:AFR|African/African American"
+		}
+	    }
+	},
+	{
+	    "NFE": {
+		"file": "@file.preprocess_directory+/preprocess_ExAC_Freq_NFE.txt",
+		"sourceId": "@external_database.accession+_FREQ_NFE",
+		"name": "ExAC Frequencies: NFE",
+		"characteristics": {
+		    "population":"value:NFE|Non-Finnish European"
+		}
+	    }
+	},
+	{
+	    "OTH": {
+		"file": "@file.preprocess_directory+/preprocess_ExAC_Freq_OTH.txt",
+		"sourceId": "@external_database.accession+_FREQ_OTH",
+		"name": "ExAC Frequencies: OTH",
+		"characteristics": {
+		    "population":"value:OTH|Other|individuals that did not unambiguously cluster with the major populations in a principal component analysis (PCA)"
+		}
+	    }
+	},
+	{
+	    "AMR": {
+		"file": "@file.preprocess_directory+/preprocess_ExAC_Freq_AMR.txt",
+		"sourceId": "@external_database.accession+_FREQ_AMR",
+		"name": "ExAC Frequencies: AMR",
+		"characteristics": {
+		    "population":"value:AMR|Latino"
+		}
+	    }
+	},
+	{
+	    "Adj": {
+		"file": "@file.preprocess_directory+/preprocess_ExAC_Freq_Adj.txt",
+		"sourceId": "@external_database.accession+_FREQ_GAF",
+		"name": "ExAC Frequencies: Adj",
+		"characteristics": {
+		    "population": "value:Adj|Global|allele frequency calculated across populations from an adjusted allele count that only includes individuals with genotype quality (GQ) &ge; 20 and depth (DP) &ge; 10; see http://exac.broadinstitute.org/faq"
+		}
+	    }
+	}
+    ],
+    "external_database": {
+	"name": "ExAC",
+	"version": "0.3",
+	"download_url": "ftp://ftp.broadinstitute.org/pub/ExAC_release",
+	"id_url": "http://exac.broadinstitute.org/",
+	"description": "The Exome Aggregation Consortium (ExAC) makes available harmonized exome sequencing data from a variety of large-scale sequencing projects, spanning 60,706 unrelated individuals sequenced as part of various disease-specific and population genetic studies. We have removed individuals affected by severe pediatric disease. All of the raw data from these projects have been reprocessed through the same pipeline, and jointly variant-called to increase consistency across projects.",
+	"accession": "ExAC",
+	"type": "Genetic variation"
+    },
+ 
+    "preprocess": [
+	{
+	    "script": {
+		"name": "generateExacFreqLoadFile",
+		"parameters": {
+		    "inputFile": "@file.path/@file.file",
+		    "outputDir": "@file.preprocess_directory",
+		    "populations": "SAS,FIN,AFR,AMR,EAS,OTH,NFE,Adj"
+		}
+	    }
+	}
+
+    ],
+
+    "load" : [
+	{
+	    "foreach" : true,
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::InsertProtocolAppNode",
+		"parameters" : {
+		    "type": "Genetic variation",
+		    "subtype": "allele frequency",
+		    "description": "Frequency of alleles in a ExAC superpopulation.",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "characteristics": "foreach",
+		    "sourceId" : "foreach",
+		    "name": "foreach"
+		}
+	    }
+	}, 
+	{
+	    "foreach": true,
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::InsertVariantFrequencyResult",
+		"parameters": {
+		    "file": "foreach",
+		    "sourceId": "foreach"
+		}
+	    }
+	}
+    ]
+}

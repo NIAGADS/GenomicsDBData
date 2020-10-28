@@ -1,0 +1,32 @@
+{
+    "file": {
+	"path": "$SHARED_DATA_DIR/gene_ontology",
+	"annotation": "goa_human.gpad.gz",
+	"entity_map": "$SHARED_DATA_DIR/gene_ontology/UniProtKB/goa_human.gpi.gz"
+    },
+    "external_database": {
+	"name": "Gene Ontology Data Archive: Gene Product Associations",
+	"description": "The GO annotation program aims to provide high-quality Gene Ontology (GO) annotations to gene products. Association files contain a mixture of manual annotation supplied by members of the Gene Onotology Consortium and computationally assigned GO terms describing gene products. Annotation type is clearly indicated by associated evidence codes and links to the source publication are provided when available.",
+	"version": "2019-03-18",
+	"release_date": "2019-03-18",
+	"id_url": "http://www.geneontology.org",
+	"download_url": "http://doi.org/10.5281/zenodo.2598351",
+	"accession": "GO_GPA",
+	"type": "Protein function prediction",
+	"gene_ontology_version": "Gene Ontology Data Archive: Ontology|2019-03-18"
+    },
+    "load": [
+	{
+	    "plugin": {
+		"name": "CBILDataCommon::Load::Plugin::InsertCBILGoAssociation",
+		"parameters": {
+		    "annotationFile": "@file.path/@external_database.release_date/data/annotations/@file.annotation",
+		    "entityMetadataFile": "@file.entity_map",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "goExtDbRlsSpec": "@external_database.gene_ontology_version"
+		}
+	    }
+	}
+    ],
+    "tuning":["$GUS_HOME/lib/sql/cbil_schema/mviews/createGOAssociationEvidence_MV.sql"]
+}

@@ -1,0 +1,468 @@
+#!/usr/bin/env python
+#pylint: disable=invalid-name
+#pylint: disable=multiple-statements
+
+"""
+generic function for loading data based on info in a json config file
+"""
+
+from __future__ import with_statement
+from __future__ import print_function
+
+import argparse
+import json
+import csv
+
+from os import path, listdir, environ
+from CBILDataCommon.Util.utils import warning, die, create_dir, xstr, qw, execute_cmd, ascii_safe_str
+
+ENVIRONMENTAL_VARS = ['GUS_HOME', 'PROJECT_HOME', 'DATA_DIR', 'GENOME_BUILD', 'SHARED_DATA_DIR', 'CONFIG_DIR']
+
+
+def tune():
+    ''' run tuning SQL '''
+    if args.verbose:
+        warning("Running tuning SQL")
+
+    if 'tuning' not in config:
+        die("No tuning information specified in config")
+
+    for sqlFile in config['tuning']:
+        run_sql_patch(sqlFile)
+        
+
+
+def run_script(sConfig, foreach=None):
+    ''' runs a script '''
+    try: 
+        cmd = [sConfig['name']]
+        cmd = get_cmd_options(cmd, sConfig, False, foreach)
+        if 'skip' in sConfig and sConfig['skip']:
+            warning("SKIPPING: " + ascii_safe_str(' '.join(cmd)))
+        else:
+            execute_cmd(cmd, cwd=None, printCmdOnly=args.printCmd, verbose=args.verbose)                  
+    except KeyError, e:
+        die('Missing required value in script config: "%s"' % str(e))
+
+
+def run_plugin(pConfig, foreach=None):
+    ''' runs a plugin '''
+    try: 
+        cmd = ['ga', pConfig['name']] 
+        cmd = get_cmd_options(cmd, pConfig, True, foreach)
+        if 'skip' in pConfig and pConfig['skip']:
+            warning("SKIPPING: " + ascii_safe_str(' '.join(cmd)))
+        else:
+            execute_cmd(cmd, cwd=None, printCmdOnly=args.printCmd, verbose=args.verbose)                  
+    except KeyError, e:
+        die('Missing required value in plugin config: "%s"' % str(e))
+
+
+
+def preprocess():
+    ''' runs a preprocessing script based on info from the config '''
+    if args.verbose:
+        warning("Preprocessing data")
+
+    if 'preprocess' not in config:
+        die("No preprocess information provided in the config")
+
+    pConfig = config['preprocess']
+    for step in pConfig:
+        if use_foreach(step):
+            warning("Multiple conditions found")
+            fConfig = config['foreach']
+            for condition in fConfig:
+                (key, value) = condition.items()[0]
+                if foreachKeys is not None and key not in foreachKeys:
+                    warning("Skipping: ", key)
+                    continue
+                warning("Preprocesing:", key)
+                if 'script' in step:
+                    run_script(step['script'], value)
+                elif 'plugin' in step:
+                    run_plugin(step['plugin'], value)
+                else:
+                    die("Unrecognized preprocessing step: " + json.dumps(step))
+        else:
+              if 'script' in step:
+                    run_script(step['script'], None)
+              elif 'plugin' in step:
+                    run_plugin(step['plugin'], None)
+              else:
+                    die("Unrecognized preprocessing step: " + json.dumps(step))
+            
+
+
+
+def use_foreach(stepConfig):
+    ''' check whether expecting to have to run cmd for multiple conditions'''
+    if 'foreach' in stepConfig:
+        if stepConfig['foreach']:
+            if 'foreach' not in config:
+                die("foreach option specified in a plugin, but no foreach config provided");
+            return True
+    return False
+
+def get_cmd_options(cmd, cmdConfig, isPlugin=False, foreach=None):
+    ''' iterates over parameter config and extracts option/value pairs '''
+
+    if 'parameters' in cmdConfig:
+        try:
+            for option, value in cmdConfig['parameters'].iteritems():
+                if foreach is not None:
+                    if value == 'foreach': # lookup value from foreach config
+                        value = foreach[option]
+                        if isinstance(value, dict):
+                            value = json.dumps(value)
+                        if '@' in value:
+                            value = extract_value_from_config(value)
+                        value = replace_environmental_variables(value)
+
+              
+                if value is True: # option is a flag w/no value
+                    cmd.append('--' + option) 
+                    continue
+
+
+                if isinstance(value, (int, long)): # integer value
+                    cmd.extend(['--' + option, xstr(value)])
+                    continue
+
+                if isinstance(value, (list, tuple)): 
+                    # same option repeated with each value in the list (e.g., vep's --plugin)
+                    for val in value:
+                        if '@' in val:
+                            valueList = val.split(",")  # assume v may be comma separated
+                            for i, v in enumerate(valueList):
+                                valueList[i] = extract_value_from_config(v)
+                                valueList[i] = replace_environmental_variables(valueList[i])
+                            val = ",".join(valueList)
+                        cmd.extend(['--' + option, val])
+                    continue
+
+                elif '@' in value:
+                    if option == "none":
+                        valueList = value.split(" ")
+                        for i, v in enumerate(valueList):
+                            valueList[i] = extract_value_from_config(v)
+                            valueList[i] = replace_environmental_variables(valueList[i])
+                        value = " ".join(valueList)
+                    else:
+                        if isinstance(value, dict):
+                            value = json.dumps(value)
+                        value = extract_value_from_config(value)
+                        value = replace_environmental_variables(value)
+
+                else:
+                    if isinstance(value, dict):
+                        value = json.dumps(value)
+                    value = replace_environmental_variables(value)
+
+                if option != "none":
+                    cmd.extend(['--' + option, value])
+                else:
+                    cmd.extend(value.split(" "))
+        except KeyError, e:
+            die('Missing referenced value in option value: "%s"' % str(e))
+
+    else:
+        if args.verbose: warning("No plugin/script parameters specified")
+
+    if isPlugin:
+        cmd.extend(["--comment", ' '.join(cmd)])
+        if args.commit:
+            cmd.append('--commit')
+    
+        if args.veryVerbose:
+            cmd.append('--verbose')
+
+
+    if additionalParams:
+        for option, value in additionalParams.iteritems():
+            if value == 'true':
+                cmd.append('--' + option)
+            else:
+                cmd.extend(['--' + option, value])
+
+    return cmd
+
+
+def load_data():
+    ''' loads the data based on info from the config '''
+    if args.verbose:
+        warning("Loading data")
+
+    if 'load' not in config:
+        die("No load options/information specified in config")
+
+    lConfig = config['load']
+    for step in lConfig:
+        if use_foreach(step):
+            warning("Multiple Conditions Found")
+            fConfig = config['foreach']
+            for condition in fConfig:
+                (key, value) = condition.items()[0]
+                if foreachKeys is not None and key not in foreachKeys:
+                    warning("Skipping: ", key)
+                    continue
+                warning("Loading: ", key)
+                run_plugin(step['plugin'], value)
+        else:
+            if 'script' in step:
+                run_script(step['script'], None)
+            elif 'plugin' in step:
+                run_plugin(step['plugin'], None)
+            else:
+                die("Unrecognized loading step: " + json.dumps(step))
+
+
+def extract_value_from_config(value):
+    ''' extract value from config, should be specified as @section.attribute; e.g. @external_database.version 
+        also check for specific case of external database release specifier: @xternal_database.name|@external_database.version'''
+
+    if '@' not in value: # catch a recursive end case
+        return value
+
+    if '|' in value: # assuming single pipe -- database specification
+        values = value.split('|')
+        if len(values) > 2: # so we can deal with the case of > 1 pipes if it ever arises
+            die("found a pipe separated parameter value with more than two elements: " + value)
+        return extract_value_from_config(values[0]) + '|' + xstr(extract_value_from_config(values[1]))
+        
+    if '/' in value: # assume file path
+        values = value.split('/')
+        returnVal = ""
+        for v in values:
+            if returnVal != "":
+                returnVal = returnVal + '/' + extract_value_from_config(v)
+            else:
+                returnVal = extract_value_from_config(v)
+        return returnVal
+
+    value = value[1:] # remove @
+    suffix = ""
+    if '+' in value: # string concatenated to end
+        v, suffix = value.split('+')
+        value = v
+
+    keys = value.split('.') # again assuming single .
+    if len(keys) > 2: # so we can deal with this case if it arises
+        # probably take this approach: https://stackoverflow.com/questions/16279212/how-to-use-dot-notation-for-dict-in-python
+        die("found a config-ref parameter value with more than one level of nesting: " + value)
+
+
+
+    return config[keys[0]][keys[1]] + suffix
+
+
+def load_external_database_and_release():
+    ''' loads SRes.ExternalDatabase and SRes.ExternalDatabaseRelease based on info from config '''
+    if args.verbose:
+        warning("Loading external database/external database release") 
+
+    if 'external_database' not in config:
+        die("No external database configuration specified")
+
+    load_external_database()
+    load_external_database_release()
+
+
+def load_external_database():
+    ''' load external database '''
+
+    eConfig = config['external_database']
+    
+    if 'name' not in eConfig:
+        die("Must specify external database name")
+
+    cmd = ['ga', 'GUS::Supported::Plugin::InsertExternalDatabase', '--name', eConfig['name']]
+    cmd.extend(["--comment", ' '.join(cmd)])
+    if args.commit:
+        cmd.append('--commit')
+    
+    if args.veryVerbose:
+        cmd.append('--verbose')
+
+    execute_cmd(cmd, cwd=None, printCmdOnly=args.printCmd, verbose=args.verbose)
+
+
+def load_external_database_release():
+    ''' load external database release '''
+
+    eConfig = config['external_database']
+
+    if 'version' not in eConfig:
+        die("Must specify external database release version")
+
+    if 'accession' not in eConfig:
+        die("Must specify accession, a unique key to identify this resource as a website record")
+
+    if 'type' not in eConfig:
+        die("Must specify a resource type; must be a term from the EDAM ontology (preferably a topic")
+
+    cmd = ['ga', 'GUS::Supported::Plugin::InsertExternalDatabaseRls']
+    cmd.extend(['--databaseName', eConfig['name'], '--databaseVersion', eConfig['version']])
+    cmd.extend(["--idType", eConfig['accession']])
+    cmd.extend(["--secondaryIdType", eConfig['type']])
+
+    if 'description' in eConfig:
+        cmd.extend(['--description', eConfig['description']])
+
+    if 'release_date' in eConfig:
+        cmd.extend(['--releaseDate', eConfig['release_date']])
+        
+    if 'download_url' in eConfig:
+        cmd.extend(['--downloadUrl', eConfig['download_url']])
+
+    if 'id_url' in eConfig:
+        cmd.extend(['--idUrl', eConfig['id_url']])
+
+    cmd.extend(['--comment', ' '.join(cmd)])
+
+    if args.commit:
+        cmd.append('--commit')
+
+    if args.veryVerbose:
+        cmd.append('--verbose')
+
+    execute_cmd(cmd, cwd=None, printCmdOnly=args.printCmd, verbose=args.verbose)
+
+
+
+def replace_environmental_variable(var, strValue):
+    ''' replace environmental variable 'var' in string value, if not present return path unaltered '''
+    if '$' + var in strValue:
+        value = environ.get(var)
+        if value is None:
+            die("Environmental variable $" + var + " specified in config file, but no environmental variable of that name exists")
+        else:
+            return strValue.replace('$' + var, value)
+    return strValue
+
+
+def replace_environmental_variables(strValue):
+    ''' checks for an environmental variable in a string value and replaces it with its value '''
+    for var in ENVIRONMENTAL_VARS:
+        strValue = replace_environmental_variable(var, strValue)
+    return strValue
+
+
+def validate_preprocess_dir():
+    ''' check if directory exists, if not create '''
+    if 'preprocess_directory' not in config['file']:
+        warning("No preprocess directory specified.")
+        warning("Preprocessing files will be saved to the data directory.")
+    else:
+        directory = replace_environmental_variables(config['file']['preprocess_directory'])
+        if args.verbose:
+            warning("Checking for preprocess directory " + directory + ". Will create if does not exist")
+        create_dir(directory)
+
+
+def parse_config():
+    ''' parse JSON config file '''
+    try:
+        with open(args.config, 'r') as f:
+            data = json.load(f)
+         
+    except (OSError, IOError) as e: # FileNotFoundError does not exist below python 3.3
+        warning("Could not open config file " + args.config)
+        die(e)
+
+    return data
+
+
+def plugin_help():
+    ''' print usage for plugin specified in config and exit '''
+    if 'plugin' not in config:
+        die("Cannot print plugin usage; no plugin specified in config.")
+    cmd = ['ga', config['plugin']['name'], '--help']
+    execute_cmd(cmd)
+    exit(0)
+
+
+def run_sql_patch(sqlFile):
+    ''' takes full path to an sql file and executes using psql) '''
+    cmd = ['runSqlPatch', '--file', replace_environmental_variables(sqlFile)]
+    if args.verbose:
+        cmd.append('--verbose')
+
+    execute_cmd(cmd, cwd=None, printCmdOnly=args.printCmd, verbose=args.verbose)
+
+
+def run_patch():
+    ''' run a patch '''
+    if 'patch' not in config:
+        die("Cannot run patch, no 'patch' specified in config.")
+    pConfig = config['patch']
+    if 'type' not in pConfig:
+        die("No patch type specified in config.")
+    if pConfig['type'] == 'sql':
+        if 'file' not in pConfig:
+            die("Cannot run SQL patch, no file provided.")
+        run_sql_patch(pConfig['file'])
+    else:
+        die("No patch SOP implemented for patch type: " + pConfig['type'])
+
+
+def validate_args():
+    ''' TBA when validation issue arises '''
+    if 'preprocess' not in args and 'load' not in args:
+        warning("Must specify either 'preprocess' or 'load' option")
+        return False
+    return True
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="generic function for loading resources; incld. external db")
+    parser.add_argument('-c', '--config', help="full path to config file", required=True)
+    parser.add_argument('--gusConfigFile', help="full path to gusConfig File; if not specified uses $GUS_HOME/config/gus.config")
+    parser.add_argument('--preprocess', help="preprocess", action='store_true')
+    parser.add_argument('--commit', help="commit", action='store_true')
+    parser.add_argument('--load', help="specify type of load: External Database (xdbr), Data (data), Patch (patch)",
+                        choices=['xdbr', 'data', 'patch'])
+    parser.add_argument('--verbose', help="run in verbose mode", action='store_true')
+    parser.add_argument('--tuning', help="run tuning SQL (indexes, mvs)", action='store_true')
+    parser.add_argument('--foreach', help="if config has a foreach block, provide a comma-separated list of keys to run on single condition, otherwise specify 'all' or  or leave off to run on all conditions", default="all")
+    parser.add_argument('--veryVerbose', help="run in very verbose mode (runs plugins in verbose mode)", action='store_true')
+    parser.add_argument('--printCmd', help="simply assemble and print command, but don't run", action='store_true')
+    parser.add_argument('--pluginHelp', help="print usage/help for plugin specified in config", action='store_true')
+    parser.add_argument('--params', help='additional params to pass to command, as a json string of {"key":boolean,"key":"string value", "key":number} pairs')
+    args = parser.parse_args()
+
+    config = parse_config()
+
+    additionalParams = None
+    if args.params:
+        warning(args.params)
+        additionalParams = json.loads(args.params)
+
+    foreachKeys = None
+    if args.foreach:
+        if args.foreach.upper() != 'ALL':
+            foreachKeys = args.foreach.split(',')
+
+    if args.veryVerbose:
+        args.verbose = True
+
+    if args.pluginHelp:
+        plugin_help()
+
+    if not validate_args():
+        parser.print_help()
+        exit(0)
+
+    if args.preprocess: 
+        validate_preprocess_dir()
+        preprocess()
+        exit(0) # don't want to accidently load data w/out verifying preprocessing
+
+    if args.load == 'xdbr': load_external_database_and_release()
+
+    if args.load == 'data': load_data()
+
+    if args.load == 'patch': run_patch()
+    
+    if args.tuning:
+        tune()

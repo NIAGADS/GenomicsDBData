@@ -1,0 +1,28 @@
+{
+    "file": {
+	"path": "$SHARED_DATA_DIR/gene_ontology"
+    },
+    "external_database": {
+	"name": "Gene Ontology Data Archive: Ontology",
+	"description": "Three structured ontologies that describe gene products in terms of their associated biological processes, cellular components and molecular functions in a species-independent manner.",
+	"version": "2019-03-18",
+	"release_date": "2019-03-18",
+	"id_url": "http://www.geneontology.org",
+	"download_url": "http://doi.org/10.5281/zenodo.2598351",
+	"accession": "GO",
+	"type": "Ontology and terminology"
+    },
+    "load": [
+	{
+	    "plugin": {
+		"name": "GUS::Supported::Plugin::InsertGeneOntology",
+		"parameters": {
+		    "oboFile": "@file.path/@external_database.release_date/data/ontology/go.obo",
+		    "extDbRlsName": "@external_database.name",
+		    "extDbRlsVer": "@external_database.version",
+		    "skipOboRelationships": true
+		}
+	    }
+	}
+    ]
+}

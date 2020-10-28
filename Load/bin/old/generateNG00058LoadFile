@@ -1,0 +1,154 @@
+#!/usr/bin/env python
+#pylint: disable=invalid-name
+#pylint: disable=no-member
+'''
+Generates load file for NG00058
+CUSTOM Version of generateGwasLoadFileFromTabDelim to handle alleles reported as i/r/d for snps w/out mapped refSnpId
+
+need to specify: chr, pos, ref, alt and p-value at min
+optional: frequency, stderr
+'''
+
+from __future__ import with_statement
+from __future__ import print_function
+
+import argparse
+import os.path as path
+import csv
+import json
+from decimal import Decimal
+from CBILDataCommon.Util.utils import qw, xstr, warning, die, truncate
+
+
+def parse_position(marker):
+    '''
+    separate chr from position when a marker id is provided
+    e.g., chr-pos or chr:pos
+    '''
+    delim = None
+    if '-' in marker:
+        delim = '-'
+    elif ':' in marker:
+        delim = ':'
+    else:
+        die("Unknown delimiter in marker " + marker)
+
+    return marker.split(delim)
+
+
+def generate_load_file():
+    '''
+    parse input file and generate load file
+    '''
+    fileName = path.join(args.dir, args.fileName)
+    outputFile = path.join(args.dir, "gwas_summary_statistics_" + args.sourceId + ".csv")
+    count = 0
+
+    with open(outputFile, 'w') as of:
+        print('|'.join(fields), file=of)
+        with open(fileName) as f:
+            for c in range(0, args.skipHeaderLines):
+                f.next()
+            reader = csv.DictReader(f, delimiter='\t')
+            for row in reader:
+                if row[args.pvalue] == "NA":
+                    continue
+
+                marker = row['SNP']
+                if 'MERGED' in marker: # skip variants named "MERGED_DEL"
+                    continue
+
+                if args.chr == args.position:
+                    chromosome, position = parse_position(row[args.chr])
+                else:
+                    chromosome = row[args.chr]
+                    position = row[args.position]
+
+                if args.chrMap and chromosome in args.chrMap:
+                    chromosome = args.chrMap[chromosome]
+                if (not args.chrMap) or (args.chrMap and chromosome not in args.chrMap):
+                    if chromosome == "23":
+                        chromosome = "X"
+                    if chromosome == "24":
+                        chromosome = "Y"
+                    if chromosome == "MT":
+                        chromosome = "M"
+                
+
+                position = int(position) + 1 if args.zeroBased else int(position)
+                allele1 = row[args.allele1].upper()
+                allele2 = row[args.allele2].upper()
+
+                frequency = float(row[args.frequency]) if args.frequency else "NULL"
+
+                ref = allele1
+                alt = allele2
+
+                if ref == alt:
+                    die("Ref and Alt alleles identifical: row #" + count + 1 + " - " +
+                        chromosome + ":" + position + ":" + ref + ":" + alt)
+
+                if alt == '0':
+                    alt = '?' 
+                    warning("found unknown test allele; run loading plugin with matchPositionAndRef flag")
+                if ref == '0':
+                    ref = '?'
+                    warning("found unknown test allele; run loading plugin with matchPosition flag")
+
+
+                testAllele = alt
+                if args.testAllele:
+                    testAllele = row[args.testAllele].upper()
+
+                # truncate test allele to 8 chars + .. b/c of limits in SeqVariation table
+                testAllele = truncate(testAllele, 10)
+
+                if 'rs' in marker:
+                    variantId = chromosome + ':' + xstr(position) + ':' + ref + ':' + alt
+                else:
+                    variantId = marker.replace('_', ':') # nuance of this one dataset
+                    variantId = variantId.replace('chr', '')
+
+                if 'e' in row[args.pvalue].lower():
+                    pvalue = row[args.pvalue].upper() # allows us to handle #'s < 1e-305
+                else:
+                    pvalue = '%.3E' % Decimal(row[args.pvalue])
+
+                pvalueMant = pvalue.split('E')[0]
+                pvalueExp = pvalue.split('E')[1]
+
+                logPvalue = "%.5f" % (Decimal(row[args.pvalue]).log10() * -1)
+
+                line = '|'.join((variantId, testAllele, xstr(frequency), logPvalue,
+                                 pvalueMant, pvalueExp))
+                print(line, file=of)
+
+                count = count + 1
+                if count % 50000 == 0:
+                    warning("Processed " + xstr(count) + " rows")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="generate load file from tab-delimited file of unknown origin")
+    parser.add_argument('-d', '--dir', help="file directory", required=True)
+    parser.add_argument('-f', '--fileName', help="file name", required=True)
+    parser.add_argument('-s', '--sourceId', help="analysis source_id", required=True)
+    parser.add_argument('--zeroBased', help="flag indicating whether input is 0-based", action='store_true')
+    parser.add_argument('--pvalue', help="pvalue column name", required=True)
+    parser.add_argument('--chr', help="chromosome column name", required=True)
+    parser.add_argument('--position', help="position column name", required=True)
+    parser.add_argument('--allele1', help="allele1 (allele corresponding to statistic) column name", required=True)
+    parser.add_argument('--allele2', help="allele2 column name", required=True)
+    parser.add_argument('--testAllele', help="specify if allele corresponding to stat is specified in another column")
+    parser.add_argument('--frequency', help="frequency column name")
+    parser.add_argument('--skipHeaderLines', help="number of header lines to skip", type=int, default=0)
+    parser.add_argument('--chrMap', help="optional -- map numbered to lettered chrs; json string")
+
+    args = parser.parse_args()
+
+    if args.chrMap:
+        args.chrMap = json.loads(args.chrMap)
+
+    fields = qw('variant_id allele frequency p_value pvalue_mant pvalue_exp')
+  
+    generate_load_file()

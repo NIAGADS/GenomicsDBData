@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+
+"""
+convert tab delimited text file to gusXML file
+assume column names = fields
+prints converted file to STDOUT
+"""
+
+from __future__ import print_function
+from __future__ import with_statement
+
+import argparse
+
+from CBILDataCommon.Util.utils import xstr, die, warning
+
+def parse_tab_delim_file(fileName):
+    ''' 
+    parse tab delim file and build 
+    one record (dict) for each row
+    '''
+
+    records = {}
+    recordCount = 0
+    with open(fileName, 'r') as f:
+        header = f.next().rstrip()
+        fields = header.split('\t')
+
+        for line in f:
+            recordCount = recordCount + 1
+            records[recordCount] = {}
+
+            values = line.rstrip('\n').split('\t')
+            # warning(values)
+            for i, field in enumerate(fields):
+                # warning(recordCount, i, field, values[i])
+                records[recordCount][field] = values[i]
+
+    return records
+
+
+def print_record(record, table):
+    '''
+    print xml block
+    '''
+
+    print('<' + table + '>')
+
+    for field in record:
+        print('\t<' + field + '>' + xstr(record[field]) + '</' + field + '>')
+
+    print('</' + table + '>')
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i', '--inputFile',
+                        help="The tab-delimited text input file",
+                        required=True)
+    parser.add_argument('-t', '--table',
+                        help="GUS table in SCHEMA::TABLE format",
+                        required=True)
+
+    args = parser.parse_args()
+
+    records = parse_tab_delim_file(args.inputFile)
+    
+    for rNum, r in records.iteritems():
+        print_record(r, args.table)
+

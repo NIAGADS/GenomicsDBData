@@ -1,0 +1,104 @@
+#!/usr/bin/env python
+#pylint: disable=invalid-name
+'''
+Generates load file from ADSP annotation for Kaviar
+'''
+
+from __future__ import with_statement
+from __future__ import print_function
+
+import argparse
+import os.path as path
+import gzip
+import csv
+import json
+import re
+
+from CBILCommonDataPg.Utils.utils import qw, warning
+
+def parseValue(value):
+    '''
+    replace null strings with None
+    '''
+    if value == '-':
+        return None
+    if value == 'NULL':
+        return None
+    return value
+
+
+def verify_variant_id(variant):
+    '''
+    fix variant id if malformed
+    '''
+
+    if pattern.match(variant) is not None:
+        variant = pattern.match(variant).group(1) + ':' + pattern.match(variant).group(2) \
+          + ':' + pattern.match(variant).group(3)
+    return variant
+
+
+def xstr(value):
+    '''
+    replace None with NULL
+    otherwise convert to str
+    '''
+    if value is None:
+        return 'NULL'
+    else:
+        return str(value)
+
+
+def generate_load_file():
+    '''
+    parse input file and generate load file
+    '''
+
+    outputFile = path.join(args.preprocessDir, "results_seqvariation_adsp_kaviar.csv")
+    variants = {}
+
+    with open(outputFile, 'w') as of:
+        print('|'.join(fields), file=of)
+        for fn in files:
+            count = 0
+            fileName = path.join(args.dir, fn)
+            with gzip.open(fileName) as f:
+                reader = csv.DictReader(f, delimiter='\t')
+                for row in reader:
+                    variantId = verify_variant_id(row['seq_meta_var_id'])
+                    allele = row['alt_allele'] if 'alt_allele' in row else row['alt']
+                    if variantId not in variants: # catch duplicates
+                        frequency = parseValue(row['kaviar_allele_frequency'])
+                        alleleCount = parseValue(row['kaviar_allele_count'])
+                        alleleTotal = parseValue(row['allele_total_over_all_datasources'])
+                        dataSources = parseValue(row['data_sources_containing_allele'])
+                        if dataSources is not None:
+                            dataSources = dataSources.replace('|', ',')
+
+                        if all(v is None for v in (frequency, alleleCount, alleleTotal, dataSources)):
+                            continue
+
+                        evidence = {'kaviar_allele_count' : alleleCount,
+                                    'allele_total_over_all_datasources': alleleTotal,
+                                    'data_sources_containing_allele': dataSources}
+                        line = '|'.join((variantId, allele, xstr(frequency), json.dumps(evidence)))
+                        print(line, file=of)
+                        variants[variantId] = 1
+
+                    count = count + 1
+                    if count % 100000 == 0:
+                        warning("Processed " + xstr(count) + " rows")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="generate ADSP-Kaviar load file")
+    parser.add_argument('-d', '--dir', help="file directory", required=True)
+    parser.add_argument('-p', '--preprocessDir', help="preprocess (output) file directory", required=True)
+    parser.add_argument('-f', '--fileName', help="comma separated list of adsp annotation file name", required=True)
+    args = parser.parse_args()
+
+    files = args.fileName.split(',')
+    pattern = re.compile("(\d+:\d+)([A|T|C|G]),([A|T|C|G])") # only want to do this once
+
+    fields = qw('variant_id allele frequency info')
+    generate_load_file()

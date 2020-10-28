@@ -1,0 +1,28 @@
+{
+    "file": {
+	"path": "$SHARED_DATA_DIR/ontologies/cell",
+	"file": "cl.owl"
+    },
+    "external_database": {
+	"name": "Cell Ontology",
+	"description": "The Cell Ontology is a structured controlled vocabulary for cell types in animals.",
+	"version": "2019-04-30",
+	"release_date": "2019-04-30",
+	"download_url": "http://purl.obolibrary.org/obo/cl.owl",
+	"id_url": "http://www.obofoundry.org/ontology/cl.html",
+	"accession": "CL",
+	"type": "Ontology and terminology"
+    },
+    "load": [
+	{ 
+	    "plugin": {
+		"name": "GUS::Supported::Plugin::InsertOntologyTermsAndRelationships",
+		"parameters": {
+		    "inFile": "@file.path/@file.file",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "relTypeExtDbRlsSpec": "Niagads Ontology|current"
+		}
+	    }
+	}
+    ]
+}

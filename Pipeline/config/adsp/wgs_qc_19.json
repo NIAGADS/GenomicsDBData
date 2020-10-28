@@ -1,0 +1,64 @@
+{
+  "file": {
+      "path": "$DATA_DIR/ADSP/QC/WGS",
+      "pattern": "adsp.qc.wgs.chr",
+      "test_pattern": "adsp.qc.wgs.chr22",
+      "annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
+      "cadd_database_directory": "$DATA_DIR/CADD/v16",
+      "adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
+      "vep_cache_directory": "$DATA_DIR/VEP_CACHE"
+    },
+    "external_database": {
+	"name": "ADSP",
+	"version": "QC Consensus - WGS SNV",
+	"release_date": "2016-01-14",
+	"id_url": "https://www.niagads.org/datasets/ng00067",
+	"description": "Alzheimer's Disease Sequencing Project (ADSP) Whole Genome Sequencing (WGS) biallelic quality control (QC) consensus results for single nucleotide variants",
+	"accession": "ADSP_QC_WGS_SNV",
+	"type": "Genetic variation"
+    },
+    "preprocess": [
+	{
+	    "script": {
+		"skip": true,
+		"name": "gunzip",
+		"parameters": {
+		    "none": "@file.path/@file.pattern+*.gz"
+		}
+	    }
+	}
+    ],
+    "load": [
+	{
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::LoadADSPVariants",
+		"parameters": {
+		    "fileDir" : "@file.path",
+		    "filePattern": "@file.pattern",
+		    "annotationFields": {"FILTER": "ADSP_WGS_FILTER"},
+		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
+		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
+		    "caddDatabaseDir": "@file.cadd_database_directory",
+		    "vepCacheDir": "@file.vep_cache_directory",
+		    "altAllele": "ALT",
+		    "refAllele": "REF",
+		    "chromosome": "CHR",
+		    "position": "POS",
+		    "adspFlag": "ADSP_WGS"
+		}
+	    }
+	},
+
+	{
+
+	    "script": {
+		"skip": true,
+		"name": "gzip",
+		"parameters": {
+		    "none": "@file.path/@file.pattern+*.txt"
+		}
+	    }
+	}
+    ]
+}
+

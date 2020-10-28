@@ -1,0 +1,173 @@
+{    
+    "file": {
+	"path": "$DATA_DIR/NIAGADS_GWAS",
+	"accession": "NG00045",
+	"comment": "ignore markers/SNP.name b/c something is off w/marker assignments; also do not enter missing variants for same reason; many have POS = 0 due to liftOver issues and some variants being on patches not included in our genome reference",
+	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
+	"cadd_database_directory": "$DATA_DIR/CADD/v16",
+	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
+	"vep_cache_directory": "$DATA_DIR/VEP_CACHE"
+    },
+    "external_database": {
+	"name": "NIAGADS",
+	"version": "current",
+	"download_url": "https://www.niagads.org/datasets/",
+	"id_url": "https://www.niagads.org/",
+	"description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
+	"accession": "NIAGADS",
+	"type": "Genetic variation"
+    },
+    "foreach": [
+	{
+	    "STAGE1": {
+		"file": "CLOGIT_collected_p_values_PSP_all_alleles_new.txt",
+		"sourceId": "@file.accession+_STAGE1",
+		"name": "PSP: Stage 1",
+		"description": "summary statistics from stage 1 (autopsy cases) of a GWAS study of Progressive Supranuclear Palsy (PSP)",
+		"characteristics": {
+		    "diagnosis": ["Progressive supranuclear palsy", "autopsy-based diagnosis"]
+		},
+		"pvalue": "p.add",
+		"restrictedStats": {
+		    "maf_case": "maf.case",
+		    "maf_control": "maf.cntr",
+		    "p_additive": "p.add",
+		    "p_dominant": "p.dom",
+		    "p_recessive": "p.rec",
+		    "Z_additive": "Z.add",
+		    "Z_dominant": "Z.dom",
+		    "Z_recessive": "Z.rec"
+		}
+	    }
+	},
+	{
+	    "EUR_STAGE1": {
+		"file": "CLOGIT_collected_p_values_PSP.EUR_all_alleles_OR_new.txt",
+		"sourceId": "@file.accession+_EUR_STAGE1",
+		"name": "PSP Europeans: Stage 1",
+		"description": "summary statistics from stage 1 (autopsy cases) of a GWAS study of Progressive Supranuclear Palsy (PSP) in individuals with European ancestry",
+		"characteristics": {
+		    "diagnosis": ["Progressive supranuclear palsy", "autopsy-based diagnosis"],
+		    "population": "European"
+		},
+		"pvalue": "p.add",
+		"restrictedStats": {
+		    "maf_case": "maf.case",
+		    "maf_control": "maf.cntr",
+		    "p_additive": "p.add",
+		    "Z_additive": "Z.add",
+		    "beta" : "coef.b",
+		    "beta_std_err": "se.b",
+		    "beta_L95": "L95.b",
+		    "beta_U95": "U95.b"
+		}
+	    }
+	},
+
+	{
+	    "STAGE12": {
+		"file": "Copy_of_combined.phase_.1.2.05202010_new.txt",
+		"sourceId": "@file.accession+_STAGE12",
+		"name": "PSP: Stages 1 and 2",
+		"description": "summary statistics from the combined stage 1 (autopsy cases) and stage 2 (clinically diagnosed cases) meta-analysis of a GWAS study of Progressive Supranuclear Palsy (PSP)",
+		"characteristics": {
+		    "diagnosis": "Progressive supranuclear palsy"
+		},
+		"pvalue": "p.add.JOINT",
+		"restrictedStats": {
+		    "p_additive": "p.add.JOINT",
+		    "Z_additive": "Z.add.JOINT"
+		}
+	    }
+	},
+
+	{
+	    "EUR_STAGE12": {
+		"file": "Copy_of_combined.phase_.1.2.PSP_.EUR_.02092011_new.txt",
+		"sourceId": "@file.accession+_EUR_STAGE12",
+		"name": "PSP Europeans: Stages 1 and 2",
+		"description": "summary statistics from combined stage 1 (autopsy cases) and stage 2 (clinically diagnosed cases) meta-analysis of a GWAS study of Progressive Supranuclear Palsy (PSP) in individuals with European ancestry",
+		"characteristics": {
+		    "diagnosis": "Progressive supranuclear palsy",
+		    "population": "European"
+		},
+		"pvalue": "p.joint",
+		"restrictedStats": {
+		    "p_additive": "p.joint",
+		    "Z_additive": "Z.joint",
+		    "beta" : "b.joint",
+		    "beta_std_err": "se.joint",
+		    "odds_ratio": "OR.joint",
+		    "odds_ratio_L95": "L95.OR.joint",
+		    "odds_ratio_U95": "U95.OR.joint"
+		}
+	    }
+	}
+
+
+    ],
+
+    "load": [
+	{
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::InsertStudy",
+		"skip": true,
+		"parameters": {
+		    "name": "Progressive Supranuclear Palsy (PSP)",
+		    "description": "Summary statistics from a genome wide association study for genes that modify risk for PSP.  A two-stage analysis was performed; Stage 1 is comprised of autopsied cases and Stage 2 contains clinically diagnosed PSP cases.",
+		    "attribution": "Hoglinger et al. 2011",
+		    "sourceId": "@file.accession",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version"
+		}
+		
+	    }
+	},
+
+	{
+	    "foreach" : true,
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::InsertProtocolAppNode",
+		"skip": true,
+		"parameters" : {
+		    "type": "Genetic variation",
+		    "attribution": "Hoglinger et al. 2011",
+		    "subtype": "GWAS summary statistics",
+		    "description": "foreach",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "characteristics": "foreach",
+		    "sourceId" : "foreach",
+		    "name": "foreach",
+		    "studyId": "@file.accession"
+		}
+	    }
+	}, 
+	{
+	    "foreach": true,
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::LoadVariantGWASResult",
+		"parameters": {
+		    "file": "foreach",
+		    "sourceId": "foreach",
+		    "fileDir" : "@file.path/@file.accession+/hg19_updated_1162017",
+		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
+		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
+		    "caddDatabaseDir": "@file.cadd_database_directory",
+		    "vepCacheDir": "@file.vep_cache_directory",
+		    "testAllele": "major",
+		    "refAllele": "A",
+		    "altAllele": "B",
+		    "pvalue": "foreach",
+		    "skipUnmappableMarkers": true,
+		    "genomeBuild": "GRCh37.p13",
+		    "chromosome": "chr",
+		    "position": "location_hg19.bp",
+		    "genomeWideSignificanceThreshold": "5e-8",
+		    "checkAltVariants": true,
+		    "restrictedStats": "foreach"
+		}
+	    }
+	}
+
+	
+    ]
+}

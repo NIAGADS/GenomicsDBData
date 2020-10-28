@@ -1,0 +1,8 @@
+<SRES::TAXON>
+  <NCBI_TAX_ID>9600</NCBI_TAX_ID>
+  <RANK>species</RANK>
+
+  <SRES::TAXONNAME>
+    <NAME>Homo sapiens</NAME>
+  </SRES::TAXONNAME>
+</SRES::TAXON>

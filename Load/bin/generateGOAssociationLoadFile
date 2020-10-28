@@ -1,0 +1,71 @@
+#!/usr/bin/env python
+#pylint: disable=invalid-name
+#pylint: disable=no-member
+'''
+Generates GO Association Load File
+'''
+
+from __future__ import with_statement
+from __future__ import print_function
+
+import argparse
+import os.path as path
+import gzip
+
+from CBILDataCommon.Util.utils import qw, warning, die, xstr
+
+def parse_mapping():
+    '''
+    parse id mapping
+    '''
+    fileName = path.join(args.dir, args.mappingFileName)
+    warning("Parsing Mapping")
+    with open(fileName) as f:
+        for line in f:
+            line = line.strip()
+            uniprot, source, ensembl = line.split('\t')
+            idMap[uniprot] = ensembl
+    warning("Done Parsing Mapping")
+
+
+def generate_load_file():
+    '''
+    parse input file and generate load file
+    '''
+
+    fileName = path.join(args.dir, args.fileName)
+    outputFile = path.join(args.dir, args.taxon + "_go_association.csv")
+    skipCount = 0
+    with open(outputFile, 'w') as of:
+        with gzip.open(fileName, 'rt') as f:
+            for line in f:
+                if line.startswith('!'): # gzip opens in bytes mode so need to make the char a bytes literal
+                    continue
+                line = line.rstrip()
+                values = line.split('\t')
+                uniprot = values[1]
+                if uniprot not in idMap:
+                    warning("UniProt ID " + uniprot + " not in id map.")
+                    skipCount = skipCount + 1
+                    continue
+
+                ensembl = idMap[uniprot]
+                term = values[4].replace(':', '_')
+                evidence = values[6]
+                
+                print('\t'.join(("9606", ensembl, term, evidence)), file=of)
+    warning("Skipped", skipCount, "annotations.")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="generate GO Associatin load file")
+    parser.add_argument('-f', '--fileName', help="file name", required=True)
+    parser.add_argument('-m', '--mappingFileName', help="UniProt ID mapping file name", required=True)
+    parser.add_argument('-d', '--dir', help="working directory", required=True)
+    parser.add_argument('--gusConfigFile',
+                        help="GUS config file.  If not provided, assumes default: $GUS_HOME/conf/gus.config")
+    parser.add_argument('-t', '--taxon', help="taxon: human or mouse", required=True)
+
+    args = parser.parse_args()
+    idMap = {}
+    parse_mapping()
+    generate_load_file()

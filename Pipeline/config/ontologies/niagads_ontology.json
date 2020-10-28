@@ -1,0 +1,38 @@
+{
+    "file": {
+	"path": "$PROJECT_HOME/NiagadsData/Ontology/lib/obo",
+	"file": "niagads.obo",
+	"preprocess_directory": "$SHARED_DATA_DIR/ontologies/niagads"
+    },
+    "external_database": {
+	"name": "NIAGADS Ontology",
+	"description": "The NIAGADS Ontology is an application specific ontology developed in support of the NIAGADS GenomicsDB website by combining parts of several biological ontologies, such as cell lines, anatomy, disease and chemical compounds with community-defined terms.",
+	"version": "current",
+	"accession": "NO",
+	"type": "Ontology and terminology"
+    },
+    "preprocess": [
+	{
+	    "script": {
+		"name": "obo2text",
+		"parameters": {
+		    "obofile": "@file.path/@file.file",
+		    "prefix": "@file.preprocess_directory/niagads_ontology",
+		    "xdbrId": "@external_database.name|@external_database.version",
+		    "ignoreSynonyms" : true
+		}
+	    }
+	}
+    ],
+    "load": [
+	{
+	    "plugin": {
+		"name": "GUS::Supported::Plugin::InsertOntologyFromTabDelim",
+		"parameters": {
+		    "termFile": "@file.preprocess_directory/niagads_ontology-terms.txt",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version"
+		}
+	    }
+	}
+    ]
+}

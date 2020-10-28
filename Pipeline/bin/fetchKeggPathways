@@ -1,0 +1,24 @@
+#!/bin/bash
+# fetch KEGG pathways
+set -e # exit on error
+
+FILE_PATH=$SHARED_DATA_DIR/KEGG
+PATHWAYS=${FILE_PATH}/human_pathways.txt
+DISEASES=${FILE_PATH}/human_diseases.json
+
+mkdir -p $FILE_PATH
+
+echo "Getting pathway list"
+wget "http://rest.kegg.jp/list/pathway/hsa" --output-document "$PATHWAYS"
+
+echo "Getting disease list"
+wget "http://rest.kegg.jp/get/br:br08402/json" --output-document "$DISEASES"
+
+while IFS='' read -r line || [[ -n "$line" ]]; do
+    arrIN=(${line})
+    PATHWAY_ID=${arrIN[0]}
+    PATHWAY_ID=(${PATHWAY_ID//:/ })
+    PATHWAY_ID=${PATHWAY_ID[1]}
+    echo "Fetching: $PATHWAY_ID"
+    wget "http://rest.kegg.jp/get/${PATHWAY_ID}/kgml" --output-document ${FILE_PATH}/${PATHWAY_ID}.kgml
+done < "$PATHWAYS"

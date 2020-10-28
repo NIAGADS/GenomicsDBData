@@ -1,0 +1,54 @@
+{
+    "file": {
+	"annotationFile": "$DATA_DIR/FANTOM5/fantom5-metadata.txt",
+	"directory": "$DATA_DIR/FANTOM5/predefined_transcribed_enhancers",
+	"bedFieldJsonFile": "$GUS_HOME/data/NiagadsData/Pipeline/GADB_bed_file_key.json"
+    },
+    "external_database": {
+	"name": "FANTOM5 Human Enhancer Atlas",
+	"description": "An atlas of active, in vivo bidirectionally transcribed enhancers across the human body defined using the FANTOM5 panel of tissue and primary cell samples.",
+	"version": "2015-03-18",
+	"id_url": "http://slidebase.binf.ku.dk/human_enhancers/",
+	"download_url": "http://enhancer.binf.ku.dk/presets",
+	"accession": "FANTOM5",
+	"type": "Functional genomics"
+    },
+    "preprocess": [
+	{"comment": "not really preprocessing but necessary to do it independently",
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::InsertStudy",
+		"parameters": {
+		    "name": "FANTOM5 Human Transcribed Enhancer Atlas: Predefined Enhancers",
+		    "description": "An atlas of active, in vivo bidirectionally transcribed enhancers across the human body defined using the FANTOM5 panel of tissue and primary cell samples. Identifies more than 40,000 enhancer candidates from over 800 human cell and tissue samples.  Paired data tracks are available for each biosource: enhancers expressed in the sample and possibly others, enhancers positively differentially expressed in a specific sample compared to all others.",
+		    "attribution": "Andersson et al. 2014",
+		    "sourceId": "@external_database.accession",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version"
+		}
+		
+	    }
+	}],
+    "load": [
+
+
+	{
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::InsertFeatureScoreResultFromBED",
+		"parameters": {
+		    "annotationFile": "@file.annotationFile",
+		    "fileDir": "@file.directory",
+		    "study": "FANTOM5",
+		    "scoreLabel": "Max Pooled Expression",
+		    "scoreDescription": "maximum pooled expression of TCs used to construct each bidirectional loci",
+		    "trackSubType": "expressed enhancer",
+		    "technologyType": "CAGE",
+		    "useScore": true,
+		    "bedType": "bed12",
+		    "bedFieldKey": "@file.bedFieldJsonFile",
+		    "extDbRlsSpec":  "@external_database.name|@external_database.version"
+		}
+	    }
+	}
+    ]
+}
+
+

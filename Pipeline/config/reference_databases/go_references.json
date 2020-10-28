@@ -1,0 +1,26 @@
+{
+    "file": {
+	"path": "$SHARED_DATA_DIR/gene_ontology",
+	"file": "GO.references"
+    },
+    "external_database": {
+	"name": "Gene Ontology Reference Collection",
+	"description": "The GO reference collection is a set of abstracts that can be cited in the GO ontologies (e.g. as dbxrefs for term definitions) and annotation files (in the Reference column). The collection houses two main kinds of references; one type are descriptions of methods that groups use for ISS, IEA, and ND evidence codes; the other type are abstract-style descriptions of 'GO content' meetings at which substantial changes in the ontologies are discussed and made.",
+	"version": "2019-03-18",
+	"id_url": "http://www.geneontology.org/doc/GO.references",
+	"download_url": "http://www.geneontology.org/doc/GO.references",
+	"accession": "GO_REF",
+	"type": "Data identity and mapping"
+    },
+    "load": [
+	{
+	    "plugin": {
+		"name": "CBILDataCommon::Load::Plugin::InsertGoReferences",
+		"parameters": {
+		    "file": "@file.path/@file.file",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version"
+		}
+	    }
+	}
+    ]
+}

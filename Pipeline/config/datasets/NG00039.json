@@ -1,0 +1,113 @@
+{    
+    "file": {
+	"path": "$DATA_DIR/NIAGADS_GWAS",
+	"accession": "NG00039",
+	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
+	"cadd_database_directory": "$DATA_DIR/CADD/v16",
+	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
+	"vep_cache_directory": "$DATA_DIR/VEP_CACHE"
+    },
+    "external_database": {
+	"name": "NIAGADS",
+	"version": "current",
+	"download_url": "https://www.niagads.org/datasets/",
+	"id_url": "https://www.niagads.org/",
+	"description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
+	"accession": "NIAGADS",
+	"type": "Genetic variation"
+    },
+    "foreach": [	
+	{
+	    "ADJ": {
+		"file": "adj_age_sex_pca.txt",
+		"sourceId": "@file.accession",
+		"name": "ADGC LOAD: African Americans",
+		"description" : "summary statistics from an ADGC (2013) GWAS study of African Americans and their genetic risk for late-onset Alzheimer's disease (LOAD), adjusted for age, sex, and population stratification",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": "African American",
+		    "covariate specification": "value:age, sex, and population stratification"
+		}
+	    }
+	},
+	{
+	    "APOE_ADJ": {
+		"file": "adj_age_sex_pca_apoe.txt",
+		"sourceId": "@file.accession+_ADJ",
+		"name": "ADGC LOAD: African Americans - APOE Adj",
+		"description" : "summary statistics from an ADGC (2013) GWAS study of African Americans and their genetic risk for late-onset Alzheimer's disease (LOAD), adjusted for age, sex, population stratification, and APOE",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": "African American",
+		    "covariate specification": "value:age, sex, population stratification, and APOE"
+		}
+	    }
+	}
+    ],
+    "load": [
+	{
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::InsertStudy",
+		"skip": true,
+		"parameters": {
+		    "attribution": "Reitz et al. 2013",
+		    "name": "ADGC LOAD: African Americans",
+		    "description": "Summary statistics from an Alzheimer's Disease Genetics Consortium (ADGC) GWAS study of African Americans and their genetic risk for late-onset Alzheimer's disease (LOAD)",
+		    "sourceId": "@file.accession",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version"
+		}		
+	    }
+	},
+	{
+	    "foreach" : true,
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::InsertProtocolAppNode",
+		"skip": true,
+		"parameters" : {
+		    "attribution": "Reitz et al. 2013",
+		    "type": "Genetic variation",
+		    "subtype": "GWAS summary statistics",
+		    "description": "foreach",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "characteristics": "foreach",
+		    "sourceId" : "foreach",
+		    "name": "foreach",
+		    "studyId": "@file.accession"
+		}
+	    }
+	}, 
+	{
+	    "foreach": true,
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::LoadVariantGWASResult",
+		"parameters": {
+		    "file": "foreach",
+		    "sourceId": "foreach",
+		    "fileDir" : "@file.path/@file.accession",
+		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
+		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
+		    "caddDatabaseDir": "@file.cadd_database_directory",
+		    "vepCacheDir": "@file.vep_cache_directory",
+		    "testAllele": "Allele1",
+		    "refAllele": "Allele2",
+		    "frequency": "Freq1",
+		    "pvalue": "P-value",
+		    "genomeBuild": "GRCh37.p13",
+		    "marker": "MarkerName",
+		    "chromosome": "MarkerName",
+		    "position": "MarkerName",
+		    "genomeWideSignificanceThreshold": "5e-8",
+		    "checkAltVariants":"true",
+		    "restrictedStats": {
+			"direction": "Direction",
+			"frequency_se" : "FreqSE",
+			"min_frequency": "MinFreq",
+			"max_frequency": "MaxFreq",
+			"effect": "Effect",
+			"std_err": "StdErr"
+		    }
+		}
+	    }
+	}
+    ]
+}

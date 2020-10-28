@@ -1,0 +1,124 @@
+<project name="NiagadsData" default="Installation" basedir=".">
+
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooo  Dependencies  oooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+
+  <target name="GUS-Installation">
+    <ant antfile="../GUS/build.xml" target="GUS-Installation">
+      <property name="project" value="GUS"/>
+      <property name="version" value="2.1.2"/>
+    </ant>
+  </target>  
+
+  <target name="GUS-Checkout" unless="GUS.present"> 
+    <ant target="defaultProjectCheckout" inheritAll="false"> 
+      <property name="svnurl" value="https://www.cbil.upenn.edu/svn/gus/GusAppFramework" />
+      <property name="project" value="GUS"/>
+      <property name="version" value="internal/plasmodb_5-0beta-0"/>
+    </ant>
+  </target>    
+
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooo    Checkout    oooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+
+  <target name="NiagadsData-ChildCheckout">
+    <available file="../GUS" type="dir" property="GUS.present" />
+    <antcall target="GUS-Checkout" />
+  </target>
+  
+  
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooo    Update    oooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+
+  <target name="NiagadsData-ChildUpdate" >
+    <ant target="defaultProjectUpdate">
+      <property name="project" value="GUS"/>
+    </ant>
+  </target>
+
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+
+  <target name="NiagadsData-Installation" depends="GUS-Installation,
+                                            NiagadsData/Load-Installation,
+                                            NiagadsData/Util-Installation,
+                                            NiagadsData/Pipeline-Installation,
+					    NiagadsData/Ontology-Installation">
+
+    <ant target="defaultProjectInstall"/>
+  </target>  
+   
+
+  <!-- oooooooooooooooooo  Installation Postprocess  ooooooooooooooooooooo -->
+
+  <target name="NiagadsData-Installation-postprocess">
+    <echo message="Postprocessing the NiagadsData installation"/>
+
+    <replace dir="${targetDir}/bin" 
+             propertyFile="${targetDir}/config/replacements.prop" > 
+      <include name="**/*" />
+      <replacefilter token="@perl@" property="perl"/>
+    </replace> 
+
+  </target>
+
+
+  <!-- ooooooooooooooooooooooo  Install Components  ooooooooooooooooooooooo -->
+
+  <target name="NiagadsData/Load-Installation" depends="ProjectTree">
+    <ant target="defaultComponentInstall">
+      <property name="project" value="NiagadsData"/>
+      <property name="component" value="Load"/>
+    </ant>
+  </target>  
+
+  <target name="NiagadsData/Pipeline-Installation" depends="ProjectTree">
+    <ant target="defaultComponentInstall">
+      <property name="project" value="NiagadsData"/>
+      <property name="component" value="Pipeline"/>
+    </ant>
+  </target>  
+
+ <target name="NiagadsData/Util-Installation" depends="ProjectTree">
+    <ant target="defaultComponentInstall">
+      <property name="project" value="NiagadsData"/>
+      <property name="component" value="Util"/>
+    </ant>
+  </target>  
+
+ <target name="NiagadsData/Ontology-Installation" depends="ProjectTree">
+    <ant target="defaultComponentInstall">
+      <property name="project" value="NiagadsData"/>
+      <property name="component" value="Ontology"/>
+    </ant>
+  </target>  
+
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooo  Distributable  ooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+
+  <target name="NiagadsData-Distributable" depends="ProjectTree">
+
+    <copy todir="${targetDir}">
+      <fileset dir="${projectsDir}" >
+        <exclude name="**/CVS/*" />
+      </fileset>
+    </copy>  
+  </target>  
+
+
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooo  ProjectTree  ooooooooooooooooooooooooooo -->
+  <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
+
+  <target name="ProjectTree" if="${checkout}">
+    <ant target="projectCheckOut"/>
+  </target>  
+
+</project>
+
+

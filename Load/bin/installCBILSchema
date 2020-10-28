@@ -1,0 +1,166 @@
+#!/usr/bin/env python
+
+'''
+install CBIL patches to the GUS schema and the CBIL schema
+'''
+
+from __future__ import print_function
+from __future__ import with_statement
+import argparse # parse command line args
+
+from sys import stdout, exit
+from os import environ, path
+from subprocess import check_call
+
+# from $GUS_HOME/lib/python --> add to python path
+
+from CBILDataCommon.Util.postgres_dbi import Database
+from CBILDataCommon.Util.utils import qw, warning, verify_path, die
+
+"""
+PLEASE READ BEFORE ADDING TO THE SQLFILES LISTS
+
+The list is ordered according to these rules:
+first:  changes to GUS
+second:  create CBIL schema
+third: create tables within CBIL, in dependency order as needed
+
+This ordering helps ensure that when/if we drop, the dropping proceeds
+in the correct order, avoiding bogus failures from dropping what was
+not yet created.
+ALSO: if you are adding a create script for the CBIL schema
+      it is good practice to write a parallel drop script
+      so that if needed, the create can be manually reversed
+"""
+
+GUS_DIR='gus'
+GUS = '''
+createGusRoles.sql
+'''
+GUS_SQL_FILES = qw(GUS)
+DROP_GUS_SCHEMA_SQL_FILE = 'dropEntireGusSchemaPg.sql'
+
+FUNCTION_DIR = 'functions'
+FUNCTIONS = '''
+createArrayMinFunction.sql
+createDropAllConstraintsFunction.sql
+createDropAllIndexesFunction.sql
+createIdxFunction.sql
+'''
+FUNCTION_SQL_FILES = qw(FUNCTIONS)
+
+CBIL_DIR = 'cbil_schema'
+CBIL_TABLES = '''
+createGoAssociation.sql
+'''
+
+CBIL_TABLES_SQL_FILES = qw(CBIL_TABLES)
+
+CREATE_CBIL_SCHEMA_SQL_FILE = 'createCBILSchema.sql'
+DROP_CBIL_SCHEMA_SQL_FILE = 'dropEntireCBILSchema.sql'
+
+FILE_PATH = path.join(environ['GUS_HOME'], 'lib', 'sql')
+
+
+def run_sql(sFile):
+    '''
+    run selected sql file
+    '''
+    warning("Executing SQL File: " + sFile)
+
+    if not verify_path(sFile):
+        die("File not found: " + sFile)
+
+    # -v ON_ERROR_STOP=ON : stop on first error
+    # --no-psqlrc: ignore start-up file
+    database.set_pgpassword()
+
+    cmd = ['psql', '--no-psqlrc',
+           '-d', database.name(),
+           '-U', database.user,
+           '-v', 'ON_ERROR_STOP=ON',
+           '--file', sFile]
+        
+    if database.port() is not None:
+        cmd.append('-p')
+        cmd.append(database.port())
+    if database.host() is not None:
+        cmd.append('-h')
+        cmd.append(database.host())
+
+    if args.verbose:
+        cmd.append('-a') # echo all
+    else:
+        cmd.append('-b') # echo only errors
+
+    # log = sqlFile.replace('.sql', '.log')
+    # cmd.append("2>&1 " + log) # redirect stdout & stderr
+
+    if args.verbose:
+        warning(cmd)
+
+    check_call(cmd) # runs command and waits for it to complete
+    database.reset_pgpassword()
+  
+    
+
+def verify_database(schema, db):
+    '''
+    verify database before dropping schemas
+    '''
+    verify = raw_input("\nYou are about to UNINSTALL the %s on:\n  %s\nType the name of the instance to confirm: " % (schema, db.name()) )
+    if verify != db.name():
+        die("You did not correctly confirm the db instance.\n")
+
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description="Install the CBIL schema and CBIL patches to GUS")
+    parser.add_argument('--gusConfigFile',
+                        help="GUS config file. If not provided, assumes default: $GUS_HOME/conf/gus.config")
+    parser.add_argument('--dropCbil', help="drop CBIL schema?", action='store_true')
+    parser.add_argument('--dropGUS', help="drop GUS schema?", action='store_true')
+    parser.add_argument('--patchGUS', help="appy GUS patches", action='store_true')
+    parser.add_argument('--createSchema', help="create CBIL schema", action='store_true')
+    parser.add_argument('--createTables', help="create CBIL tables", action='store_true')
+    parser.add_argument('--createFunctions', help="create CBIL/public functions", action='store_true')
+    parser.add_argument('-v', '--verbose', help="verbose output?", action='store_true')
+    parser.add_argument('-p', '--psql', help="full path to psql executeable if not standard 'psql'", default="psql")
+    
+    args =  parser.parse_args()
+    
+    database = Database(args.gusConfigFile)
+
+    if args.dropCbil or args.dropGUS:
+        verify_database('CBIL' if args.dropCbil else 'GUS', database)
+
+    if args.patchGUS:
+        for sqlFile in GUS_SQL_FILES:
+            filePath = path.join(FILE_PATH, GUS_DIR, sqlFile)
+            run_sql(filePath)
+    elif args.dropGUS:
+        filePath = path.join(FILE_PATH, GUS_DIR, DROP_GUS_SCHEMA_SQL_FILE)
+        run_sql(filePath)
+
+    elif args.dropCbil:
+        filePath = path.join(FILE_PATH, CBIL_DIR, DROP_CBIL_SCHEMA_SQL_FILE)
+        run_sql(filePath)
+
+    elif args.createSchema:
+        filePath = path.join(FILE_PATH, CBIL_DIR, CREATE_CBIL_SCHEMA_SQL_FILE)
+        run_sql(filePath)
+
+    elif args.createTables:
+        for sqlFile in CBIL_TABLES_SQL_FILES:
+            filePath = path.join(FILE_PATH, CBIL_DIR, "tables", sqlFile)
+            run_sql(filePath)
+
+    elif args.createFunctions:
+        for sqlFile in FUNCTION_SQL_FILES:
+            filePath = path.join(FILE_PATH, FUNCTION_DIR, sqlFile)
+            run_sql(filePath)
+
+    else:
+        die("Must specify an option to drop, patch, or create;\n" 
+                + "Run installCBILSchema with the --help/-h option to print full usage.")
+

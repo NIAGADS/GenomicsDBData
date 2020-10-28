@@ -1,0 +1,75 @@
+#!/usr/bin/env python
+#pylint: disable=invalid-name
+#pylint: disable=no-member
+'''
+determine what stats are available for gwas summary statistics datasets
+'''
+
+from __future__ import with_statement
+from __future__ import print_function
+
+import argparse
+from sys import stdout
+
+from CBILDataCommon.Util.postgres_dbi import Database
+from CBILDataCommon.Util.utils import warning, xstr, qw
+
+DATASET_SQL = """SELECT source_id, protocol_app_node_id, name, attribution
+FROM Study.ProtocolAppNode WHERE source_id LIKE 'NG0%'"""
+
+QUERY_SQL = """ SELECT
+       protocol_app_node_id,
+       CASE WHEN frequency IS NULL THEN FALSE ELSE TRUE END AS has_frequency,
+       CASE WHEN bin_index IS NULL THEN FALSE ELSE TRUE END AS is_indexed,
+ARRAY(SELECT jsonb_object_keys(restricted_stats)) AS restricted_stats
+FROM  Results.VariantGWAS
+WHERE protocol_app_node_id = %s
+LIMIT 1
+"""
+
+
+def fetch_datasets():
+    ''' fetch dataset list '''
+    result = {}
+    with database.cursor(cursorFactory='RealDictCursor') as cursor:
+        cursor.execute(DATASET_SQL)
+        for row in cursor:
+            result[row['protocol_app_node_id']] = {'source_id': row['source_id'], 'name': row['name'], 'attribution': row['attribution']}
+    
+    return result
+
+
+def fetch_summaries(datasets):
+    ''' fetch summaries'''
+    print('\t'.join(qw('track name attribution has_frequency available_stats is_indexed',returnTuple=True)))
+
+    with database.cursor(cursorFactory='RealDictCursor') as cursor:
+        for protocolAppNodeId in datasets.keys():
+            sourceId = datasets[protocolAppNodeId]['source_id']
+            warning(sourceId)
+            cursor.execute(QUERY_SQL, (protocolAppNodeId,))
+            for row in cursor:
+                rstats = row['restricted_stats']
+                stats = ' | '.join(sorted(row['restricted_stats']))
+                print('\t'.join((sourceId, 
+                                datasets[protocolAppNodeId]['name'],
+                                datasets[protocolAppNodeId]['attribution'],
+                                xstr(row['has_frequency']),
+                                stats,
+                                xstr(row['is_indexed']))))
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="get summary of available data for gwas datasets")
+    parser.add_argument('--gusConfigFile',
+                        help="GUS config file.  If not provided, assumes default: $GUS_HOME/conf/gus.config")
+
+    args = parser.parse_args()
+
+    database = Database(args.gusConfigFile)
+    database.connect()
+
+    datasetList = fetch_datasets()
+    fetch_summaries(datasetList)
+
+    database.close()

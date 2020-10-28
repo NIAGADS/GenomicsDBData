@@ -1,0 +1,133 @@
+#!/bin/bash
+
+set -e # exit on error
+
+FILE_PATH=/mnt/data/GenomicsDB/snps/dbsnp
+VEP_RESULT_PATH=${FILE_PATH}/vep
+
+VCF_FILE="00-All"
+
+DBSNP_NAME="dbSNP"
+DBSNP_VERSION="b147"
+
+VEP_VERSION="4.3i (2016-12-15)"
+VEP_NAME=SnpEff
+VEP_DESCRIPTION="Genetic variant annotation and effect prediction toolbox"
+VEP_URI="http://snpeff.sourceforge.net/"
+
+SO_EXT_DBS_RLS="Sequence Ontology|2016-09-15"
+
+# CHROMOSOMES=`seq 1 22`;
+CHROMOSOMES=`seq 6 22`;
+CHROMOSOMES+=" X Y MT";
+
+LOAD_EXTERNAL_DATABASE=false
+LOAD_DATA=false
+GENERATE_LOAD_FILES=false
+PREPROCESS=false
+VEP=false
+PATCH=false
+COMMIT=""
+START_AT_CHR=1
+CHR=false
+
+while [[ $# -gt 0 ]]
+do
+
+    key="$1"
+
+    case $key in
+	--loadData)
+	    LOAD_DATA=true
+	    ;;
+	--vep)
+	    VEP=true
+	    ;;
+	--runPatches)
+	    PATCH=true
+	    ;;
+	--preprocess)
+	    PREPROCESS=true
+	    ;;
+	--generateLoadFiles)
+	    GENERATE_LOAD_FILES=true
+	    ;;
+	--startAtChr)
+	    START_AT_CHR="$2"
+	    shift
+	    ;;
+	--chr)
+	    CHR="$2"
+	    shift
+	    ;;
+	--commit)
+	    COMMIT="--commit"
+	    ;;
+	*)
+	    echo "Unknown option; exiting..."
+            # unknown option
+	    ;;
+    esac
+    shift # past argument or value
+done
+
+
+if [ ${VEP} = true ] ; then
+    # echo "unzipping patched vcf"
+    # mkdir ${VEP_RESULT_PATH}
+    # cp ${FILE_PATH}/patched_${VCF_FILE}.vcf.gz ${VEP_RESULT_PATH}/.
+    # gunzip ${VEP_RESULT_PATH}/patched_${VCF_FILE}.vcf.gz
+
+    if [ ${START_AT_CHR} != "1"] ; then
+	echo "split vcf by chromosome"
+	snpSift -Xmx12g split ${VEP_RESULT_PATH}/patched_${VCF_FILE}.vcf -v
+    fi
+
+    echo "run snpeff"
+    RUN=false
+    for c in ${CHROMOSOMES}
+    do
+	echo "processing chromosome ${c}"
+	if [ ${c} = ${START_AT_CHR} ] ; then
+	    RUN=true
+	fi
+	if [ ${RUN} = true ] ; then
+	    snpEff -Xmx12g eff -v -stats ${VEP_RESULT_PATH}/statfile_chr${c}.html GRCh37.75 ${VEP_RESULT_PATH}/patched_${VCF_FILE}.${c}.vcf > ${VEP_RESULT_PATH}/vep_chr${c}.vcf
+	fi
+    done
+fi
+
+# run loading plugin
+if [ ${GENERATE_LOAD_FILES} = true ] ; then 
+    for c in ${CHROMOSOMES}
+    do
+	echo "loading chromomsome ${c}"
+	COMMENT="ga NiagadsData::Load::Plugin::LoadSnpEffVEPVcf --vcfFile ${VEP_RESULT_PATH}/vep_chr${c}.vcf --statFile ${VEP_RESULT_PATH}/   --vep \"${VEP_NAME}|${VEP_VERSION}|${VEP_DESCRIPTION}|${VEP_URI}\" --preprocess --preprocessDir ${VEP_RESULT_PATH} --loadFile niagads_predictedvarianteffect_chr${c}_load.csv"
+	ga NiagadsData::Load::Plugin::LoadSnpEffVEPVcf --vcfFile ${VEP_RESULT_PATH}/vep_chr${c}.vcf --statFile ${VEP_RESULT_PATH}/statfile_chr${c}.genes.txt   --vep "${VEP_NAME}|${VEP_VERSION}|${VEP_DESCRIPTION}|${VEP_URI}" --preprocess --preprocessDir ${VEP_RESULT_PATH} --loadFile niagads_predictedvarianteffect_chr${c}_load.csv  --comment "${COMMENT}"  > generate_snpeff_vep_load_file_chr${c}.log 2>&1 &
+    done
+fi
+
+if [ ${LOAD_DATA} = true ] ; then 
+    for c in ${CHROMOSOMES}
+    do
+	echo "preprocessing chromomsome ${c}"
+	COMMENT="ga NiagadsData::Load::Plugin::LoadSnpEffVEPVcf --vcfFile ${VEP_RESULT_PATH}/vep_chr${c}.vcf --statFile ${VEP_RESULT_PATH}/  --vep \"${VEP_NAME}|${VEP_VERSION}|${VEP_DESCRIPTION}|${VEP_URI}\" --preprocessDir ${VEP_RESULT_PATH} --loadFile niagads_predictedvarianteffect_chr${c}_load.csv"
+	ga NiagadsData::Load::Plugin::LoadSnpEffVEPVcf --vcfFile ${VEP_RESULT_PATH}/vep_chr${c}.vcf --statFile ${VEP_RESULT_PATH}/statfile_chr${c}.genes.txt  --vep "${VEP_NAME}|${VEP_VERSION}|${VEP_DESCRIPTION}|${VEP_URI}" --preprocessDir ${VEP_RESULT_PATH} --loadFile niagads_predictedvarianteffect_chr${c}_load.csv --comment "${COMMENT}" ${COMMIT} > load_snpeff_vep_chr${c}.log 2>&1
+    done
+fi
+
+
+
+# patches
+if [ ${PATCH} = true ] ; then
+    echo "only for current load; fixed in plugin; just run in vep result path"
+    echo "when associated 'gene' is END, na_feature_id should be NULL"
+    for c in ${CHROMOSOMES}
+    do
+	echo "patching chromosome ${c}"
+	
+	sed -i.bak s/\|END\|END/\|END\|NULL/g niagads_predictedvarianteffect_chr${c}_load.csv
+    done
+
+    # runSqlPatch --file ?
+fi

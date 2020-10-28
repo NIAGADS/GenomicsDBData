@@ -1,0 +1,90 @@
+#!/bin/bash
+
+set -e # exit on error
+
+FILE_PATH=/mnt/data/GenomicsDB/niagads_resources/
+ACCESSION=NG00058
+
+FILES=(IGAP_meta1_pos_stats_1filtered_upload.txt)
+
+PAN_NAMES=("AD Age of Onset Survival (IGAP)")
+PAN_DESCRIPTIONS=("summary statistics from a genome-wide survival analysis of the age of onset (AAO) of Alzheimer's disease and AAO-defined survival, using samples form the ADGC, ADNI, GERAD, EADI, and CHARGE cohorts")
+PAN_SOURCE_IDS=("")
+N_DATASETS=1
+EXT_DBS_RLS="NIAGADS Datasets|current"
+
+
+CHARACTERISTICS='{"diagnosis":"Alzheimers disease"}'
+
+
+LOAD_DATA=false
+GENERATE_LOAD_FILES=false
+LOAD_STUDY=false
+PATCH=false
+COMMIT="--veryVerbose"
+PREPROCESS=""
+
+
+while [[ $# -gt 0 ]]
+do
+
+    key="$1"
+
+    case $key in
+	--loadStudy)
+	    LOAD_STUDY=true
+	    PROTOCOL_APP_NODE_ID="$2"
+	    shift
+	    ;;
+	--loadData)
+	    LOAD_DATA=true
+	    ;;
+	--runPatches)
+	    PATCH=true
+	    ;;
+	--preprocess)
+	    PREPROCESS="--preprocess"
+	    ;;
+	--generateLoadFiles)
+	    GENERATE_LOAD_FILES=true
+	    ;;
+	--commit)
+	    COMMIT="--commit"
+	    ;;
+	*)
+            # unknown option
+	    ;;
+    esac
+    shift # past argument or value
+done
+
+# run loading plugin
+if [ ${GENERATE_LOAD_FILES} = true ] ; then 
+
+    for i in "${!FILES[@]}" ; 
+    do
+	# SNP	Allele1	Allele2	Freq1	FreqSE	MinFreq	MaxFreq	Effect	StdErr	P	Direction	HetISq	HetChiSq	HetDf	HetPVal	CHR	BP	HR	CI_95%
+	echo "Generating Load File from ${FILES[$i]}"
+	generateNG00058LoadFile --dir ${FILE_PATH}${ACCESSION} -f ${FILES[$i]} --sourceId ${ACCESSION}${PAN_SOURCE_IDS[$i]} --pvalue P --chr CHR --position BP --allele1 Allele1 --allele2 Allele2 --testAllele Allele1 --freq Freq1
+    done
+fi
+
+
+if [ ${LOAD_DATA} = true ] ; then 
+   
+    for i in "${!PAN_SOURCE_IDS[@]}" ; 
+    do
+	echo "Loading ${ACCESSION}${PAN_SOURCE_IDS[$i]}"
+	COMMENT="ga NiagadsData::Load::Plugin::LoadSeqVariationResult --file ${FILE_PATH}${ACCESSION}/gwas_summary_statistics_${ACCESSION}${PAN_SOURCE_IDS[$i]}.csv --extDbRlsSpec "${EXT_DBS_RLS}" --name "${PAN_NAMES[$i]}" --description "${PAN_DESCRIPTIONS[$i]}" --sourceId ${ACCESSION}${PAN_SOURCE_IDS[$i]} --variantSource NIAGADS --subtypeSourceRef STATO_0000091 --checkAltVariantIds --ignoreMergedSnps --studySourceId ${ACCESSION} --characteristics ${CHARACTERISTICS} --nonStandardAllelesMatchPosition"
+	echo "${COMMENT}"
+	ga NiagadsData::Load::Plugin::LoadSeqVariationResult --file ${FILE_PATH}${ACCESSION}/gwas_summary_statistics_${ACCESSION}${PAN_SOURCE_IDS[$i]}.csv --extDbRlsSpec "${EXT_DBS_RLS}" --name "${PAN_NAMES[$i]}" --description "${PAN_DESCRIPTIONS[$i]}" --sourceId ${ACCESSION}${PAN_SOURCE_IDS[$i]} --variantSource NIAGADS --subtypeSourceRef STATO_0000091 --checkAltVariantIds  --studySourceId ${ACCESSION} --ignoreMergedSnps --characteristics "${CHARACTERISTICS}" --nonStandardAllelesMatchPosition --comment "${COMMENT}" ${COMMIT} > load_seqvariationresult_${ACCESSION}${PAN_SOURCE_IDS[$i]}.log 2>&1 
+
+    done
+fi
+
+
+# patches
+if [ ${PATCH} = true ] ; then
+    echo "no patches "
+    # runSqlPatch --file ?
+fi

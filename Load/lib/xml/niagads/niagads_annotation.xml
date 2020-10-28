@@ -1,0 +1,846 @@
+<Niagads::Annotation>
+	<DEFINITION>chromosome</DEFINITION>
+	<DISPLAY_NAME></DISPLAY_NAME>
+	<NAME>chromosome</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>chr</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>BP-position (1-based) relative to the chromosome</DEFINITION>
+	<DISPLAY_NAME></DISPLAY_NAME>
+	<NAME>position</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>pos</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>the variant allele used to calculate the consequence</DEFINITION>
+	<DISPLAY_NAME></DISPLAY_NAME>
+	<NAME>allele</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>allele</ABBREV>
+	<DEFINITION_SOURCE_URL>http://www.ensembl.org/info/docs/tools/vep/vep_formats.html</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>Ensembl FAQ: Variant Effect Predictor Dat Formats</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>a variant identifier compatible with SeqMeta (CHR:POS:REF:ALT)</DEFINITION>
+	<DISPLAY_NAME></DISPLAY_NAME>
+	<NAME>SeqMeta-compatible identifier</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>seq_meta_var_id</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>a variant identifier compatible with EPACTS (CHR:POS_REF/ALT)</DEFINITION>
+	<DISPLAY_NAME></DISPLAY_NAME>
+	<NAME>EPACTS-compatible identifier</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>epacts_var_id</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>most relevant gene symbol for affected gene</DEFINITION>
+	<DISPLAY_NAME>Gene Symbol</DISPLAY_NAME>
+	<NAME>gene symbol</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>gene_symbol</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Ensembl stable ID of affected gene</DEFINITION>
+	<DISPLAY_NAME>Gene</DISPLAY_NAME>
+	<NAME>gene</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>gene</ABBREV>
+	<DEFINITION_SOURCE_URL>http://www.ensembl.org/info/docs/tools/vep/vep_formats.html</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>Ensembl FAQ: Variant Effect Predictor Dat Formats</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Ensembl stable ID of feature</DEFINITION>
+	<DISPLAY_NAME>Feature</DISPLAY_NAME>
+	<NAME>feature</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>feature</ABBREV>
+	<DEFINITION_SOURCE_URL>http://www.ensembl.org/info/docs/tools/vep/vep_formats.html</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>Ensembl FAQ: Variant Effect Predictor Dat Formats</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>type of feature. Currently one of Transcript, RegulatoryFeature, MotifFeature</DEFINITION>
+	<DISPLAY_NAME>Feature Type</DISPLAY_NAME>
+	<NAME>feature type</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>feature_type</ABBREV>
+	<DEFINITION_SOURCE_URL>http://www.ensembl.org/info/docs/tools/vep/vep_formats.html</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>Ensembl FAQ: Variant Effect Predictor Dat Formats</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>consequence type of this variant</DEFINITION>
+	<DISPLAY_NAME>Predicted Effect</DISPLAY_NAME>
+	<NAME>consequence</NAME>
+	<ADDITIONAL_INFO_LINK>http://www.ensembl.org/info/genome/variation/predicted_data.html#consequences</ADDITIONAL_INFO_LINK>
+	<ABBREV>consequence</ABBREV>
+	<DEFINITION_SOURCE_URL>http://www.ensembl.org/info/docs/tools/vep/vep_formats.html</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>Ensembl FAQ: Variant Effect Predictor Dat Formats</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>relative position of base pair in cDNA sequence</DEFINITION>
+	<DISPLAY_NAME></DISPLAY_NAME>
+	<NAME>position in cDNA</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>cdna_position</ABBREV>
+	<DEFINITION_SOURCE_URL>http://www.ensembl.org/info/docs/tools/vep/vep_formats.html</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>Ensembl FAQ: Variant Effect Predictor Dat Formats</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>relative position of base pair in coding sequence</DEFINITION>
+	<DISPLAY_NAME></DISPLAY_NAME>
+	<NAME>position in CDS</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>cds_position</ABBREV>
+	<DEFINITION_SOURCE_URL>http://www.ensembl.org/info/docs/tools/vep/vep_formats.html</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>Ensembl FAQ: Variant Effect Predictor Dat Formats</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>relative position of amino acid in protein</DEFINITION>
+	<DISPLAY_NAME></DISPLAY_NAME>
+	<NAME>position in protein</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>protein_position</ABBREV>
+	<DEFINITION_SOURCE_URL>http://www.ensembl.org/info/docs/tools/vep/vep_formats.html</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>Ensembl FAQ: Variant Effect Predictor Dat Formats</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>amino acid change; only given if the variant affects the protein-coding sequence</DEFINITION>
+	<DISPLAY_NAME></DISPLAY_NAME>
+	<NAME>amino acid change</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>amino_acids</ABBREV>
+	<DEFINITION_SOURCE_URL>http://www.ensembl.org/info/docs/tools/vep/vep_formats.html</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>Ensembl FAQ: Variant Effect Predictor Dat Formats</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>the alternative codons with the variant base in upper case</DEFINITION>
+	<DISPLAY_NAME></DISPLAY_NAME>
+	<NAME>codon change</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>codons</ABBREV>
+	<DEFINITION_SOURCE_URL>http://www.ensembl.org/info/docs/tools/vep/vep_formats.html</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>Ensembl FAQ: Variant Effect Predictor Dat Formats</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>known identifier of existing variant (dbSNP rsID)</DEFINITION>
+	<DISPLAY_NAME></DISPLAY_NAME>
+	<NAME>co-located variation</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>existing_variation</ABBREV>
+	<DEFINITION_SOURCE_URL>http://www.ensembl.org/info/docs/tools/vep/vep_formats.html</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>Ensembl FAQ: Variant Effect Predictor Dat Formats</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>contains extra information as key=value pairs separated by ";".</DEFINITION>
+	<DISPLAY_NAME></DISPLAY_NAME>
+	<NAME>The Ensembl extra field</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>extra</ABBREV>
+	<DEFINITION_SOURCE_URL>http://www.ensembl.org/info/docs/tools/vep/vep_formats.html</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>Ensembl FAQ: Variant Effect Predictor Dat Formats</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Ensembl gene biotype</DEFINITION>
+	<DISPLAY_NAME></DISPLAY_NAME>
+	<NAME>Ensembl gene biotype</NAME>
+	<ADDITIONAL_INFO_LINK>http://vega.sanger.ac.uk/info/about/gene_and_transcript_types.html </ADDITIONAL_INFO_LINK>
+	<ABBREV>gene_type</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>most severe consequence for this gene according to the Ensembl ranking</DEFINITION>
+	<DISPLAY_NAME>VEP MSC</DISPLAY_NAME>
+	<NAME>VEP most severe effect</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>most_damaging_consequence_for_this_gene</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Ensembl Impact assessment for this variant consequence</DEFINITION>
+	<DISPLAY_NAME>VEP CI</DISPLAY_NAME>
+	<NAME>consequence impact</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>consequence_impact</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>most severe consequence for any non-NMD transcripts for this gene</DEFINITION>
+	<DISPLAY_NAME>VEP MSC (NMD)</DISPLAY_NAME>
+	<NAME>most damaging consequence excluding nmd transcripts</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>most_damaging_consequence_excluding_nmd_transcripts</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Ensembl Impact assessment for any non-NMD transcripts for this gene</DEFINITION>
+	<DISPLAY_NAME>VEP CI (NMD)</DISPLAY_NAME>
+	<NAME>consequence impact excluding nmd transcripts</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>consequence_impact_excluding_nmd_transcripts</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>most severe consequence relative to protein coding transcripts for this gene</DEFINITION>
+	<DISPLAY_NAME>VEP MSC (PC)</DISPLAY_NAME>
+	<NAME>most damaging consequence for protein coding transcripts</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>most_damaging_consequence_for_protein_coding_transcripts</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Ensembl Impact assessment for protein coding transcripts</DEFINITION>
+	<DISPLAY_NAME>VEP CI (PC)</DISPLAY_NAME>
+	<NAME>consequence impact for protein coding transcripts</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>consequence_impact_for_protein_coding_transcripts</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>occurence in the SnpEff Loss of Function Annotation</DEFINITION>
+	<DISPLAY_NAME> LOF</DISPLAY_NAME>
+	<NAME>SNPEff LOF</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>SNPEff_LOF</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>SnpEff predicted consequence for Loss of Function Annotations</DEFINITION>
+	<DISPLAY_NAME> LOF Consequence</DISPLAY_NAME>
+	<NAME>SNPEff LOF consequence</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>SNPEff_LOF_consequence</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>number of transcripts affected by the SnpEff LOF consequence, relative to the Ensembl transcript set</DEFINITION>
+	<DISPLAY_NAME>LOF Num Transcripts</DISPLAY_NAME>
+	<NAME>SNPEff LOF num transcripts affected</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>SNPEff_LOF_num_transcripts_affected</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>percent of transcripts for this gene affected by the SnpEff LOF consequence, relative to the Ensembl transript set</DEFINITION>
+	<DISPLAY_NAME>LOF Percent Transcripts</DISPLAY_NAME>
+	<NAME>SNPEff LOF percent transcripts affected</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>SNPEff_LOF_percent_transcripts_affected</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>the extent to which the annotation profile for a given variant suggests that that variant is likely to be "observed" (negative values) vs "simulated" (positive values); higher values indicate that a variant is more likely to be simulated (i.e., not observed) and is therefore less likely to have deleterious effects</DEFINITION>
+	<DISPLAY_NAME>CADD raw score</DISPLAY_NAME>
+	<NAME>CADD raw score</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>CADD_raw_score</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE></DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>ranked and PHRED-scaled CADD score</DEFINITION>
+	<DISPLAY_NAME>CADD phred score</DISPLAY_NAME>
+	<NAME>CADD phred score</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>CADD_phredexac_AC</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE></DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>allele count</DEFINITION>
+	<DISPLAY_NAME>Allele Count</DISPLAY_NAME>
+	<NAME>ExAC Allele Count</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_AC</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>African/African American allele count</DEFINITION>
+	<DISPLAY_NAME>AFR Allele Count</DISPLAY_NAME>
+	<NAME>ExAC AFR Allele Count</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_AC_AFR</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>American allele count</DEFINITION>
+	<DISPLAY_NAME>AMR Allele Count</DISPLAY_NAME>
+	<NAME>ExAC AMR Allele Count</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_AC_AMR</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>adjusted allele counts</DEFINITION>
+	<DISPLAY_NAME>Adjusted Allele Count</DISPLAY_NAME>
+	<NAME>ExAC Adjusted Allele Count</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_AC_Adj</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>East Asian allele count</DEFINITION>
+	<DISPLAY_NAME>EAS Allele Count</DISPLAY_NAME>
+	<NAME>ExAC EAS Allele Count</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_AC_EAS</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Adjusted Heterozygote Count</DEFINITION>
+	<DISPLAY_NAME>Adjusted Heterozygote Count</DISPLAY_NAME>
+	<NAME>ExAC Adjusted Heterozygote Count</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_AC_FIexac_AC_Het</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Adjusted Homozygote Count</DEFINITION>
+	<DISPLAY_NAME>Adjusted Homozygote Count</DISPLAY_NAME>
+	<NAME>ExAC Adjusted Homozygote Count</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_AC_Hom</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Non-Finnish European allele count</DEFINITION>
+	<DISPLAY_NAME>NFE Allele Count</DISPLAY_NAME>
+	<NAME>ExAC NFE Allele Count</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_AC_NFE</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Other allele count</DEFINITION>
+	<DISPLAY_NAME>OTH Allele Count</DISPLAY_NAME>
+	<NAME>ExAC OTH Allele Count</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_AC_OTH</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>South Asian allele count</DEFINITION>
+	<DISPLAY_NAME>SAS Allele Count</DISPLAY_NAME>
+	<NAME>ExAC SAS Allele Count</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_AC_SAS</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Finnish allele count</DEFINITION>
+	<DISPLAY_NAME>FIN Allele Count</DISPLAY_NAME>
+	<NAME>ExAC FIN Allele Count</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_AC_FIN</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION></DEFINITION>
+	<DISPLAY_NAME>Allele Frequency for each alt allele</DISPLAY_NAME>
+	<NAME>ExAC Allele Frequency for each ALT allele</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_AF</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION></DEFINITION>
+	<DISPLAY_NAME>Total alleles in called genotypes</DISPLAY_NAME>
+	<NAME>ExAC Total alleles in called genotypes</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_AN</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>African/African American chromosome count</DEFINITION>
+	<DISPLAY_NAME>AFR chromosome count</DISPLAY_NAME>
+	<NAME>ExAC AFR chromosome count</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_AN_AFR</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>American chromosome count</DEFINITION>
+	<DISPLAY_NAME>AMR chromosome count</DISPLAY_NAME>
+	<NAME>ExAC AMR chromosome count</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_AN_AMR</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>number of chromosomes, or twice the number of individuals (maximum 2*61,486); if coverage is <80% of individuals in ExAC, the site may be low quality</DEFINITION>
+	<DISPLAY_NAME>Adjusted chromosome count</DISPLAY_NAME>
+	<NAME>ExAC Adjusted chromosome count</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_AN_Adj</ABBREV>
+	<DEFINITION_SOURCE_URL>https://macarthurlab.org/2014/11/18/a-guide-to-the-exome-aggregation-consortium-exac-data-set/</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>MacArthur Lab: ExAC Guide</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>East Asian chromosome count</DEFINITION>
+	<DISPLAY_NAME>EAS chromosome count</DISPLAY_NAME>
+	<NAME>ExAC EAS chromosome count</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_AN_EAS</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Finnish chromosome count</DEFINITION>
+	<DISPLAY_NAME>FIN chromosome count</DISPLAY_NAME>
+	<NAME>ExAC FIN chromosome count</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_AN_FIN</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Non-Finnish European chromosome count</DEFINITION>
+	<DISPLAY_NAME>NFE chromosome count</DISPLAY_NAME>
+	<NAME>ExAC NFE chromosome count</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_AN_NFE</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Other chromosome count</DEFINITION>
+	<DISPLAY_NAME>OTH chromosome count</DISPLAY_NAME>
+	<NAME>ExAC OTH chromosome count</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_AN_OTH</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>South Asian chromosome count</DEFINITION>
+	<DISPLAY_NAME>SAS chromosome count</DISPLAY_NAME>
+	<NAME>ExAC SAS chromosome count</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_AN_SAS</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Z-score from Wilcoxon rank sum test of Alt Vs. Ref base qualities</DEFINITION>
+	<DISPLAY_NAME>BaseQRankSum</DISPLAY_NAME>
+	<NAME>ExAC BaseQRankSum</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_BaseQRankSum</ABBREV>
+	<DEFINITION_SOURCE_URL>https://software.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_annotator_BaseQualityRankSumTest.php</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>GATK Documentation</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Z-score From Wilcoxon rank sum test of Alt vs. Ref number of hard clipped bases</DEFINITION>
+	<DISPLAY_NAME>ClippingRankSum</DISPLAY_NAME>
+	<NAME>ExAC ClippingRankSum</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_ClippingRankSum</ABBREV>
+	<DEFINITION_SOURCE_URL>https://software.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_annotator_ClippingRankSumTest.php</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>GATK Documentation</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>approximate depth of coverage per sample and over all samples</DEFINITION>
+	<DISPLAY_NAME>Approximate Read Depth</DISPLAY_NAME>
+	<NAME>ExAC Approximate Read Depth</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_DP</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>header: ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/ExAC.r0.3.sites.vep.vcf.gz</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Phred-scaled p-value using Fisher's exact test to detect strand bias</DEFINITION>
+	<DISPLAY_NAME>Phred-scaled p-value</DISPLAY_NAME>
+	<NAME>ExAC Phred-scaled p-value </NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_FS</ABBREV>
+	<DEFINITION_SOURCE_URL>https://software.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_annotator_FisherStrand.php</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>GATK Documentation</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>mean of all gene quality (GQ) values</DEFINITION>
+	<DISPLAY_NAME>GQ MEAN</DISPLAY_NAME>
+	<NAME>ExAC GQ MEAN</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_GQ_MEAN</ABBREV>
+	<DEFINITION_SOURCE_URL>https://software.broadinstitute.org/gatk/documentation/tooldocs/org_broadinstitute_gatk_tools_walkers_annotator_GenotypeSummaries.php</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>GATK Documentation</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>standard deviation of all gene quality (GQ) values</DEFINITION>
+	<DISPLAY_NAME>GQ STDDEV</DISPLAY_NAME>
+	<NAME>ExAC GQ STDDEV</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_GQ_STDDEV</ABBREV>
+	<DEFINITION_SOURCE_URL>https://software.broadinstitute.org/gatk/documentation/tooldocs/org_broadinstitute_gatk_tools_walkers_annotator_GenotypeSummaries.php</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>GATK Documentation</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Heterozygous African/African American counts</DEFINITION>
+	<DISPLAY_NAME>Heterozygous AFR</DISPLAY_NAME>
+	<NAME>ExAC Heterozygous AFR</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_Het_AFR</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Heterozygous American counts</DEFINITION>
+	<DISPLAY_NAME>Heterozygous AMR</DISPLAY_NAME>
+	<NAME>ExAC Heterozygous AMR</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_Het_AMR</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Heterozygous East Asian counts</DEFINITION>
+	<DISPLAY_NAME>Heterozygous EAS</DISPLAY_NAME>
+	<NAME>ExAC Heterozygous EAS</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_Het_EAS</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Heterozygous Finish counts</DEFINITION>
+	<DISPLAY_NAME>Heterozygous FIN</DISPLAY_NAME>
+	<NAME>ExAC Heterozygous FIN</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_Het_FIN</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Heterozygous Non-Finnish European counts</DEFINITION>
+	<DISPLAY_NAME>Heterozygous NFE</DISPLAY_NAME>
+	<NAME>ExAC Heterozygous NFE</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_Het_NFE</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Heterozygous Other counts</DEFINITION>
+	<DISPLAY_NAME>Heterozygous OTH</DISPLAY_NAME>
+	<NAME>ExAC Heterozygous OTH</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_Het_OTH</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Heterozygous South Asian counts</DEFINITION>
+	<DISPLAY_NAME>Heterozygous SAS</DISPLAY_NAME>
+	<NAME>ExAC Heterozygous SAS</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_Het_SAS</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Homozygous African/African American counts</DEFINITION>
+	<DISPLAY_NAME>Homozygous AFR</DISPLAY_NAME>
+	<NAME>ExAC Homozygous AFR</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_Hom_AFR</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Homozygous American counts</DEFINITION>
+	<DISPLAY_NAME>Homozygous AMR</DISPLAY_NAME>
+	<NAME>ExAC Homozygous AMR</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_Hom_AMR</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Homozygous East Asian counts</DEFINITION>
+	<DISPLAY_NAME>Homozygous EAS</DISPLAY_NAME>
+	<NAME>ExAC Homozygous EAS</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_Hom_EAS</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Homozygous Finish counts</DEFINITION>
+	<DISPLAY_NAME>Homozygous FIN</DISPLAY_NAME>
+	<NAME>ExAC Homozygous FIN</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_Hom_FIN</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Homozygous Non-Finnish European counts</DEFINITION>
+	<DISPLAY_NAME>Homozygous NFE</DISPLAY_NAME>
+	<NAME>ExAC Homozygous NFE</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_Hom_NFE</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Homozygous Other counts</DEFINITION>
+	<DISPLAY_NAME>Homozygous OTH</DISPLAY_NAME>
+	<NAME>ExAC Homozygous OTH</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_Hom_OTH</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Homozygous South Asian counts</DEFINITION>
+	<DISPLAY_NAME>Homozygous SAS</DISPLAY_NAME>
+	<NAME>ExAC Homozygous SAS</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_Hom_SAS</ABBREV>
+	<DEFINITION_SOURCE_URL>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README..population_annotations</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ExAC README: Population Annotations</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>inbreeding coefficient as estimated from the genotype likelihoods per-sample when compared against the Hardy-Weinberg expectation</DEFINITION>
+	<DISPLAY_NAME>Inbreeding Coefficient</DISPLAY_NAME>
+	<NAME>ExAC Inbreeding Coefficient</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_InbreedingCoeff</ABBREV>
+	<DEFINITION_SOURCE_URL>https://software.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_annotator_InbreedingCoeff.php</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>GATK Documentation</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Root Mean Square (RMS) of the mapping quality of the reads supporting a variant call across all samples</DEFINITION>
+	<DISPLAY_NAME>MQ</DISPLAY_NAME>
+	<NAME>ExAC MQ</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_MQ</ABBREV>
+	<DEFINITION_SOURCE_URL>https://software.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_annotator_RMSMappingQuality.php</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>GATK Documentation</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>count of all reads that have MAPQ = 0 across all samples. The count of reads with MAPQ0 can be used for quality control; high counts typically indicate regions where it is difficult to make confident calls</DEFINITION>
+	<DISPLAY_NAME>MQ0</DISPLAY_NAME>
+	<NAME>ExAC MQ0</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_MQ0</ABBREV>
+	<DEFINITION_SOURCE_URL>https://software.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_annotator_MappingQualityZero.php</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>GATK Documentation</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Z-score From Wilcoxon rank sum test of Alt vs. Ref read mapping qualities; The ideal result is a value close to zero, which indicates there is little to no difference. A negative value indicates that the reads supporting the alternate allele have lower mapping quality scores than those supporting the reference allele. Conversely, a positive value indicates that the reads supporting the alternate allele have higher mapping quality scores than those supporting the reference allele.</DEFINITION>
+	<DISPLAY_NAME>MQRankSum</DISPLAY_NAME>
+	<NAME>ExAC MQRankSum</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_MQRankSum</ABBREV>
+	<DEFINITION_SOURCE_URL>https://software.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_annotator_MappingQualityRankSumTest.php</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>GATK Documentation</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>number of no-called samples</DEFINITION>
+	<DISPLAY_NAME>NCC</DISPLAY_NAME>
+	<NAME>ExAC NCC</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_NCC</ABBREV>
+	<DEFINITION_SOURCE_URL>https://software.broadinstitute.org/gatk/documentation/tooldocs/org_broadinstitute_gatk_tools_walkers_annotator_GenotypeSummaries.php</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>GATK Documentation</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>VQSR negative training sites; chosen from variants with lowest LOD scores</DEFINITION>
+	<DISPLAY_NAME>NEGATIVE_TRAIN_SITE</DISPLAY_NAME>
+	<NAME>ExAC NEGATIVE_TRAIN_SITE</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_NEGATIVE_TRAIN_SITE</ABBREV>
+	<DEFINITION_SOURCE_URL>https://software.broadinstitute.org/gatk/guide/article?id=39</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>GATK Documentation: Variant Quality Score Recalibration (VQSR)</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>the QUAL score normalized by allele depth (AD), or amount of available coverage, for a variant</DEFINITION>
+	<DISPLAY_NAME>QD</DISPLAY_NAME>
+	<NAME>ExAC QD</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_QD</ABBREV>
+	<DEFINITION_SOURCE_URL>https://software.broadinstitute.org/gatk/guide/article?id=39</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>GATK Documentation: Variant Quality Score Recalibration (VQSR)</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>u-based z-approximation from the Mann-Whitney Rank Sum Test for the distance from the end of the read for reads with the alternate allele; only be applied to heterozygous calls.. If the alternate allele is only seen near the ends of reads, this is indicative of error</DEFINITION>
+	<DISPLAY_NAME>ReadPosRankSum</DISPLAY_NAME>
+	<NAME>ExAC ReadPosRankSum</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_ReadPosRankSum</ABBREV>
+	<DEFINITION_SOURCE_URL>https://software.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_annotator_ReadPosRankSumTest.php</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>GATK Documentation</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>VQRS recalibrated variant quality score log odds</DEFINITION>
+	<DISPLAY_NAME>variant quality score log-odds</DISPLAY_NAME>
+	<NAME>ExAC variant quality score log-odds</NAME>
+	<ADDITIONAL_INFO_LINK>https://software.broadinstitute.org/gatk/guide/article?id=39</ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_VQSLOD</ABBREV>
+	<DEFINITION_SOURCE_URL>https://software.broadinstitute.org/gatk/guide/article?id=39</DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>GATK Documentation: Variant Quality Score Recalibration (VQSR)</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>annotation which was the worst performing (furthest divergent) in the GATK Gaussian mixture model, likely the reason why the variant was filtered out</DEFINITION>
+	<DISPLAY_NAME>culprit</DISPLAY_NAME>
+	<NAME>ExAC culprit</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_culprit</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>GATK Documentation</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Histogram for DP</DEFINITION>
+	<DISPLAY_NAME>DP_HIST</DISPLAY_NAME>
+	<NAME>ExAC DP_HIST</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_DP_HIST</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README.histogram_annotation</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Histogram for GQ</DEFINITION>
+	<DISPLAY_NAME>GQ_HIST</DISPLAY_NAME>
+	<NAME>ExAC GQ_HIST</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>exac_GQ_HIST</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ftp://ftp.broadinstitute.org/pub/ExAC_release/release0.3/README.histogram_annotation</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION></DEFINITION>
+	<DISPLAY_NAME>Allele Frequency</DISPLAY_NAME>
+	<NAME>Kaviar Allele Frequency</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>kaviar_allele_frequency</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION></DEFINITION>
+	<DISPLAY_NAME>Allele Count</DISPLAY_NAME>
+	<NAME>Kaviar Allele Count</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>kaviar_allele_count</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>Allele total over all datasources</DEFINITION>
+	<DISPLAY_NAME>Allele Total</DISPLAY_NAME>
+	<NAME>Kavia Allele Total</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>allele_total_over_all_datasources</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION></DEFINITION>
+	<DISPLAY_NAME>Data sources containing allele</DISPLAY_NAME>
+	<NAME>Kaviar Data Sources Containing Allele</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>data_sources_containing_allele</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>predicted change in percent-inclusion due to the variant reported, as the maximum across tissues (in percent)</DEFINITION>
+	<DISPLAY_NAME>dPSI Max Tissue</DISPLAY_NAME>
+	<NAME>dpsi_max_tissue</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>spidex_max_tissue</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION> Z-score of dpsi_max_tissue relative to the distribution of dPSI that are due to common SNPs</DEFINITION>
+	<DISPLAY_NAME>z-score</DISPLAY_NAME>
+	<NAME>dpsi_max_tissue z-score</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>spidex_zscore</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>computational prediction of transcription factor occupancy (ranges from 0 to 1 with 0 being no activity)</DEFINITION>
+	<DISPLAY_NAME>score percentile</DISPLAY_NAME>
+	<NAME>CATO score percentile</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>cato_score_percentile</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>a list of transcription factor motifs potentially affected by a variant</DEFINITION>
+	<DISPLAY_NAME>affected motifs</DISPLAY_NAME>
+	<NAME>CATO motifs affected</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>cato_motif_affected</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>a list of cell types with DNAse Hypersensitivity regions potentially affected by a variant</DEFINITION>
+	<DISPLAY_NAME>affected cell types</DISPLAY_NAME>
+	<NAME>CATO affected cell types</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>cato_cell_types_affected</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>allele Occurence in the Scripps Wellderly Genome Resource (SWGR)</DEFINITION>
+	<DISPLAY_NAME></DISPLAY_NAME>
+	<NAME>SWGR</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>present_in_wellderly_cohort</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE>ADSP Annotation WG File Release 2 README</DEFINITION_SOURCE>
+</Niagads::Annotation>
+<Niagads::Annotation>
+	<DEFINITION>BP-range of the variant</DEFINITION>
+	<DISPLAY_NAME>BP-range</DISPLAY_NAME>
+	<NAME>Location</NAME>
+	<ADDITIONAL_INFO_LINK></ADDITIONAL_INFO_LINK>
+	<ABBREV>location</ABBREV>
+	<DEFINITION_SOURCE_URL></DEFINITION_SOURCE_URL>
+	<DEFINITION_SOURCE></DEFINITION_SOURCE>
+</Niagads::Annotation>

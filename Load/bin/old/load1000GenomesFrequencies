@@ -1,0 +1,101 @@
+#!/bin/bash
+
+set -e # exit on error
+
+FILE_PATH=/mnt/data/GenomicsDB/snps/1000genomes
+NAME="1000 Genomes"
+VERSION="Phase 3"
+DESCRIPTION="The 1000 Genomes Project is a public catalog of human genetic variants comprising frequencies of at least 1% in the studied populations"
+RELEASE_DATE="2013-05-02"
+DOWNLOAD_URL="ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/"
+
+POPULATION=all
+
+LOAD_EXTERNAL_DATABASE=false
+GENERATE_LOAD_FILES=false
+LOAD_DATA=false
+PATCH=false
+COMMIT=""
+PREPROCESS=false
+
+
+while [[ $# -gt 0 ]]
+do
+
+    key="$1"
+
+    case $key in
+	--generateLoadFiles)
+	    GENERATE_LOAD_FILES=true
+	    ;;
+	--loadXdbr)
+	    LOAD_EXTERNAL_DATABASE=true
+	    ;;
+	--loadSupportingTables)
+	    LOAD_TABLES=true
+	    ;;
+	--preprocess)
+	    PREPROCESS=true
+	    ;;
+	--loadData)
+	    LOAD_DATA=true
+	    POPULATION="$2"
+	    shift
+	    ;;
+	--runPatches)
+	    PATCH=true
+	    ;;
+	--commit)
+	    COMMIT="--commit"
+	    ;;
+	*)
+            # unknown option
+	    ;;
+    esac
+    shift # past argument or value
+done
+
+
+if [ ${LOAD_EXTERNAL_DATABASE} = true ] ; then
+    echo "Loading ExternalDatabase & ExternalDatabaseRelease"
+    COMMENT="GUS::Supported::Plugin::InsertExternalDatabase --name \"${NAME}\""
+    ga GUS::Supported::Plugin::InsertExternalDatabase --name "${NAME}" --comment "${COMMENT}" ${COMMIT}
+
+    COMMENT="GUS::Supported::Plugin::InsertExternalDatabaseRls --databaseName \"${NAME}\" --databaseVersion \"${VERSION}\" --description \"${DESCRIPTION}\"  --releaseDate ${RELEASE_DATE} --downloadUrl ${DOWNLOAD_URL}"
+    ga GUS::Supported::Plugin::InsertExternalDatabaseRls --databaseName "${NAME}" --databaseVersion "${VERSION}" --description "${DESCRIPTION}"  --releaseDate ${RELEASE_DATE} --downloadUrl ${DOWNLOAD_URL} --comment "${COMMENT}" ${COMMIT}
+fi
+
+if [ ${GENERATE_LOAD_FILES} = true ] ; then
+    POPULATIONS=SAS,AFR,AF,EAS,EUR,AMR
+    generate1000GenomesFreqLoadData --dir ${FILE_PATH} --outputDir ${FILE_PATH}/preprocess --population ${POPULATIONS}
+fi
+
+if [ ${LOAD_DATA} = true ] ; then
+    SOURCE_ID="1000 Genomes Phase 3"
+    ABBREVS=(SAS AFR AF EAS EUR AMR)
+    POPULATIONS=("South Asian" "African" "Global" "East Asian" "European" "Ad Mixed American")
+    DESCRIPTION="allele frequency calculated as the allele count (AC) divided by the chromosome count (AN) for the specified super population"
+    PREPROCESS_FILE_PATH=${FILE_PATH}/preprocess
+
+    for i in "${!ABBREVS[@]}"
+    do
+	if [ ${POPULATION} = "${ABBREVS[$i]}" ] || [ ${POPULATION} = "all" ] ; then
+	    echo "Population: ${POPULATIONS[$i]}: ${ABBREVS[$i]}"
+	    POP_ABBREV=${ABBREVS[$i]}
+	    if [ ${POP_ABBREV} = AF ] ; then
+		POP_ABBREV=GAF
+		DESCRIPTION="global allele frequency calculated as the allele count (AC) divided by the chromosome count (AN) across the 1000 Genomes super populations"
+	    fi
+	
+	    COMMENT="ga NiagadsData::Load::Plugin::InsertPopulationProtocolAppNode --population \"${POPULATIONS[$i]}\" --abbrev ${POP_ABBREV} --source \"${SOURCE_ID}\" --description \"${DESCRIPTION}\" --extDbRlsSpec \"${NAME}|${VERSION}\""
+	    echo "Running ${COMMENT}"
+	    ga NiagadsData::Load::Plugin::InsertPopulationProtocolAppNode --population "${POPULATIONS[$i]}" --abbrev ${POP_ABBREV} --source "${SOURCE_ID}" --description "${DESCRIPTION}" --extDbRlsSpec "${NAME}|${VERSION}" --comment "${COMMENT}" ${COMMIT} > insert_population_pan_${ABBREVS[$i]}.log 2>&1
+	    
+	    COMMENT="ga NiagadsData::Load::Plugin::InsertVariantAlleleFrequency --file ${PREPROCESS_FILE_PATH}/niagads_variantallelefrequency_1000GenomesFreq_${ABBREVS[$i]}.csv --extDbRlsSpec \"${NAME}|${VERSION}\" --population ${POP_ABBREV} --popExtDbRlsSpec \"${NAME}|${VERSION}\" --matchVcfPosition"
+	    echo "Running ${COMMENT}"
+	    ga NiagadsData::Load::Plugin::InsertVariantAlleleFrequency --file ${PREPROCESS_FILE_PATH}/niagads_variantallelefrequency_1000GenomesFreq_${ABBREVS[$i]}.csv --extDbRlsSpec "${NAME}|${VERSION}" --population ${POP_ABBREV} --popExtDbRlsSpec "${NAME}|${VERSION}" --matchVcfPosition --comment "${COMMENT}" ${COMMIT}  > load_vaf_1000Genomes_${ABBREVS[$i]}.log 2>&1
+	fi
+    done
+  
+
+fi

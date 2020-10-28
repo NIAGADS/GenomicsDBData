@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+
+'''
+patch ADSP Vep Load File
+identify ENSR regulatory elements
+replace || with |NULL|
+'''
+from __future__ import print_function
+import sys
+import re
+
+file = sys.argv[1]
+
+with open(file, 'r') as f:
+    for line in f:
+        line = line.rstrip()
+        line = re.sub('transcript\|ENSR','regulatory element|ENSR', line)
+        line = re.sub('\|\|', '|NULL|', line)
+
+        print(line, file=sys.stdout)

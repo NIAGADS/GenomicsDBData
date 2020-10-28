@@ -1,0 +1,95 @@
+#!/bin/bash
+# load ADSP Most Severe Consequences
+
+set -e # exit on error
+
+FILE_PATH=/mnt/data/GenomicsDB/ADSP/annotation
+PREPROCESS_DIR=${FILE_PATH}/preprocess
+FILE_PATH=${FILE_PATH}/original_files
+NAME="ADSP Annotation WG File: Ensembl VEP"
+VERSION="80-most-severe"
+
+# ABBREVS=(WGS WES WES_INDEL)
+ABBREVS=(WES_INDEL)
+# DATASETS=("WGS Version 1 SNVs" "WES Release 3 SNVs" "WES Release 3 small INDELs")
+DATASETS=("WES Release 3 small INDELs")
+
+# FILES=(WGS_v1_vep80_most_severe_consequence_per_gene_no_WES.txt.gz WES_release3_vep80_most_severe_consequence_per_gene.txt.gz WES_small_indels_vep80_most_severe_consequence_per_gene.txt.gz)
+FILES=(WES_small_indels_vep80_most_severe_consequence_per_gene.txt.gz)
+LOAD_EXTERNAL_DATABASE=false
+LOAD_DATA=false
+PREPROCESS=false
+PATCH=false
+COMMIT=""
+
+while [[ $# -gt 0 ]]
+do
+
+    key="$1"
+
+    case $key in
+	--loadXdbr)
+	    LOAD_EXTERNAL_DATABASE=true
+	    ;;
+	--preprocess)
+	    PREPROCESS=true
+	    ;;
+	--loadData)
+	    LOAD_DATA=true
+	    ;;
+	--runPatches)
+	    PATCH=true
+	    ;;
+	--commit)
+	    COMMIT="--commit"
+	    ;;
+	*)
+	    echo "Unknown option ${key}"
+            # unknown option
+	    ;;
+    esac
+    shift # past argument or value
+done
+
+# create external database and external database release entries
+# if [ ${LOAD_EXTERNAL_DATABASE} = true ] ; then
+#    eho " not sure if necessary"#
+#fi
+
+if [ ${PREPROCESS} = true ] ; then 
+    for i in "${!DATASETS[@]}"
+    do
+	ANALYSIS_SOURCE_IDS=(ADSP_VEP_MS ADSP_VEP_MS_PC ADSP_VEP_MS_LOF ADSP_VEP_MS_NO_NMD)
+	# ANALYSIS_SOURCE_IDS=(ADSP_VEP_MS_LOF)
+	if [ ${DATASETS[$i]} = "WGS Version 1 SNVs"] ; then
+	    ANALYSIS_SOURCE_IDS=(ADSP_VEP_MS)
+	fi
+	for ANALYSIS in "${ANALYSIS_SOURCE_IDS[@]}"
+	do
+	    echo "Preprocessing ${DATASETS[$i]}: ${ANALYSIS}"
+	    COMMENT="ga NiagadsData::Load::Plugin::LoadAdspMostSevereVEP --file ${FILE_PATH}/${FILES[$i]} --extDbRlsSpec \"${NAME}|${VERSION}\" --preprocessDir ${PREPROCESS_DIR} --dataset \"${DATASETS[$i]}\" --preprocess --protocolSourceIdPrefix ${ANALYSIS}"
+	    echo "Running ${COMMENT}"
+	    ga NiagadsData::Load::Plugin::LoadAdspMostSevereVEP --file ${FILE_PATH}/${FILES[$i]} --extDbRlsSpec "${NAME}|${VERSION}" --preprocessDir ${PREPROCESS_DIR} --dataset "${DATASETS[$i]}" --preprocess  --protocolSourceIdPrefix ${ANALYSIS} --comment "${COMMENT}" > preprocess_adsp_most_severe_vep_${ABBREVS[$i]}_${ANALYSIS}.log 2>&1
+	done
+    done
+fi
+
+
+# run loading plugin
+if [ ${LOAD_DATA} = true ] ; then
+    for i in "${!DATASETS[@]}"
+    do
+	ANALYSIS_SOURCE_IDS=(ADSP_VEP_MS ADSP_VEP_MS_PC ADSP_VEP_MS_LOF ADSP_VEP_MS_NO_NMD)
+	# ANALYSIS_SOURCE_IDS=(ADSP_VEP_MS_LOF)
+	if [ ${DATASETS[$i]} = "WGS Version 1 SNVs"] ; then
+	    ANALYSIS_SOURCE_IDS=(ADSP_VEP_MS)
+	fi
+	for ANALYSIS in "${ANALYSIS_SOURCE_IDS[@]}"
+	do
+	    echo "Loading ${DATASETS[$i]}: ${ANALYSIS}"
+	    COMMENT="ga NiagadsData::Load::Plugin::LoadAdspMostSevereVEP --file ${FILE_PATH}/${FILES[$i]} --extDbRlsSpec \"${NAME}|${VERSION}\" --preprocessDir ${PREPROCESS_DIR} --dataset \"${DATASETS[$i]}\" --protocolSourceIdPrefix ${ANALYSIS}"
+	    echo "Running ${COMMENT}"
+	    ga NiagadsData::Load::Plugin::LoadAdspMostSevereVEP --file ${FILE_PATH}/${FILES[$i]} --extDbRlsSpec "${NAME}|${VERSION}" --preprocessDir ${PREPROCESS_DIR} --dataset "${DATASETS[$i]}" --protocolSourceIdPrefix ${ANALYSIS} --comment "${COMMENT}" ${COMMIT} > load_adsp_most_severe_vep_${ABBREVS[$i]}_${ANALYSIS}.log 2>&1
+	done
+    done
+fi

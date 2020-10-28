@@ -1,0 +1,155 @@
+{    
+    "file": {
+	"path": "$DATA_DIR/NIAGADS_GWAS",
+	"accession": "NG00073",
+	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
+	"cadd_database_directory": "$DATA_DIR/CADD/v16",
+	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
+	"vep_cache_directory": "$DATA_DIR/VEP_CACHE"
+    },
+    "external_database": {
+	"name": "NIAGADS",
+	"version": "current",
+	"download_url": "https://www.niagads.org/datasets/",
+	"id_url": "https://www.niagads.org/",
+	"description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
+	"accession": "NIAGADS",
+	"type": "Genetic variation"
+    },
+    "foreach": [	
+	{
+	    "MEM": {
+		"file": "epad_cc_mem_metalresults.txt",
+		"sourceId": "@file.accession+_MEM",
+		"name": "Memory predominant AD subgroup",
+		"description": "summary statistics from a case-control analyses of a memory predominant Alzheimer’s disease subgroup",
+		"characteristics": {
+		    "diagnosis": "Alzheimer's disease",
+		    "biomarker": "memory performance",
+		    "covariate specification": "value:age, sex, and population stratification"
+		}
+	    }
+	},
+	{
+	    "VSP": {
+		"file": "epad_cc_vsp_metalresults.txt",
+		"sourceId": "@file.accession+_VSP",
+		"name": "Visuospatial predominant AD subgroup",
+		"description": "summary statistics from a case-control analyses of a visuospatial predominant Alzheimer’s disease subgroup",
+		"characteristics": {
+		    "diagnosis": "Alzheimer's disease",
+		    "biomarker": "value:visuospatial impairment",
+		    "covariate specification": "value:age, sex, and population stratification"
+		}
+	    }
+	},
+	{
+	    "LANG": {
+		"file": "epad_cc_lan_metalresults.txt",
+		"sourceId": "@file.accession+_LANG",
+		"name": "Language predominant AD subgroup",
+		"description": "summary statistics from a case-control analyses of a language predominant Alzheimer’s disease subgroup",
+		"characteristics": {
+		    "diagnosis": "Alzheimer's disease",
+		    "biomarker": "linguistic error measurement",
+		    "covariate specification": "value:age, sex, and population stratification"
+		}
+	    }
+	},
+	{
+	    "NONE": {
+		"file": "epad_cc_none_metalresults.txt",
+		"sourceId": "@file.accession+_NONE",
+		"name": "No domain-specific substantial cognitive impairment AD subgroup",
+		"description": "summary statistics from a case-control analyses of an Alzheimer’s disease subgroup with no domains (memory, visuospatial, language) of substantial relative cognitive impairment",
+		"characteristics": {
+		    "diagnosis": "Alzheimer's disease",
+		    "covariate specification": "value:age, sex, and population stratification",
+		    "biomarker": ["linguistic error measurement","value:visuospatial impairment","memory performance"]
+		}
+	    }
+	},
+	{
+	    "MIX": {
+		"file": "epad_cc_mix_metalresults.txt",
+		"sourceId": "@file.accession+_MIX",
+		"name": "Multiple substantial cognitive impairments AD subgroup",
+		"description": "summary statistics from a case-control analyses of an Alzheimer’s disease subgroup with multiple domains (memory, visuospatial, language) of substantial cognitive impairment",
+		"characteristics": {
+		    "diagnosis": "Alzheimer's disease",
+		    "biomarker": ["linguistic error measurement","value:visuospatial impairment","memory performance"],
+		    "covariate specification": "value:age, sex, and population stratification"
+		}
+	    }
+	}
+
+    ],
+    "load": [
+	{
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::InsertStudy",
+		"skip":true,
+		"parameters": {
+		    "attribution": "Crane",
+		    "name": "Cognitively defined late-onset Alzheimer’s disease subgroups",
+		    "description" : "GWAS meta-analysis summary statistics for case-control analyses of five cognitively defined Alzheimer’s disease subgroups, assigned on the basis of relative performance in memory, executive functioning, visuospatial functioning, and language at the time of Alzheimer’s disease diagnosis.",
+		    "sourceId": "@file.accession",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version"
+		}		
+	    }
+	},
+	{
+	    "foreach" : true,
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::InsertProtocolAppNode",
+		"skip":true,
+		"parameters" : {
+		    "attribution": "Crane",
+		    "type": "Genetic variation",
+		    "subtype": "GWAS summary statistics",
+		    "description": "foreach",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "characteristics": "foreach",
+		    "sourceId" : "foreach",
+		    "name": "foreach",
+		    "studyId": "@file.accession"
+		}
+	    }
+	}, 
+	{
+	    "foreach": true,
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::LoadVariantGWASResult",
+		"parameters": {
+		    "file": "foreach",
+		    "sourceId": "foreach",
+		    "fileDir" : "@file.path/@file.accession",
+		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
+		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
+		    "caddDatabaseDir": "@file.cadd_database_directory",
+		    "vepCacheDir": "@file.vep_cache_directory",
+		    "testAllele": "Allele1",
+		    "refAllele": "Allele2",
+		    "chromosome": "CHR",
+		    "position": "BP",
+		    "marker": "SNP",
+		    "pvalue": "Pvalue",
+		    "frequency": "Freq1",
+		    "genomeBuild": "GRCh37.p13",
+		    "genomeWideSignificanceThreshold": "5e-8",
+		    "checkAltVariants":"true",
+		    "restrictedStats": {
+			"frequency_se": "FreqSE",
+			"min_frequency": "MinFreq",
+			"max_frequency": "MaxFreq",
+			"effect": "Effect",
+			"std_err": "StdErr",
+			"direction": "Direction",
+			"het_df": "HetDf",
+			"het_pvalue": "HetPVal"
+		    }
+		}
+	    }
+	}	
+    ]
+}

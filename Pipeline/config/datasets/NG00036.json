@@ -1,0 +1,111 @@
+{    
+    "file": {
+	"path": "$DATA_DIR/NIAGADS_GWAS",
+	"accession": "NG00036",
+	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
+	"cadd_database_directory": "$DATA_DIR/CADD/v16",
+	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
+	"vep_cache_directory": "$DATA_DIR/VEP_CACHE"
+    },
+    "external_database": {
+	"name": "NIAGADS",
+	"version": "current",
+	"download_url": "https://www.niagads.org/datasets/",
+	"id_url": "https://www.niagads.org/",
+	"description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
+	"accession": "NIAGADS",
+	"type": "Genetic variation"
+    },
+    "foreach": [	
+	{
+	    "STAGE1": {
+		"file": "IGAP_stage_1.txt",
+		"sourceId": "@file.accession+_STAGE1",
+		"name": "IGAP: Stage 1",
+		"description" : "summary statistics from the stage 1 IGAP (2013) meta-analysis of previously published GWAS datasets consisting of >7 million variants tested for association in 17,008 Alzheimer's disease cases and 37,154 controls",
+		"characteristics": {
+		    "diagnosis": "Alzheimer's disease",
+		    "population": "European",
+		    "covariate specification": "value:adjusted for age, sex, and population stratification"
+		}
+	    }
+	},
+	{
+	    "STAGE12": {
+		"file": "IGAP_stage_1_2_combined.txt",
+		"sourceId": "@file.accession+_STAGE12",
+		"name": "IGAP: Stages 1 and 2",
+		"description" : "summary statistics from the combined stage 1 and stage 2 IGAP (2013) meta-analysis of previously published GWAS datasets consisting of >7 million variants tested for association in 17,008 Alzheimer's disease cases and 37,154 controls (stage 1) and 11,632 variants genotyped and tested for association in an independent set of 8,572 Alzheimer's disease cases and 11,312 controls (stage 2)",
+		"characteristics": {
+		    "diagnosis": "Alzheimer's disease",
+		    "population": "European",
+		    "covariate specification": "value:adjusted for age, sex, and population stratification"
+		}
+	    }
+	}
+    ],
+   
+    "load": [
+	{
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::InsertStudy",
+		"skip": true,
+		"parameters": {
+		    "name": "IGAP",
+		    "attribution": "Lambert et al. 2013",
+		    "description": "Summary statistics from the International Genomics of Alzheimer's Project (IGAP) 2013 GWAS study of Alzheimer's disease.",
+		    "sourceId": "@file.accession",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version"
+		}		
+	    }
+	},
+	{
+	    "foreach" : true,
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::InsertProtocolAppNode",
+		"skip": true,
+		"parameters" : {
+		    "attribution": "Lambert et al. 2013",
+		    "type": "Genetic variation",
+		    "subtype": "GWAS summary statistics",
+		    "description": "foreach",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "characteristics": "foreach",
+		    "sourceId" : "foreach",
+		    "name": "foreach",
+		    "studyId": "@file.accession"
+		}
+	    }
+	}, 
+	{
+	    "foreach": true,
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::LoadVariantGWASResult",
+		"parameters": {
+		    "file": "foreach",
+		    "sourceId": "foreach",
+		    "fileDir" : "@file.path/@file.accession",
+		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
+		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
+		    "caddDatabaseDir": "@file.cadd_database_directory",
+		    "vepCacheDir": "@file.vep_cache_directory",
+		    "testAllele": "Effect_allele",
+		    "refAllele": "Non_Effect_allele",
+		    "chromosome": "Chromosome",
+		    "position": "Position",
+		    "pvalue": "Pvalue",
+		    "genomeBuild": "GRCh37.p13",
+		    "marker": "MarkerName",
+		    "genomeWideSignificanceThreshold": "5e-8",
+		    "checkAltVariants":"true",
+		    "restrictedStats": {
+			"beta": "Beta",
+			"std_err": "SE"
+		    }
+		}
+	    }
+	}
+
+	
+    ]
+}

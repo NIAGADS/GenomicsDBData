@@ -1,0 +1,88 @@
+#!/bin/bash
+
+set -e # exit on error
+
+FILE_PATH=/mnt/data/GenomicsDB/niagads_resources/
+ACCESSION=NG00056
+
+FILES=(META_Transethnic_AD_GWAS_Discovery_in_ALL.sample.tbx META_Transethnic_AD_GWAS_Discovery_in_APOE.e4.carriers.tbx META_Transethnic_AD_GWAS_Discovery_in_APOE.e4.non-carriers.tbx META_Transethnic_AD_GWAS_Discovery_INT_wt_APOE.e4.status.tbx)
+
+PAN_NAMES=("Transethnic LOAD: All Samples" "Transethnic LOAD: APOE e4 Carriers" "Transethnic LOAD: APOE e4 Non-Carriers" "Transethnic LOAD: All Samples, adjusted for APOE e4")
+PAN_DESCRIPTIONS=("summary statistics for a transethnic GWAS study of late-onset AD, adjusted for age, sex, and population stratification (all samples)"
+"summary statistics for APOE e4 carriers in a transethnic GWAS study of late-onset AD, adjusted for age, sex, and population stratification "
+"summary statistics for APOE e4 non-carriers in a transethnic GWAS study of late-onset AD, adjusted for age, sex, and population stratification"
+"summary statistics for a transethnic GWAS study of late-onset AD, adjusted for age, sex, population stratification, and APOE e4 status(all samples)"
+)
+PAN_SOURCE_IDS=(ALL APOE_E4 NON_APOE_E4 ALL_APOE_ADJ)
+N_DATASETS=4
+EXT_DBS_RLS="NIAGADS Datasets|current"
+
+LOAD_DATA=false
+GENERATE_LOAD_FILES=false
+LOAD_STUDY=false
+PATCH=false
+COMMIT=""
+PREPROCESS=""
+
+
+while [[ $# -gt 0 ]]
+do
+
+    key="$1"
+
+    case $key in
+	--loadStudy)
+	    LOAD_STUDY=true
+	    PROTOCOL_APP_NODE_ID="$2"
+	    shift
+	    ;;
+	--loadData)
+	    LOAD_DATA=true
+	    ;;
+	--runPatches)
+	    PATCH=true
+	    ;;
+	--preprocess)
+	    PREPROCESS="--preprocess"
+	    ;;
+	--generateLoadFiles)
+	    GENERATE_LOAD_FILES=true
+	    ;;
+	--commit)
+	    COMMIT="--commit"
+	    ;;
+	*)
+            # unknown option
+	    ;;
+    esac
+    shift # past argument or value
+done
+
+# run loading plugin
+if [ ${GENERATE_LOAD_FILES} = true ] ; then 
+
+    for i in "${!FILES[@]}" ; 
+    do
+	echo "Generating Load File from ${FILES[$i]}"
+	generateGwasLoadFileFromPlinkMetaAnalysis --dir ${FILE_PATH}${ACCESSION} --file ${FILES[$i]} --sourceId ${ACCESSION}_${PAN_SOURCE_IDS[$i]} --oneBased
+    done
+fi
+
+
+if [ ${LOAD_DATA} = true ] ; then 
+   
+    for i in "${!PAN_SOURCE_IDS[@]}" ; 
+    do
+	echo "Loading ${PAN_NAMES[$i]}: ${ACCESSION}_${PAN_SOURCE_IDS[$i]}"
+	COMMENT="ga NiagadsData::Load::Plugin::LoadSeqVariationResult --file ${FILE_PATH}${ACCESSION}/gwas_summary_statistics_${ACCESSION}_${PAN_SOURCE_IDS[$i]}.csv --extDbRlsSpec "${EXT_DBS_RLS}" --name "${PAN_NAMES[$i]}" --description "${PAN_DESCRIPTIONS[$i]}" --sourceId ${ACCESSION}_${PAN_SOURCE_IDS[$i]} --variantSource NIAGADS --subtypeSourceRef STATO_0000091 --checkAltVariantIds  --studySourceId ${ACCESSION} --ignoreMergedSnps"
+	ga NiagadsData::Load::Plugin::LoadSeqVariationResult --file ${FILE_PATH}${ACCESSION}/gwas_summary_statistics_${ACCESSION}_${PAN_SOURCE_IDS[$i]}.csv --extDbRlsSpec "${EXT_DBS_RLS}" --name "${PAN_NAMES[$i]}" --description "${PAN_DESCRIPTIONS[$i]}" --sourceId ${ACCESSION}_${PAN_SOURCE_IDS[$i]} --variantSource NIAGADS --subtypeSourceRef STATO_0000091 --checkAltVariantIds  --studySourceId ${ACCESSION} --ignoreMergedSnps --comment "${COMMENT}"  ${COMMIT} > load_seqvariationresult_${ACCESSION}_${PAN_SOURCE_IDS[$i]}.log 2>&1 
+
+    done
+fi
+
+
+# patches
+if [ ${PATCH} = true ] ; then
+    echo "no patches "
+    # runSqlPatch --file ?
+fi

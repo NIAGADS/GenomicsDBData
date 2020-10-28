@@ -1,0 +1,81 @@
+#!/usr/bin/env python2.7
+#pylint:disable=invalid-name
+"""
+add descriptions (gene product names) to the ensembl gff
+"""
+from __future__ import print_function
+
+import argparse
+import sys
+
+import psycopg2
+
+from CBILCommonDataPg.Utils.utils import warning, die
+from CBILCommonDataPg.Utils.postgres_dbi import Database
+
+
+SQL = (
+    """
+SELECT annotation->>'name' AS description
+FROM NIAGADS.GeneAnnotation
+WHERE source_id = %(source_id)s
+    """
+)
+
+
+def update_gff():
+    '''
+    iterate over GFF file, fetching description from database for each gene
+    concatenate description to info field and output line to stdout
+    '''
+    with database.cursor() as cursor:
+        with open(args.file, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if not line.startswith('#'): 
+                    values = line.split('\t')
+                    if values[2] == 'gene':
+                        info = dict(x.split('=') for x in values[-1].split(';'))
+                        cursor.execute(SQL, {'source_id': info['gene_id']})
+                        result = cursor.fetchone() # should be only one result
+                        if result is not None: # ensembl gene may not have any annotation in database
+                            if result[0] is not None:
+                                line = line + ';description=' + result[0]
+                        
+                        if args.addDisplayId:
+                            line = line + ';DISPLAY_ID=' + info['gene_name']
+                    if args.addDisplayId and values[2] == 'transcript':
+                        info = dict(x.split('=') for x in values[-1].split(';'))
+                        line = line + ';DISPLAY_ID=' + info['transcript_name']
+                print(line, file=sys.stdout)
+
+
+
+    
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--file', help="full path to the GFF file", required=True)
+    parser.add_argument('--addDisplayId', action="store_true", help="add a DISPLAY_ID field")
+    parser.add_argument('--gusConfigFile',
+                        help="GUS config file. If not provided, "
+                        + "assumes default: $GUS_HOME/conf/gus.config",
+                        required=False)
+    args = parser.parse_args()
+
+    try:
+        database = Database(args.gusConfigFile)
+        database.connect()
+        update_gff()
+
+    except psycopg2.DatabaseError as e:
+        warning("DATABASE ERROR:", str(e))
+        sys.exit(1)
+    except IOError as e:
+        warning("ERROR reading or writing", args.file, str(e))
+        sys.exit(1)
+    finally:
+        if database is not None:
+            database.close()
+    

@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+#pylint: disable=invalid-name
+'''
+Generates load file from ADSP annotation for ExAC frequency data
+'''
+
+from __future__ import with_statement
+from __future__ import print_function
+
+import argparse
+import os.path as path
+import gzip
+import csv
+
+from CBILCommonDataPg.Utils.utils import qw, xstr, warning
+
+def parseValue(value):
+    '''
+    replace null strings with None
+    '''
+    if value == '-':
+        return None
+    if value == 'NULL':
+        return None
+    return float(value)
+
+
+def generate_load_file():
+    '''
+    parse input file and generate load file
+    '''
+    fileName = path.join(args.dir, args.fileName)
+    outputFile = path.join(args.outputDir, 'niagads_variantallelefrequency_adsp_exacfreq_'
+                           + args.population + '_'
+                           + args.subset + '.csv')
+    count = 0
+    variants = {}
+    with open(outputFile, 'w') as of:
+        print('|'.join(fields), file=of)
+        with gzip.open(fileName) as f:
+            reader = csv.DictReader(f, delimiter='\t')
+            for row in reader:
+                count = count + 1
+                if count % 50000 == 0:
+                    warning("Processed " + xstr(count) + " rows")
+
+                variantId = row['seq_meta_var_id']
+                allele = row['alt']
+                if variantId in variants: # skip duplicates
+                    continue
+                ac = parseValue(row['exac_AC_' + args.population])
+                an = parseValue(row['exac_AN_' + args.population])
+                if an is not None and an != 0:
+                    # warning("variant", variantId, "AC", str(ac), "AN", str(an))
+                    frequency = ac / an
+                    if frequency != 0.0: # don't load 0 freq; can infer
+                        print('|'.join((variantId, allele, xstr(frequency))), file=of)
+                    variants[variantId] = 1
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="generate ADSP-ExAC Frequency load file")
+    parser.add_argument('-d', '--dir', help="file directory", required=True)
+    parser.add_argument('-f', '--fileName', help="adsp annotation file name", required=True)
+    parser.add_argument('-s', '--subset', help="adsp subset", required=True)
+    parser.add_argument('-p', '--population',
+                        help="ExAC population, one of: SAS,FIN,AFR,AMR,EAS,OTH,NFE,Adj",
+                        required=True)
+    parser.add_argument('-o', '--outputDir', help="preprocess dir", required=True);
+    args = parser.parse_args()
+
+    fields = qw('variant_id allele frequency')
+    generate_load_file()

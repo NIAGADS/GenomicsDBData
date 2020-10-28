@@ -1,0 +1,28 @@
+{
+    "file": {
+	"path": "$SHARED_DATA_DIR/ontologies/edam",
+	"file": "EDAM_1.21.owl"
+    },
+    "external_database": {
+	"name": "EDAM",
+	"description": "EDAM is a simple ontology of well established, familiar concepts that are prevalent within bioinformatics, including types of data and data identifiers, data formats, operations and topics.",
+	"version": "1.21",
+	"release_date": "2018-07-31",
+	"download_url": "http://data.bioontology.org/ontologies/EDAM/submissions/38/download?apikey=8b5b7825-538d-40e0-9e9e-5ab9274a9aeb",
+	"id_url": "http://edamontology.org/",
+	"accession": "EDAM",
+	"type": "Ontology and terminology"
+    },
+    "load": [
+	{
+	    "plugin": {
+		"name": "GUS::Supported::Plugin::InsertOntologyTermsAndRelationships",
+		"parameters": {
+		    "inFile": "@file.path/@file.file",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "relTypeExtDbRlsSpec": "Niagads Ontology|current"
+		}
+	    }
+	}
+    ]
+}

@@ -1,0 +1,15 @@
+{
+    "file": {
+	"file": "$SHARED_DATA_DIR/gene_ontology/UniProtKB/goa_human.gpi.gz"
+    },
+    "external_database": {
+	"name": "UniProt GOA: Gene Product Information",
+	"description": "Companion to a Gene Ontoloy Gene Product Association data (GPAD) file that provides alternative identifier mappings and related gene product information for gene products linked to gene ontology terms in the companion GPAD file.",
+	"version": "2019-02-13",
+	"release_date": "2019-02-13",
+	"id_url": "https://www.ebi.ac.uk/GOA",
+	"download_url": "ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/HUMAN/goa_huma.gpi.gz",
+	"accession": "UNIPROT_GPI",
+	"type": "Data identity and mapping"
+    }
+}

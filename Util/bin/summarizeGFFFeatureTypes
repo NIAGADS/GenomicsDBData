@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+# pylint: disable=invalid-name
+
+"""
+Parse GFF file and extract unique list of feature types
+"""
+
+from __future__ import print_function
+from __future__ import with_statement
+
+import gzip
+import sys
+from CBILCommonDataPg.Utils.utils import die, warning
+
+fileName = sys.argv[1]
+
+types = {}
+
+fn_open = gzip.open if fileName.endswith('.gz') else open
+with fn_open(fileName, 'r') as f:
+    for line in f:
+        if line.startswith('#'):
+            continue
+        else:
+            fields = line.rstrip().rstrip(';').split('\t')
+            feature = fields[2]
+            info = fields[8].split(';')
+
+            # iterate over list, return transcript type when found
+            featureType = next((attribute.split('=')[1] for attribute in info \
+                                if feature + '_type' in attribute), None)
+
+            if featureType is None:
+                continue
+                
+            if feature in types:
+                types[feature].update([featureType])
+            else:
+                types[feature] = set([featureType])
+
+                
+for feature, featureTypes in types.iteritems():
+    print(feature + ":", file=sys.stdout)
+    for ft in featureTypes:
+        print('\t' + ft, file=sys.stdout)
+        
+

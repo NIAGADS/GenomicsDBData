@@ -1,0 +1,98 @@
+#!/bin/bash
+
+set -e # exit on error
+
+FILE_PATH=/mnt/data/GenomicsDB/niagads_resources/NG00045/hg19_updated_1162017
+ACCESSION=NG00045
+
+FILES=(  CLOGIT_collected_p_values_PSP.EUR_all_alleles_OR_new.txt  Copy_of_combined.phase_.1.2.05202010_new.txt Copy_of_combined.phase_.1.2.PSP_.EUR_.02092011_new.txt)
+PAN_NAMES=(
+"PSP Europeans: Stage 1"
+"PSP: Stages 1 and 2"
+"PSP Europeans: Stages 1 and 2")
+PAN_DESCRIPTIONS=(
+"summary statistics from stage 1 (autopsy cases) of a GWAS study of Progressive Supranuclear Palsy (PSP) in Europeans"
+"summary statistics from the combined stage 1 (autopsy cases) and stage 2 (clinically diagnosed cases) meta-analysis of a GWAS study of Progressive Supranuclear Palsy (PSP)"
+"summary statistics from combined stage 1 (autopsy cases) and stage 2 (clinically diagnosed cases) meta-analysis of a GWAS study of Progressive Supranuclear Palsy (PSP) in Europeans")
+PAN_SOURCE_IDS=(STAGE1 EUR_STAGE1 STAGE12 EUR_STAGE12)
+N_DATASETS=4
+EXT_DBS_RLS="NIAGADS Datasets|current"
+
+LOAD_DATA=false
+GENERATE_LOAD_FILES=false
+LOAD_STUDY=false
+PATCH=false
+COMMIT=""
+PREPROCESS=""
+
+
+while [[ $# -gt 0 ]]
+do
+
+    key="$1"
+
+    case $key in
+	--loadStudy)
+	    LOAD_STUDY=true
+	    PROTOCOL_APP_NODE_ID="$2"
+	    shift
+	    ;;
+	--loadData)
+	    LOAD_DATA=true
+	    ;;
+	--runPatches)
+	    PATCH=true
+	    ;;
+	--preprocess)
+	    PREPROCESS="--preprocess"
+	    ;;
+	--generateLoadFile)
+	    GENERATE_LOAD_FILES=true
+	    ;;
+	--commit)
+	    COMMIT="--commit"
+	    ;;
+	*)
+            # unknown option
+	    ;;
+    esac
+    shift # past argument or value
+done
+
+# run loading plugin
+if [ ${GENERATE_LOAD_FILES} = true ] ; then 
+# chr	SNP.name	location_hg19.bp	location_hg18.bp	A	B	major	maf.case	maf.cntr	p.add	p.dom	p.rec	Z.add	Z.dom	Z.rec
+    for i in "${!PAN_SOURCE_IDS[@]}" ; 
+    do
+	echo "Generating Load File for ${FILES[$i]}: ${PAN_SOURCE_IDS[$i]}"
+
+	if [[ ${PAN_SOURCE_IDS[$i]} == *"STAGE12"* ]]; then
+	    PVALUE=p.add.JOINT
+	    if [[ ${PAN_SOURCE_IDS[$i]} == *"EUR_STAGE12"* ]]; then	
+		PVALUE=p.joint
+	    fi
+	    generateGwasLoadFileFromTabDelim --dir ${FILE_PATH} -f ${FILES[$i]} --sourceId ${ACCESSION}_${PAN_SOURCE_IDS[$i]} --pvalue ${PVALUE} --chr chr.1 --position location_hg19.bp.1 --allele1 A.1 --allele2 B.1 --testAllele major.1
+	else
+	    echo "RUNNING: generateGwasLoadFileFromTabDelim --dir ${FILE_PATH} -f ${FILES[$i]} --sourceId ${ACCESSION}_${PAN_SOURCE_IDS[$i]} --pvalue p.add --chr chr --position location_hg19.bp --allele1 A --allele2 B --testAllele major"
+	    generateGwasLoadFileFromTabDelim --dir ${FILE_PATH} -f ${FILES[$i]} --sourceId ${ACCESSION}_${PAN_SOURCE_IDS[$i]} --pvalue p.add --chr chr --position location_hg19.bp --allele1 A --allele2 B --testAllele major
+	fi
+    done
+fi
+
+
+if [ ${LOAD_DATA} = true ] ; then 
+   
+    for i in "${!PAN_SOURCE_IDS[@]}" ; 
+    do
+	echo "Loading ${ACCESSION}_${PAN_SOURCE_IDS[$i]}"
+	COMMENT="ga NiagadsData::Load::Plugin::LoadSeqVariationResult --file ${FILE_PATH}/gwas_summary_statistics_${ACCESSION}_${PAN_SOURCE_IDS[$i]}.csv --extDbRlsSpec "${EXT_DBS_RLS}" --name "${PAN_NAMES[$i]}" --description "${PAN_DESCRIPTIONS[$i]}" --sourceId ${ACCESSION}_${PAN_SOURCE_IDS[$i]} --variantSource NIAGADS --subtypeSourceRef STATO_0000091 --checkAltVariantIds  --studySourceId ${ACCESSION} --ignoreMergedSnps"
+	ga NiagadsData::Load::Plugin::LoadSeqVariationResult --file ${FILE_PATH}/gwas_summary_statistics_${ACCESSION}_${PAN_SOURCE_IDS[$i]}.csv --extDbRlsSpec "${EXT_DBS_RLS}" --name "${PAN_NAMES[$i]}" --description "${PAN_DESCRIPTIONS[$i]}" --sourceId ${ACCESSION}_${PAN_SOURCE_IDS[$i]} --variantSource NIAGADS --subtypeSourceRef STATO_0000091 --checkAltVariantIds  --studySourceId ${ACCESSION} --ignoreMergedSnps  --comment "${COMMENT}"  ${COMMIT} > load_seqvariationresult_${ACCESSION}_${PAN_SOURCE_IDS[$i]}.log 2>&1 
+    done
+fi
+
+
+# patches
+if [ ${PATCH} = true ] ; then
+    echo "no patches "
+    # runSqlPatch --file ?
+fi

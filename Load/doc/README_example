@@ -1,0 +1,31 @@
+# Resource Description
+# =================================
+NAME:
+VERSION: 
+DOWNLOAD_DATE:
+MODIFIED_DATE: 
+RELEASE_DATE: 
+DISPLAY_NAME: 
+DESCRIPTION: 
+LINK_OUT_URL: 
+TRACK: 
+SOURCE_ID: 
+DOWNLOAD_URL:
+DOWNLOAD_COMMAND:
+TYPE:
+SUBTYPE:  
+
+# Files
+# =================================
+
+
+# Location of Files
+# =================================
+FERMI_FILE_PATH:
+
+
+# GenomicsDB Workflow
+# =================================
+PREPROCESSING: 
+LOAD:
+TRACK:

@@ -1,0 +1,147 @@
+{    
+    "file": {
+	"path": "$DATA_DIR/NIAGADS_GWAS",
+	"accession": "NG00078",
+	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
+	"cadd_database_directory": "$DATA_DIR/CADD/v16",
+	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
+	"vep_cache_directory": "$DATA_DIR/VEP_CACHE"
+    },
+    "external_database": {
+	"name": "NIAGADS",
+	"version": "current",
+	"download_url": "https://www.niagads.org/datasets/",
+	"id_url": "https://www.niagads.org/",
+	"description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
+	"accession": "NIAGADS",
+	"type": "Genetic variation"
+    },
+    "foreach": [	
+	{
+	    "ALL": {
+		"file": "META_IGAP.7.ADGC.15_MODEL_All.Sample.txt",
+		"sourceId": "@file.accession+_ALL",
+		"name": "IGAP APOE-Stratified Analysis: All Samples",
+		"description" : "Summary statistics from an APOE-stratified GWAS of the IGAP discovery phase dataset.",
+		"characteristics": {
+		    "diagnosis": "Alzheimer's disease",
+		    "population": "European",
+		    "covariate specification": "value:sex, age, APOEε4 status, and population stratification"
+		}
+	    }
+	},
+	{
+	    "APOE4_CARRIERS": {
+		"file": "META_IGAP.7.ADGC.15_MODEL_APOE.e4.Carriers.txt",
+		"sourceId": "@file.accession+_APOE4_CARRIERS",
+		"name": "IGAP APOE-Stratified Analysis: APOEε4 Carriers",
+		"description" : "Summary statistics from an APOE-stratified GWAS of the APOEε4+ (10,352 cases and 9,207 controls) subgroup of the IGAP discovery phase dataset.",
+		"characteristics": {
+		    "diagnosis": "Alzheimer's disease",
+		    "population": "European",
+		    "APOE carrier status": "APOE ε4 carrier",
+		    "covariate specification": "value:sex, age, APOEε4 status, and population stratification"
+		}
+	    }
+	},
+	{
+	    "APOE4_NON_CARRIERS": {
+		"file": "META_IGAP.7.ADGC.15_MODEL_APOE.e4.Noncarriers.txt",
+		"sourceId": "@file.accession+_APOE4_NON_CARRIERS",
+		"name": "IGAP APOE-Stratified Analysis: APOEε4 Non-Carriers",
+		"description" : "Summary statistics from an APOE-stratified GWAS of the APOEε4- (7,184 cases and 26,968 controls) subgroup of the IGAP discovery phase dataset.",
+		"characteristics": {
+		    "diagnosis": "Alzheimer's disease",
+		    "population": "European",
+		    "APOE carrier status": "APOE ε4 non-carrier",
+		    "covariate specification": "value:sex, age, APOEε4 status, and population stratification"
+		}
+	    }
+	},
+	{
+	    "INT": {
+		"file": "META_IGAP.7.ADGC.15_MODEL_INT.wt.APOE.txt",
+		"sourceId": "@file.accession+_INT",
+		"name": "IGAP APOE-Stratified Analysis: SNP - APOEε4 Status Interaction",
+		"description" : "Summary statistics from a genome-wide interaction test between SNPs and APOEε4 status in the IGAP discovery phase dataset.",
+		"characteristics": {
+		    "diagnosis": "Alzheimer's disease",
+		    "population": "European",
+		    "covariate specification": "value:sex, age, and population stratification"
+		}
+	    }
+	}
+    ],
+  
+    "load": [
+	{
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::InsertStudy",
+		"skip":"true",
+		"parameters": {
+		    "name": "IGAP APOE-Stratified Analysis",
+		    "attribution": "Jun et al. 2016",
+		    "description" : "Summary statistics from an APOE-stratified genome-wide association meta-analysis for AD status was performed using the IGAP discovery phase dataset.  Summary statistics are available for all samples, as well as subsets of just APOEε4 carriers or APOEε4 non-carriers.  Summary statistics from an interaction test with APOEε4 status are also available.",
+		    "sourceId": "@file.accession",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version"
+		}		
+	    }
+	},
+	{
+	    "foreach" : true,
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::InsertProtocolAppNode",
+		"skip":"true",
+		"parameters" : {
+		    "attribution": "Jun et al. 2016",
+		    "type": "Genetic variation",
+		    "subtype": "GWAS summary statistics",
+		    "description": "foreach",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "characteristics": "foreach",
+		    "sourceId" : "foreach",
+		    "name": "foreach",
+		    "studyId": "@file.accession"
+		}
+	    }
+	}, 
+	{
+	    "foreach": true,
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::LoadVariantGWASResult",
+		"parameters": {
+		    "file": "foreach",
+		    "sourceId": "foreach",
+		    "fileDir" : "@file.path/@file.accession",
+		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
+		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
+		    "caddDatabaseDir": "@file.cadd_database_directory",
+		    "vepCacheDir": "@file.vep_cache_directory",
+		    "testAllele": "Allele1",
+		    "refAllele": "Allele2",
+		    "chromosome": "#CHR",
+		    "position": "BP",
+		    "marker": "SNP",
+		    "pvalue": "P-value",
+		    "frequency": "Freq1",
+		    "genomeBuild": "GRCh37.p13",
+		    "genomeWideSignificanceThreshold": "5e-8",
+		    "checkAltIndels":"true",
+		    "restrictedStats": {
+			"frequency_se": "FreqSE",
+			"effect": "Effect",
+			"std_err": "StdErr",
+			"direction": "Direction",
+			"het_i_sq": "HetISq",
+			"het_chi_sq": "HetChiSq",
+			"het_df": "HetDf",
+			"het_pvalue": "HetPVal",
+			"other": ["Information", "WITHIN", "UP50k", "DOWN50K"]
+		    }
+		}
+	    }
+	}
+
+	
+    ]
+}

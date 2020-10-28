@@ -1,0 +1,2 @@
+ALTER TABLE STUDY.ProtocolAppNode ADD COLUMN attribution VARCHAR(150);
+ALTER TABLE STUDY.ProtocolAppNode ADD COLUMN track_display JSONB;

@@ -1,0 +1,10 @@
+##fileformat=VCFv4.0
+##source=NIAGADS GenomicsDB
+##reference=GRCh37.p13
+##INFO=<ID=VC,Number=1,Type=String,Description="Variation Class">
+##INFO=<ID=EFFECT,Number=.,Type=String,Description="top effect impact">
+##INFO=<ID=CONSEQUENCE,Number=.,Type=String,Description="top effect">
+##INFO=<ID=VPKEY,Number=.,Type=String,Description="variant primary key">
+##INFO=<ID=ADSP_WES,Number=.,Type=String,Description="Is ADSP WES?">
+##INFO=<ID=ADSP_WGS,Number=.,Type=String,Description="Is ADSP WGS?">
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO

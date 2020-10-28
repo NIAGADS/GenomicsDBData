@@ -1,0 +1,108 @@
+{    
+    "file": {
+	"path": "$DATA_DIR/NIAGADS_GWAS",
+	"accession": "NG00058",
+	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
+	"cadd_database_directory": "$DATA_DIR/CADD/v16",
+	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
+	"vep_cache_directory": "$DATA_DIR/VEP_CACHE"
+    },
+    "external_database": {
+	"name": "NIAGADS",
+	"version": "current",
+	"download_url": "https://www.niagads.org/datasets/",
+	"id_url": "https://www.niagads.org/",
+	"description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
+	"accession": "NIAGADS",
+	"type": "Genetic variation"
+    },
+    "foreach": [	
+	{
+	    "ALL": {
+		"file": "IGAP_meta1_pos_stats_1filtered_upload.txt",
+		"sourceId": "@file.accession",
+		"name": "IGAP: AD Age of Onset Survival",
+		"description" : "Summary statistics from a genome-wide survival analysis of the age of onset (AAO) of Alzheimer's disease and AAO-defined survival.",
+		"characteristics": {
+		    "diagnosis": "Alzheimer's disease",
+		    "population": "European",
+		    "covariate specification": "value:country of origin, sex, age, and population stratification"
+		}
+	    }
+	}
+    ],
+    "load": [
+	{
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::InsertStudy",
+		"skip": true,
+		"parameters": {
+		    "name": "IGAP: AD Age of Onset Survival",
+		    "attribution": "Huang et al. 2017",
+		    "description": "Summary statistics from a genome-wide survival analysis of the age of onset (AAO) of Alzheimer's disease and AAO-defined survival, using IGAP samples from the ADGC, ADNI, GERAD, EADI, and CHARGE cohorts.",
+		    "sourceId": "@file.accession",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version"
+		}		
+	    }
+	},
+	{
+	    "foreach" : true,
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::InsertProtocolAppNode",
+		"skip": true,
+		"parameters" : {
+		    "attribution": "Huang et al. 2017",
+		    "type": "Genetic variation",
+		    "subtype": "GWAS summary statistics",
+		    "description": "foreach",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "characteristics": "foreach",
+		    "sourceId" : "foreach",
+		    "name": "foreach",
+		    "studyId": "@file.accession"
+		}
+	    }
+	}, 
+	{
+	    "foreach": true,
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::LoadVariantGWASResult",
+		"parameters": {
+		    "file": "foreach",
+		    "sourceId": "foreach",
+		    "fileDir" : "@file.path/@file.accession",
+		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
+		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
+		    "caddDatabaseDir": "@file.cadd_database_directory",
+		    "vepCacheDir": "@file.vep_cache_directory",
+		    "testAllele": "Allele1",
+		    "refAllele": "Allele2",
+		    "chromosome": "CHR",
+		    "position": "BP",
+		    "pvalue": "P",
+		    "marker": "SNP",
+		    "frequency": "Freq1",
+		    "genomeBuild": "GRCh37.p13",
+		    "genomeWideSignificanceThreshold": "5e-8",
+		    "checkAltVariants":"true",
+		    "restrictedStats": {
+			"frequency_se": "FreqSE",
+			"min_frequency": "MinFreq",
+			"max_frequency": "MaxFreq",
+			"effect": "Effect",
+			"std_err": "StdErr",
+			"direction": "Direction",
+			"het_i_sq": "HetISq",
+			"het_chi_sq": "HetChiSq",
+			"het_df": "HetDf",
+			"het_pvalue": "HetPVal",
+			"hazard_ratio": "HR",
+			"hazard_ratio_CI95": "CI_95%"
+		    }
+		}
+	    }
+	}
+
+	
+    ]
+}

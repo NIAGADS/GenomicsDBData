@@ -1,0 +1,99 @@
+{
+    "file": {
+	"path": "$DATA_DIR/GENCODE",
+	"gene_gff": "gencode.v27.annotation.gff3",
+	"protein_fasta": "gencode.v27.pc_translations.fa",
+	"chr_map": "$PROJECT_HOME/CBILDataCommon/Load/data/chr_map_gencode27_grch38_p10.txt" 
+    },
+    "external_database": {
+	"name": "GENCODE",
+	"version": "27/GRCh38.p10-Gene",
+	"release_date": "2013-12-01",
+	"download_url": "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/",
+	"id_url": "https://www.gencodegenes.org/human/release_27.html",
+	"description": "comprehensive gene annotation and translated protein sequences for GRCh38.p10 assembly",
+	"accession": "GENCODE_GRCH38_GENE",
+	"type": "Gene structure"
+    },
+    "preprocess": [
+	{
+	    "script" : {
+		"name": "gunzip",
+		"parameters": {
+		    "none": "@file.path/@file.gene_gff+.gz"
+		}
+	    }
+	},
+	{
+	    "script" : {
+		"name": "gunzip",
+		"parameters": {
+		    "none": "@file.path/@file.protein_fasta+.gz"
+		}
+	    }
+	},
+	{
+	    "script": {
+		"name": "addProteinSeqs2GffFile",
+		"parameters": {
+		    "none": "@file.path/@file.gene_gff @file.path/@file.protein_fasta @file.path/pseqs_gene_annnotation.gff3"
+		}
+	    }
+	},
+	{
+	    "script": {
+		"name": "gzip",
+		"parameters": {
+		    "none": "@file.path/@file.protein_fasta"
+		}
+	    }
+	},
+
+	{
+	    "script": {
+		"name": "preprocessIsfGFF",
+		"parameters": {
+		    "none": "@file.path/pseqs_gene_annotation.gff3 @file.path/patched_gene_annotation.gff3"
+		}
+	    } 
+	},
+	{
+	    "script": {
+		"name": "gzip",
+		"parameters": {
+		    "none": "@file.path/@file.gene_gff"
+		}
+	    }
+	}
+    ],
+    "load": [
+	{
+	    "plugin": {
+		"name": "GUS::Supported::Plugin::InsertSequenceFeatures",
+		"parameters": {
+		    "extDbName": "@external_database.name",
+		    "extDbRlsVer": "27/GRCh38.p10",
+		    "organism": "Homo sapiens",
+		    "mapFile": "$GUS_HOME/lib/xml/isf/gencodeGFF3Features2Gus.xml",
+		    "inputFileExtension": "gff3",
+		    "inputFileOrDir" : "@file.path/patched_gene_annotation.gff3",
+		    "fileFormat": "gff3",
+		    "soExtDbSpec": "Sequence Ontology|3.1",
+		    "seqSoTerm": "chromosome",
+		    "validationLog": "@file.path/validation.log",
+		    "bioperlTreeOutput": "@file.path/bioperlTree.log",
+		    "seqIdColumn": "source_id",
+		    "naSequenceSubClass": "ExternalNASequence",
+		    "chromosomeMapFile": "@file.chr_map"
+		    
+		}
+	    }
+	},
+	{
+	    "plugin": {
+		"name": "CBILDataCommon::Load::Plugin::LoadGeneFromGeneFeature"
+	    }    
+	}
+    ],
+    "tuning":["$GUS_HOME/lib/sql/niagads_schema/mviews/createTranscriptAttributes_MV.sql"]
+}

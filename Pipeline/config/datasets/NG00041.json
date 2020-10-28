@@ -1,0 +1,273 @@
+{    
+    "file": {
+	"path": "$DATA_DIR/NIAGADS_GWAS",
+	"accession": "NG00041",
+	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
+	"cadd_database_directory": "$DATA_DIR/CADD/v16",
+	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
+	"vep_cache_directory": "$DATA_DIR/VEP_CACHE"
+    },
+    "external_database": {
+	"name": "NIAGADS",
+	"version": "current",
+	"download_url": "https://www.niagads.org/datasets/",
+	"id_url": "https://www.niagads.org/",
+	"description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
+	"accession": "NIAGADS",
+	"type": "Genetic variation"
+    },
+    "foreach": [	
+	{
+	    "LEWY": {
+		"file": "lewybody_any.Meta.annotate1.2013May03.txt",
+		"sourceId": "@file.accession+_LEWY",
+		"name": "Lewy body disease (presence vs. absence)",
+		"description" : "summary statistics from a comparative study of neuropathological features of Alzheimer's disease and related dementias: LBD (presence vs. absence)",
+		"characteristics": {
+		    "diagnosis": ["autopsy-based diagnosis", "Lewy body dementia"],
+		    "neuropathology": "Lewy body",
+		    "covariate specification": "value:population stratification"
+		}
+	    }
+	},
+	{ 
+	    "NP_CONS": {
+		"file": "np_status_cons.Meta.annotate1.2013May03.txt",
+		"sourceId": "@file.accession+_NP_CONS",
+		"name": "Neuritic plaques (presence vs. absence); conservative",
+		"description" : "summary statistics from a comparative study of neuropathological features of Alzheimer's disease and related dementias: NPs (presence versus absence) restricted to cases and controls with complete documentation",
+		"characteristics": {
+		    "diagnosis": "autopsy-based diagnosis",
+		    "neuropathology" : "neuritic plaques",
+		    "covariate specification": "value:population stratification"
+		}
+	    }
+	},
+	{ 
+	    "CAA": {
+		"file": "amy_ang_any.Meta.annotate1.2013May03.txt",
+		"sourceId": "@file.accession+_CAA",
+		"name": "Cerebral amyloid angiopathy (presence vs. absence)",
+		"description" : "summary statistics from a comparative study of neuropathological features of Alzheimer's disease and related dementias: CAA (presence vs. absence)",
+		"characteristics": {
+		    "diagnosis": "autopsy-based diagnosis",
+		    "neuropathology" : "cerebral amyloid angiopathy",
+		    "covariate specification": "value:population stratification"
+		}
+	    }
+	},
+	{ 
+	    "LEWY_5" : {
+		"file": "lewybody_ord.Meta.annotate1.2013May03.txt",
+		"sourceId": "@file.accession+_LEWY_5",
+		"name": "Lewy body disease (5 category ranking)",
+		"description" : "summary statistics from a comparative study of neuropathological features of Alzheimer's disease and related dementias: LBD (none, brainstem-predominant, limbic, neocortical, and other regions or not specified)",
+		"characteristics": {
+		    "diagnosis": ["autopsy-based diagnosis", "Lewy body dementia"],
+		    "neuropathology": "Lewy body",
+		    "covariate specification": "value:population stratification"
+		}
+	    }
+	},
+	{
+	    "NP_RELAX": {
+		"file": "np_status_relax.Meta.annotate1.2013May03.txt",
+		"sourceId": "@file.accession+_NP_RELAX",
+		"name": "Neuritic plaques (presence vs. absence); relaxed",
+		"description" : "summary statistics from a comparative study of neuropathological features of Alzheimer's disease and related dementias: NPs (presence versus absence), inclusive primary dataset allowing some incomplete documentation of pathological features",
+	"characteristics": {
+		    "diagnosis": "autopsy-based diagnosis",
+		    "neuropathology" : "neuritic plaques",
+		    "covariate specification": "value:population stratification"
+		}
+	    }
+	},
+	{
+	    "NFT_BGROUPS":{	
+		"file": "braak_4.Meta.annotate1.2013May03.txt",
+		"sourceId": "@file.accession+_NFT_BGROUPS",
+		"name": "Neurofibrillary tangles (ranked by Braak groups)",
+		"description" : "summary statistics from a comparative study of neuropathological features of Alzheimer's disease and related dementias: NFTs (Braak stages)",
+		"characteristics": {
+		    "diagnosis": "autopsy-based diagnosis",
+		    "neuropathology": ["neurofibrillary tangles", "Braak Stages"],
+		    "covariate specification": "value:population stratification"
+		}
+	    }
+	},
+	{
+	    "HS":{
+		"file": "med_temp_scler_any.Meta.annotate1.2013May03.txt",
+		"sourceId": "@file.accession+_HS",
+		"name": "Hippocampal sclerosis of the elderly (presence vs. absence)",
+		"description" : "summary statistics from a comparative study of neuropathological features of Alzheimer's disease and related dementias: HS (presence vs. absence)",
+		"characteristics": {
+		    "diagnosis": "autopsy-based diagnosis",
+		    "neuropathology": "hippocampal sclerosis of aging",
+		    "covariate specification": "value:population stratification"
+		}
+	    }
+	},
+	{
+	    "STATUS":{
+		"file": "status.Meta.annotate1.2013May03.txt",
+		"sourceId": "@file.accession+_STATUS",
+		"name": "Neuropathologic features of AD and related dementias (case/control)",
+		"description" : "summary statistics from a comparative study of neuropathological features of Alzheimer's disease and related dementias: general case/control analysis comparing individuals with dementia and AD neuropathologies  (cases) to those without clinical dementia and none or minimal AD neuropathologic changes (controls); includes both primary (relaxed documentation) and conservative (strict documentation) datasets",
+		"characteristics": {
+		    "diagnosis": ["autopsy-based diagnosis", "Alzheimer's disease", "dementia", "Lewy body dementia"],
+		    "neuropathology": ["neuritic plaques", "vascular brain injury", "neurofibrillary tangles", "hippocampal sclerosis of aging", "Lewy body", "cerebral amyloid angiopathy"],
+		    "covariate specification": "value:population stratification"
+		}
+	    }
+	},
+	{
+	    "NFT_BSTAGES":{
+		"file": "braak_ord.Meta.annotate1.2013May03.txt",
+		"sourceId": "@file.accession+_NFT_BSTAGES",
+		"name": "Neurofibrillary tangles (ranked by Braak stages)",
+		"description" : "summary statistics from a comparative study of neuropathological features of Alzheimer's disease and related dementias: NFTs (Braak stages)",
+		"characteristics": {
+		    "diagnosis": "autopsy-based diagnosis",
+		    "neuropathology": ["neurofibrillary tangles", "Braak Stages"],
+		    "covariate specification": "value:population stratification"
+		}
+	    }
+	},
+	{
+	    "NP":{
+		"file": "np_any.Meta.annotate1.2013May03.txt",
+		"sourceId": "@file.accession+_NP",
+		"name": "Neuritic plaques (presence vs. absence)",
+		"description" : "summary statistics from a comparative study of neuropathological features of Alzheimer's disease and related dementias: NPs (presence vs. absence)",
+		"characteristics": {
+		    "diagnosis": "autopsy-based diagnosis",
+		    "neuropathology": "neuritic plaques",
+		    "covariate specification": "value:population stratification"
+		}
+	    }
+	},
+	{
+	    "VBI":{
+		"file": "VBI_any.Meta.annotate1.2013May03.txt",
+		"sourceId": "@file.accession+_VBI",
+		"name": "Vascular brain injury (presence vs. absence); relaxed",
+		"description" : "summary statistics from a comparative study of neuropathological features of Alzheimer's disease and related dementias: VBI (presence vs. absence)",
+		"characteristics": {
+		    "diagnosis": "autopsy-based diagnosis", 
+		    "neuropathology": "vascular brain injury",
+		    "covariate specification": "value:population stratification"
+		}
+	    }
+	},
+	{
+	    "LEWY_3":{
+		"file": "lewybody_3.Meta.annotate1.2013May03.txt",
+		"sourceId": "@file.accession+_LEWY_3",
+		"name": "Lewy body disease (3 category ranking)",
+		"description" : "summary statistics from a comparative study of neuropathological features of Alzheimer's disease and related dementias: LBD (none, brainstem-predominant, and all other regions or not specified)",
+		"characteristics": {
+		    "diagnosis": ["autopsy-based diagnosis", "Lewy body dementia"],
+		    "neuropathology" : "Lewy body",
+		    "covariate specification": "value:population stratification"
+		}
+	    }
+	},
+	{
+	    "NP_CERAD":{
+		"file": "np_ord.Meta.annotate1.2013May22.txt",
+		"sourceId": "@file.accession+_NP_CERAD",
+		"name": "Neuritic plaques (ranked by CERAD score)",
+		"description" : "summary statistics from a comparative study of neuropathological features of Alzheimer's disease and related dementias: NPs (CERAD score)",
+		"characteristics": {
+		    "diagnosis": "autopsy-based diagnosis", 
+		    "neuropathology": ["neuritic plaques", "CERAD score"],
+		    "covariate specification": "value:population stratification"
+		}
+	    }
+	},
+	{
+	    "VBI_3":{
+		"file": "vbi_ord.Meta.annotate1.2013May03.txt",
+		"sourceId": "@file.accession+_VBI_3",
+		"name":"Vascular brain injury (3 category ranking)",
+		"description" : "summary statistics from a comparative study of neuropathological features of Alzheimer's disease and related dementias: VBI (none, any microinfarcts, any lacunar or territorial infarcts)",
+		"characteristics": {
+		    "diagnosis": "autopsy-based diagnosis", 
+		    "neuropathology": "vascular brain injury",
+		    "covariate specification": "value:population stratification"
+		}
+	    }
+	}
+	
+    ],
+
+  
+    "load": [
+	{
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::InsertStudy",
+		"skip":true,
+		"parameters": {
+		    "attribution": "Beecham et al. 2014",
+		    "name": "Neuropathologic Features of AD and Related Dementias",
+		    "description": "Summary statistics from a GWAS study of known genetic risk loci for Alzheimer's disease dementia using neuropathologic data from 4,914 brain autopsies.",
+		    "sourceId": "@file.accession",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version"
+		}		
+	    }
+	},
+	{
+	    "foreach" : true,
+	    "plugin": {
+		"skip": true,
+		"name": "NiagadsData::Load::Plugin::InsertProtocolAppNode",
+		"parameters" : {
+		    "attribution": "Beecham et al. 2014",
+		    "type": "Genetic variation",
+		    "subtype": "GWAS summary statistics",
+		    "description": "foreach",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "characteristics": "foreach",
+		    "sourceId" : "foreach",
+		    "name": "foreach",
+		    "studyId": "@file.accession"
+		}
+	    }
+	}, 
+	{
+	    "foreach": true,
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::LoadVariantGWASResult",
+		"parameters": {
+		    "file": "foreach",
+		    "sourceId": "foreach",
+		    "fileDir" : "@file.path/@file.accession",
+		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
+		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
+		    "caddDatabaseDir": "@file.cadd_database_directory",
+		    "vepCacheDir": "@file.vep_cache_directory",
+		    "testAllele": "Effect_allele",
+		    "refAllele": "Reference_allele",
+		    "frequency": "freq1",
+		    "pvalue": "Pval",
+		    "genomeBuild": "GRCh37.p13",
+		    "chromosome": "chr",
+		    "position": "pos",
+		    "genomeWideSignificanceThreshold": "5e-8",
+		    "checkAltVariants":"true",
+		    "restrictedStats": {
+			"direction": "Direction",
+			"frequency_se" : "freqSE",
+			"min_frequency": "minFreq",
+			"max_frequency": "maxFreq",
+			"effect": "Effect",
+			"std_err": "StdErr"
+		    }
+		}
+	    }
+	}
+
+	
+    ]
+}

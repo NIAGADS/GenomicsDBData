@@ -1,0 +1,209 @@
+<?xml version="1.0"?>
+<Ontology xmlns="http://www.w3.org/2002/07/owl#"
+     xml:base="http://org.niagads.genomicsdb/2016/5/niagads"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     ontologyIRI="http://org.niagads.genomicsdb/2016/5/niagads">
+    <Prefix name="owl" IRI="http://www.w3.org/2002/07/owl#"/>
+    <Prefix name="rdf" IRI="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+    <Prefix name="xml" IRI="http://www.w3.org/XML/1998/namespace"/>
+    <Prefix name="xsd" IRI="http://www.w3.org/2001/XMLSchema#"/>
+    <Prefix name="rdfs" IRI="http://www.w3.org/2000/01/rdf-schema#"/>
+    <Prefix name="niagads" IRI="http://org.niagads.genomicsdb/2016/5/niagads/"/>
+    <Import>http://purl.obolibrary.org/obo/obi_tf_binding_site.owl</Import>
+    <Import>http://purl.obolibrary.org/obo/obcs_covariate_specification.owl</Import>
+    <Declaration>
+        <Class IRI="/NO_0000007"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="/NO_0000006"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="/NO_0000009"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="/NO_0000008"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="/NO_0000003"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="/NO_0000013"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="/NO_0000005"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="/NO_0000004"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="/NO_0000010"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="/NO_0000012"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="/NO_0000011"/>
+    </Declaration>
+    <SubClassOf>
+        <Class IRI="/NO_0000003"/>
+        <Class IRI="http://purl.obolibrary.org/obo/OBI_0000905"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="/NO_0000004"/>
+        <Class IRI="http://purl.obolibrary.org/obo/OBI_0000905"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="/NO_0000005"/>
+        <Class IRI="http://purl.obolibrary.org/obo/OBI_0000905"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="/NO_0000006"/>
+        <Class IRI="/NO_0000005"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="/NO_0000007"/>
+        <Class IRI="/NO_0000005"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="/NO_0000008"/>
+        <Class IRI="http://purl.obolibrary.org/obo/OBI_0000905"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="/NO_0000009"/>
+        <Class IRI="http://purl.obolibrary.org/obo/OBI_0000905"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="/NO_0000010"/>
+        <Class IRI="/NO_0000008"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="/NO_0000011"/>
+        <Class IRI="/NO_0000008"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="/NO_0000012"/>
+        <Class IRI="/NO_0000008"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="/NO_0000013"/>
+        <Class IRI="http://purl.obolibrary.org/obo/OBCS_0000040"/>
+    </SubClassOf>
+    <AnnotationAssertion>
+        <AnnotationProperty IRI="http://purl.obolibrary.org/obo/IAO_0000115"/>
+        <IRI>/NO_0000003</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">sequence feature annotation for a region that is hypersensitive to DNase 1 digestion when packaged as chromatin</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>/NO_0000003</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">DNase 1 hypersensitive region</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty IRI="http://purl.obolibrary.org/obo/IAO_0000115"/>
+        <IRI>/NO_0000004</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">sequence feature annotation for a region where a specific type of histone is found usually based on recognition by an antibody to a particular histone modification or variant</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>/NO_0000004</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">histone peak</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty IRI="http://purl.obolibrary.org/obo/IAO_0000115"/>
+        <IRI>/NO_0000005</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">sequence feature annotation for an enhancer region that is also transcribed</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>/NO_0000005</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">expressed enhancer</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty IRI="http://purl.obolibrary.org/obo/IAO_0000115"/>
+        <IRI>/NO_0000006</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">sequence feature annotation for an enhancer region that is transcribed and associated with a transcription start site</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>/NO_0000006</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">specifically expressed enhancer</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty IRI="http://purl.obolibrary.org/obo/IAO_0000115"/>
+        <IRI>/NO_0000007</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">sequence feature annotation for an enhancer region that is transcribed and associated with a transcription start site</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>/NO_0000007</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">TSS-associated expressed enhancer</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty IRI="http://purl.obolibrary.org/obo/IAO_0000115"/>
+        <IRI>/NO_0000008</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">information about a sequence feature associated with a known SNP</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>/NO_0000008</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">SNP Annotation</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty IRI="http://purl.obolibrary.org/obo/IAO_0000115"/>
+        <IRI>/NO_0000009</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">information about a sequence feature associated with a known gene</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>/NO_0000009</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">gene annotation</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty IRI="http://purl.obolibrary.org/obo/IAO_0000115"/>
+        <IRI>/NO_0000010</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">summary statistics from a meta-analysis of related genome-wide association studies</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>/NO_0000010</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">GWAS summary statistics</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty IRI="http://purl.obolibrary.org/obo/IAO_0000115"/>
+        <IRI>/NO_0000011</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">sequence feature annotation reflecting disease susceptibility</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>/NO_0000011</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">disease susceptibility trait</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty IRI="http://purl.obolibrary.org/obo/IAO_0000115"/>
+        <IRI>/NO_0000012</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">predicted effect and effect impact of a variant on a transcribed sequence feature</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>/NO_0000012</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">effect and predicted effect impact</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty IRI="http://purl.obolibrary.org/obo/IAO_0000115"/>
+        <IRI>/NO_0000013</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">statistical adjustment for APOE &amp;epsilon;-4 allele status</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:label"/>
+        <IRI>/NO_0000013</IRI>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#string">APOE allele number covariate</Literal>
+    </AnnotationAssertion>
+</Ontology>
+
+
+
+<!-- Generated by the OWL API (version 4.2.5.20160517-0735) https://github.com/owlcs/owlapi -->
+

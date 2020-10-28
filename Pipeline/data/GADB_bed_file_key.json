@@ -1,0 +1,17 @@
+{
+    "bed3": "chromosome;locStart;locEnd",
+    "bed4": "chromosome;locStart;locEnd;name",
+    "bed6": "chromosome;locStart;locEnd;name;score;strand",
+    "bed9": "chromosome;locStart;locEnd;source;type;strand;score;phase;attributes",
+    "bed10": "chromosome;locStart;locEnd;allele1;allele2;gene_id;tss_distance;pval_nominal;slope;slope_se",
+    "bed12": "chromosome;locStart;locEnd;name;score;strand;thickStart;thickEnd;itemRgb;blockCount;blockSizes;blockStarts",
+    "narrowPeak": "chromosome;locStart;locEnd;name;score;strand;signalValue;pValue;qValue;peak",
+    "broadPeak": "chromosome;locStart;locEnd;name;score;strand;signalValue;pValue;qValue",
+    "gappedPeak": "chromosome;locStart;locEnd;name;score;strand;thickStart;thickEnd;itemRgb;blockCount;blockSizes;blockStarts;signalValue;pValue;qValue",
+    "bedRnaElements": "chromosome;locStart;locEnd;name;score;strand;level;signif;score2",
+    "idr_peak": "chromosome;locStart;locEnd;name;score;strand;localIDR;globalIDR;rep1_locStart;rep1_locEnd;rep1_count;rep2_locStart;rep2_locEnd;rep2_count",
+    "tss_peak": "chromosome;locStart;locEnd;name;score;strand;count;gene_id;gene_name;tss_id;peak_cov",
+    "bed6+GTEx": "chromosome;locStart;locEnd;name;maf;strand;ref;alt;gene;gtex_attributes",
+    "bed6+DASHR": "chromosome;locStart;locEnd;peakID;peakExpressionValue;strand;peakEntropy5pReadEnd;peakNormalizedEntropy5p;peakMaxEntropy5p;peakEntropy3pReadEnd;peakNormalizedEntropy3p;peakMaxEntropy3p;maxProb5p;maxProb3p;maxPos5p;maxPos3p;beforePeakReadCnt;peakFoldChange;peakRPM;peakExprPercentile;annotChr;annotChrStart;annotChrEnd;rnaID;rnaClass;annotStrand;annotOverlap;peakOverlap;consMean0;consMin;consMax;genomicPartition_mRNA;overlapIds_mRNA;partitionChr_mRNA;partitionStart_mRNA;partitionEnd_mRNA;partitionStrand_mRNA;partitionBpOverlap_mRNA;genomicPartition_lncRNA;overlapIds_lncRNA;partitionChr_lncRNA;partitionStart_lncRNA;partitionEnd_lncRNA;partitionStrand_lncRNA;partitionBpOverlap_lncRNA;numRepeatOverlaps;repeat_family;repeat_id;repeatChr;repeatStart;repeatEnd;repeatStrand;repeatBpOverlap;length;tissue;anchorID;tissueSpecificity"
+}
+

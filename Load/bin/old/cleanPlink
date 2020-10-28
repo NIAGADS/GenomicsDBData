@@ -1,0 +1,36 @@
+#!/usr/bin/perl
+
+# cleanplink.pl
+# (c) Stephen D. Turner 2010 http://www.stephenturner.us/
+# This is free open-source software.
+# See http://gettinggeneticsdone.blogspot.com/p/copyright.html
+
+
+my $help = "\nUsage: $0 <input whitespace file> <tab or comma>\n\n";
+die $help if @ARGV<2;
+
+$delimiter=pop(@ARGV);
+die $help unless ($delimiter=~/tab/i|$delimiter=~/comma/i);
+@inputfiles=@ARGV;
+
+
+foreach (@inputfiles) {
+      
+  open (IN,"gzip -dc $_ |");
+  my $ofn = $_;
+  $ofn =~ s/\.gz//;
+  open (OUT," | gzip > $ofn.csv.gz");
+  while (<IN>) {
+    chomp;
+    $_ =~ s/^\s+//;		#Trim whitespace at beginning
+    $_ =~ s/\s+$//;		#Trim whitespace at end
+    if ($delimiter =~ /comma/i) {
+      $_ =~ s/\s+/,/g;		#Remaining whitespace into commas
+    } else {
+      $_ =~ s/\s+/\t/g;		#Remaining whitespace into tabs
+    }
+    #$_ =~ s/NA/-9/g;#If you want to recode NA as -9
+    print OUT "$_\n";
+  }
+}
+

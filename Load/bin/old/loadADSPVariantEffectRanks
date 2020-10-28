@@ -1,0 +1,49 @@
+#!/bin/bash
+
+set -e # exit on error
+
+FILE_PATH=/mnt/data/GenomicsDB/ADSP/annotation
+RANKING_FILE=ensembl_ranking_table.csv
+
+LOAD_DATA=false
+GENERATE_LOAD_FILES=false
+COMMIT=""
+START_AT_CHR=1
+CHR=false
+
+while [[ $# -gt 0 ]]
+do
+    key="$1"
+    case $key in
+	--loadData)
+	    LOAD_DATA=true
+	    ;;
+
+	--generateLoadFiles)
+	    GENERATE_LOAD_FILES=true
+	    ;;
+	--commit)
+	    COMMIT="--commit"
+	    ;;
+	*)
+	    echo "Unknown option; exiting..."
+            # unknown option
+	    ;;
+    esac
+    shift # past argument or value
+done
+
+if [ ${GENERATE_LOAD_FILES} = true ] ; then
+    echo "generateVariantEffectRankLoadFile --dir ${FILE_PATH} --file ${RANKING_FILE} -c consequence -r new_ranking -i new_impact"
+    generateVariantEffectRankLoadFile --dir ${FILE_PATH} --file ${RANKING_FILE} -c consequence -r new_ranking -i new_impact -p adsp_vep
+   
+fi
+
+if [ ${LOAD_DATA} = true ] ; then
+    comment="ga NiagadsData::Load::Plugin::InsertVariantEffectRankings --file ${FILE_PATH}/niagads_variant_effect_rank.csv"
+    ga NiagadsData::Load::Plugin::InsertVariantEffectRankings --file ${FILE_PATH}/niagads_variant_effect_rank.csv --comment "${COMMENT}" ${COMMIT}  > load_variant_effect_rankings.log 2>&1
+
+    FILE=$PROJECT_HOME/NiagadsData/Load/data/SnpEff_effect_rank.txt
+ comment="ga NiagadsData::Load::Plugin::InsertVariantEffectRankings --file ${FILE}"
+    ga NiagadsData::Load::Plugin::InsertVariantEffectRankings --file ${FILE} --comment "${COMMENT}" ${COMMIT}  > load_snpeff_variant_effect_rankings.log 2>&1
+fi

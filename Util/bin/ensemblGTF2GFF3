@@ -1,0 +1,154 @@
+#!/usr/bin/env python
+
+"""
+converts an Ensembl GTF to GFF3 required by
+the InsertSequenceFeaturePlugin
+"""
+
+from __future__ import print_function
+from __future__ import with_statement
+
+import argparse
+import sys
+
+import gzip
+import re
+
+from CBILDataCommon.Util.utils import warning, qw, die
+from collections import defaultdict
+from collections import OrderedDict
+
+FIELDS = qw('seqname source feature start end score strand frame attributes')
+FEATURE_TYPES = {'gene': 'gene',
+                 'transcript': 'mRNA',
+                 'exon': 'exon',
+                 'UTR': 'UTR',
+                 'start_codon': 'sttc',
+                 'stop_codon': 'stpc',
+                 'Selenocysteine': 'slnc',
+                 'CDS': 'CDS'}
+    
+
+
+def create_feature_id(attributes, featureType, featureCount):
+    ''' 
+    creates a unique ID based on feature type and attribute values
+    '''
+    if featureType == 'gene':
+        return attributes['gene_id']
+    elif featureType == 'transcript':
+        return attributes['transcript_id']
+    elif 'exon_number' in attributes:
+        return featureType + ':' + attributes['transcript_id'] + ':' + attributes['exon_number']
+    else:
+        return featureType + ':' + attributes['transcript_id'] + ':' + featureCount
+
+
+def parse_attributes(attribStr):
+    '''
+    parse out the attributes into key-value pairs
+    and makes some adjustments/additions
+    '''
+
+    values = attribStr.split('; ')
+    attributes = {}
+    for attrib in values:
+        key, value = attrib.split(' ')
+
+        # gene_biotype -> gene_type, transcript_biotype -> transcript_type
+        if 'biotype' in key:
+            key = key.replace('biotype', 'type')
+
+        # get rid of quotes
+        value = value.replace('"', '')
+
+        attributes[key] = value
+
+    return attributes
+
+
+def verify_parent(expected, assigned):
+    '''
+    verify that the assigned == expected
+    '''
+    if expected != assigned:
+        warning("Assigned Parent: " + assigned + " does not equal expected: " + expected)
+        return False
+
+    return True
+
+
+def convert_GTF2GFF3(fileName):
+    '''
+    read and convert GTF to GFF3
+    '''
+    fn_open = gzip.open if fileName.endswith('.gz') else open
+    print("##gff-version 3", file=sys.stdout)
+
+    currentGene = None
+    currentTranscript = None
+    parent = None
+    featureCounts = {}
+
+    with fn_open(fileName, 'r') as f:
+        for line in f:
+            if line.startswith('#'):
+                continue
+            else:
+                line = line.rstrip()
+                values = line.rstrip(';').split('\t') 
+                annotation = OrderedDict((field,values[index]) for index, field in enumerate(FIELDS))
+                annotation['attributes'] = parse_attributes(annotation['attributes'])
+
+                featureType = annotation['feature']
+
+                if featureType == 'gene':
+                    currentGene = annotation['attributes']['gene_id']
+                    featureCounts = {ftype:0 for ftype in FEATURE_TYPES.keys()}
+                    parent = None
+                    annotation['attributes']['ID'] = currentGene
+
+                elif featureType == 'transcript':
+                    currentTranscript = annotation['attributes']['transcript_id']
+                    annotation['attributes']['ID'] = currentTranscript
+
+                    parent = annotation['attributes']['gene_id']
+                    if not verify_parent(parent, currentGene):
+                        warning(values)
+                        die(line)
+
+                    annotation['attributes']['Parent'] = parent
+                    
+                else:
+                    parent = annotation['attributes']['transcript_id']
+                    if not verify_parent(parent, currentTranscript):
+                        warning(values)
+                        die(line)
+
+                    annotation['attributes']['Parent'] = parent
+
+                    featureCounts[featureType] = featureCounts[featureType] + 1
+                    if 'exon_number' in annotation['attributes']:
+                        annotation['attributes']['ID'] = featureType + ':' \
+                          + annotation['attributes']['transcript_id'] + ':' \
+                          + annotation['attributes']['exon_number']
+
+                    else:
+                        annotation['attributes']['ID'] = FEATURE_TYPES[featureType] + ':' \
+                          + annotation['attributes']['transcript_id'] + ':' \
+                          + str(featureCounts[featureType])
+
+                attributes = [key + "=" + value for key, value in annotation['attributes'].iteritems()]
+                annotation['attributes'] = ';'.join(attributes)
+                annotation = [value for value in annotation.itervalues()]
+                print('\t'.join(annotation), file=sys.stdout)
+
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--gtf', help="GTF file", required=True)
+
+    args = parser.parse_args()
+
+    convert_GTF2GFF3(args.gtf)

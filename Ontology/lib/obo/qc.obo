@@ -1,0 +1,56 @@
+
+[Term]
+id: NG_0000049
+name: DISTINCT_REF_ALT
+def: "FAIL: present in both Broad and Baylor, but alleles differ"
+is_a: operation_3675 ! "Variant filtering"
+
+
+[Term]
+id: NG_0000050
+name: BOTH_failed
+def: "FAIL: failed in both Broad and Baylor"
+is_a: operation_3675 ! "Variant filtering"
+
+[Term]
+id: NG_0000051
+name: BOTH_passed
+def: "PASS: pass in both Broad and Baylor"
+is_a: operation_3675 ! "Variant filtering"
+
+[Term]
+id: NG_0000052
+name: BAYLOR_failed_BROAD_uncalled
+def: "FAIL: present in Baylor, failed; uncalled in Broad"
+is_a: operation_3675 ! "Variant filtering"
+
+[Term]
+id: NG_0000053
+name: BAYLOR_passed_BROAD_uncalled
+def: "PASS: present in Baylor, passed; uncalled in Broad"
+is_a: operation_3675 ! "Variant filtering"
+
+[Term]
+id: NG_0000054
+name: BROAD_failed_BAYLOR_passed
+def: "PASS: present in both, failed in Broad, passed in Baylor"
+is_a: operation_3675 ! "Variant filtering"
+
+[Term]
+id: NG_0000055
+name: BROAD_passed_BAYLOR_failed
+def: "PASS: present in both, passed in Broad, failed in Baylor"
+is_a: operation_3675 ! "Variant filtering"
+
+[Term]
+id: NG_0000056
+name: BROAD_passed_BAYLOR_uncalled 
+def: "PASS: present in Broad, passed; uncalled in Baylor"
+is_a: operation_3675 ! "Variant filtering"
+
+[Term]
+id: NG_0000057
+name: BROAD_failed_BAYLOR_uncalled
+def: "FAIL: present in Broad, failed; uncalled in Baylor"
+is_a: operation_3675 ! "Variant filtering"
+

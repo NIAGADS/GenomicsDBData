@@ -1,0 +1,28 @@
+{
+    "file": {
+	"path": "$SHARED_DATA_DIR/ontologies/uberon",
+	"file": "uberon.owl"
+    },
+    "external_database": {
+	"name": "UBERON",
+	"description": "UBERON is an anatomical ontology that represents body parts, organs and tissues in a variety of animal species.",
+	"version": "3.3",
+	"release_date": "2018-02-28",
+	"download_url": "http://purl.obolibrary.org/obo/uberon.owl",
+	"id_url": "http://uberon.github.io/",
+	"accession": "UBERON",
+	"type": "Ontology and terminology"
+    },
+    "load": [
+	{
+	    "plugin": {
+		"name": "GUS::Supported::Plugin::InsertOntologyTermsAndRelationships",
+		"parameters": {
+		    "inFile": "@file.path/@file.file",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "relTypeExtDbRlsSpec": "Niagads Ontology|current"
+		}
+	    }
+	}
+    ]
+}

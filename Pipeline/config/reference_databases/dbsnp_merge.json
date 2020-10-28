@@ -1,0 +1,55 @@
+{
+    "file": {
+	"path": "$SHARED_DATA_DIR/dbsnp_merges",
+	"file": "refsnp-merged.json"
+    },
+    "external_database": {
+	"name": "dbSNP",
+	"version": "151-merge",
+	"release_date": "2018-03-22",
+	"download_url": "ftp://ftp.ncbi.nih.gov/snp/latest_release/JSON",
+	"id_url": "https://www.ncbi.nlm.nih.gov/snp",
+	"description": "database of merged Ref SNP (rs) identifiers",
+	"accession": "DBSNP-merge",
+	"type": "Genetic variation"
+    },
+    "preprocess": [
+	{ 
+	    "script" : {
+		"name": "bzip",
+		"parameters": {
+		    "none": "-d @file.path/@file.file+.bz2"
+		}
+	    }
+	},
+	{
+	    "script": 
+	    { 
+		"name": "dos2unix",
+		"parameters": {
+		    "none": "@file.path/@file.file"
+		}
+	    }
+	},
+	{
+	    "script": {
+		"name": "generateMergedVariantLoadFile",
+		"parameters": {
+		    "dir": "@file.path",
+		    "file": "@file.file",
+		    "lastUpdateBuild" : "151"
+		}
+	    }
+	},
+    ],
+    "load": [
+	{
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::LoadMergedVariants",
+		"parameters": {
+		    "file": "@file.path/@file.file",
+		}
+	    }
+	}
+    ]
+}

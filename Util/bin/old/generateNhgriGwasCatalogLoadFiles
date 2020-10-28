@@ -1,0 +1,240 @@
+#!/usr/bin/env python
+
+# -*- coding: utf-8 -*-
+"""
+parses the NHGRI GWAS Catalog (w/EFO mappings) and outputs the following:
+
+nhgri-catalog-data.txt: the data to be loaded in Results.SeqVariation
+nhgri-catalog-terms.txt: an 'NHGRI Trait Ontology' of traits
+nhgri-catalog-relationships.txt: relationships between EFO terms and NHGRI traits
+"""
+from __future__ import print_function
+from __future__ import with_statement
+import argparse
+import sys
+import csv
+from utils import xstr, warning
+
+"""
+DATE ADDED TO CATALOG	PUBMEDID	FIRST AUTHOR	DATE	JOURNAL	LINK	STUDY	DISEASE/TRAIT	INITIAL SAMPLE DESCRIPTION	REPLICATION SAMPLE DESCRIPTION	REGION	CHR_ID	CHR_POS	REPORTED GENE(S)	MAPPED_GENE	UPSTREAM_GENE_ID	DOWNSTREAM_GENE_ID	SNP_GENE_IDS	UPSTREAM_GENE_DISTANCE	DOWNSTREAM_GENE_DISTANCE	STRONGEST SNP-RISK ALLELE	SNPS	MERGED	SNP_ID_CURRENT	CONTEXT	INTERGENIC	RISK ALLELE FREQUENCY	P-VALUE	PVALUE_MLOG	P-VALUE (TEXT)	OR or BETA	95% CI (TEXT)	PLATFORM [SNPS PASSING QC]	CNV	MAPPED_TRAIT	MAPPED_TRAIT_URI
+"""
+
+
+soTermMap = {
+    'intron':'SO:0001627',
+    'UTR-3':'SO:0001624',
+    'nearGene-5':'SO:0001636',
+    'intergenic':'SO:0001628',
+    'cds-synon':'SO:0001819',
+    'missense':'SO:0001583',
+    'ncRNA':'SO:0001619',
+    'nearGene-3':'SO:0001634',
+    'splice-5':'SO:0001575',
+    'STOP-GAIN':'SO:0001587',
+    'UTR-5':'SO:0001623',
+    'frameshift':'SO:0001589',
+    'splice-3':'SO:0001574'
+}
+
+def parseFrequency(value): # some frequencies are ranges, just take the min
+    if '-' in value:
+        value = value.split('-')[0]
+    if ' ' in value:
+        value = value.split(' ')[0] # some frquencies are value (EA)
+    if '(' in value: # sometimes the frequency is just a text value e.g., (GC)
+        value = None;
+
+    return value;
+
+"""
+some map regions are in the following format: region, region[rsId]; region[rsId] --> only need the first
+some are region[rsId]; region[rsId] ; again only need the first
+"""
+def parseMapRegion(value): 
+    if ',' in value:
+        return value.split(', ')[0] # if comma separated, return first value
+    
+    if '[' in value: # if not comma separated, return value before first [
+        return value.split('[')[0]
+        
+    return value;
+
+def zero2none(value): # handle emptys
+    if len(value) == 0:
+        return None
+    else:
+       return value.strip();
+
+def parseContext(context, gene, altGenes):
+    if context is None:
+        return context;
+
+    if ';' in context:
+        if altGenes is None:
+            return None; # no way to map
+
+        contextList = context.split(';')
+        altGenes = altGenes.split(', ')
+        if len(contextList) != len(altGenes):
+            return None # no way to map
+        if gene is None:
+            return None # no way to determine which is most appropriate
+        if gene in altGenes:
+            return contextList[altGenes.index(gene)]
+        else:
+            return None; # no way to easily sort through this
+    else:
+        return context;
+    
+def writeData(data, xdbr, sequenceOntologyXdbr, dataFile):
+    snp = zero2none(data['SNP_ID_CURRENT'])
+    if snp is None:
+        return
+    else:
+        snp = 'rs' + snp
+
+    if len(snp) != 0: # some rs ids are empty, but the reader is not catching that as a None
+        citation = zero2none(data['PUBMEDID'])
+        phenotype = data['DISEASE/TRAIT']
+        initial = zero2none(data['INITIAL SAMPLE DESCRIPTION'])
+        replicate = zero2none(data['REPLICATION SAMPLE DESCRIPTION'])
+        # if initial is not None and replicate is not None:
+        #     strain =  initial + '|' + replicate
+        # else:
+        #     strain = None
+
+        _map = zero2none(data['REGION']) # cytogenic region
+        if _map is not None:
+            _map = parseMapRegion(_map);
+
+        gene = zero2none(data['REPORTED GENE(S)'])
+        mappedGenes = zero2none(data['MAPPED_GENE'])
+        if gene is not None and mappedGenes is not None:
+            if ',' in gene and ',' not in mappedGenes:
+                gene = mappedGenes # more accurate
+            else:
+                gene = None # too many genes reported to be informative
+
+        context = zero2none(data['CONTEXT'])
+        context = parseContext(context, gene, mappedGenes)
+        if context is not None:
+            sequenceOntologyTerm = soTermMap[context]
+        else:
+            sequenceOntologyTerm = None
+    
+        if sequenceOntologyTerm is None:
+            sequenceOntologyXdbrPrint = None
+        else:
+            sequenceOntologyXdbrPrint = sequenceOntologyXdbr
+            
+
+        frequency = zero2none(data['RISK ALLELE FREQUENCY'])
+       
+        if frequency is not None:
+            if 'NR' in frequency:
+                frequency = None;
+            else:
+                frequency = parseFrequency(frequency);
+      
+        p_value = zero2none(data['P-VALUE'])
+        odds_ratio = zero2none(data['OR or BETA'])
+
+        allele = data['STRONGEST SNP-RISK ALLELE'].split('-')# format rsId-allele
+        if 'rs' not in allele[0]:# some are SNP haplotypes, not alleles
+            allele = None  
+        else:
+            allele = allele[1] if len(allele) == 2 else None # some have no allele specified
+            if allele == '?':
+                allele = None;
+        
+       
+        # header -> all that matters is that snp_id is first 
+        print('\t'.join((snp, snp, xstr(citation), 
+                         xstr(phenotype), xdbr,#  xstr(strain),
+                         xstr(_map), xstr(allele), 
+                         xstr(frequency),
+                         xstr(p_value), xstr(odds_ratio), xstr(gene), xstr(sequenceOntologyTerm), xstr(sequenceOntologyXdbrPrint))),
+              file=dataFile)
+
+def writeTerms(data, xdbr, terms, termCount, termFile):
+    term = data['DISEASE/TRAIT']
+    if term not in terms:
+        termCount += 1
+        sourceId = 'NHGRI_TRAIT_' + str(termCount)
+        terms[term] = sourceId
+
+        # id, name, def, syn, uri, isobsolete
+        print('\t'.join((sourceId, term, 
+                         xstr(None), xstr(None),
+                         xstr(None), 'false')), 
+              file=termFile)
+
+    return terms, termCount
+    
+
+def writeRelationships(data, xdbr, relationships, relFile):
+    nghriTerm = data['DISEASE/TRAIT']
+    efoTerm = data['MAPPED_TRAIT_URI'].split(', ') # have to go with URIs b/c DB does exact matches causing issues with capitalization
+
+    for et in efoTerm:
+        relation = nghriTerm + '<->' + et
+        if relation not in relationships:
+            # extract the source_id from the uri
+            sourceId = et.split('/')
+            sourceId = sourceId[len(sourceId) - 1]
+            sourceId = sourceId.replace('_', ':')
+            print('\t'.join((nghriTerm, xdbr[0],
+                             sourceId, xdbr[1], 
+                             'is_a', xdbr[2])), 
+                  file=relFile)
+            relationships[relation] = True
+
+    return relationships
+ 
+
+def generateLoadFiles(argv):
+    try:
+        dataFile = open('nhgri-catalog-data.txt', 'w')        
+        header = '\t'.join(('snp_id', 'label', 'citation', 
+                            'phenotype', 'phenotype_xdbr', # 'strain', 
+                            'map', 'allele',
+                            'frequency', 'p_value', 
+                            'odds_ratio', 'gene', 'sequence_ontology', 'sequence_ontology_xdbr'))
+        print(header, file=dataFile)
+
+        termFile = open('nhgri-catalog-terms.txt', 'w')
+
+        relFile = open('nhgri-catalog-relationships.txt', 'w')
+        header = '\t'.join(('subject', 'subject_xdbr', 
+                            'object', 'object_xdbr',
+                            'predicate', 'predicate_xdbr'))
+        print(header, file=relFile)
+
+        terms = {} # to ensure each NGHRI trait is output just once
+        relationships = {} # to ensure each relationship is output just once
+        termCount = 0
+        reader = csv.DictReader(argv.infile, delimiter='\t')
+        for row in reader:
+            writeData(row, argv.xdbr[0], argv.xdbr[3], dataFile)
+            terms, termCount = writeTerms(row, argv.xdbr[0], terms, termCount, termFile)
+            writeRelationships(row, argv.xdbr, relationships, relFile)
+
+        dataFile.close()
+        termFile.close()
+        relFile.close()
+
+    except IOError:
+        warning("FILE ERROR:", "Unable to open input file or create output files")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i', '--infile', 
+                        help='the nhgri catalog dump; must include EFO mapping',
+                        required=True,
+                        type=argparse.FileType('r'))
+    parser.add_argument('-x', '--xdbr', 
+                        help="space delimited list of GUS external database|release specifications in the following order: NGHRI GWAS Catalog, EFO, 'is_a' relationship (likely from the Gene Ontology)",
+                        nargs=4, type=str)
+    args = parser.parse_args()
+
+    generateLoadFiles(args)

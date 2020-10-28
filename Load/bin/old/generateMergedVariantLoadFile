@@ -1,0 +1,82 @@
+#!/usr/bin/env python 
+#pylint: disable=invalid-name
+
+'''
+Generates load file from dbsnp merges json
+'''
+
+from __future__ import with_statement
+from __future__ import print_function
+
+import argparse
+import os.path as path
+import gzip
+import json
+import datetime
+
+
+from CBILDataCommon.Util.utils import qw, xstr, warning, die
+from CBILDataCommon.Util.postgres_dbi import Database
+
+SQL = """SELECT variant_id FROM NIAGADS.Variant WHERE source_id = %s LIMIT 1
+"""
+
+def generate_load_file():
+    fileName = path.join(args.dir, 'preprocess_' + args.file + '.txt')
+    jsonFile = path.join(args.dir, args.file)
+    count = 0
+    lineCount = 0
+    with open(fileName, 'w') as of:
+        with open(jsonFile, 'r') as f:
+            for line in f:
+                line = line.rstrip()
+                lineCount = lineCount + 1
+                data = json.loads(line)
+
+                if int(data['last_update_build_id']) > args.lastUpdateBuild:
+                    continue
+
+                refSnpId = 'rs' + data['refsnp_id']
+                mergeRefSnpId = 'rs' + data['merged_snapshot_data']['merged_into'][0]
+                mergeVariantId = get_variant_id(mergeRefSnpId);
+                mergeBuild = data['merged_snapshot_data']['proxy_build_id']
+                mergeDate = data['merged_snapshot_data']['proxy_time']
+                
+                print('|'.join((refSnpId, mergeRefSnpId, xstr(mergeVariantId), xstr(mergeBuild), mergeDate)), file=of);
+                count = count + 1
+                if count % 100000 == 0:
+                    warning(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), "Wrote " + xstr(count) + " records; processed " + xstr(lineCount) + " lines.")
+
+def get_variant_id(rsId):
+    ''' fetch variant id given rsId'''
+    cursor = database.cursor("RealDictCursor")
+    cursor.execute(SQL, (rsId,))
+    for record in cursor:
+        variantId = record['variant_id']
+        if variantId is None:
+            return 'NULL'
+        else:
+            return variantId
+    cursor.close()
+    return 'NULL'
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="generate dbsnp merge load file")
+    parser.add_argument('-d', '--dir', help="directory containing input file", required=True)
+    parser.add_argument('-f', '--file', help="decompressed, dos2unixed json file from dbsnp", required=True)
+    parser.add_argument('--lastUpdateBuild', type=int,
+                        help="last dbSNP build to be considered for merges", required=True)
+
+    parser.add_argument('--gusConfigFile',
+                        help="GUS config file. If not provided, assumes default: $GUS_HOME/conf/gus.config")
+    args = parser.parse_args()
+
+    database = Database(args.gusConfigFile)
+    database.connect()
+
+
+    generate_load_file()
+
+
+    database.close()

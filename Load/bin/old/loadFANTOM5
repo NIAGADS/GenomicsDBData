@@ -1,0 +1,66 @@
+#!/bin/bash
+
+FILE_DIR=/mnt/data/GenomicsDB/functional_genomics/FANTOM5/predefined_transcribed_enhancers
+VERSION=2015-03-18
+DATABASE="FANTOM5 Human Transcribed Enhancer Atlas: Predefined Enhancers"
+SOURCE_ID=FANTOM5
+
+#ga GUS::Supported::Plugin::InsertExternalDatabase --name 'FANTOM5 Human Transcribed Enhancer Atlas: Predefined Enhancers' --commit
+#ga GUS::Supported::Plugin::InsertExternalDatabaseRls --databaseName 'FANTOM5 Human Transcribed Enhancer Atlas: Predefined Enhancers' --databaseVersion $VERSION --commit
+
+# neuronal stem cells
+# generateSegmentResultLoadFile -i ${FILE_DIR}/CL:0000047_neuronal_stem_cell_expressed_enhancers.bed -q 0 -s 1 -e 2 -r 4 > ${FILE_DIR}/neuronal_stem_cell_expressed.txt
+# generateSegmentResultLoadFile -i ${FILE_DIR}/CL:0000047_neuronal_stem_cell_differentially_expressed_enhancers.bed -q 0 -s 1 -e 2 -r 4 > ${FILE_DIR}/neuronal_stem_cell_specific.txt
+
+echo "neuronal stem cells"
+
+#ga GUS::Community::Plugin::InsertSegmentResult --extDbRlsSpec 'FANTOM5 Human Transcribed Enhancer Atlas: Predefined Enhancers|2015-03-18' --inFile ${FILE_DIR}/neuronal_stem_cell_expressed.txt --name 'Expressed enhancers in neuronal stem cells' --description 'predefined transcribed enhancers (FANTOM5) expressed in neuronal stem cells' --type 'OBI:0000905' --subtype 'NO:0000005' --sourceId ${SOURCE_ID}_NEURONAL_STEM_CELL --characteristicFile neuronal_stem_cell_characteristics.txt   --sequenceExtDbRlsSpec 'GRC Human Reference Genome Assembly|GRCh37.p13/hg19' --commit > fantom5_neuronal_stem_cell.log 2>&1
+
+#ga GUS::Community::Plugin::InsertSegmentResult --extDbRlsSpec 'FANTOM5 Human Transcribed Enhancer Atlas: Predefined Enhancers|2015-03-18' --inFile ${FILE_DIR}/neuronal_stem_cell_specific.txt --name 'Specifically expressed enhancers in neuronal stem cells' --description 'predefined transcribed enhancers (FANTOM5) specifically expressed in neuronal stem cells' --type 'OBI:0000905' --subtype 'NO:0000006' --sourceId ${SOURCE_ID}_NEURONAL_STEM_CELL_SPECIFIC --characteristicFile neuronal_stem_cell_characteristics.txt   --sequenceExtDbRlsSpec 'GRC Human Reference Genome Assembly|GRCh37.p13/hg19' --commit > fantom5_neuronal_stem_cell_specific.log 2>&1
+
+# astrocytes
+
+# generateSegmentResultLoadFile -i ${FILE_DIR}/CL:0000127_astrocyte_expressed_enhancers.bed -q 0 -s 1 -e 2 -r 4 > ${FILE_DIR}/astrocyte_expressed.txt
+# generateSegmentResultLoadFile -i ${FILE_DIR}/CL:0000127_astrocyte_differentially_expressed_enhancers.bed -q 0 -s 1 -e 2 -r 4 > ${FILE_DIR}/astrocyte_specific.txt
+
+echo "Astrocytes"
+
+#ga GUS::Community::Plugin::InsertSegmentResult --extDbRlsSpec 'FANTOM5 Human Transcribed Enhancer Atlas: Predefined Enhancers|2015-03-18' --inFile ${FILE_DIR}/astrocyte_expressed.txt --name 'Expressed enhancers in astrocytes' --description 'predefined transcribed enhancers (FANTOM5) expressed in astrocytes' --type 'OBI:0000905' --subtype 'NO:0000005' --sourceId ${SOURCE_ID}_ASTROCYTE --characteristicFile astrocyte_characteristics.txt   --sequenceExtDbRlsSpec 'GRC Human Reference Genome Assembly|GRCh37.p13/hg19' --commit > fantom5_astrocytes.log 2>&1
+
+#ga GUS::Community::Plugin::InsertSegmentResult --extDbRlsSpec 'FANTOM5 Human Transcribed Enhancer Atlas: Predefined Enhancers|2015-03-18' --inFile ${FILE_DIR}/astrocyte_specific.txt --name 'Specifically expressed enhancers in astrocytes' --description 'predefined transcribed enhancers (FANTOM5) specifically expressed in astrocytes' --type 'OBI:0000905' --subtype 'NO:0000006' --sourceId ${SOURCE_ID}_ASTROCYTE_SPECIFIC --characteristicFile astrocyte_characteristics.txt   --sequenceExtDbRlsSpec 'GRC Human Reference Genome Assembly|GRCh37.p13/hg19' --commit > fantom5_astrocytes_specific.log 2>&1
+
+# neurons
+
+#generateSegmentResultLoadFile -i ${FILE_DIR}/CL:0000540_neuron_expressed_enhancers.bed -q 0 -s 1 -e 2 -r 4 > ${FILE_DIR}/neuron_expressed.txt
+generateSegmentResultLoadFile -i ${FILE_DIR}/CL:0000540_neuron_differentially_expressed_enhancers.bed -q 0 -s 1 -e 2 -r 4 > ${FILE_DIR}/neuron_specific.txt
+
+echo "neurons"
+
+#ga GUS::Community::Plugin::InsertSegmentResult --extDbRlsSpec 'FANTOM5 Human Transcribed Enhancer Atlas: Predefined Enhancers|2015-03-18' --inFile ${FILE_DIR}/neuron_expressed.txt --name 'Expressed enhancers in neurons' --description 'predefined transcribed enhancers (FANTOM5) expressed in neurons' --type 'OBI:0000905' --subtype 'NO:0000005' --sourceId ${SOURCE_ID}_NEURON --characteristicFile neuron_characteristics.txt   --sequenceExtDbRlsSpec 'GRC Human Reference Genome Assembly|GRCh37.p13/hg19' --commit  > fantom5_neurons.log 2>&1
+
+ga GUS::Community::Plugin::InsertSegmentResult --extDbRlsSpec 'FANTOM5 Human Transcribed Enhancer Atlas: Predefined Enhancers|2015-03-18' --inFile ${FILE_DIR}/neuron_specific.txt --name 'Specifically expressed enhancers in neurons' --description 'predefined transcribed enhancers (FANTOM5) specifically expressed in neurons' --type 'OBI:0000905' --subtype 'NO:0000006' --sourceId ${SOURCE_ID}_NEURON_SPECIFIC --characteristicFile neuron_characteristics.txt   --sequenceExtDbRlsSpec 'GRC Human Reference Genome Assembly|GRCh37.p13/hg19' --commit > fantom5_neurons_specific.log 2>&1
+
+
+# brain
+
+#generateSegmentResultLoadFile -i ${FILE_DIR}/UBERON:0000955_brain_expressed_enhancers.bed -q 0 -s 1 -e 2 -r 4 > ${FILE_DIR}/brain_expressed.txt
+#generateSegmentResultLoadFile -i ${FILE_DIR}/UBERON:0000955_brain_differentially_expressed_enhancers.bed -q 0 -s 1 -e 2 -r 4 > ${FILE_DIR}/brain_specific.txt
+
+echo "brain"
+
+#ga GUS::Community::Plugin::InsertSegmentResult --extDbRlsSpec 'FANTOM5 Human Transcribed Enhancer Atlas: Predefined Enhancers|2015-03-18' --inFile ${FILE_DIR}/brain_expressed.txt --name 'Expressed enhancers in brain tissue' --description 'predefined transcribed enhancers (FANTOM5) expressed in brain tissue' --type 'OBI:0000905' --subtype 'NO:0000005' --sourceId ${SOURCE_ID}_BRAIN --characteristicFile brain_characteristics.txt   --sequenceExtDbRlsSpec 'GRC Human Reference Genome Assembly|GRCh37.p13/hg19' --commit  > fantom5_brain.log 2>&1
+
+#ga GUS::Community::Plugin::InsertSegmentResult --extDbRlsSpec 'FANTOM5 Human Transcribed Enhancer Atlas: Predefined Enhancers|2015-03-18' --inFile ${FILE_DIR}/brain_specific.txt --name 'Specifically expressed enhancers in brain tissue' --description 'predefined transcribed enhancers (FANTOM5) specifically expressed in brain tissue' --type 'OBI:0000905' --subtype 'NO:0000006' --sourceId ${SOURCE_ID}_BRAIN_SPECIFIC --characteristicFile brain_characteristics.txt   --sequenceExtDbRlsSpec 'GRC Human Reference Genome Assembly|GRCh37.p13/hg19' --commit > fantom5_brain_specific.log 2>&1
+
+
+# tss associations
+# parseFantom5TssEnhancers -i ${FILE_DIR}/enhancer_tss_associations.bed > ${FILE_DIR}/tss_associated_enhancers.txt
+
+echo "tss"
+
+#ga GUS::Community::Plugin::InsertSegmentResult --extDbRlsSpec 'FANTOM5 Human Transcribed Enhancer Atlas: Predefined Enhancers|2015-03-18' --inFile ${FILE_DIR}/tss_associated_enhancers.txt --name 'TSS-associated expressed enhancers' --description 'predefined transcribed enhancers (FANTOM5) associated with transcription start sites' --type 'OBI:0000905' --subtype 'NO:0000007' --sourceId ${SOURCE_ID}_TSS   --sequenceExtDbRlsSpec 'GRC Human Reference Genome Assembly|GRCh37.p13/hg19' --commit > fantom5_tss.log 2>&1
+
+
+
+
+

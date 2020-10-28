@@ -1,0 +1,202 @@
+{    
+    "file": {
+	"path": "$DATA_DIR/NIAGADS_GWAS",
+	"accession": "NG00027",
+	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
+	"cadd_database_directory": "$DATA_DIR/CADD/v16",
+	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
+	"vep_cache_directory": "$DATA_DIR/VEP_CACHE"
+    },
+    "external_database": {
+	"name": "NIAGADS",
+	"version": "current",
+	"download_url": "https://www.niagads.org/datasets/",
+	"id_url": "https://www.niagads.org/",
+	"description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
+	"accession": "NIAGADS",
+	"type": "Genetic variation"
+    },
+    "foreach": [
+	
+	{
+	    "ADJ_STAGE1": {
+		"file": "adj_age_sex_apoe4num_stage1_hm2geno1.20100831.plotted.dat",
+		"sourceId": "@file.accession+_ADJ_STAGE1",
+		"name": "ADGC LOAD: Adjusted Stage 1",
+		"description": "late-onset Alzheimer's disease; ADGC discovery stage 1 dataset; adjusted for age, sex, and APOE4 number",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "covariate specification": "value:age, sex, and APOE4 number"
+		},
+		"restrictedStats": {
+		    "frequency_se": "FreqSE",
+		    "effect": "Effect",
+		    "std_err": "StdErr",
+		    "direction": "Direction"
+		}
+	    }
+	},
+
+	{
+	    "ADJ_STAGE12": {
+		"file": "adj_age_sex_apoe4num_stage12_hm2geno1.20100903.plotted.dat",
+		"sourceId": "@file.accession+_ADJ_STAGE12",
+		"name": "ADGC LOAD: Adjusted Stages 1 and 2",
+		"description": "late-onset Alzheimer's disease; ADGC discovery and replication stages (1 and 2, respectively); adjusted for age, sex, and APOE4 number",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "covariate specification": "value:age, sex, and APOE4 number"
+		},
+		"restrictedStats": {
+		    "frequency_se": "FreqSE",
+		    "effect": "Effect",
+		    "std_err": "StdErr",
+		    "direction": "Direction"
+		}
+	    }
+	},
+	{
+	    "ADJ_STAGE2": {
+		"file": "adj_age_sex_apoe4num_stage2_hm2geno2.20100903.plotted.dat",
+		"sourceId": "@file.accession+_ADJ_STAGE2",
+		"name": "ADGC LOAD: Adjusted Stage 2",
+		"description": "late-onset Alzheimer's disease; ADGC replication stage 2; adjusted for age, sex, and APOE4 number",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "covariate specification": "value:age, sex, and APOE4 number"
+		},
+		"restrictedStats": {
+		    "frequency_se": "FreqSE",
+		    "effect": "Effect",
+		    "std_err": "StdErr",
+		    "direction": "Direction",
+		    "het_chi_sq": "HetChiSq",
+		    "het_df": "HetDf",
+		    "het_pvalue": "HetPVal"
+		}
+	    }
+	},
+	{
+	    "STAGE12": {
+		"file": "unadj_stage12_hm2geno1.20100903.plotted.dat",
+		"sourceId": "@file.accession+_STAGE12",
+		"name": "ADGC LOAD: Stages 1 and 2",
+		"description": "late-onset Alzheimer's disease; ADGC discovery and replication stages (1 and 2, respectively)",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease"
+		},
+		"restrictedStats": {
+		    "frequency_se": "FreqSE",
+		    "effect": "Effect",
+		    "std_err": "StdErr",
+		    "direction": "Direction"
+		}
+	    }
+	},
+	{
+	    "STAGE1": {
+		"file": "unadj_stage1_hm2geno2.20100917.plotted.dat",
+		"sourceId": "@file.accession+_STAGE1",
+		"name": "ADGC LOAD: Stage 1",
+		"description": "late-onset Alzheimer's disease; ADGC discovery stage 1",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease"
+		},
+		"restrictedStats": {
+		    "frequency_se": "FreqSE",
+		    "effect": "Effect",
+		    "std_err": "StdErr",
+		    "direction": "Direction",
+		    "het_chi_sq": "HetChiSq",
+		    "het_df": "HetDf",
+		    "het_pvalue": "HetPVal"
+		}
+	    }
+	},
+	{
+	    "STAGE2": {
+		"file": "unadj_stage2_hm2geno2.20100903.plotted.dat",
+		"sourceId": "@file.accession+_STAGE2",
+		"name": "ADGC LOAD: Stage 2",
+		"description": "late-onset Alzheimer's disease;  ADGC replication stage 2",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease"
+		},
+	    	"restrictedStats": {
+		    "frequency_se": "FreqSE",
+		    "effect": "Effect",
+		    "std_err": "StdErr",
+		    "direction": "Direction",
+		    "het_chi_sq": "HetChiSq",
+		    "het_df": "HetDf",
+		    "het_pvalue": "HetPVal"
+		}
+	    }
+	}
+    ],
+    
+    "load": [
+	{
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::InsertStudy",
+		"skip": true,
+		"parameters": {
+		    "name": "ADGC LOAD",
+		    "attribution": "Naj et al. 2011",
+		    "description": "Summary statistics from a multi-stage Alzheimer's Disease Genetics Consortium (ADGC) GWAS study of late-onset Alzheimer's disease (LOAD).",
+		    "sourceId": "@file.accession",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version"
+		}
+		
+	    }
+	},
+	{
+	    "foreach" : true,
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::InsertProtocolAppNode",
+		"skip": true,
+		"parameters" : {
+		    "attribution": "Naj et al. 2011",
+		    "type": "Genetic variation",
+		    "subtype": "GWAS summary statistics",
+		    "description": "foreach",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "characteristics": "foreach",
+		    "sourceId" : "foreach",
+		    "name": "foreach",
+		    "studyId": "@file.accession"
+		}
+	    }
+	}, 
+	{
+	    "foreach": true,
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::LoadVariantGWASResult",
+		"parameters": {
+		    "file": "foreach",
+		    "sourceId": "foreach",
+		    "fileDir" : "@file.path/@file.accession",
+		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
+		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
+		    "caddDatabaseDir": "@file.cadd_database_directory",
+		    "vepCacheDir": "@file.vep_cache_directory",
+		    "testAllele": "Allele1",
+		    "frequency": "Freq1",
+		    "refAllele": "Allele2",
+		    "chromosome": "chr",
+		    "position": "bp",
+		    "pvalue": "P.value",
+		    "zeroBased": true,
+		    "skipUnmappableMarkers": true,
+		    "genomeBuild": "GRCh37.p13",
+		    "marker": "MarkerName",
+		    "genomeWideSignificanceThreshold": "5e-8",
+		    "checkAltVariants":"true",
+		    "restrictedStats": "foreach"
+		}
+	    }
+	}
+
+	
+    ]
+}

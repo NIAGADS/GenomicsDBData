@@ -1,0 +1,51 @@
+#!/usr/bin/env python2.7
+#pylint:disable=invalid-name
+
+import json
+import argparse
+from CBILDataCommon.Util.postgres_dbi import Database
+from CBILDataCommon.Util.utils import die, warning, get_opener
+
+
+def verify_variants():
+    sql = "SELECT metaseq_id FROM NIAGADS.Variant WHERE record_primary_key = %s"
+    count = 0
+    opener = get_opener(args.file);
+    with opener(args.file, 'r') as fh, db.cursor() as cursor:
+        next(fh)
+        previous = None
+        for line in fh:
+            count = count + 1
+            chrm, bp, allele, allele2, freq1, pvalue, neg_log10_p, display_p, has_gws, test_allele, restricted_stats_json, db_variant_json = line.rstrip().split('\t')
+            j = json.loads(db_variant_json)
+
+            if j["metaseq_id"] == previous:
+                warning("DUPLICATE", j["metaseq_id"])
+            previous = j["metaseq_id"]
+            
+            cursor.execute(sql, (j["record_primary_key"],))
+            r = cursor.fetchone()
+            if r is None:
+                die(j["record_primary_key"])
+            else:
+                if count % 50000 == 0:
+                    warning(count)
+            
+        
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--file', help="full path to the GFF file", required=True)
+    parser.add_argument('--gusConfigFile',
+                        help="GUS config file. If not provided, "
+                        + "assumes default: $GUS_HOME/conf/gus.config",
+                        required=False)
+    args = parser.parse_args()
+
+
+    db = Database(args.gusConfigFile)
+    db.connect()
+
+    verify_variants()
+    
+    db.close()
+    

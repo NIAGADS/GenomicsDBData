@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+
+'''
+run an sql patch against the database
+'''
+
+from __future__ import print_function
+from __future__ import with_statement
+import argparse # parse command line args
+
+from sys import stdout, exit
+from os import environ, path
+
+# from $GUS_HOME/lib/python --> add to python path
+
+from CBILDataCommon.Util.postgres_dbi import Database
+from CBILDataCommon.Util.utils import qw, warning, verify_path, die, execute_cmd
+
+
+def run_sql():
+    '''
+    run selected sql file
+    '''
+    warning("Executing SQL File: " + args.file)
+
+    if not verify_path(args.file):
+        die("File not found: " + args.file)
+
+    # -v ON_ERROR_STOP=ON : stop on first error
+    # --no-psqlrc: ignore start-up file
+    database.set_pgpassword()
+
+    cmd = [args.psql, '--no-psqlrc',
+           '-d', database.name(),
+           '-U', database.user,
+           '-v', 'ON_ERROR_STOP=ON',
+           '--file', args.file]
+        
+    if database.port() is not None:
+        cmd.append('-p')
+        cmd.append(database.port())
+    if database.host() is not None:
+        cmd.append('-h')
+        cmd.append(database.host())
+
+    if args.verbose:
+        cmd.append('-a') # echo all
+    else:
+        cmd.append('-b') # echo only errors
+
+    execute_cmd(cmd, None, False, args.verbose) # runs command and waits for it to complete
+    database.reset_pgpassword()
+
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description="Install the NIAGADS schema and NIAGADS patches to GUS")
+    parser.add_argument('--gusConfigFile',
+                        help="GUS config file. If not provided, assumes default: $GUS_HOME/conf/gus.config")
+    parser.add_argument('-f', '--file', help="full path to sql file", required=True)
+    parser.add_argument('-p', '--psql', help="full path to psql executeable if not standard 'psql'", default="psql")
+    parser.add_argument('--verbose', action='store_true')
+    
+    args =  parser.parse_args()
+    
+    database = Database(args.gusConfigFile)
+
+    run_sql()

@@ -1,0 +1,67 @@
+#!/usr/bin/env python
+#pylint: disable=invalid-name
+#pylint: disable=no-member
+'''
+Fetches variants by refSnp ID
+'''
+
+from __future__ import with_statement
+from __future__ import print_function
+
+import argparse
+from sys import stdout
+
+from CBILDataCommon.Util.postgres_dbi import Database
+from CBILDataCommon.Util.utils import warning
+
+VARIANT_ID_SQL = """SELECT source_id, primary_key
+FROM DoTS.SnpFeature WHERE source_id = %s
+AND name != 'dbSNP_merge'
+UNION
+SELECT c.source_id, p.primary_key
+FROM DoTS.SnpFeature c, DoTS.SnpFeature p
+WHERE c.source_id = %s
+AND c.parent_id = p.na_feature_id"""
+
+def fetch_variant_id(refSnpId):
+    '''
+    fetch variant_id given a ref snp id (from dbSNP) 
+    '''
+
+    cursor = database.cursor()
+    cursor.execute(VARIANT_ID_SQL, (refSnpId,refSnpId)) 
+
+    matchingVariants = []
+    for record in cursor:
+        matchingVariants.append(record[1])
+    cursor.close()
+
+    if len(matchingVariants) == 0:
+        # warning("No matching record for variant " + refSnpId + " found in database.")
+        return None
+
+    return matchingVariants
+
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="fetch variants by refSnpId")
+    parser.add_argument('-r', '--refSnps', help="comma separated list of refSnpIds", required=True)
+    parser.add_argument('--gusConfigFile',
+                        help="GUS config file.  If not provided, assumes default: $GUS_HOME/conf/gus.config")
+
+    args = parser.parse_args()
+
+    database = Database(args.gusConfigFile)
+    database.connect()
+
+    
+    snps = args.refSnps.split(',')
+    for s in snps:
+        variants = fetch_variant_id(s)
+        if variants is None:
+            print(s, 'No match found', sep='\t', file=stdout)
+        else:
+            print(s, '|'.join(variants), sep='\t', file=stdout)
+
+    database.close()

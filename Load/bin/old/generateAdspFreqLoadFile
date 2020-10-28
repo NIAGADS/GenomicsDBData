@@ -1,0 +1,15 @@
+#!/usr/bin/env python
+#pylint: disable=invalid-name
+
+'''
+Generates load file from ADSP freq data
+'''
+
+from __future__ import print_function
+
+import argparse
+import os.path as path
+import csv
+
+from CBILCommonDataPg.Utils.utils import qw, xstr, warning
+

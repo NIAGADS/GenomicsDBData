@@ -1,0 +1,91 @@
+{
+    "study": {
+	"comment": "optional; but necessary to link to a NIAGADS accession and citation",
+	"citation": "PUBMEDID",
+	"name": "",
+	"description": "",
+	"source_id": "NIAGADS ACCESSION"
+    },
+
+    "protocol_application": {
+	"protocol": "SKAT: SNP-Set (Sequence) Kernel Association Test",
+	"parameters": [
+	    {
+		"name":"association test",
+		"value":""
+	    },
+	    {
+		"name":"covariate specification",
+		"value":""
+	    },
+	    {
+		"name":"CADD Filter",
+		"value":""
+	    },
+	    {
+		"name":"VEP Impact Filter",
+		"value":""
+	    }	
+	],
+	"contact":{}
+    },
+    
+    "inputs":
+    [
+	{
+	    "name": "",
+	    "description": "",
+	    "source_id": "",
+	    "external_db_rls_spec":"",
+	    "type":"",
+	    "subtype":""
+	}
+    ],
+    "outputs":
+    [
+	{
+	    "name": "",
+	    "description": "",
+	    "source_id": "",
+	    "file":"",
+	    "type":"gene annotation",
+	    "subtype":"genome wide association study",
+	    "characteristic":
+	    [
+		{
+		    "term":"",
+		    "qualifier":"population"}
+	    ]
+	},
+	{
+	    "name": "",
+	    "description": "",
+	    "source_id": "",
+	    "file":"",
+	    "type":"gene annotation",
+	    "subtype":"genome wide association study",
+	    "characteristic":
+	    [
+		{
+		    "term":"",
+		    "qualifier":"population"}
+	    ]
+	},
+	{
+	    "name": "",
+	    "description": "",
+	    "source_id": "",
+	    "type":"gene annotation",
+	    "subtype":"genome wide association study",
+	    "file":"",
+	    "external_db_rls_spec":"",
+	    "characteristic":
+	    [
+		{
+		    "term":"NHW",
+		    "qualifier":"population"}
+	    ]
+	}
+    ]
+
+}

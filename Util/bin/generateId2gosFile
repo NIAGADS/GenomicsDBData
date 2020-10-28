@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+#pylint: disable=invalid-name
+#pylint: disable=no-member
+'''
+Fetches variants by refSnp ID
+'''
+
+from __future__ import with_statement
+from __future__ import print_function
+
+import argparse
+
+from os import path
+from CBILDataCommon.Util.postgres_dbi import Database
+from CBILDataCommon.Util.utils import warning
+
+SQL="""
+SELECT g.gene_symbol, g.source_id AS ensembl_id, g.annotation->>'entrez_id' AS entrez_id, 
+string_agg(ot.source_id, ';') AS go_terms
+FROM CBIL.GoAssociation ga, CBIL.GeneAttributes g, SRes.OntologyTerm ot
+WHERE ga.gene_id = g.gene_id
+AND ga.go_term_id = ot.ontology_term_id
+GROUP BY gene_symbol, ensembl_id, entrez_id
+"""
+
+def generate_files():
+    ''' query database and output results '''
+    symbolFile = path.join(args.dir, 'symbol.id2gos')
+    ensemblFile = path.join(args.dir, 'ensembl.id2gos')
+    entrezFile = path.join(args.dir, 'entrez.id2gos')
+
+    with database.cursor("RealDictCursor") as cursor:
+        with open(symbolFile, 'w') as symbolFh, open(ensemblFile, 'w') as ensemblFh, open(entrezFile, 'w') as entrezFile:
+            cursor.execute(SQL)
+            for record in cursor:
+                print(record['gene_symbol'], record['go_terms'], sep="\t", file=symbolFh)
+                print(record['ensembl_id'], record['go_terms'], sep="\t", file=ensemblFh)
+                print(record['entrez_id'], record['go_terms'], sep="\t", file=entrezFile)
+
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Generate id2gos format files for goatools -- see https://raw.githubusercontent.com/tanghaibao/goatools/master/data/association")
+    parser.add_argument('-d', '--dir',  help="target directory for output", required=True)
+    parser.add_argument('--gusConfigFile',
+                        help="GUS config file.  If not provided, assumes default: $GUS_HOME/conf/gus.config")
+
+    args = parser.parse_args()
+
+    database = Database(args.gusConfigFile)
+    database.connect()
+
+    generate_files()
+
+    database.close()

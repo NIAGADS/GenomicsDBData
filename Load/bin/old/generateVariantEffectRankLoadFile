@@ -1,0 +1,50 @@
+#!/usr/bin/env python 
+#pylint: disable=invalid-name
+'''
+Generates load file from excel csv file; may need to be updated 
+with each release as format will most likely change
+'''
+
+from __future__ import with_statement
+from __future__ import print_function
+
+import argparse
+import os.path as path
+import csv
+
+from CBILDataCommon.Util.utils import warning
+
+def generate_load_file():
+    '''
+    parse input file and generate load file
+    '''
+
+    fileName = path.join(args.dir, args.file)
+    outputFile = path.join(args.dir, args.prefix + "_niagads_variant_effect_rank.csv")
+
+
+    with open(outputFile, 'w') as of:
+        print('consequence', 'impact', 'rank', sep='|', file=of)
+        with open(fileName) as f:
+            reader = csv.DictReader(f, delimiter=',') #, quotechar='"')
+            # warning(reader.fieldnames)
+            for row in reader:
+               #  warning(row)
+                consequence = row[args.consequence]
+                consequence = consequence.replace(',', '&')
+                impact = row[args.impact]
+                rank = row[args.rank]
+
+                print(consequence, impact, rank, sep='|', file=of)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="generate variant effect ranking load file")
+    parser.add_argument('-d', '--dir', help="working directory (input & output file location)", required=True)
+    parser.add_argument('-f', '--file', help="file name", required=True)
+    parser.add_argument('-c', '--consequence', help="column name containing consequence", required=True)
+    parser.add_argument('-r', '--rank', help="column name containing rank", required=True)
+    parser.add_argument('-i', '--impact', help="column name containing impact", required=True)
+    parser.add_argument('-p', '--prefix', help="output file prefix", required=True)
+    args = parser.parse_args()
+    generate_load_file()

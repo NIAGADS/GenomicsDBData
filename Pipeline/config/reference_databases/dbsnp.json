@@ -1,0 +1,154 @@
+{
+    "file": {
+	"path": "$DATA_DIR/dbsnp",
+	"vcf": "00-All.vcf",
+	"vcf_directory": "$DATA_DIR/dbsnp",
+	"vep_cache": "/dev/shm/VEP_CACHE",
+	"output_directory": "$DATA_DIR/dbsnp/VEP",
+	"consequence_ranking": "$DATA_DIR/ADSP/Annotation/custom_consequence_ranking.txt",
+	"cadd": "$DATA_DIR/CADD",
+	"exac": "$DATA_DIR/ExAC"
+    },
+    "external_database": {
+	"name": "dbSNP",
+	"version": "151",
+	"release_date": "2018-03-22",
+	"download_url": "ftp://ftp.ncbi.nih.gov/snp/organisms/",
+	"id_url": "https://www.ncbi.nlm.nih.gov/projects/SNP/",
+	"description": "NCBI dbSNP is a database of single nucleotide polymorphisms (SNPs) and multiple small-scale variations that include insertions/deletions, microsatellites, and non-polymorphic variants. dbSNP serves as the primary reference for sequence variants in the GenomicsDB",
+	"accession": "DBSNP",
+	"type": "Genetic variation"
+    },
+   "foreach": [
+	{"chr1" : {"chr": "1", "input_file": "@file.vcf_directory/00-All.1.vcf.gz", "output_file": "@file.output_directory/chr1.json", "vepResultFile": "@file.output_directory/chr1.json", "stats_file": "@file.output_directory/chr1_stats.txt"}},
+	{"chr2" : {"chr": "2", "input_file": "@file.vcf_directory/00-All.2.vcf.gz", "output_file": "@file.output_directory/chr2.json", "vepResultFile": "@file.output_directory/chr2.json", "stats_file": "@file.output_directory/chr2_stats.txt"}},
+	{"chr3" : {"chr": "3", "input_file": "@file.vcf_directory/00-All.3.vcf.gz", "output_file": "@file.output_directory/chr3.json", "vepResultFile": "@file.output_directory/chr3.json", "stats_file": "@file.output_directory/chr3_stats.txt"}},
+	{"chr4" : {"chr": "4", "input_file": "@file.vcf_directory/00-All.4.vcf.gz", "output_file": "@file.output_directory/chr4.json", "vepResultFile": "@file.output_directory/chr4.json", "stats_file": "@file.output_directory/chr4_stats.txt"}},
+	{"chr5" : {"chr": "5", "input_file": "@file.vcf_directory/00-All.5.vcf.gz", "output_file": "@file.output_directory/chr5.json", "vepResultFile": "@file.output_directory/chr5.json", "stats_file": "@file.output_directory/chr5_stats.txt"}},
+	{"chr6" : {"chr": "6", "input_file": "@file.vcf_directory/00-All.6.vcf.gz", "output_file": "@file.output_directory/chr6.json", "vepResultFile": "@file.output_directory/chr6.json", "stats_file": "@file.output_directory/chr6_stats.txt"}},
+	{"chr7" : {"chr": "7", "input_file": "@file.vcf_directory/00-All.7.vcf.gz", "output_file": "@file.output_directory/chr7.json", "vepResultFile": "@file.output_directory/chr7.json", "stats_file": "@file.output_directory/chr7_stats.txt"}},
+	{"chr8" : {"chr": "8", "input_file": "@file.vcf_directory/00-All.8.vcf.gz", "output_file": "@file.output_directory/chr8.json", "vepResultFile": "@file.output_directory/chr8.json", "stats_file": "@file.output_directory/chr8_stats.txt"}},
+	{"chr9" : {"chr": "9", "input_file": "@file.vcf_directory/00-All.9.vcf.gz", "output_file": "@file.output_directory/chr9.json", "vepResultFile": "@file.output_directory/chr9.json", "stats_file": "@file.output_directory/chr9_stats.txt"}},
+	{"chr10" : {"chr": "10", "input_file": "@file.vcf_directory/00-All.10.vcf.gz", "output_file": "@file.output_directory/chr10.json", "vepResultFile": "@file.output_directory/chr10.json", "stats_file": "@file.output_directory/chr10_stats.txt"}},
+	{"chr11" : {"chr": "11", "input_file": "@file.vcf_directory/00-All.11.vcf.gz", "output_file": "@file.output_directory/chr11.json", "vepResultFile": "@file.output_directory/chr11.json", "stats_file": "@file.output_directory/chr11_stats.txt"}},
+	{"chr12" : {"chr": "12", "input_file": "@file.vcf_directory/00-All.12.vcf.gz", "output_file": "@file.output_directory/chr12.json", "vepResultFile": "@file.output_directory/chr12.json", "stats_file": "@file.output_directory/chr12_stats.txt"}},
+	{"chr13" : {"chr": "13", "input_file": "@file.vcf_directory/00-All.13.vcf.gz", "output_file": "@file.output_directory/chr13.json", "vepResultFile": "@file.output_directory/chr13.json", "stats_file": "@file.output_directory/chr13_stats.txt"}},
+	{"chr14" : {"chr": "14", "input_file": "@file.vcf_directory/00-All.14.vcf.gz", "output_file": "@file.output_directory/chr14.json", "vepResultFile": "@file.output_directory/chr14.json", "stats_file": "@file.output_directory/chr14_stats.txt"}},
+	{"chr15" : {"chr": "15", "input_file": "@file.vcf_directory/00-All.15.vcf.gz", "output_file": "@file.output_directory/chr15.json", "vepResultFile": "@file.output_directory/chr15.json", "stats_file": "@file.output_directory/chr15_stats.txt"}},
+	{"chr16" : {"chr": "16", "input_file": "@file.vcf_directory/00-All.16.vcf.gz", "output_file": "@file.output_directory/chr16.json", "vepResultFile": "@file.output_directory/chr16.json", "stats_file": "@file.output_directory/chr16_stats.txt"}},
+	{"chr17" : {"chr": "17", "input_file": "@file.vcf_directory/00-All.17.vcf.gz", "output_file": "@file.output_directory/chr17.json", "vepResultFile": "@file.output_directory/chr17.json","stats_file": "@file.output_directory/chr17_stats.txt"}},
+	{"chr18" : {"chr": "18", "input_file": "@file.vcf_directory/00-All.18.vcf.gz", "output_file": "@file.output_directory/chr18.json", "vepResultFile": "@file.output_directory/chr18.json","stats_file": "@file.output_directory/chr18_stats.txt"}},
+	{"chr19" : {"chr": "19", "input_file": "@file.vcf_directory/00-All.19.vcf.gz", "output_file": "@file.output_directory/chr19.json", "vepResultFile": "@file.output_directory/chr19.json", "stats_file": "@file.output_directory/chr19_stats.txt"}},
+	{"chr20" : {"chr": "20", "input_file": "@file.vcf_directory/00-All.20.vcf.gz", "output_file": "@file.output_directory/chr20.json", "vepResultFile": "@file.output_directory/chr20.json", "stats_file": "@file.output_directory/chr20_stats.txt"}},
+	{"chr21" : {"chr": "21", "input_file": "@file.vcf_directory/00-All.21.vcf.gz", "output_file": "@file.output_directory/chr21.json", "vepResultFile": "@file.output_directory/chr21.json", "stats_file": "@file.output_directory/chr21_stats.txt"}},
+	{"chr22" : {"chr": "22", "input_file": "@file.vcf_directory/00-All.22.vcf.gz", "output_file": "@file.output_directory/chr22.json", "vepResultFile": "@file.output_directory/chr22.json", "stats_file": "@file.output_directory/chr22_stats.txt"}},
+	{"chrX" : {"chr": "X", "input_file": "@file.vcf_directory/00-All.X.vcf.gz", "output_file": "@file.output_directory/chrX.json", "vepResultFile": "@file.output_directory/chrX.json", "stats_file": "@file.output_directory/chrX_stats.txt"}},
+	{"chrY" : {"chr": "Y", "input_file": "@file.vcf_directory/00-All.Y.vcf.gz", "output_file": "@file.output_directory/chrY.json", "vepResultFile": "@file.output_directory/chrY.json", "stats_file": "@file.output_directory/chrY_stats.txt"}},
+	{"chrM" : {"chr": "M", "input_file": "@file.vcf_directory/00-All.MT.vcf.gz", "output_file": "@file.output_directory/chrM.json", "vepResultFile": "@file.output_directory/chrM.json","stats_file": "@file.output_directory/chrM_stats.txt"}}
+   ],
+    "preprocess": [
+	{ 
+	    "script" : {
+		"skip": true,
+		"name": "gunzip",
+		"parameters": {
+		    "none": "@file.path/@file.vcf+.gz"
+		}
+	    }
+	},
+	{
+	    "script": 
+	    { 
+		"skip": true,
+		"name": "runSnpEff",
+		"parameters": {
+		    "splitByChromosome": true,
+		    "genomeBuild": "$GENOME_BUILD",
+		    "vcf": "@file.vcf",
+		    "filePath": "@file.path"
+		}
+	    }
+	},
+	{
+	    "foreach": true,
+	    "script": {
+		"name": "vep",
+		"parameters": {
+		    "input_file": "foreach",
+		    "output_file": "foreach",
+		    "dir_cache": "@file.vep_cache",
+		    "cache": true,
+		    "offline": true,
+		    "chr": "foreach",
+		    "no_stats": true,
+		    "json": true,
+		    "fork": "4",
+		    "sift": "b",
+		    "polyphen": "b",
+		    "ccds": true,
+		    "symbol": true,
+		    "numbers": true,
+		    "domains": true,
+		    "regulatory": true,
+		    "canonical": true,
+		    "protein": true,
+		    "biotype": true,
+		    "tsl": true,
+		    "pubmed": true,
+		    "uniprot": true,
+		    "variant_class": true,
+		    "exclude_predicted": true,
+		    "gencode_basic": true,
+		    "af": true,
+		    "af_1kg": true,
+		    "af_esp": true,
+		    "af_gnomad": true,
+		    "clin_sig_allele": 1,
+		    "nearest": "gene",
+		    "gene_phenotype": true,
+		    "plugin": ["TSSDistance", "ExAC,@file.exac/ExAC.r0.3.sites.vep.vcf.gz"]
+		}
+	    }
+	},
+	{ 
+	    "script" : {
+		"skip": true,
+		"name": "gzip",
+		"parameters": {
+		    "none" : "@file.path/@file.vcf"
+		}
+	    }
+	},
+	{
+	    "plugin": {
+		"skip": true,
+		"name": "NiagadsData::Load::Plugin::LoadVariantsFromVcf",
+		"parameters": {
+		    "vcfFileDir": "@file.path",
+		    "variantSource": "dbSNP b151",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "soExtDbRlsSpec": "Sequence Ontology|3.1",
+		    "preprocess": true,
+		    "vcfFile": "00-All.1.vcf,00-All.2.vcf,00-All.3.vcf,00-All.4.vcf,00-All.5.vcf,00-All.6.vcf,00-All.7.vcf,00-All.8.vcf,00-All.9.vcf,00-All.10.vcf,00-All.11.vcf,00-All.12.vcf,00-All.13.vcf,00-All.14.vcf,00-All.15.vcf,00-All.16.vcf,00-All.17.vcf,00-All.18.vcf,00-All.19.vcf,00-All.20.vcf,00-All.21.vcf,00-All.22.vcf,00-All.MT.vcf,00-All.X.vcf,00-All.Y.vcf"
+		}
+	    }
+	}
+    ],
+    "load": [
+	{
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::LoadVariantsFromVcf",
+		"parameters": {
+		    "vcfFileDir": "@file.path",
+		    "variantSource": "dbSNP b151",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "soExtDbRlsSpec": "Sequence Ontology|3.1",
+		    "bulkLoad": true,
+		    "vcfFile": "00-All.1.vcf,00-All.2.vcf,00-All.3.vcf,00-All.4.vcf,00-All.5.vcf,00-All.6.vcf,00-All.7.vcf,00-All.8.vcf,00-All.9.vcf,00-All.10.vcf,00-All.11.vcf,00-All.12.vcf,00-All.13.vcf,00-All.14.vcf,00-All.15.vcf,00-All.16.vcf,00-All.17.vcf,00-All.18.vcf,00-All.19.vcf,00-All.20.vcf,00-All.21.vcf,00-All.22.vcf,00-All.MT.vcf,00-All.X.vcf,00-All.Y.vcf"
+		}
+	    }
+	}
+    ],
+    
+    "tuning": ["$GUS_HOME/lib/sql/tuning_indexes/niagadsVariantIndexes.sql"]
+}

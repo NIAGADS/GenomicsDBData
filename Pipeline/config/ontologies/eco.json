@@ -1,0 +1,28 @@
+{
+    "file": {
+	"path": "$SHARED_DATA_DIR/ontologies/evidence_ontology",
+	"file": "eco.owl"
+    },
+    "external_database": {
+	"name": "Evidence & Conclusion Ontology",
+	"description": "The Evidence & Conclusion Ontology (ECO) describes types of scientific evidence within the realm of biological research that can arise from laboratory experiments, computational methods, manual literature curation, and other means.",
+	"version": "v2019-02-01",
+	"release_date": "2019-02-01",
+	"download_url": "http://purl.obolibrary.org/obo/eco.owl",
+	"id_url": "http://evidenceontology.org/",
+	"accession": "ECO",
+	"type": "Ontology and terminology"
+    },
+    "load": [
+	{ 
+	    "plugin": {
+		"name": "GUS::Supported::Plugin::InsertOntologyTermsAndRelationships",
+		"parameters": {
+		    "inFile": "@file.path/@file.file",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "relTypeExtDbRlsSpec": "Niagads Ontology|current"
+		}
+	    }
+	}
+    ]
+}

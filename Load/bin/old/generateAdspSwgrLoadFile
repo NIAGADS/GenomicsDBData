@@ -1,0 +1,65 @@
+#!/usr/bin/env python
+#pylint: disable=invalid-name
+
+'''
+Generates load file from ADSP annotation for SWGR
+(a flag indicating in the cohort)
+'''
+
+from __future__ import with_statement
+from __future__ import print_function
+
+import argparse
+import os.path as path
+import gzip
+import csv
+
+from CBILCommonDataPg.Utils.utils import qw, warning, xstr
+
+def parseValue(value):
+    '''
+    replace null strings with None
+    '''
+    if value == '-':
+        return None
+    if value == 'NULL':
+        return None
+    return value
+
+
+
+def generate_load_file():
+    '''
+    parse input file and generate load file
+    '''
+    fileName = path.join(args.dir, args.fileName)
+    outputFile = path.join(args.dir, "results_seqvariation_adsp_swgr_" + args.subset + ".csv")
+    count = 0
+    variants = {}
+
+    with open(outputFile, 'w') as of:
+        print('|'.join(fields), file=of)
+        with gzip.open(fileName) as f:
+            reader = csv.DictReader(f, delimiter='\t')
+            for row in reader:
+                variantId = row['seq_meta_var_id']
+                if variantId not in variants: # catch duplicates
+                    present = parseValue(row['present_in_wellderly_cohort'])
+                    count = count + 1
+                    if count % 50000 == 0:
+                        warning("Processed " + xstr(count) + " rows")
+
+                    if present:
+                        line = '|'.join((variantId, 'present_in_wellderly_cohort', xstr(1)))
+                        print(line, file=of)
+                    variants[variantId] = 1
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="generate ADSP-SWGR load file")
+    parser.add_argument('-d', '--dir', help="file directory", required=True)
+    parser.add_argument('-f', '--fileName', help="adsp annotation file name", required=True)
+    parser.add_argument('-s', '--subset', help="adsp subset", required=True)
+    args = parser.parse_args()
+
+    fields = qw('variant_id score score_type')
+    generate_load_file()

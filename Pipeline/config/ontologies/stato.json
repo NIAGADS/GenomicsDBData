@@ -1,0 +1,28 @@
+{
+    "file": {
+	"path": "$SHARED_DATA_DIR/ontologies/stato",
+	"file": "stato.owl"
+    },
+    "external_database": {
+	"name": "STATO",
+	"description": "STATO is a general purpose STATistics Ontology that provides coverage for processes such as statistical tests, their conditions of application, and information needed or resulting from statistical methods, including experimental design and descriptions of graphical representations commonly used to provide visual cues of data distribution or layout and to assist review of the results.",
+	"version": "RC1.4",
+	"release_date": "2018-09-06",
+	"download_url": "http://purl.obolibrary.org/obo/stato.owl",
+	"id_url": "http://frog.oerc.ox.ac.uk:8080/stato-app/",
+	"accession": "STATO",
+	"type": "Ontology and terminology"
+    },
+    "load": [
+	{
+	    "plugin": {
+		"name": "GUS::Supported::Plugin::InsertOntologyTermsAndRelationships",
+		"parameters": {
+		    "inFile": "@file.path/@file.file",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "relTypeExtDbRlsSpec": "Niagads Ontology|current"
+		}
+	    }
+	}
+    ]
+}

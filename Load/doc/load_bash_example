@@ -1,0 +1,72 @@
+#!/bin/bash
+# Use -gt 1 to consume an argument-value pair
+# Use -gt 0 to consume an argument without a value
+
+set -e # exit on error
+
+STUDY_XML="NONE"
+FILE_PATH="NONE"
+NAME="NONE"
+VERSION="NONE"
+COMMIT=""
+
+while [[ $# -gt 0 ]]
+do
+
+key="$1"
+
+case $key in
+    -f|--filePath)
+    FILE_PATH="$2"
+    shift # past argument
+    ;;
+    -n|--name)
+    NAME="$2"
+    shift # past argument
+    ;;
+    -v|--version)
+    VERSION="$2"
+    shift # past argument
+    ;;
+    -s|--studyXml)
+    STUDY_XML="$2"
+    ;;
+    --commit)
+    COMMIT="--commit"
+    ;;
+    *)
+            # unknown option
+    ;;
+esac
+shift # past argument or value
+done
+if [ ${FILE_PATH} = "NONE" ] ; then
+    echo "Must specify file path using the -f or --filePath option" && exit 0
+fi
+
+if [ ${NAME} = "NONE" ] ; then
+    echo "Must specify external database name using the -n or --name option" && exit 0
+fi
+
+if [ ${VERSION} = "NONE" ] ; then
+    echo "Must specify the external database release version using the -v or --version option" && exit 0
+fi
+
+echo FILE PATH = "${FILE_PATH}"
+echo RESOURCE NAME  = "${NAME}"
+echo RESOURCE VERSION  = "${VERSION}"
+echo STUDY_XML    = "${STUDY_XML}"
+if [ ${COMMIT} = "--commit" ] ; then
+    echo COMMIT ON
+fi
+
+# create external database and external database release entries
+
+# preprocess data (optional)
+
+# run loading plugin
+
+# create study.study entry if STUDY_XML is set
+if [ ${STUDY_XML} = "NONE" ] ; then
+    echo "${STUDY_XML}"
+fi

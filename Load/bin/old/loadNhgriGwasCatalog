@@ -1,0 +1,73 @@
+#!/bin/bash
+# load NHGRI GWAS Catalog
+
+set -e # exit on error
+
+FILE_PATH=/mnt/data/GenomicsDB/snps/nhgri_gwas_catalog
+NAME="NHGRI-EBI GWAS Catalog"
+VERSION="e87-r2017-1-23"
+RELEASE_DATE="2017-01-23"
+DOWNLOAD_URL=https://www.ebi.ac.uk/gwas/docs/file-downloads
+DESCRIPTION="The NHGRI-EBI GWAS Catalog is a catalog of published genome-wide association studies, assaying at least 100,000 SNPs and all SNP-trait associations with p-values &lt; 1.0 x 10<sup>-5</sup> (Hindorff et al., 2009)."
+
+LOAD_EXTERNAL_DATABASE=false
+GENERATE_LOAD_FILES=false
+LOAD_DATA=false
+PATCH=false
+COMMIT=""
+PREPROCESS=""
+
+while [[ $# -gt 0 ]]
+do
+
+    key="$1"
+
+    case $key in
+	--loadXdbr)
+	    LOAD_EXTERNAL_DATABASE=true
+	    ;;
+	--generateLoadFiles)
+	    GENERATE_LOAD_FILES=true
+	    ;;
+	--loadData)
+	    LOAD_DATA=true
+	    ;;
+	--runPatches)
+	    PATCH=true
+	    ;;
+	--commit)
+	    COMMIT="--commit"
+	    ;;
+	--preprocess)
+	    PREPROCESS="--preprocess"
+	    ;;
+	*)
+            # unknown option
+	    ;;
+    esac
+    shift # past argument or value
+done
+
+# create external database and external database release entries
+if [ ${LOAD_EXTERNAL_DATABASE} = true ] ; then
+    COMMENT="GUS::Supported::Plugin::InsertExternalDatabase --name \"${NAME}"\"
+    ga GUS::Supported::Plugin::InsertExternalDatabase --name "${NAME}" --comment "${COMMENT}" ${COMMIT}
+
+    COMMENT="GUS::Supported::Plugin::InsertExternalDatabaseRls --databaseName \"${NAME}\" --databaseVersion \"${VERSION}\" --description \"${DESCRIPTION}\" --releaseDate ${RELEASE_DATE} --downloadUrl \"${DOWNLOAD_URL}\""
+    ga GUS::Supported::Plugin::InsertExternalDatabaseRls --databaseName "${NAME}" --databaseVersion "${VERSION}" --description "${DESCRIPTION}" --releaseDate ${RELEASE_DATE} --downloadUrl "${DOWNLOAD_URL}" --comment "${COMMENT}" ${COMMIT}
+fi
+
+# generate load files
+if [ ${GENERATE_LOAD_FILES} = true ] ; then
+
+    generateNhgriGwasCatalogLoadFile --file gwas-catalog-associations_ontology-annotated.tsv --dir ${FILE_PATH}
+fi
+
+# run loading plugin
+if [ ${LOAD_DATA} = true ] ; then
+    ACCESSION=NHGRI_GWAS_CATALOG
+    COMMENT="NiagadsData::Load::Plugin::LoadSeqVariationResult --file ${FILE_PATH}/gwas_summary_statistics_${ACCESSION}.csv --extDbRlsSpec \"${NAME}|${VERSION}\" --name \"${NAME}\" --description \"${DESCRIPTION}\" --sourceId ${ACCESSION} --variantSource NGHRI --subtypeSourceRef operation_3225 --skipMissingVariants --checkAltVariantIds --ignoreMergedSnps"
+    echo "${COMMENT}"
+    ga NiagadsData::Load::Plugin::LoadSeqVariationResult --file ${FILE_PATH}/gwas_summary_statistics_${ACCESSION}.csv --extDbRlsSpec "${NAME}|${VERSION}" --name "${NAME}" --description "${DESCRIPTION}" --sourceId ${ACCESSION} --variantSource NGHRI --subtypeSourceRef operation_3225  --skipMissingVariants --checkAltVariantIds --ignoreMergedSnps  --comment "${COMMENT}"  ${COMMIT} > load_seq_variation_result_${ACCESSION}.log 2>&1 
+
+fi

@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+#pylint: disable=invalid-name
+
+'''
+parses the sample file from 1000genomes and extracts any samples
+associated with the specified population(s)
+
+if multiple pops are specified, samples will be concatenated into a single file
+'''
+
+from __future__ import print_function
+
+from os import path
+import argparse
+import csv
+
+# from CBILDataCommon.Util.utils import qw, warning, xstr
+
+def extract_samples():
+    ''' extract samples '''
+
+    with open(outputFileName, 'w') as of:
+        with open(args.file, 'r') as f:
+            reader = csv.DictReader(f, delimiter='\t')
+            for row in reader:
+                pop = row['Superpopulation code']
+                if pop in args.population:
+                    sample = row['Sample name']
+                    print(sample, sample, sep='\t', file=of)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="extract samples associated with a 1000Genomes population")
+    parser.add_argument('-f', '--file', help="full path to sample file", required=True)
+    parser.add_argument('-p', '--population',
+                        help="underscore separated list of one or more 1000Genome populations",
+                        required=True)
+    parser.add_argument('-d', '--dir', help="file directory", required=True)
+    args = parser.parse_args()
+
+    outputFileName = path.join(args.dir, args.population + '-samples.txt')
+
+    args.population = args.population.split('_')
+
+    extract_samples()

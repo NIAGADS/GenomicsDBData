@@ -1,0 +1,46 @@
+#!/usr/bin/env python
+#pylint: disable=invalid-name
+
+'''
+Count unique variants 
+'''
+
+from __future__ import with_statement
+from __future__ import print_function
+
+import argparse
+import os.path as path
+import gzip
+import re
+
+from CBILCommonDataPg.Utils.utils import warning, die, xstr
+
+def count_variants():
+
+    variants = set()
+    pattern = re.compile("(\d+:\d+)([A|T|C|G]),([A|T|C|G])")
+
+    count = 0
+    with gzip.open(args.file) as f:
+        next(f) # header
+        for line in f:
+            values = line.strip().split('\t')
+            variant = values[3]
+
+            if pattern.match(variant) is not None:
+                variant = pattern.match(variant).group(1) + ':' \
+                  + pattern.match(variant).group(2) + ':' + pattern.match(variant).group(3)
+            count = count + 1
+            if count % 1000000 == 0:
+                warning("Processed " + xstr(count) + " rows")
+            variants.add(variant)
+
+    warning("Found " + xstr(len(variants)) + " unique variants in " + args.file)
+            
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="count unique variants in adsp file")
+    parser.add_argument('--file', help="file name", required=True)
+    args = parser.parse_args()
+
+    count_variants()
+

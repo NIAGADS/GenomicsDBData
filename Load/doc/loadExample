@@ -1,0 +1,59 @@
+#!/bin/bash
+# description
+
+set -e # exit on error
+
+# values to be passed to plugins and scripts
+FILE_PATH=
+NAME=
+VERSION=
+RELEASE_DATE=
+DOWNLOAD_URL=
+DESCRIPTION=
+
+LOAD_EXTERNAL_DATABASE=false
+LOAD_DATA=false
+PATCH=false
+COMMIT=""
+
+while [[ $# -gt 0 ]]
+do
+
+    key="$1"
+
+    case $key in
+	--loadXdbr)
+	    LOAD_EXTERNAL_DATABASE=true
+	    ;;
+	--loadData)
+	    LOAD_DATA=true
+	    ;;
+	--runPatches)
+	    PATCH=true
+	    ;;
+	--commit)
+	    COMMIT="--commit"
+	    ;;
+	*)
+            # unknown option
+	    ;;
+    esac
+    shift # past argument or value
+done
+
+# create external database and external database release entries
+if [ ${LOAD_EXTERNAL_DATABASE} = true ] ; then
+    ga GUS::Supported::Plugin::InsertExternalDatabase --name "${NAME}" ${COMMIT}
+    ga GUS::Supported::Plugin::InsertExternalDatabaseRls --databaseName "${NAME}" --databaseVersion "${VERSION}" --description "${DESCRIPTION}" --releaseDate ${RELEASE_DATE} --downloadUrl "${DOWNLOAD_URL}" ${COMMIT}
+fi
+
+# run loading plugin
+if [ ${LOAD_DATA} = true ] ; then
+    echo "LOADING PLUGIN HERE"
+fi
+
+
+if [ ${PATCH} = true ] ; then
+    echo "PATCHING..."
+    echo "runSql --file $GUS_HOME/lib/sql/patches/<filename.sql>"
+fi

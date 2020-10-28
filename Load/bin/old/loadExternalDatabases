@@ -1,0 +1,5 @@
+#!/bin/bash
+
+loadOntologies --loadXdbr --commit
+loadGenome --loadXdbr --commit
+loadEnsemblGenes --loadXdbr --commit

@@ -1,0 +1,76 @@
+#!/bin/bash
+
+set -e # exit on error
+
+FILE_PATH=/mnt/data/GenomicsDB/ADSP/annotation/external_resources/CATO
+ACCESSION=CATO
+
+FILE_NAME=dbSNP142.CATO.V1.1.txt
+PREPROCESS_FILE_PATH=${FILE_PATH}
+
+NAME="CATO"
+DESCRIPTION="contextual analysis of transcription factor occupancy (CATO) scores precomputed for dbSNP 142 in humans (hg19)"
+VERSION=1.1_dbSNP142
+DOWNLOAD_URL=https://resources.altius.org/publications/CATO/
+ID_URL=https://resources.altius.org/publications/CATO/
+
+
+LOAD_EXTERNAL_DATABASE=false
+LOAD_DATA=false
+PATCH=false
+COMMIT=""
+PREPROCESS=false
+
+while [[ $# -gt 0 ]]
+do
+
+    key="$1"
+
+    case $key in
+	--loadXdbr)
+	    LOAD_EXTERNAL_DATABASE=true
+	    ;;
+	--generateLoadFiles)
+	    PREPROCESS=true
+	    ;;
+	--loadData)
+	    LOAD_DATA=true
+	    ;;
+	--runPatches)
+	    PATCH=true
+	    ;;
+	--commit)
+	    COMMIT="--commit"
+	    ;;
+	*)
+            # unknown option
+	    ;;
+    esac
+    shift # past argument or value
+done
+
+
+# create external database and external database release entries
+if [ ${LOAD_EXTERNAL_DATABASE} = true ] ; then
+    COMMENT="ga GUS::Supported::Plugin::InsertExternalDatabase --name \"${NAME}\"" 
+    ga GUS::Supported::Plugin::InsertExternalDatabase --name "${NAME}" --comment "${COMMENT}" ${COMMIT}
+
+    COMMENT="ga GUS::Supported::Plugin::InsertExternalDatabaseRls --databaseName \"${NAME}\" --databaseVersion \"${VERSION}\" --description \"${DESCRIPTION}\" --downloadUrl \"${DOWNLOAD_URL}\" --idUrl \"${ID_URL}\"" 
+    ga GUS::Supported::Plugin::InsertExternalDatabaseRls --databaseName "${NAME}" --databaseVersion "${VERSION}" --description "${DESCRIPTION}"  --downloadUrl "${DOWNLOAD_URL}" --idUrl "${ID_URL}" --comment "${COMMENT}" ${COMMIT}
+fi
+
+
+
+if [ ${PREPROCESS} = true ] ; then
+    echo "Generating CATO Load File"
+    generateCatoLoadFile -d ${FILE_PATH} -f ${FILE_NAME}
+fi
+
+if [ ${LOAD_DATA} = true ] ; then
+  echo "CATO -- using refSnp id to map to database b/c allele info is incompatible"
+  EXTDBRLS="${NAME}|${VERSION}"
+  COMMENT="ga NiagadsData::Load::Plugin::LoadSeqVariationResult --file ${PREPROCESS_FILE_PATH}/results_seqvariation_CATO.csv --extDbRlsSpec \"${EXTDBRLS}\" --name \"CATO v1.1\" --description \"Contextual Analysis of TF occupancy score reflecting the degree to which a common variant directly influences transcription factor occupancy and regulatory DNA accessibility in vivo\" --sourceId ${ACCESSION} --subtypeSourceRef topic_0085 --skipMissingVariants --ignoreMergedSnps --useRefSnpId --variantSource dbSNP"
+  echo "Running ${COMMENT}"
+  ga NiagadsData::Load::Plugin::LoadSeqVariationResult --file ${PREPROCESS_FILE_PATH}/results_seqvariation_CATO.csv --extDbRlsSpec "${EXTDBRLS}" --name "CATO v1.1" --description "Contextual Analysis of TF occupancy score reflecting the degree to which a common variant directly influences transcription factor occupancy and regulatory DNA accessibility in vivo" --sourceId ${ACCESSION} --subtypeSourceRef topic_0085  --skipMissingVariants  --ignoreMergedSnps --variantSource dbSNP --useRefSnpId --comment "${COMMENT}" ${COMMIT}  > load_seqvariationresult_cato.log 2>&1
+  
+fi

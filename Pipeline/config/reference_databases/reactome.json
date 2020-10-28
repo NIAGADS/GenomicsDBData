@@ -1,0 +1,28 @@
+{
+    "file": {
+	"path": "$SHARED_DATA_DIR/REACTOME",
+	"file": "Ensembl2Reactome.txt"
+    },
+    "external_database": {
+	"name": "REACTOME",
+	"description": "REACTOME is an open-source, open access, manually curated and peer-reviewed pathway database. REACTOME ENSEMBL to Pathway  identifier mapping files map Ensembl Gene ids to the most specific (lowest level) pathways",
+	"version": "68-LLSubset",
+	"release_date": "2019-03-14",
+	"id_url": "https://reactome.org/",
+	"download_url": "https://reactome.org/download/current/",
+	"accession": "REACTOME",
+	"type": "Molecular interactions, pathways and networks"
+    },
+    "load": [
+	{
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::LoadReactomePathways",
+		"parameters": {
+		    "species": "Homo sapiens",
+		    "file": "@file.path/@file.file",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version"
+		}
+	    }
+	}
+    ]
+}

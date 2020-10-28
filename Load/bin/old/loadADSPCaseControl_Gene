@@ -1,0 +1,101 @@
+#!/bin/bash
+
+set -e # exit on error
+
+FILE_PATH=/mnt/data/GenomicsDB/ADSP/Case_Control/SKATO_GeneAssoc
+CONFIG_FILE_PATH=${FILE_PATH}/config
+
+# adsp.wes.m0_highmod.skato_atlas_results.cmaf_nsnps.txt -- problem
+# adsp.wes.m2_highmod.skato_atlas_results.cmaf_nsnps.txt -- problem in original; duplicated file
+
+FILES=(adsp.wes.m0_cadd15.skato_atlas_results.cmaf_nsnps.txt
+adsp.wes.m0_cadd20.skato_atlas_results.cmaf_nsnps.txt
+adsp.wes.m0_high.skato_atlas_results.cmaf_nsnps.txt
+adsp.wes.m1_cadd15.skato_atlas_results.cmaf_nsnps.txt
+adsp.wes.m1_cadd20.skato_atlas_results.cmaf_nsnps.txt
+adsp.wes.m1_highmod.skato_atlas_results.cmaf_nsnps.txt
+adsp.wes.m1_high.skato_atlas_results.cmaf_nsnps.txt
+adsp.wes.m2_cadd15.skato_atlas_results.cmaf_nsnps.txt
+adsp.wes.m2_cadd20.skato_atlas_results.cmaf_nsnps.txt
+adsp.wes.m2_highmod.skato_atlas_results.cmaf_nsnps_ega.txt
+adsp.wes.m2_high.skato_atlas_results.cmaf_nsnps.txt
+)
+
+# NG000XX_M0_HIGHMOD
+PAN_SOURCE_IDS=(NG000XX_M0_CADD15
+NG000XX_M0_CADD20
+NG000XX_M0_HIGH
+NG000XX_M1_CADD15
+NG000XX_M1_CADD20
+NG000XX_M1_HIGHMOD
+NG000XX_M1_HIGH
+NG000XX_M2_CADD15
+NG000XX_M2_CADD20
+NG000XX_M2_HIGHMOD
+NG000XX_M2_HIGH
+)
+
+
+
+
+LOAD_DATA=false
+GENERATE_LOAD_FILES=false
+
+PATCH=false
+COMMIT=""
+PREPROCESS=""
+
+
+while [[ $# -gt 0 ]]
+do
+
+    key="$1"
+
+    case $key in
+	--loadData)
+	    LOAD_DATA=true
+	    ;;
+	--runPatches)
+	    PATCH=true
+	    ;;
+	--preprocess)
+	    PREPROCESS="--preprocess"
+	    ;;
+	--generateLoadFiles)
+	    GENERATE_LOAD_FILES=true
+	    ;;
+	--commit)
+	    COMMIT="--commit"
+	    ;;
+	*)
+            # unknown option
+	    ;;
+    esac
+    shift # past argument or value
+done
+
+# run loading plugin
+if [ ${GENERATE_LOAD_FILES} = true ] ; then 
+
+    for i in "${!FILES[@]}" ; 
+    do 
+	echo "Generating Load File for ${PAN_SOURCE_IDS[$i]}: ${FILES[$i]}"
+	generateAdspSkatoLoadFiles --dir ${FILE_PATH} --file ${FILES[$i]} --prefix ${PAN_SOURCE_IDS[$i]}
+    done
+fi
+
+
+if [ ${LOAD_DATA} = true ] ; then 
+   
+    for i in "${!PAN_SOURCE_IDS[@]}" ; 
+    do
+	echo "Loading ${PAN_SOURCE_IDS[$i]}"
+	CONFIG_FILE=${CONFIG_FILE_PATH}/${PAN_SOURCE_IDS[$i]/"NG000XX_"/""}.json
+	echo "with config: $CONFIG_FILE"
+	COMMENT="ga NiagadsData::Load::Plugin::LoadGeneTraitAssociationResult --dir ${FILE_PATH} --config $CONFIG_FILE --useGeneSymbol"
+	echo "${COMMENT}"
+	ga NiagadsData::Load::Plugin::LoadGeneTraitAssociationResult --dir ${FILE_PATH} --config $CONFIG_FILE --useGeneSymbol --comment "${COMMENT}" ${COMMIT} > load_gene_trait_association_result_${PAN_SOURCE_IDS[$i]}.log 2>&1 
+    done
+fi
+
+

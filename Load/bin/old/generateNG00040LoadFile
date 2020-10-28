@@ -1,0 +1,154 @@
+#!/usr/bin/env python
+#pylint: disable=invalid-name
+#pylint: disable=no-member
+#pylint: disable=anomalous-backslash-in-string
+'''
+generate a load file from the NG00040 data file for AD, PSP, or FTD
+this includes extracting allele information from Illumina BeadChip
+annotation files
+'''
+
+from __future__ import with_statement
+from __future__ import print_function
+
+import argparse
+import os.path as path
+import csv
+import json
+import re
+from decimal import Decimal
+from itertools import islice
+from CBILCommonDataPg.Utils.utils import qw, xstr, warning, die
+
+
+'''
+IlmnID,Name,IlmnStrand,SNP,AddressA_ID,AlleleA_ProbeSeq,AddressB_ID,AlleleB_ProbeSeq,GenomeBuild,Chr,MapInfo,Ploidy,Species,Source,SourceVersion,SourceStrand,SourceSeq,TopGenomicSeq,BeadSetID
+exm-IND1-200449980-0_M_R_1990486447,exm-IND1-200449980,MINUS,[D/I],0069606251,CTGTGGAACTTTCCGGAGCTCGGCACCCTTCCCCCAAGCCTACCTGGGCG,,,37.1,1,202183358,diploid,Homo sapiens,1000genomes,0,PLUS,GAGGGCCGCTCAGCGAGGGCGGGACAGAACCTCTCCCGGGCTGGGAGTGCACGGCGCGGT[-/G]CGCCCAGGTAGGCTTGGGGGAAGGGTGCCGAGCTCCGGAAAGTTCCACAGGTCCTCCGCA,GAGGGCCGCTCAGCGAGGGCGGGACAGAACCTCTCCCGGGCTGGGAGTGCACGGCGCGGT[-/G]CGCCCAGGTAGGCTTGGGGGAAGGGTGCCGAGCTCCGGAAAGTTCCACAGGTCCTCCGCA,662
+'''
+
+
+
+
+def parse_array_annotation():
+    '''
+    parse array annotation
+    to get mapping of exome probe id to alleles
+    '''
+
+    '''
+    Name: probe id
+    Chr: chromosome
+    MapInfo: position
+    SNP: [ref/alt]
+    '''
+
+    fileName = path.join(args.dir, args.annotationFile)
+    annot = {}
+    with open(fileName) as f:
+        reader = csv.DictReader(islice(f, 7, None), delimiter=',') # skip comment headers; first 7 lines
+        for row in reader:
+            if row['IlmnID'] == '[Controls]':
+                break
+            probe = row['Name']
+            if row['SNP'] is None: # control
+                continue
+            alleles = row['SNP'].replace('[', '').replace(']', '').split('/')
+            if len(alleles) > 2:
+                die("multi-alleleic variant: " + probe + ": " + row['SNP'])
+
+            if 'D' in alleles: # insertion/deletion
+                # map to refSNP id instead of position, eg.
+                # NGCexon10K-rs35823693, or UNGCexon10K-chr18_22805322_rs34182629_6, exm-rs234234
+                match = re.search('rs\d+', probe)
+
+                if match:
+                    annot[probe] = match.group(0)
+                else:
+                    annot[probe] = 'indel no refSNP'
+
+            elif 'UNGCexon10K' in probe:
+                if 'chr' in probe:
+                    # positional info part of probe id, e.g. UNGCexon10K-chrX_99925874_C_T_10
+                    values = probe.split('_')
+                    chromosome = values[0].replace('UNGCexon10K-chr','')
+                    if chromosome == 'MT':
+                        chromosome = 'M'
+                    annot[probe] = str(chromosome) + ':' + values[1] + ':' + alleles[0] + ':' + alleles[1]
+                if 'rs' in probe:
+                    match = re.search('rs\d+', probe)
+                    annot[probe] = match.group(0)
+            else:
+                chromosome = row['Chr']
+                if chromosome == 'MT':
+                    chromosome = 'M'
+                annot[probe] = str(chromosome) + ':' + row['MapInfo'] + ':' + alleles[0] + ':' + alleles[1]
+            # warning("probe", probe, "variant", annot[probe])
+
+    return annot
+
+
+def generate_load_file():
+    '''
+    parse input file and generate load file
+    '''
+    fileName = path.join(args.dir, args.fileName)
+    outputFile = path.join(args.dir, "gwas_summary_statistics_NG00040_" + args.disease + ".csv")
+    refSnpOutputFile = path.join(args.dir, "gwas_summary_statistics_NG00040_" + args.disease + "_rs.csv")
+    problematicProbeFile = path.join(args.dir, "problematic_probes_NG00040_" + args.disease + ".csv")
+    count = 0
+
+    with open(outputFile, 'w') as of:
+        print('|'.join(fields), file=of)
+        with open(refSnpOutputFile, 'w') as rof:
+            print('|'.join(fields), file=rof)
+            with open(problematicProbeFile, 'w') as pf:
+                with open(fileName) as f:
+                    reader = csv.DictReader(f, delimiter='\t')
+                    reader.fieldnames = [field.strip().lower()
+                                        for field in reader.fieldnames]
+                    for row in reader:
+                        probe = row['variant']
+                        pvalueOrig = row[args.disease.lower() + ' p-value']
+                        if pvalueOrig is None or pvalueOrig == 'NA':
+                            continue
+
+                        variantId = None
+                        if probe not in annotation:
+                            print(probe, "no annotation", sep="\t", file=pf)
+                            continue
+                        elif 'indel' in annotation[probe]:
+                            print(probe, annotation[probe], sep="\t", file=pf)
+                            continue
+                        else:
+                            variantId = annotation[probe]
+
+                        pvalue = '%.3E' % Decimal(pvalueOrig)
+                        pvalueMant = pvalue.split('E')[0]
+                        pvalueExp = pvalue.split('E')[1]
+                        logPvalue = "%.5f" % (Decimal(pvalueOrig).log10() * -1)
+                        oddsRatio = row[args.disease.lower() + ' odds ratio']
+                        evidence = json.dumps({"PROBE": probe})
+                        line = '|'.join((variantId, logPvalue,
+                                        pvalueMant, pvalueExp,
+                                        oddsRatio, evidence))
+                        if 'rs' in variantId:
+                            print(line, file=rof)
+                        else:
+                            print(line, file=of)
+
+                        count = count + 1
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="generate load file from tab-delimited file of unknown origin")
+    parser.add_argument('-d', '--dir', help="file directory", required=True)
+    parser.add_argument('-f', '--fileName', help="data file name", required=True)
+    parser.add_argument('-a', '--annotationFile', help="Illumina BeadChip annotation (csv format)",
+                        required=True)
+    parser.add_argument('--disease', help="one of AD, PSP, FTD", required=True)
+
+    args = parser.parse_args()
+
+    fields = qw('variant_id p_value pvalue_mant pvalue_exp odds_ratio evidence')
+    annotation = parse_array_annotation()
+    generate_load_file()

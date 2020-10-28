@@ -1,0 +1,49 @@
+{
+  "file": {
+      "path": "$DATA_DIR/ADSP/INDELS",
+      "rolling": "WES_small_indels_rolling_flat_annotation_1_14_2016.txt.gz",
+      "vep": "WES_small_indels_vep80_everything.txt.gz",
+      "annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
+      "cadd_database_directory": "$DATA_DIR/CADD/v16",
+      "adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
+      "vep_cache_directory": "$DATA_DIR/VEP_CACHE"
+    },
+    "external_database": {
+	"name": "ADSP",
+	"version": "INDELS - WES",
+	"release_date": "2016-01-14",
+	"id_url": "https://www.niagads.org/datasets/ng00061",
+	"description": "Alzheimer's Disease Sequencing Project (ADSP) Whole Exome Sequencing - Small INDELS",
+	"accession": "ADSP_WES_INDELS",
+	"type": "Genetic variation"
+    },
+    "preprocess": [
+	{
+	    "script": {
+		"name": "extractUniqueVariants",
+		"parameters": {
+		    "directory": "@file.path",
+		    "files": {"WES_small_indels_rolling_flat_annotation_1_14_2016.txt.gz": 3,
+			      "WES_small_indels_vep80_everything.txt.gz":  3}
+		}
+	    }
+	}
+    ],
+    "load": [
+	{
+	    "plugin": {
+		"name": "NiagadsData::Load::Plugin::LoadVariants",
+		"parameters": {
+		    "fileDir": "@file.path",
+		    "file" : "unique_variants.txt",
+		    "adspFlag": "ADSP_WES",
+		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
+		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
+		    "caddDatabaseDir": "@file.cadd_database_directory",
+		    "vepCacheDir": "@file.vep_cache_directory"
+		}
+	    }
+	}
+    ]
+}
+

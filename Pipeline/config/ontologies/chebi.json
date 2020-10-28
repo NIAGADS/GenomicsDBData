@@ -1,0 +1,27 @@
+{
+    "file": {
+	"path": "$SHARED_DATA_DIR/ontologies/chebi",
+	"file": "chebi_lite.owl"
+    },
+    "external_database": {
+	"name": "ChEBI Ontology",
+	"description": "The Chemical Entities of Biological Interest (ChEBI) ontology is a registry of small molecular entities encompassing both synthetic and natural compounds or other molecular entities (e.g., atoms, ions, complexes, etc) not directly encoded by the genome.",
+	"version": "171",
+	"release_date": "2019-01-02",
+	"download_url": "ftp://ftp.ebi.ac.uk/pub/databases/chebi/ontology/chebi_lite.owl",
+	"id_url": "https://www.ebi.ac.uk/chebi/",
+	"accession": "CHEBI",
+	"type": "Ontology and terminology"
+    },
+    "load": [
+	{"plugin": {
+	    "name": "GUS::Supported::Plugin::InsertOntologyTermsAndRelationships",
+	    "parameters": {
+		"inFile": "@file.path/@file.file",
+		"extDbRlsSpec": "@external_database.name|@external_database.version",
+		"relTypeExtDbRlsSpec": "Niagads Ontology|current"
+	    }
+	}
+	}
+    ]
+}

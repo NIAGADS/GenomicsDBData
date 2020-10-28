@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+#pylint: disable=invalid-name
+
+'''
+Generates load file from ADSP freq data
+'''
+
+from __future__ import print_function
+
+import argparse
+import os.path as path
+import csv
+
+from CBILCommonDataPg.Utils.utils import qw, xstr, warning
+
+def generate_load_file():
+    ''' parse input file and generate the load file '''
+    fileName = path.join(args.dir, args.fileName)
+    outputFile = path.join(args.dir, 'niagads_variantallelefrequency_adsp_'
+                           + 'WES' + '.csv')
+
+    count = 0
+    variants = {}
+    with open(outputFile, 'w') as of:
+        print('|'.join(fields), file=of)
+        with open(fileName, 'r') as f:
+            reader = csv.DictReader(f, delimiter='\t')
+            #  chr     pos     ref_allele      alt_allele      frequency
+
+            for row in reader:
+                count = count + 1
+                if count % 50000 == 0:
+                    warning("Processed " + xstr(count) + " rows")
+
+                position = row['chr'] + ':' + row['pos']
+                ref = row['ref_allele']
+                alt = row['alt_allele']
+                variantId = position + ':' + ref + ':' + alt
+                if variantId in variants: # skip duplicates
+                    continue
+                print('|'.join((variantId, alt, str(row['frequency']))), file=of)
+                variants[variantId] = 1
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="generate ADSP Allele Frequency load file")
+    parser.add_argument('-d', '--dir', help="file directory", required=True)
+    parser.add_argument('-f', '--fileName', help="a file name", required=True)
+    args = parser.parse_args()
+
+    fields = qw('variant_id allele frequency')
+    generate_load_file()
