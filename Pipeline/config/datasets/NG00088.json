@@ -1,0 +1,102 @@
+{    
+    "file": {
+	"path": "$DATA_DIR/NIAGADS_GWAS",
+	"accession": "NG00088",
+	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
+	"cadd_database_directory": "$DATA_DIR/CADD/v16",
+	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
+	"vep_cache_directory": "$DATA_DIR/VEP_CACHE"
+    },
+    "external_database": {
+	"name": "NIAGADS",
+	"version": "current",
+	"download_url": "https://www.niagads.org/datasets/",
+	"id_url": "https://www.niagads.org/",
+	"description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
+	"accession": "NIAGADS",
+	"type": "Genetic variation"
+    },
+    "foreach": [	
+	{
+	    "ALL": {
+		"file": "META_AA.10_ltscore2_adj.age_.sex_.db_.smk_.edu_.pcs_.apoe_.abca7_.txt",
+		"sourceId": "@file.accession",
+		"name": "Informed conditioning on African American LOAD genetic risk",
+		"description" : "Summary statistics from a genome‐wide association study (GWAS) in African Americans employing informed conditioning in 1825 LOAD cases and 3784 cognitively normal controls. Posterior liabilities were conditioned on age, sex, diabetes status, current smoking status, educational attainment, and affection status, with parameters informed by external prevalence information.",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": "African American",
+		    "covariate specification": "value: APOE, ABCA7, and population stratification"
+		}
+	    }
+	}
+    ],
+  
+    "load": [
+	{
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
+		"parameters": {
+		    "name": "Informed conditioning on African American LOAD genetic risk",
+		    "attribution": "Mez et al. 2017",
+		    "description" : "Summary statistics from a genome‐wide association study (GWAS) in African Americans employing informed conditioning in 1825 LOAD cases and 3784 cognitively normal controls. Posterior liabilities were conditioned on age, sex, diabetes status, current smoking status, educational attainment, and affection status, with parameters informed by external prevalence information.",
+		    "sourceId": "@file.accession",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version"
+		}		
+	    }
+	},
+	{
+	    "foreach" : true,
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
+		"parameters" : {
+		    "attribution": "Mez et al. 2017",
+		    "type": "Genetic variation",
+		    "subtype": "GWAS summary statistics",
+		    "description": "foreach",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "characteristics": "foreach",
+		    "sourceId" : "foreach",
+		    "name": "foreach",
+		    "studyId": "@file.accession"
+		}
+	    }
+	}, 
+	{
+	    "foreach": true,
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::LoadVariantGWASResult",
+		"skip":"true",
+		"parameters": {
+		    "file": "foreach",
+		    "sourceId": "foreach",
+		    "fileDir" : "@file.path/@file.accession",
+		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
+		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
+		    "caddDatabaseDir": "@file.cadd_database_directory",
+		    "vepCacheDir": "@file.vep_cache_directory",
+		    "testAllele": "Allele1",
+		    "refAllele": "Allele2",
+		    "chromosome": "#CHR",
+		    "position": "BP",
+		    "pvalue": "P-value",
+		    "frequency": "Freq1",
+		    "genomeBuild": "GRCh37.p13",
+		    "genomeWideSignificanceThreshold": "5e-8",
+		    "checkAltIndels":"true",
+		    "restrictedStats": {
+			"frequency_se": "FreqSE",
+			"effect": "Effect",
+			"std_err": "StdErr",
+			"direction": "Direction",
+			"het_chi_sq": "HetChiSq",
+			"het_df": "HetDf",
+			"het_pvalue": "HetPVal"
+		    }
+		}
+	    }
+	}
+
+	
+    ]
+}
