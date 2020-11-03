@@ -220,6 +220,13 @@ sub getArgumentsDeclaration {
 		  isList         => 0 
 		}),
 
+     booleanArg({ name  => 'markerIsMetaseqId',
+		  descr => 'flag if marker is a metaseq_id; to be used with map thru marker',
+		  constraintFunc => undef,
+		  reqd           => 0,
+		  isList         => 0 
+		}),
+
 
      booleanArg({ name  => 'checkAltIndels',
 		  descr => 'check for alternative variant combinations for indels, e.g.: ref:alt, alt:ref',
@@ -373,7 +380,7 @@ sub new {
   my $argumentDeclaration = &getArgumentsDeclaration();
 
   $self->initialize({requiredDbVersion => 4.0,
-		     cvsRevision => '$Revision: 98 $',
+		     cvsRevision       => '$Revision$',
 		     name => ref($self),
 		     revisionNotes => '',
 		     argsDeclaration => $argumentDeclaration,
@@ -428,7 +435,7 @@ sub verifyArgs {
 
   if ($self->getArg('findNovelVariants')) {
     $self->error("must specify testAllele") if (!$self->getArg('testAllele'));
-    $self->error("must specify refAllele") if (!$self->getArg('refAllele'));
+    $self->error("must specify refAllele") if (!$self->getArg('refAllele') and !$self->getArg('marker'));
     $self->error("must specify pvalue") if (!$self->getArg('pvalue'));
     $self->error("must specify marker if mapping through marker") 
       if ($self->getArg('mapThruMarker') and !$self->getArg('marker'));
@@ -576,7 +583,7 @@ sub cleanAndSortInput {
   }
 
   my $testAlleleC = $self->getColumnIndex(\%columns, $self->getArg('testAllele'));
-  my $refAlleleC = $self->getColumnIndex(\%columns, $self->getArg('refAllele'));
+  my $refAlleleC = ($self->getArg('refAllele')) ? $self->getColumnIndex(\%columns, $self->getArg('refAllele')) : undef;
   my $altAlleleC = ($self->getArg('altAllele')) ? $self->getColumnIndex(\%columns, $self->getArg('altAllele')) : undef;
   my $chrC = ($self->getArg('chromosome')) ? $self->getColumnIndex(\%columns, $self->getArg('chromosome')) : undef;
   my $positionC = ($self->getArg('position')) ? $self->getColumnIndex(\%columns, $self->getArg('position')) : undef;
@@ -595,7 +602,7 @@ sub cleanAndSortInput {
     my $position = undef;
     my $metaseqId = undef;
 
-    my $ref = uc($values[$refAlleleC]);
+    my $ref = ($refAlleleC)? uc($values[$refAlleleC]) : $self->extractRefAlleleFromMarker($marker);
     my $alt = ($altAlleleC) ? uc($values[$altAlleleC]) : uc($values[$testAlleleC]);
     my $test = uc($values[$testAlleleC]);
    
@@ -676,9 +683,16 @@ sub cleanAndSortInput {
     $marker = undef if ($chrC eq $markerC);
     
     if ($chromosome eq "NA" || $self->getArg('mapThruMarker')) {
+      $metaseqId = $marker if ($self->getArg('markerIsMetaseqId')); # yes ignore all that processing just did; easy fix added later
+
       my ($c, $p, $r, $a) = split /:/, $metaseqId;
       $chromosome = $c;
       $position = $p;
+
+      if ($self->getArg('markerIsMetaseqId')) {
+	$ref = $r;
+	$alt = $a;
+      }
     }
 
     my $rv = {chromosome => $chromosome, position => $position, refAllele => $ref, altAllele => $alt, testAllele => $test, marker => $marker, metaseq_id => $metaseqId};
@@ -689,6 +703,17 @@ sub cleanAndSortInput {
     }
   }
   $self->sortCleanedInput($preprocessFileName);
+}
+
+
+sub extractRefAlleleFromMarker {
+  my ($self, $marker) = @_;
+  # assumes marker is a metaseq_id
+  my @values = split /:/, $marker;
+  $self->error("Ref allele column not specified and unable to extract from marker $marker.")
+    if (scalar @values != 4);
+
+  return $values[3];
 }
 
 sub findNovelVariants {
