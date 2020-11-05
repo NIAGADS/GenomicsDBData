@@ -1,7 +1,7 @@
 {    
     "file": {
 	"path": "$DATA_DIR/NIAGADS_GWAS",
-	"accession": "NG00088",
+	"accession": "NG00089",
 	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
 	"cadd_database_directory": "$DATA_DIR/CADD/v16",
 	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
@@ -19,14 +19,14 @@
     "foreach": [	
 	{
 	    "ALL": {
-		"file": "META_AA.10_ltscore2_adj.age_.sex_.db_.smk_.edu_.pcs_.apoe_.abca7_.txt",
+		"file": "CSF_sTREM2_Deming_etal_2019.assoc_linear.txt",
 		"sourceId": "@file.accession",
-		"name": "Informed conditioning on African American LOAD genetic risk",
-		"description" : "Summary statistics from a genome‐wide association study (GWAS) in African Americans employing informed conditioning in 1825 LOAD cases and 3784 cognitively normal controls. Posterior liabilities were conditioned on age, sex, diabetes status, current smoking status, educational attainment, and affection status, with parameters informed by external prevalence information.",
+		"name": "CSF TREM2",
+		"description" : "Summary statistics of genome wide association study to identify genetic modifiers of CSF sTREM2 (Soluble triggering receptor expressed on myeloid cells 2) obtained using ADNI samples.",
 		"characteristics": {
-		    "diagnosis": "late onset Alzheimer's disease",
-		    "population": "African American",
-		    "covariate specification": "value: APOE, ABCA7, and population stratification"
+		    "diagnosis": ["cognitive impairment", "Alzheimer's disease"],
+		    "tissue": "cerebrospinal fluid",
+		    "covariate specification": "value: age, sex, and population stratification"
 		}
 	    }
 	}
@@ -38,9 +38,9 @@
 		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
 		"skip":"true",
 		"parameters": {
-		    "name": "Informed conditioning on African American LOAD genetic risk",
-		    "attribution": "Mez et al. 2017",
-		    "description" : "Summary statistics from a genome‐wide association study (GWAS) in African Americans employing informed conditioning in 1825 LOAD cases and 3784 cognitively normal controls. Posterior liabilities were conditioned on age, sex, diabetes status, current smoking status, educational attainment, and affection status, with parameters informed by external prevalence information.",
+		    "name": "CSF TREM2",
+		    "attribution": "Deming et al. 2019",
+		    "description" : "Summary statistics of genome wide association study to identify genetic modifiers of CSF sTREM2 (Soluble triggering receptor expressed on myeloid cells 2) obtained using ADNI samples. Alzheimer’s Disease Neuroimaging Initiative (ADNI) samples (n=813), are the largest dataset for CSF sTREM2 samples to date. The analyzed dataset included samples from 172 AD, 169 cognitively normal, 183 early mild cognitive impairment (EMCI), 221 late MCI (LMCI), and 68 significant memory concern (SMC) individuals.",
 		    "sourceId": "@file.accession",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version"
 		}		
@@ -52,7 +52,7 @@
 		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
 		"skip":"true",
 		"parameters" : {
-		    "attribution": "Mez et al. 2017",
+		    "attribution": "Deming et al. 2019",
 		    "type": "Genetic variation",
 		    "subtype": "GWAS summary statistics",
 		    "description": "foreach",
@@ -76,23 +76,24 @@
 		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
 		    "caddDatabaseDir": "@file.cadd_database_directory",
 		    "vepCacheDir": "@file.vep_cache_directory",
-		    "testAllele": "Allele1",
-		    "refAllele": "Allele2",
-		    "chromosome": "#CHR",
+		    "testAllele": "A1",
+		    "chromosome": "CHR",
+		    "marker": "SNP",
+		    "mapThruMarker": true,
+		    "markerIsMetaseqId": true,
 		    "position": "BP",
-		    "pvalue": "P-value",
-		    "frequency": "Freq1",
+		    "pvalue": "P",
 		    "genomeBuild": "GRCh37.p13",
 		    "genomeWideSignificanceThreshold": "5e-8",
 		    "checkAltIndels":"true",
 		    "restrictedStats": {
-			"frequency_se": "FreqSE",
-			"effect": "Effect",
-			"std_err": "StdErr",
-			"direction": "Direction",
-			"het_chi_sq": "HetChiSq",
-			"het_df": "HetDf",
-			"het_pvalue": "HetPVal"
+			"beta": "BETA",
+			"beta_std_err": "SE",
+			"beta_L95": "L95",
+			"beta_U95": "U95",
+			"t_statistic": "STAT",
+			"num_observations": "NMISS",
+			"test":"TEST"
 		    }
 		}
 	    }

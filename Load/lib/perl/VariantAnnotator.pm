@@ -336,7 +336,7 @@ sub getAnnotatedVariants {
 
   if ($self->{plugin}->getArg('mapThruMarker')) { # bypasses metaseq check
     return $self->getVariantIdByRefSnp($marker, $alleles) if ($marker and $marker =~ /rs/);
-    return ();
+    # otherwise marker is likely a metaseqid, so proceed w/metaseq check
   }
 
   my @variants = ();
@@ -616,7 +616,7 @@ sub loadVepAnnotatedVariants {
   $self->{plugin}->log("Running load_vep_result.py to load annotation of novel variants: " . join(' ', @cmd));
 
   my  $algInvocationId = qx(@cmd); # qx(join(' ', @cmd)); 
-
+  $self->{plugin}->log("DONE: " . $algInvocationId);
   $self->{plugin}->error("Loading novel variants failed; see $file.log") 
     if ($algInvocationId eq 'FAIL' || !(looks_like_number($algInvocationId)));
   $self->{plugin}->log("DONE Loading novel variants: AnnotatedVDB Algorithm Invocation ID = $algInvocationId");

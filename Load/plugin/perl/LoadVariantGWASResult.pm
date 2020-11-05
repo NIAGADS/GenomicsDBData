@@ -602,7 +602,7 @@ sub cleanAndSortInput {
     my $position = undef;
     my $metaseqId = undef;
 
-    my $ref = ($refAlleleC)? uc($values[$refAlleleC]) : $self->extractRefAlleleFromMarker($marker);
+    my $ref = ($refAlleleC)? uc($values[$refAlleleC]) : undef;
     my $alt = ($altAlleleC) ? uc($values[$altAlleleC]) : uc($values[$testAlleleC]);
     my $test = uc($values[$testAlleleC]);
    
@@ -705,16 +705,6 @@ sub cleanAndSortInput {
   $self->sortCleanedInput($preprocessFileName);
 }
 
-
-sub extractRefAlleleFromMarker {
-  my ($self, $marker) = @_;
-  # assumes marker is a metaseq_id
-  my @values = split /:/, $marker;
-  $self->error("Ref allele column not specified and unable to extract from marker $marker.")
-    if (scalar @values != 4);
-
-  return $values[3];
-}
 
 sub findNovelVariants {
   my ($self, $file, $novel) = @_;
