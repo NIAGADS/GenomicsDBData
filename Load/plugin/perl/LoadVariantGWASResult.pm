@@ -314,6 +314,13 @@ sub getArgumentsDeclaration {
 		  reqd => 0
 		}),
 
+     booleanArg({ name  => 'probe',
+		  descr => 'input includes a probe field',
+		  constraintFunc => undef,
+		  isList         => 0,
+		  reqd => 0
+		}),
+
    booleanArg({ name  => 'resume',
 		descr => 'resume variant load; need to check against db for variants that were flagged  but not actually loaded',
 		  constraintFunc => undef,
@@ -380,7 +387,7 @@ sub new {
   my $argumentDeclaration = &getArgumentsDeclaration();
 
   $self->initialize({requiredDbVersion => 4.0,
-		     cvsRevision       => '$Revision$',
+		     cvsRevision       => '$Revision: 500 $',
 		     name => ref($self),
 		     revisionNotes => '',
 		     argsDeclaration => $argumentDeclaration,
@@ -476,6 +483,7 @@ sub loadStandardizedResult {
 
     if ($totalVariantCount == 0) {
       unshift @sheader, "marker";
+      push(@sheader, "probe") if ($self->getArg('probe'));
       print $pfh join("\t", @sheader) . "\n";
 
       push(@sheader, "freq1") if ($hasFreqData);
@@ -489,6 +497,7 @@ sub loadStandardizedResult {
 
     my @cvalues = @row{@sfields};
     unshift @cvalues, $marker;
+    push(@cvalues, $restrictedStats->{probe}) if ($self->getArg('probe'));
     my $oStr = join("\t", @cvalues);
     $oStr =~ s/NaN/NA/g; # replace any DB nulls with NAs
     print $pfh "$oStr\n";
@@ -589,8 +598,6 @@ sub cleanAndSortInput {
   my $positionC = ($self->getArg('position')) ? $self->getColumnIndex(\%columns, $self->getArg('position')) : undef;
   my $markerC = ($self->getArg('marker')) ? $self->getColumnIndex(\%columns, $self->getArg('marker')) : undef;
 
-  my $customChrMap = ($self->getArg('customChrMap')) ? $self->generateCustomChrMap() : undef;
-
   while (my $line = <$fh>) {
     chomp $line;
     my @values = split /\t/, $line;
@@ -606,9 +613,9 @@ sub cleanAndSortInput {
     my $alt = ($altAlleleC) ? uc($values[$altAlleleC]) : uc($values[$testAlleleC]);
     my $test = uc($values[$testAlleleC]);
    
-    $ref = '?' if ($ref =~ m/0/); # vep can still process the '?', so do the replacement here for consistency 
-    $alt = '?' if ($alt =~ m/0/);
-    $test = '?' if ($test =~ m/0/);
+    $ref = '?' if ($ref =~ m/^0$/); # vep can still process the '?', so do the replacement here for consistency 
+    $alt = '?' if ($alt =~ m/^0$/);
+    $test = '?' if ($test =~ m/^0$/);
 
     my $frequencyC = ($self->getArg('frequency')) 
       ? $self->getColumnIndex(\%columns, $self->getArg('frequency')) : undef;
@@ -630,13 +637,7 @@ sub cleanAndSortInput {
 	  next;
       }
 
-      while (my ($oc, $rc) = each %$customChrMap) {
-	$chromosome = $rc if ($chromosome =~ m/\Q$oc/);
-      }
-
-      $chromosome = 'M' if ($chromosome =~ m/MT/);
-      $chromosome = 'X' if ($chromosome =~ m/23/);
-      $chromosome = 'Y' if ($chromosome =~ m/24/);
+      $chromosome = $self->correctChromosome($chromosome);
 
       if ($alt =~ /-/) { # deletion -- note: zeros may be deletions, but unsure so treating as unknown,  see above
 	# in a VCF deletions must provide the anchor nucleotide preceeding the change, with position being 1 base before the change
@@ -685,14 +686,18 @@ sub cleanAndSortInput {
     if ($chromosome eq "NA" || $self->getArg('mapThruMarker')) {
       $metaseqId = $marker if ($self->getArg('markerIsMetaseqId')); # yes ignore all that processing just did; easy fix added later
 
-      my ($c, $p, $r, $a) = split /:/, $metaseqId;
-      $chromosome = $c;
+      # some weird ones are like chr:ps:ref:<weird:alt:blah:blah>
+      my ($c, $p, $r, $a) = split /\<[^><]*>(*SKIP)(*FAIL)|:/, $metaseqId; 
+      $chromosome = $self->correctChromosome($c);
       $position = $p;
 
       if ($self->getArg('markerIsMetaseqId')) {
-	$ref = $r;
-	$alt = $a;
+	$alt = $self->cleanAllele($a);
+	$ref = $self->cleanAllele($r);
+	$test = $self->cleanAllele($test);
       }
+
+      $metaseqId = join(':', $chromosome, $position, $ref, $alt); # in case chromosome/alleles were corrected
     }
 
     my $rv = {chromosome => $chromosome, position => $position, refAllele => $ref, altAllele => $alt, testAllele => $test, marker => $marker, metaseq_id => $metaseqId};
@@ -705,6 +710,27 @@ sub cleanAndSortInput {
   $self->sortCleanedInput($preprocessFileName);
 }
 
+sub cleanAllele {
+  my ($self, $allele) = @_;
+
+  $allele =~ s/<|>//g;
+  $allele =~ s/:/\//g;
+  return $allele;
+}
+
+sub correctChromosome {
+  my ($self, $chrm) = @_;
+  my $customChrMap = ($self->getArg('customChrMap')) ? $self->generateCustomChrMap() : undef;
+
+  while (my ($oc, $rc) = each %$customChrMap) {
+    $chrm = $rc if ($chrm =~ m/\Q$oc/);
+  }
+
+  $chrm = 'M' if ($chrm =~ m/MT/);
+  $chrm = 'X' if ($chrm =~ m/23/);
+  $chrm = 'Y' if ($chrm =~ m/24/);
+  return $chrm;
+}
 
 sub findNovelVariants {
   my ($self, $file, $novel) = @_;

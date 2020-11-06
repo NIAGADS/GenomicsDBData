@@ -213,14 +213,20 @@ loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00036.js
 
 # NG00039
 loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00039.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00039_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
-loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00039.json --load data --params '{"findNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00039_find_novel_variants.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00039.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00039_find_novel_variants.log 2>&1
 loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00039.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00039_annotate_novel_variants.log 2>&1
-loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00039.json --load data --params '{"preprocessAnnotatedNovelVariants":"true","skipMetaseqIdValidation":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00039_preprocess_novel_variants.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00039.json --load data --params '{"preprocessAnnotatedNovelVariants":"true","skipMetaseqIdValidation":"true"}' --verbose > $DATA_DIR/logs/datasets/load_NG00039_preprocess_novel_variants.log 2>&1
 loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00039.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00039_load_variants.log 2>&1
 loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00039.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00039_load_result.log 2>&1
 
-# NG00040 -- TODO
-loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00040.json --preprocess --commit --verbose > $DATA_DIR/logs/preprocess_NG00040.log 2>&1
+# NG00040 
+
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00040.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00040_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00040.json --load data --params '{"findNovelVariants":"true"}' --verbose > $DATA_DIR/logs/datasets/load_NG00040_find_novel_variants.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00040.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00040_annotate_novel_variants.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00040.json --load data --params '{"preprocessAnnotatedNovelVariants":"true","skipMetaseqIdValidation":"true"}' --verbose > $DATA_DIR/logs/datasets/load_NG00040_preprocess_novel_variants.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00040.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00040_load_variants.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00040.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00040_load_result.log 2>&1
 
 # NG00041
 

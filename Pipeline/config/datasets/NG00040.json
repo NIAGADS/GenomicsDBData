@@ -1,7 +1,13 @@
 {    
     "file": {
 	"path": "$DATA_DIR/NIAGADS_GWAS",
-	"accession": "NG00040"
+	"accession": "NG00040",
+	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
+	"cadd_database_directory": "$DATA_DIR/CADD/v16",
+	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
+	"vep_cache_directory": "$DATA_DIR/VEP_CACHE",
+	"arrayAnnotation": "@file.path/@file.accession+/array_annotation/UNGCexon10K_15035704_A.csv",
+	"comment": "files exist where mapping off array annotation was already completed; using those; so no array annotation mapping step included in this file"
     },
     "external_database": {
 	"name": "NIAGADS",
@@ -15,7 +21,7 @@
     "foreach": [	
 	{
 	    "AD": {
-		"file": "@file.path/@file.accession/AD_SuppTableS1_MDS_Summary.txt",
+		"file": "AD_SuppTableS1_MDS_Summary.txt",
 		"sourceId": "@file.accession+_AD",
 		"phenotype": "AD",
 		"name": "Multi-ethnic exome array: AD",
@@ -30,7 +36,7 @@
 
 	{
 	    "PSP": {
-		"file": "@file.path/@file.accession+/PSP_SuppTableS1_MDS_Summary.txt",
+		"file": "PSP_SuppTableS1_MDS_Summary.txt",
 		"sourceId": "@file.accession+_PSP",
 		"phenotype": "PSP",
 		"name": "Multi-ethnic exome array: PSP",
@@ -45,7 +51,8 @@
 
 	{
 	    "FTD": {
-		"file": "@file.path/@file.accession+/FTD_SuppTableS1_MDS_Summary.txt",
+		"file": "FTD_SuppTableS1_MDS_Summary.txt",
+		"inputFile": "FTD_SuppTableS1_MDS_Summary.txt",
 		"sourceId": "@file.accession+_FTD",
 		"phenotype": "FTD",
 		"name": "Multi-ethnic exome array: FTP",
@@ -58,50 +65,12 @@
 	    }
 	}
     ],
-    "preprocess": [
-	{ 
-	    "foreach": true,
-	    "script": {
-		"name": "preprocessNG00040",
-		"parameters": {
-		    "outputDir": "@file.path/@file.accession", 
-		    "inputFile": "@file.path/@file.accession+/SuppTableS1_MDS_Summary.txt",
-		    "phenotype": "foreach",
-		    "annotationFile": "@file.path/@file.accession+/array_annotation/UNGCexon10K_15035704_A.csv"
-		}
-	    }
-	},
-
-	{
-	    "foreach": true,
-	    "plugin": {
-		"name": "GenomicsDBData::Load::Plugin::InsertVariantGWASResult",
-		"parameters": {
-		    "preprocess": true,
-		    "file": "foreach",
-		    "sourceId": "foreach",
-		    "preprocessDir": "@file.path/@file.accession", 
-		    "testAllele": "A1",
-		    "refAllele": "A2",
-		    "chromosome": "CHR",
-		    "position": "BP",
-		    "pvalue": "P",
-		    "marker": "MARKER",
-		    "restrictedStats": {
-			"odds_ratio": "ODDS_RATIO",
-			"probe": "PROBE"
-		    },
-		    "insertMissingVariants": true,
-		    "extDbRlsSpec": "@external_database.name|@external_database.version"
-		}
-	    }
-	}
-    ],
-
+   
     "load": [
 	{
 	    "plugin": {
 		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
+		"skip": true,
 		"parameters": {
 		    "name": "Multi-ethnic exome array: AD, FTP, and PSP",
 		    "attribution": "Chen et al. 2015",
@@ -115,6 +84,7 @@
 	    "foreach" : true,
 	    "plugin": {
 		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
+		"skip": true,
 		"parameters" : {
 		    "attribution": "Chen et al. 2015",
 		    "type": "Genetic variation",
@@ -131,15 +101,35 @@
 	{
 	    "foreach": true,
 	    "plugin": {
-		"name": "GenomicsDBData::Load::Plugin::InsertVariantGWASResult",
+		"name": "GenomicsDBData::Load::Plugin::LoadVariantGWASResult",
 		"parameters": {
 		    "file": "foreach",
-		    "preprocessDir": "@file.path/@file.accession",
-		    "sourceId": "foreach"
+		    "sourceId": "foreach",
+		    "fileDir" : "@file.path/@file.accession",
+		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
+		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
+		    "caddDatabaseDir": "@file.cadd_database_directory",
+		    "vepCacheDir": "@file.vep_cache_directory",
+		    "testAllele": "A1",
+		    "refAllele": "A2",
+		    "chromosome": "CHR",
+		    "position": "BP",
+		    "pvalue": "P",
+		    "marker": "MARKER",
+		    "genomeBuild": "GRCh37.p13",
+		    "genomeWideSignificanceThreshold": "1e-3",
+		    "checkAltIndels":"true",
+		    "probe": "true",
+		    "restrictedStats": {
+			"odds_ratio": "ODDS_RATIO",
+			"probe": "PROBE"
+		    }
 		}
-	    }
-	}
 
-	
+	    }
+	}	
     ]
 }
+
+
+
