@@ -211,7 +211,7 @@ sub inferVariantLocationDisplay {
   if ($refLength > $altLength) { # deletions
     $props = { locationStart => $rsPosition };
 
-    if (length($alt) > 1) { # INDEL
+    if (length($norAlt) > 1) { # INDEL
       $props->{variantClass} = "indel";
       $props->{variantClassAbbrev} = "INDEL";
       if (length($normRef) == 0) {

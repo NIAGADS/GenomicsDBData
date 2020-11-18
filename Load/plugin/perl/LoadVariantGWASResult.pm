@@ -726,6 +726,7 @@ sub correctChromosome {
     $chrm = $rc if ($chrm =~ m/\Q$oc/);
   }
 
+  $chrm = 'M' if ($chrm =~ m/25/);
   $chrm = 'M' if ($chrm =~ m/MT/);
   $chrm = 'X' if ($chrm =~ m/23/);
   $chrm = 'Y' if ($chrm =~ m/24/);
