@@ -1,0 +1,33 @@
+[
+    {"source": "gnomAD", "source_id": "gnomad_sas", "abbrev": "SAS", "ontology_term": "HANCESTRO_0006"},
+    {"source": "gnomAD", "source_id": "gnomad_nfe", "abbrev": "NFE", "ontology_term": "NO_0000048"},
+    {"source": "gnomAD", "source_id": "gnomad_fin", "abbrev": "FIN", "ontology_term": "NO_0000045"},
+    {"source": "gnomAD", "source_id": "gnomad_eas", "abbrev": "EAS", "ontology_term": "HANCESTRO_0009"},
+    {"source": "gnomAD", "source_id": "gnomad_amr", "abbrev": "AMR", "value": "Latino/Ad Mixed American"},
+    {"source": "gnomAD", "source_id": "gnomad_asj", "abbrev": "ASJ", "value": "Ashkenazi Jewish"},
+    {"source": "gnomAD", "source_id": "gnomad_afr", "abbrev": "AFR", "ontology_term": "NO_0000046"},
+    {"source": "gnomAD", "source_id": "gnomad_ami", "abbrev": "AMI", "value": "Amish"},
+    {"source": "gnomAD", "source_id": "gnomad_mid", "abbrev": "MID", "value": "Middle Eastern"},
+    {"source": "gnomAD", "source_id": "gnomad_oth", "abbrev": "Other", "value": "Other", "description":"individuals that did not unambiguously cluster with the major populations in a principal component analysis (PCA)"},
+    {"source": "gnomAD", "source_id": "gnomad", "abbrev": "GAF", "value": "Global", "description":"global allele frequency calculated across the gnomAD super populations"},
+
+    {"source": "1000Genomes", "source_id": "afr", "abbrev": "AFR", "ontology_term": "NO_0000046"},
+    {"source": "1000Genomes", "source_id": "amr", "abbrev": "AMR", "value": "Latino/Ad Mixed American"},
+    {"source": "1000Genomes", "source_id": "sas", "abbrev": "SAS", "ontology_term": "HANCESTRO_0006"},
+    {"source": "1000Genomes", "source_id": "eas", "abbrev": "EAS", "ontology_term": "HANCESTRO_0009"},
+    {"source": "1000Genomes", "source_id": "eur", "abbrev": "EUR", "ontology_term": "HANCESTRO_0005"},
+    {"source": "1000Genomes", "source_id": "gmaf", "abbrev": "GAF", "value": "Global", "description":"global allele frequency calculated as the allele count (AC) divided by the chromosome count (AN) across the 1000 Genomes super populations"},
+
+    {"source": "ESP", "source_id": "aa", "abbrev": "AA", "value": "African American"},
+    {"source": "ESP", "source_id": "ea", "abbrev": "EA", "value": "European American"},
+
+    {"source": "ExAC", "source_id": "exac_sas", "abbrev": "SAS", "ontology_term": "HANCESTRO_0006"},
+    {"source": "ExAC", "source_id": "exac_nfe", "abbrev": "NFE", "ontology_term": "NO_0000048"},
+    {"source": "ExAC", "source_id": "exac_fin", "abbrev": "FIN", "ontology_term": "NO_0000045"},
+    {"source": "ExAC", "source_id": "exac_eas", "abbrev": "EAS", "ontology_term": "HANCESTRO_0009"},
+    {"source": "ExAC", "source_id": "exac_amr", "abbrev": "AMR", "value": "Latino/Ad Mixed American"},
+    {"source": "ExAC", "source_id": "exac_afr", "abbrev": "AFR", "ontology_term": "NO_0000046"},
+    {"source": "ExAC", "source_id": "exac_oth", "abbrev": "Other", "value": "Other", "description":"individuals that did not unambiguously cluster with the major populations in a principal component analysis (PCA)"},
+    {"source": "ExAC", "source_id": "exac_adj", "abbrev": "Adj", "value": "Global", "description":"allele frequency calculated across populations from an adjusted allele count that only includes individuals with genotype quality (GQ) ≥ 20 and depth (DP) ≥ 10"}
+
+]
