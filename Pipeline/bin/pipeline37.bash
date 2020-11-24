@@ -172,6 +172,8 @@ loadResource --config $CONFIG_DIR/adsp/wes_indesl_19.json --load data --params '
 # VEP/CADD -- now in Annotated VDB
 # allele frequencies -- now in AnnotatedVDB
 
+ga GenomicsDBData::Load::Plugin::LoadPopulations --input $GUS_HOME/data/GenomicsDBData/Load/populations.json --commit > $DATA_DIR/logs/load_af_populations.og 2>&1
+
 # ExAC
 
 loadResource -c $CONFIG_DIR/annotations/exac_freq.json  --load xdbr --verbose --commit > $DATA_DIR/logs/load_exac_xdbr.log 2>&1
