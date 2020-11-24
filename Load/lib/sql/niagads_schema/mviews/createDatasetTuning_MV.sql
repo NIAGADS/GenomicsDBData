@@ -118,8 +118,9 @@ WHEN characteristic = 'pTau181' THEN (SELECT replace(definition, 'Is a ', '') FR
 WHEN characteristic LIKE '%42%' THEN (SELECT replace(definition, 'Is the ', '') FROM SRes.OntologyTerm WHERE NAME = 'beta-amyloid 1-42 measurement')
 WHEN characteristic = 'clusterin' THEN (SELECT definition FROM SRes.OntologyTerm WHERE NAME = 'clusterin measurement')
 END AS definition
-FROM Biomarkers b)
+FROM Biomarkers b),
 
+TempCharacteristics AS (
 SELECT pan.protocol_app_node_id,
 pan.source_id AS track,
 REPLACE(ot.name, '_', '') AS characteristic,
@@ -213,8 +214,21 @@ CASE WHEN pan.name SIMILAR TO '%CSF%|%fluid%' THEN 'CSF' ELSE 'Blood' END AS fil
 TRUE AS is_value
 FROM Study.ProtocolAppNode pan,
 AnnotatedBiomarkers b
-WHERE b.protocol_app_node_id = pan.protocol_app_node_id
+WHERE b.protocol_app_node_id = pan.protocol_app_node_id)
 
+SELECT * FROM TempCharacteristics
+
+UNION ALL
+
+SELECT protocol_app_node_id, track, string_agg(characteristic, '//'),
+NULL AS ontology_term, NULL AS term_source_id,
+'full_list' AS characteristic_type,
+NULL AS definition,
+NULL AS filter_category,
+NULL AS filter_category_parent,
+NULL AS is_value
+FROM TempCharacteristics
+GROUP BY protocol_app_node_id, track
 );
 
 GRANT SELECT ON NIAGADS.ProtocolAppNodeCharacteristic TO gus_r, gus_w, comm_wdk_w;
