@@ -120,6 +120,34 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+CREATE OR REPLACE FUNCTION allele_frequencies(variantPK TEXT)
+       RETURNS JSONB AS $$
+
+DECLARE metaseqId TEXT;
+DECLARE refSnpId TEXT;
+DECLARE chrm TEXT;
+DECLARE af JSONB;
+BEGIN
+	
+	SELECT split_part(variantPK, '_', 1) INTO metaseqId;
+	SELECT split_part(variantPK, '_', 2) INTO refSnpId;
+	SELECT 'chr' || split_part(variantPK, ':', 1)::text INTO chrm;
+
+	SELECT 
+	v.allele_frequencies INTO af
+	FROM AnnotatedVDB.Variant v
+	WHERE LEFT(v.metaseq_id, 50) = LEFT(metaseqId, 50)
+	AND v.metaseq_id = metaseqId
+	AND CASE WHEN LENGTH(refSnpId) = 0 THEN TRUE
+	ELSE v.ref_snp_id = refSnpId END 
+	AND v.chromosome = chrm;
+
+	RETURN af;
+END;
+
+$$ LANGUAGE plpgsql;
+
+
 CREATE OR REPLACE FUNCTION is_adsp_variant(variantPK TEXT)
        RETURNS BOOLEAN AS $$
 DECLARE flag BOOLEAN;
@@ -167,6 +195,31 @@ BEGIN
 
 RETURN msc;
 
+END;
+
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION cadd(variantPK TEXT)
+       RETURNS JSONB AS $$
+DECLARE cs JSONB;
+DECLARE metaseqId TEXT;
+DECLARE refSnpId TEXT;
+DECLARE chrm TEXT;
+BEGIN
+	
+	SELECT split_part(variantPK, '_', 1) INTO metaseqId;
+	SELECT split_part(variantPK, '_', 2) INTO refSnpId;
+	SELECT 'chr' || split_part(variantPK, ':', 1)::text INTO chrm;
+
+	SELECT cadd_scores INTO cs
+	FROM AnnotatedVDB.Variant v
+	WHERE LEFT(v.metaseq_id, 50) = LEFT(metaseqId, 50)
+	AND v.metaseq_id = metaseqId
+	AND CASE WHEN LENGTH(refSnpId) = 0 THEN TRUE
+	ELSE v.ref_snp_id = refSnpId END 
+	AND v.chromosome = chrm;
+RETURN cs;
 END;
 
 $$ LANGUAGE plpgsql;
