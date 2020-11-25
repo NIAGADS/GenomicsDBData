@@ -1,0 +1,40 @@
+{ 
+    "file": {
+	"path": "$DATA_DIR/Ensembl/motif",
+	"pattern": "Homo_sapiens.GRCh37.chromosome"
+    },
+    "external_database": {
+	"name": "Ensembl Regulatory Build: Motifs",
+	"description": "Transcription factor motifs in the Ensembl Regulatory Build.",
+	"version": "GRCh37-archive",
+	"id_url": "http://www.ensembl.org/info/genome/funcgen/regulatory_build.html",
+	"download_url": "ftp://ftp.ensembl.org/pub/grch37/current/regulation/homo_sapiens/MotifFeatures/",
+	"accession": "ENSEMBL_MOTIFS",
+	"type": "Functional genomics"
+    },
+    "preprocess": [
+	{"comment": "not really preprocessing but necessary to do it independently",
+	 "plugin": {
+	     "name": "GenomicsDBData::Load::Plugin::InsertStudy",
+	     "parameters": {
+		 "name": "Ensembl Regulatory Build: Motifs",
+		 "description": "The Ensembl Regulatory Build contains a genome-wide set of regions that are likely to be involved in gene regulation. Transcription factor motifs were identified using position weight matrices from JASPAR (http://jaspar.genereg.net) in enriched regions identified by the Ensembl ChIP-seq analysis pipeline.",
+		 "sourceId": "@external_database.accession",
+		 "extDbRlsSpec": "@external_database.name|@external_database.version"
+	     }
+	 }
+	}
+    ],
+    "load": [
+	{
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::LoadEnsemblMotifFeatures",
+		"parameters": {
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "fileDir": "@file.path",
+		    "filePattern" : "@file.pattern"
+		}
+	    }
+	}
+    ]
+}
