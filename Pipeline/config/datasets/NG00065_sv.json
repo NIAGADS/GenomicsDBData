@@ -1,0 +1,204 @@
+{    
+    "file": {
+	"path": "$DATA_DIR/NIAGADS_GWAS",
+	"accession": "NG00065",
+	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
+	"cadd_database_directory": "$DATA_DIR/CADD/v16",
+	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
+	"vep_cache_directory": "$DATA_DIR/VEP_CACHE"
+    },
+    "external_database": {
+	"name": "NIAGADS",
+	"version": "current",
+	"download_url": "https://www.niagads.org/datasets/",
+	"id_url": "https://www.niagads.org/",
+	"description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
+	"accession": "NIAGADS",
+	"type": "Genetic variation"
+    },
+    "foreach": [
+	{
+	    "EA_SV_M0": {
+		"file": "NG00065_adsp-wes_ea_sv_m0.csv",
+		"sourceId": "@file.accession+_EA_SV_M0",
+		"name": "ADSP Single-Variant Risk Association: European (Model 0)",
+		"description": "test for association between exonic ADSP variants and the risk of late-onset Alzheimer's disease (European); adjusted for PCs and sequencing center",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": "European",
+		    "covariate specification": "value: population stratification and sequencing center"
+		}
+	    }
+	},
+	{
+	    "EA_SV_M1": {
+		"file": "NG00065_adsp-wes_ea_sv_m1.csv",
+		"sourceId": "@file.accession+_EA_SV_M1",
+		"name": "ADSP Single-Variant Risk Association: European (Model 1)",
+		"description": "test for association between exonic ADSP variants and the risk of late-onset Alzheimer's disease (European); adjusted for PCs, sequencing center, sex, and age at AD onset or last-known dementia-free age (for controls)",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": "European",
+		    "covariate specification": "value: population stratification, sequencing center, sex, and age at AD onset or last-known dementia-free age (for controls)"
+		}
+	    }
+	},
+	{
+	    "EA_SV_M2": {
+		"file": "NG00065_adsp-wes_ea_sv_m2.csv",
+		"sourceId": "@file.accession+_EA_SV_M2",
+		"name": "ADSP Single-Variant Risk Association: European (Model 2)",
+		"description": "test for association between exonic ADSP variants and the risk of late-onset Alzheimer's disease (European); adjusted for PCs, sequencing center, sex, age at AD onset or last-known dementia-free age (for controls), and APOE ε2 and ε4 genotypes",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": "European",
+		    "covariate specification": "value: population stratification, sequencing center, sex, age at AD onset or last-known dementia-free age (for controls), and APOE ε2 and ε4 genotypes"
+		}
+	    }
+	},
+	{
+	    "HA_SV_M0": {
+		"file": "NG00065_adsp-wes_ha_sv_m0.csv",
+		"sourceId": "@file.accession+_HA_SV_M0",
+		"name": "ADSP Single-Variant Risk Association: Caribbean Hispanic (Model 0)",
+		"description": "test for association between exonic ADSP variants and the risk of late-onset Alzheimer's disease (Caribbean Hispanic); adjusted for PCs and sequencing center",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": "Caribbean Hispanic",
+		    "covariate specification": "value: population stratification and sequencing center"
+		}
+	    }
+	},
+	{
+	    "HA_SV_M1": {
+		"file": "NG00065_adsp-wes_ha_sv_m1.csv",
+		"sourceId": "@file.accession+_HA_SV_M1",
+		"name": "ADSP Single-Variant Risk Association: Caribbean Hispanic (Model 1)",
+		"description": "test for association between exonic ADSP variants and the risk of late-onset Alzheimer's disease (Caribbean Hispanic); adjusted for PCs, sequencing center, sex, and age at AD onset or last-known dementia-free age (for controls)",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": "Caribbean Hispanic",
+		    "covariate specification": "value: population stratification, sequencing center, sex, and age at AD onset or last-known dementia-free age (for controls)"
+		}
+	    }
+	},
+	{
+	    "HA_SV_M2": {
+		"file": "NG00065_adsp-wes_ha_sv_m2.csv",
+		"sourceId": "@file.accession+_HA_SV_M2",
+		"name": "ADSP Single-Variant Risk Association: Caribbean Hispanic (Model 2)",
+		"description": "test for association between exonic ADSP variants and the risk of late-onset Alzheimer's disease (Caribbean Hispanic); adjusted for PCs, sequencing center, sex, age at AD onset or last-known dementia-free age (for controls), and APOE ε2 and ε4 genotypes",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": "Caribbean Hispanic",
+		    "covariate specification": "value: population stratification, sequencing center, sex, age at AD onset or last-known dementia-free age (for controls), and APOE ε2 and ε4 genotypes"
+		}
+	    }
+	},
+	{
+	    "META_SV_M0": {
+		"file": "NG00065_adsp-wes_meta_sv_m0.csv",
+		"sourceId": "@file.accession+_META_SV_M0",
+		"name": "ADSP Single-Variant Risk Association: Meta-analysis (Model 0)",
+		"description": "test for association between exonic ADSP variants and the risk of late-onset Alzheimer's disease (Meta-analysis); adjusted for PCs and sequencing center",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": ["European", "Caribbean Hispanic"],
+		    "covariate specification": "value: population stratification and sequencing center"
+		}
+	    }
+	},
+	{
+	    "META_SV_M1": {
+		"file": "NG00065_adsp-wes_meta_sv_m1.csv",
+		"sourceId": "@file.accession+_META_SV_M1",
+		"name": "ADSP Single-Variant Risk Association: Meta-analysis (Model 1)",
+		"description": "test for association between exonic ADSP variants and the risk of late-onset Alzheimer's disease (Meta-analysis); adjusted for PCs, sequencing center, sex, and age at AD onset or last-known dementia-free age (for controls)",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": ["European", "Caribbean Hispanic"],
+		    "covariate specification": "value: population stratification, sequencing center, sex, and age at AD onset or last-known dementia-free age (for controls)"
+		}
+	    }
+	},
+	{
+	    "META_SV_M2": {
+		"file": "NG00065_adsp-wes_meta_sv_m2.csv",
+		"sourceId": "@file.accession+_META_SV_M2",
+		"name": "ADSP Single-Variant Risk Association: Meta-analysis (Model 2)",
+		"description": "test for association between exonic ADSP variants and the risk of late-onset Alzheimer's disease (Meta-analysis); adjusted for PCs, sequencing center, sex, age at AD onset or last-known dementia-free age (for controls), and APOE ε2 and ε4 genotypes",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": ["European", "Caribbean Hispanic"],
+		    "covariate specification": "value: population stratification, sequencing center, sex, age at AD onset or last-known dementia-free age (for controls), and APOE ε2 and ε4 genotypes"
+		}
+	    }
+	}
+    ],
+    "preprocess": [
+	{
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
+		"parameters": {
+		    "attribution": "Bis et al. 2018",
+		    "name": "ADSP Case/Control Association Results",
+		    "description": "~1.5 million single nucleotide variants (SNVs) and 50,000 insertion-deletion polymorphisms (indels) identified by the ADSP whole-exome sequencing project were tested for association to AD, using multiple models considering individual variants as well as gene-based tests aggregating rare, predicted functional, and loss of function variants. This dataset contain results for single variant and gene-based rare variant aggregation tests, performed separately by ancestry (European ancestry, Caribbean Hispanic) and meta-analyzed.",
+		    "approaches": "Three sets of covariate adjustment models were employed in the genotype-phenotype association analyses:<ul><li>Model 0 included only principal components and sequencing center</li><li>Model 1 further adjusted for sex and age at AD or last-known dementia-free age for controls</li><li>Model 2 further adjusted for APOE E2 and E4 genotypes.<li></ul><br/>Rare variants were aggregated by Ensembl genes, with variants selected using various filtering strategies based on predicted function. All analyzes were performed using seqMeta",
+		    "sourceId": "@file.accession",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version"
+		}		
+	    }
+	},
+	{
+	    "foreach" : true,
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
+		"parameters" : {
+		    "attribution": "Bis et al. 2018",
+		    "type": "Genetic variation",
+		    "subtype": "GWAS summary statistics",
+		    "description": "foreach",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "characteristics": "foreach",
+		    "sourceId" : "foreach",
+		    "name": "foreach",
+		    "studyId": "@file.accession"
+		}
+	    }
+	}
+    ],
+    "load": [
+	{
+	    "foreach": true,
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::LoadVariantGWASResult",
+		"parameters": {
+		    "file": "foreach",
+		    "sourceId": "foreach",
+		    "fileDir" : "@file.path/@file.accession+/single-variant",
+		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
+		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
+		    "caddDatabaseDir": "@file.cadd_database_directory",
+		    "vepCacheDir": "@file.vep_cache_directory",
+		    "marker": "Name",
+		    "mapThruMarker": true,
+		    "markerIsMetaseqId": true,
+		    "pvalue": "P",
+		    "genomeBuild": "GRCh37.p13",
+		    "genomeWideSignificanceThreshold": "5e-8",
+		    "checkAltIndels":"true",
+		    "restrictedStats": {
+			"beta": "Beta",
+			"beta_std_err": "SE",
+			"num_observations": "N",
+			"minor_allele_count": "MAC",
+			"call_rate": "Callrate",
+			"coded_allele_frequency": "CAF",
+			"other": [  "flag_Callrate", "flag_MAC"]
+		    }
+		}
+	    }
+	}
+    ]
+
+}
