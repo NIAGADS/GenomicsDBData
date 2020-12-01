@@ -1,0 +1,192 @@
+{    
+    "file": {
+	"path": "$DATA_DIR/NIAGADS_GWAS",
+	"accession": "NG00065",
+	"filter": "impact"
+    },
+    "external_database": {
+	"name": "NIAGADS",
+	"version": "current",
+	"download_url": "https://www.niagads.org/datasets/",
+	"id_url": "https://www.niagads.org/",
+	"description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
+	"accession": "NIAGADS",
+	"type": "Genetic variation"
+    },
+    "foreach": [
+	{
+	    "EA_SKATO_HIGH_M0": {
+		"file": "NG00065_adsp-wes_ea_skato_high_m0.csv",
+		"sourceId": "@file.accession+_EA_SKATO_HIGH_M0",
+		"name": "ADSP Gene Risk: European (Model 0;VEP HIGH)",
+		"description": "optimized kernel-regression-based test (SKAT-O) for association between gene-colocated sets of rare exonic ADSP variants and late-onset Alzheimer's disease (European); adjusted for PCs and sequencing center and filtered for variants with HIGH predicted impact (VEP v80)",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": "European",
+		    "covariate specification": "value: population stratification and sequencing center",
+		    "filter function": "value: VEP HIGH"
+		}
+	    }
+	},
+	{
+	    "EA_SKATO_HIGH_M1": {
+		"file": "NG00065_adsp-wes_ea_skato_high_m1.csv",
+		"sourceId": "@file.accession+_EA_SKATO_HIGH_M1",
+		"name": "ADSP Gene Risk: European (Model 1;VEP HIGH)",
+		"description": "optimized kernel-regression-based test (SKAT-O) for association between gene-colocated sets of rare exonic ADSP variants and late-onset Alzheimer's disease (European); adjusted for PCs, sequencing center, sex, and age at AD onset or last-known dementia-free age (for controls) and filtered for variants with HIGH predicted impact (VEP v80)",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": "European",
+		    "covariate specification": "value: population stratification, sequencing center, sex, and age at AD onset or last-known dementia-free age (for controls)",
+		    "filter function": "value: VEP HIGH"
+		}
+	    }
+	},
+	{
+	    "EA_SKATO_HIGH_M2": {
+		"file": "NG00065_adsp-wes_ea_skato_high_m2.csv",
+		"sourceId": "@file.accession+_EA_SKATO_HIGH_M2",
+		"name": "ADSP Gene Risk: European (Model 2;VEP HIGH)",
+		"description": "optimized kernel-regression-based test (SKAT-O) for association between gene-colocated sets of rare exonic ADSP variants and late-onset Alzheimer's disease (European); adjusted for PCs, sequencing center, sex, age at AD onset or last-known dementia-free age (for controls), and APOE ε2 and ε4 genotypes and filtered for variants with HIGH predicted impact (VEP v80)",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": "European",
+		    "covariate specification": "value: population stratification, sequencing center, sex, age at AD onset or last-known dementia-free age (for controls), and APOE ε2 and ε4 genotypes",
+		    "filter function": "value: VEP HIGH"
+		}
+	    }
+	},
+	{
+	    "HA_SKATO_HIGH_M0": {
+		"file": "NG00065_adsp-wes_ha_skato_high_m0.csv",
+		"sourceId": "@file.accession+_HA_SKATO_HIGH_M0",
+		"name": "ADSP Gene Risk: Caribbean Hispanic (Model 0;VEP HIGH)",
+		"description": "optimized kernel-regression-based test (SKAT-O) for association between gene-colocated sets of rare exonic ADSP variants and late-onset Alzheimer's disease (Caribbean Hispanic); adjusted for PCs and sequencing center and filtered for variants with HIGH predicted impact (VEP v80)",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": "Caribbean Hispanic",
+		    "covariate specification": "value: population stratification and sequencing center",
+		    "filter function": "value: VEP HIGH"
+		}
+	    }
+	},
+	{
+	    "HA_SKATO_HIGH_M1": {
+		"file": "NG00065_adsp-wes_ha_skato_high_m1.csv",
+		"sourceId": "@file.accession+_HA_SKATO_HIGH_M1",
+		"name": "ADSP Gene Risk: Caribbean Hispanic (Model 1;VEP HIGH)",
+		"description": "optimized kernel-regression-based test (SKAT-O) for association between gene-colocated sets of rare exonic ADSP variants and late-onset Alzheimer's disease (Caribbean Hispanic); adjusted for PCs, sequencing center, sex, and age at AD onset or last-known dementia-free age (for controls) and filtered for variants with HIGH predicted impact (VEP v80)",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": "Caribbean Hispanic",
+		    "covariate specification": "value: population stratification, sequencing center, sex, and age at AD onset or last-known dementia-free age (for controls)",
+		    "filter function": "value: VEP HIGH"
+		}
+	    }
+	},
+	{
+	    "HA_SKATO_HIGH_M2": {
+		"file": "NG00065_adsp-wes_ha_skato_high_m2.csv",
+		"sourceId": "@file.accession+_HA_SKATO_HIGH_M2",
+		"name": "ADSP Gene Risk: Caribbean Hispanic (Model 2;VEP HIGH)",
+		"description": "optimized kernel-regression-based test (SKAT-O) for association between gene-colocated sets of rare exonic ADSP variants and late-onset Alzheimer's disease (Caribbean Hispanic); adjusted for PCs, sequencing center, sex, age at AD onset or last-known dementia-free age (for controls), and APOE ε2 and ε4 genotypes and filtered for variants with HIGH predicted impact (VEP v80)",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": "Caribbean Hispanic",
+		    "covariate specification": "value: population stratification, sequencing center, sex, age at AD onset or last-known dementia-free age (for controls), and APOE ε2 and ε4 genotypes",
+		    "filter function": "value: VEP HIGH"
+		}
+	    }
+	},
+	{
+	    "META_SKATO_HIGH_M0": {
+		"file": "NG00065_adsp-wes_meta_skato_high_m0.csv",
+		"sourceId": "@file.accession+_META_SKATO_HIGH_M0",
+		"name": "ADSP Gene Risk: Meta-analysis (Model 0;VEP HIGH)",
+		"description": "optimized kernel-regression-based test (SKAT-O) for association between gene-colocated sets of rare exonic ADSP variants and late-onset Alzheimer's disease (Meta-analysis); adjusted for PCs and sequencing center and filtered for variants with HIGH predicted impact (VEP v80)",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": ["European", "Caribbean Hispanic"],
+		    "covariate specification": "value: population stratification and sequencing center",
+		    "filter function": "value: VEP HIGH"
+		}
+	    }
+	},
+	{
+	    "META_SKATO_HIGH_M1": {
+		"file": "NG00065_adsp-wes_meta_skato_high_m1.csv",
+		"sourceId": "@file.accession+_META_SKATO_HIGH_M1",
+		"name": "ADSP Gene Risk: Meta-analysis (Model 1;VEP HIGH)",
+		"description": "optimized kernel-regression-based test (SKAT-O) for association between gene-colocated sets of rare exonic ADSP variants and late-onset Alzheimer's disease (Meta-analysis); adjusted for PCs, sequencing center, sex, and age at AD onset or last-known dementia-free age (for controls) and filtered for variants with HIGH predicted impact (VEP v80)",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": ["European", "Caribbean Hispanic"],
+		    "covariate specification": "value: population stratification, sequencing center, sex, and age at AD onset or last-known dementia-free age (for controls)",
+		    "filter function": "value: VEP HIGH"
+		}
+	    }
+	},
+	{
+	    "META_SKATO_HIGH_M2": {
+		"file": "NG00065_adsp-wes_meta_skato_high_m2.csv",
+		"sourceId": "@file.accession+_META_SKATO_HIGH_M2",
+		"name": "ADSP Gene Risk: Meta-analysis (Model 2;VEP HIGH)",
+		"description": "optimized kernel-regression-based test (SKAT-O) for association between gene-colocated sets of rare exonic ADSP variants and late-onset Alzheimer's disease (Meta-analysis); adjusted for PCs, sequencing center, sex, age at AD onset or last-known dementia-free age (for controls), and APOE ε2 and ε4 genotypes and filtered for variants with HIGH predicted impact (VEP v80)",
+		"characteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": ["European", "Caribbean Hispanic"],
+		    "covariate specification": "value: population stratification, sequencing center, sex, age at AD onset or last-known dementia-free age (for controls), and APOE ε2 and ε4 genotypes",
+		    "filter function": "value: VEP HIGH"
+		}
+	    }
+	}
+    ],
+
+    "preprocess": [
+	{
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
+		"skip" :"true",
+		"parameters": {
+		    "attribution": "Bis et al. 2018",
+		    "name": "ADSP Case/Control Association Results",
+		    "description": "~1.5 million single nucleotide variants (SNVs) and 50,000 insertion-deletion polymorphisms (indels) identified by the ADSP whole-exome sequencing project were tested for association to AD, using multiple models considering individual variants as well as gene-based tests aggregating rare, predicted functional, and loss of function variants. This dataset contain results for single variant and gene-based rare variant aggregation tests, performed separately by ancestry (European ancestry, Caribbean Hispanic) and meta-analyzed.",
+		    "approaches": "Three sets of covariate adjustment models were employed in the genotype-phenotype association analyses:<ul><li>Model 0 included only principal components and sequencing center</li><li>Model 1 further adjusted for sex and age at AD or last-known dementia-free age for controls</li><li>Model 2 further adjusted for APOE E2 and E4 genotypes.<li></ul><br/>Rare variants were aggregated by Ensembl genes, with variants selected using various filtering strategies based on predicted function. All analyzes were performed using seqMeta",
+		    "sourceId": "@file.accession",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version"
+		}		
+	    }
+	},
+	{
+	    "foreach" : true,
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
+		"parameters" : {
+		    "attribution": "Bis et al. 2018",
+		    "type": "gene annotation",
+		    "subtype": "disease susceptibility trait",
+		    "description": "foreach",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "characteristics": "foreach",
+		    "sourceId" : "foreach",
+		    "name": "foreach",
+		    "studyId": "@file.accession"
+		}
+	    }
+	}
+    ],
+    "load": [
+	{
+	    "foreach": true,
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::LoadGeneAssociationResult",
+		"parameters": {
+		    "fileDir": "@file.path/@file.accession+/gene-risk/@file.filter",
+		    "sourceId": "foreach",
+		    "file": "foreach"
+		}
+	    }
+	}
+    ]
+
+}
