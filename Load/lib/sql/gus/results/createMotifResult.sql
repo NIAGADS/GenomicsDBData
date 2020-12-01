@@ -1,4 +1,4 @@
--- table for variant ld result
+-- table for motif results
 DROP TABLE IF EXISTS Results.Motif;
 DROP SEQUENCE IF EXISTS Results.Motif_SQ;
 
@@ -6,9 +6,10 @@ CREATE UNLOGGED TABLE Results.Motif (
        MOTIF_ID SERIAL NOT NULL,
        EXTERNAL_DATABASE_RELEASE_ID  NUMERIC(12) NOT NULL,
        CHROMOSOME		     CHARACTER VARYING(10) NOT NULL,
+       STRAND		     	     CHARACTER VARYING(2),
        LOCATION_START		     INTEGER NOT NULL,
        LOCATION_END		     INTEGER NOT NULL,
-       BIN_INDEX		     LTREE NOT NULL,
+       BIN_INDEX		     LTREE, -- NOT NULL/ can't be set b/c TRIGGER is "AFTER"
        MOTIF_SOURCE_ID			     CHARACTER VARYING(50) NOT NULL,
        MATRIX_ID		     CHARACTER VARYING(50) NOT NULL,
        FEATURE_TYPE			     CHARACTER VARYING(50),
@@ -32,7 +33,7 @@ CREATE UNLOGGED TABLE Results.Motif (
 
 -- CREATE PARTITIONS
 
-CREATE OR REPLACE FUNCTION "public"."create_ld_partitions" ()  RETURNS integer
+CREATE OR REPLACE FUNCTION "public"."create_motif_partitions" ()  RETURNS integer
   VOLATILE
   AS $body$
 DECLARE
@@ -53,14 +54,32 @@ DECLARE
     END;
 $body$ LANGUAGE plpgsql;
 
-SELECT create_ld_partitions();
+SELECT create_motif_partitions();
 
 -- TRIGGERS
 
-CREATE TRIGGER set_bin_trigger 
-AFTER INSERT OR UPDATE ON Results.Motif 
-FOR EACH ROW 
-  EXECUTE PROCEDURE set_row_bin_index();
+CREATE OR REPLACE FUNCTION "public"."create_motif_triggers" ()  RETURNS integer
+  VOLATILE
+  AS $body$
+DECLARE
+      partition TEXT;
+      chr TEXT;
+    BEGIN
+
+      FOR chr IN
+        SELECT UNNEST(string_to_array('chr1 chr2 chr3 chr4 chr5 chr6 chr7 chr8 chr9 chr10 chr11 chr12 chr13 chr14 chr15 chr16 chr17 chr18 chr19 chr20 chr21 chr22 chrX chrY chrM', ' '))
+      LOOP
+        partition := 'Results.Motif' || '_' || chr::text;
+	EXECUTE 'CREATE TRIGGER set_bin_trigger_motif_' || chr::text || ' BEFORE INSERT OR UPDATE ON ' || partition 
+	 || ' FOR EACH ROW EXECUTE PROCEDURE set_row_bin_index()';
+
+	RAISE NOTICE 'A trigger has been created for partition: %',partition;
+      END LOOP;
+      RETURN NULL;
+    END;
+$body$ LANGUAGE plpgsql;
+
+SELECT create_motif_triggers();
 
 -- INDEXES
 
