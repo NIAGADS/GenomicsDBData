@@ -1,5 +1,7 @@
 package GenomicsDBData::Load::PluginUtils;
 
+use GUS::Model::Study::ProtocolAppNode;
+
 use JSON::XS;
 
 my $HOUSEKEEPING_FIELDS =<<HOUSEKEEPING;

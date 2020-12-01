@@ -1,10 +1,10 @@
 -- table for Gene SKATO results
 -- https://cran.r-project.org/web/packages/seqMeta/vignettes/seqMeta.pdf
 
-DROP TABLE IF EXISTS NIAGADS.GeneAssociation;
-DROP SEQUENCE IF EXISTS NIAGADS.GeneAssociation_SQ;
+DROP TABLE IF EXISTS Results.GeneAssociation;
+DROP SEQUENCE IF EXISTS Results.GeneAssociation_SQ;
 
-CREATE TABLE NIAGADS.GeneAssociation (
+CREATE TABLE Results.GeneAssociation (
        GENE_ASSOCIATION_ID	  SERIAL PRIMARY KEY,
        GENE_ID				 NUMERIC(10) NOT NULL,
        PROTOCOL_APP_NODE_ID		 NUMERIC(12) NOT NULL,
@@ -32,18 +32,18 @@ CREATE TABLE NIAGADS.GeneAssociation (
        FOREIGN KEY(PROTOCOL_APP_NODE_ID) REFERENCES Study.ProtocolAppNode(PROTOCOL_APP_NODE_ID)
 );
 
-CREATE INDEX GENE_TRAITASSOCIATION_IND01 ON NIAGADS.GeneAssociation (GENE_ID);
-CREATE INDEX GENE_TRAITASSOCIATION_IND02 ON NIAGADS.GeneAssociation (PROTOCOL_APP_NODE_ID);
-CREATE INDEX GENE_TRAITASSOCIATION_IND03 ON NIAGADS.GeneAssociation (P_VALUE);
-CREATE INDEX GENE_TRAITASSOCIATION_IND04 ON NIAGADS.GeneAssociation (MIN_P_VALUE);
+CREATE INDEX GENE_TRAITASSOCIATION_IND01 ON Results.GeneAssociation (GENE_ID);
+CREATE INDEX GENE_TRAITASSOCIATION_IND02 ON Results.GeneAssociation (PROTOCOL_APP_NODE_ID);
+CREATE INDEX GENE_TRAITASSOCIATION_IND03 ON Results.GeneAssociation (P_VALUE);
+CREATE INDEX GENE_TRAITASSOCIATION_IND04 ON Results.GeneAssociation (MIN_P_VALUE);
 
-CREATE SEQUENCE NIAGADS.GeneAssociation_SQ;
+CREATE SEQUENCE Results.GeneAssociation_SQ;
 
-GRANT SELECT ON NIAGADS.GeneAssociation TO gus_r;
-GRANT INSERT, SELECT, UPDATE, DELETE ON NIAGADS.GeneAssociation TO gus_w;
+GRANT SELECT ON Results.GeneAssociation TO gus_r;
+GRANT INSERT, SELECT, UPDATE, DELETE ON Results.GeneAssociation TO gus_w;
 
-GRANT SELECT ON NIAGADS.GeneAssociation_SQ TO gus_w;
-GRANT SELECT ON NIAGADS.GeneAssociation_SQ TO gus_r;
+GRANT SELECT ON Results.GeneAssociation_SQ TO gus_w;
+GRANT SELECT ON Results.GeneAssociation_SQ TO gus_r;
 
 INSERT INTO Core.TableInfo
     (table_id, name, table_type, primary_key_column, database_id, is_versioned,
@@ -57,7 +57,7 @@ SELECT nextval('core.tableinfo_sq'), 'GeneAssociation',
        p.project_id, 0
 FROM 
      (SELECT MAX(project_id) AS project_id FROM core.ProjectInfo) p,
-     (SELECT database_id FROM core.DatabaseInfo WHERE NAME = 'NIAGADS') d
+     (SELECT database_id FROM core.DatabaseInfo WHERE NAME = 'Results') d
 WHERE 'GeneAssociation' NOT IN (SELECT NAME FROM Core.TableInfo
                                     WHERE database_id = d.database_id);
 

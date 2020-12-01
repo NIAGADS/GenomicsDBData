@@ -66,7 +66,8 @@ def execute_cmd(cmd, cwd=None, printCmdOnly=False, verbose=True, shell=False):
     execute a command
     '''
     if verbose or printCmdOnly:
-        warning("EXECUTING: ", ' '.join(cmd))
+        asciiSafeCmd = [ascii_safe_str(c) for c in cmd]
+        warning("EXECUTING: ", ' '.join(asciiSafeCmd))
         if printCmdOnly: return
     try:
         if shell:
