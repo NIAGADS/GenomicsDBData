@@ -84,4 +84,16 @@ sub createDirectory {
 }
 
 
+sub getProtocolAppNodeId {
+  my ($plugin, $sourceId) = @_;
+  my $protocolAppNode = GUS::Model::Study::ProtocolAppNode
+    ->new({source_id => $sourceId});
+  $plugin->error("No protocol app node found for $sourceId")
+    unless $protocolAppNode->retrieveFromDB();
+
+  return $protocolAppNode->getProtocolAppNodeId();
+}
+
+
+
 1;
