@@ -29,7 +29,7 @@ my $HOUSEKEEPING_FIELDS = PluginUtils::getHouseKeepingSql();
 
 my @INPUT_FIELDS = qw(chr bp allele1 allele2 marker metaseq_id freq1 pvalue neg_log10_p display_p has_gws test_allele restricted_stats_json);
 my @RESULT_FIELDS = qw(chr bp allele1 allele2 freq1 pvalue neg_log10_p display_p has_gws test_allele restricted_stats_json db_variant_json);
-my @RESTRICTED_STATS_ORDER = qw(num_observations test min_frequency max_frequency frequency_se effect beta t_statistic std_err odds_ratio beta_std_err beta_L95 beta_U95 odds_ratio_L95 odds_ratio_U95 hazard_ratio hazard_ratio_CI95 direction het_chi_sq het_i_sq het_df het_pvalue probe maf_case maf_control p_additive p_dominant p_recessive Z_additive Z_dominant Z_recessive );
+my @RESTRICTED_STATS_ORDER = qw(num_observations coded_allele_frequency minor_allele_count call_rate test min_frequency max_frequency frequency_se effect beta t_statistic std_err odds_ratio beta_std_err beta_L95 beta_U95 odds_ratio_L95 odds_ratio_U95 hazard_ratio hazard_ratio_CI95 direction het_chi_sq het_i_sq het_df het_pvalue probe maf_case maf_control p_additive p_dominant p_recessive Z_additive Z_dominant Z_recessive );
 
 my $COPY_SQL = <<COPYSQL;
 COPY Results.VariantGWAS(
@@ -147,7 +147,6 @@ sub getArgumentsDeclaration {
                  reqd           => 0,
                  isList         => 0 
 	       }),
-
 
      stringArg({ name  => 'genomeWideSignificanceThreshold',
                  descr => 'threshold for flagging result has having genome wide signficiance; provide in scientific notation',
@@ -387,7 +386,7 @@ sub new {
   my $argumentDeclaration = &getArgumentsDeclaration();
 
   $self->initialize({requiredDbVersion => 4.0,
-		     cvsRevision       => '$Revision: 500 $',
+		     cvsRevision       => '$Revision: 506 $',
 		     name => ref($self),
 		     revisionNotes => '',
 		     argsDeclaration => $argumentDeclaration,
@@ -441,7 +440,7 @@ sub verifyArgs {
   my ($self) = @_;
 
   if ($self->getArg('findNovelVariants')) {
-    $self->error("must specify testAllele") if (!$self->getArg('testAllele'));
+    $self->error("must specify testAllele") if (!$self->getArg('testAllele') and !$self->getArg('marker') and !$self->getArg('markerIsMetaseqId'));
     $self->error("must specify refAllele") if (!$self->getArg('refAllele') and !$self->getArg('marker'));
     $self->error("must specify pvalue") if (!$self->getArg('pvalue'));
     $self->error("must specify marker if mapping through marker") 
@@ -464,15 +463,15 @@ sub loadStandardizedResult {
   <$fh>; # throw away header
 
   my $path = PluginUtils::createDirectory($self, $self->getArg('fileDir'), "standardized");
-  my $standardizedFileName = $path . "/" . $self->getArg('sourceId') . "-COMPLETE.txt";
+  my $standardizedFileName = $path . "/" . $self->getArg('sourceId') . ".txt";
   open(my $sfh, '>', $standardizedFileName) || $self->rror("Unable top open $standardizedFileName for writing.");
   $sfh->autoflush(1);
 
-  my $pvalueFileName = $path . "/" . $self->getArg('sourceId') . "-PVALUES.txt";
+  my $pvalueFileName = $path . "/" . $self->getArg('sourceId') . "-pvalues-only.txt";
   open(my $pfh, '>', $pvalueFileName) || $self->rror("Unable top open $pvalueFileName for writing.");
   $pfh->autoflush(1);
 
-  my @sheader = (@sfields);
+  my @sheader = qw(chr bp effect_allele non_effect_allele pvalue);
   my %row;   # (chr bp allele1 allele2 freq1 pvalue neg_log10_p display_p has_gws test_allele restricted_stats_json db_variant_json);
   while (<$fh>) {
     chomp;
@@ -482,11 +481,12 @@ sub loadStandardizedResult {
     my $restrictedStats = $json->decode($row{restricted_stats_json}) || $self->error("Error parsing restricted stats json: " . $row{restricted_stats_json});
 
     if ($totalVariantCount == 0) {
+      unshift @sheader, "variant";
       unshift @sheader, "marker";
       push(@sheader, "probe") if ($self->getArg('probe'));
       print $pfh join("\t", @sheader) . "\n";
 
-      push(@sheader, "freq1") if ($hasFreqData);
+      push(@sheader, "frequency") if ($hasFreqData);
       @rfields = $self->generateStandardizedHeader($restrictedStats);
       push(@sheader, @rfields);
       print $sfh join("\t", @sheader) . "\n";
@@ -496,16 +496,19 @@ sub loadStandardizedResult {
     my $marker = ($dbv->{ref_snp_id}) ? $dbv->{ref_snp_id} : Utils::truncateStr($dbv->{metaseq_id}, 20);
 
     my @cvalues = @row{@sfields};
+    unshift @cvalues, $dbv->{metaseq_id};
     unshift @cvalues, $marker;
     push(@cvalues, $restrictedStats->{probe}) if ($self->getArg('probe'));
     my $oStr = join("\t", @cvalues);
     $oStr =~ s/NaN/NA/g; # replace any DB nulls with NAs
+    $oStr =~ s/Infinity/Inf/g; # replace any DB Infinities with Inf
     print $pfh "$oStr\n";
 
     push(@cvalues, $row{freq1}) if ($hasFreqData);
     push(@cvalues, @$restrictedStats{@rfields});
     $oStr = join("\t", @cvalues);
     $oStr =~ s/NaN/NA/g; # replace any DB nulls with NAs
+    $oStr =~ s/Infinity/Inf/g; # replace any DB Infinities with Inf
     print $sfh "$oStr\n";
 
     ++$totalVariantCount;
@@ -591,7 +594,7 @@ sub cleanAndSortInput {
     $self->generateRestrictedStatsFieldMapping(\%columns) if (!$RESTRICTED_STATS_FIELD_MAP);
   }
 
-  my $testAlleleC = $self->getColumnIndex(\%columns, $self->getArg('testAllele'));
+  my $testAlleleC = ($self->getArg('testAllele')) ? $self->getColumnIndex(\%columns, $self->getArg('testAllele')) : undef;
   my $refAlleleC = ($self->getArg('refAllele')) ? $self->getColumnIndex(\%columns, $self->getArg('refAllele')) : undef;
   my $altAlleleC = ($self->getArg('altAllele')) ? $self->getColumnIndex(\%columns, $self->getArg('altAllele')) : undef;
   my $chrC = ($self->getArg('chromosome')) ? $self->getColumnIndex(\%columns, $self->getArg('chromosome')) : undef;
@@ -610,8 +613,8 @@ sub cleanAndSortInput {
     my $metaseqId = undef;
 
     my $ref = ($refAlleleC)? uc($values[$refAlleleC]) : undef;
-    my $alt = ($altAlleleC) ? uc($values[$altAlleleC]) : uc($values[$testAlleleC]);
-    my $test = uc($values[$testAlleleC]);
+    my $alt = ($altAlleleC) ? uc($values[$altAlleleC]) : ($testAlleleC) ? uc($values[$testAlleleC]) : undef;
+    my $test = ($testAlleleC) ? uc($values[$testAlleleC]) : undef;
    
     $ref = '?' if ($ref =~ m/^0$/); # vep can still process the '?', so do the replacement here for consistency 
     $alt = '?' if ($alt =~ m/^0$/);
@@ -694,11 +697,14 @@ sub cleanAndSortInput {
       if ($self->getArg('markerIsMetaseqId')) {
 	$alt = $self->cleanAllele($a);
 	$ref = $self->cleanAllele($r);
-	$test = $self->cleanAllele($test);
+	$test = ($test) ? $self->cleanAllele($test) : $alt; # assume testAllele is alt if not specified
       }
 
       $metaseqId = join(':', $chromosome, $position, $ref, $alt); # in case chromosome/alleles were corrected
     }
+
+
+    $self->error("--testAllele not specified and unable to extract from marker.  Must specify 'testAllele'") if (!$test);
 
     my $rv = {chromosome => $chromosome, position => $position, refAllele => $ref, altAllele => $alt, testAllele => $test, marker => $marker, metaseq_id => $metaseqId};
     $self->writeCleanedInput($pfh,$rv, \%columns, @values);
@@ -1110,6 +1116,7 @@ sub buildRestrictedStatsJson {
   my $stats = {};
   while (my ($stat, $index) = each %$RESTRICTED_STATS_FIELD_MAP) {
     $stats->{$stat} = (looks_like_number($values[$index])) ? $values[$index] * 1.0 : $values[$index];
+    $stats->{$stat} = "Infinity" if ($values[$index] =~ m/inf/i);
   }
   return Utils::to_json($stats);
 }
@@ -1119,6 +1126,9 @@ sub formatPvalue {
   my $negLog10p = 0;
 
   if ($pvalue =~ m/NA/i) {
+    return ("NaN", "NaN", "NaN")
+  }
+  if (!$pvalue) {
     return ("NaN", "NaN", "NaN")
   }
 

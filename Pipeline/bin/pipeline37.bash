@@ -317,6 +317,15 @@ loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00058.js
 loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00058.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00058_load_variants.log 2>&1
 loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00058.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00058_load_result.log 2>&1
 
+# NG00065
+
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00065_sv.json --preprocess  --commit > $DATA_DIR/logs/datasets/load_NG00065_sv_placeholders.log 2>&1 
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00065_sv.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00065_sv_find_novel_variants.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00065_sv.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00065_sv_annotate_novel_variants.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00065_sv.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00065_sv_preprocess_novel_variants.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00065_sv.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00065_sv_load_variants.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00065_sv.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00065_sv_load_result.log 2>&1
+
 # NG00073
 
 loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00073.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00073_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
@@ -387,6 +396,13 @@ loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00089.js
 
 # Functional Genomics
 # ============================
+
+# Ensembl Motifs
+loadResource -c $CONFIG_DIR/reference_databases/ensembl_motifs.json --load xdbr --commit > $DATA_DIR/logs/reference_databases/load_ensembl_motifs_xdbr.log 2>&1
+loadResource -c $CONFIG_DIR/reference_databases/ensembl_motifs.json --preprocess --verbose --commit > $DATA_DIR/logs/reference_databases/load_ensembl_motifs_study.log 2>&1
+loadResource -c $CONFIG_DIR/reference_databases/ensembl_motifs.json --load data --verbose --commit > $DATA_DIR/logs/reference_databases/load_ensembl_motifs.log 2>&1
+
+
 loadResource -c $CONFIG_DIR/annotations/fantom5.json --load xdbr --commit > $DATA_DIR/logs/load_fantom5_xdbr.log 2>&1
 loadResource -c $CONFIG_DIR/annotations/fantom5.json --preprocess --verbose --commit > $DATA_DIR/logs/load_fantom5_study.log 2>&1
 loadResource -c $CONFIG_DIR/annotations/fantom5.json --load data --verbose --commit > $DATA_DIR/logs/load_fantom5.log 2>&1

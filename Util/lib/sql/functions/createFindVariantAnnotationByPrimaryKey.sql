@@ -223,3 +223,37 @@ RETURN cs;
 END;
 
 $$ LANGUAGE plpgsql;
+
+-- qw('transcript regulatory_feature motif_feature intergenic')
+
+CREATE OR REPLACE FUNCTION adsp_ranked_consequences(variantPK TEXT, conseq_type TEXT)
+       RETURNS JSONB AS $$
+
+DECLARE conseq JSONB;
+DECLARE metaseqId TEXT;
+DECLARE refSnpId TEXT;
+DECLARE chrm TEXT;
+BEGIN
+	
+	SELECT split_part(variantPK, '_', 1) INTO metaseqId;
+	SELECT split_part(variantPK, '_', 2) INTO refSnpId;
+	SELECT 'chr' || split_part(variantPK, ':', 1)::text INTO chrm;
+
+	SELECT 
+	CASE WHEN LOWER(conseq_type) = 'all' THEN adsp_ranked_consequences
+	WHEN LOWER(conseq_type) = 'transcript' THEN adsp_ranked_consequences->'transcript_consequences'
+	WHEN LOWER(conseq_type) = 'regulatory' THEN adsp_ranked_consequences->'regulatory_feature_consequences'
+	WHEN LOWER(conseq_type) = 'motif' THEN adsp_ranked_consequences->'motif_feature_consequences'
+	WHEN LOWER(conseq_type) = 'intergenic' THEN adsp_ranked_consequences->'intergenic_consequences'
+	END INTO conseq
+
+	FROM AnnotatedVDB.Variant v
+	WHERE LEFT(v.metaseq_id, 50) = LEFT(metaseqId, 50)
+	AND v.metaseq_id = metaseqId
+	AND CASE WHEN LENGTH(refSnpId) = 0 THEN TRUE
+	ELSE v.ref_snp_id = refSnpId END 
+	AND v.chromosome = chrm;
+RETURN conseq;
+END;
+
+$$ LANGUAGE plpgsql;
