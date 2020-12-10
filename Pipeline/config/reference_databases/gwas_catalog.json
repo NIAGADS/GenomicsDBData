@@ -1,20 +1,37 @@
 {
     "file": {
 	"path": "$SHARED_DATA_DIR/nhgri",
-	"file": "gwas_catalog_v1.0.2-associations_e96_r2019-04-21",
-	"preprocess_file": "preprocess_gwas_catalog_v1.0.2-associations_e96_r2019-04-21"
+	"file": "gwas_catalog_v1.0.2-associations_e100_r2020-11-20.tsv",
+	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
+	"cadd_database_directory": "$DATA_DIR/CADD/v16",
+	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
+	"vep_cache_directory": "$DATA_DIR/VEP_CACHE"
     },
     "external_database": {
 	"name": "NHGRI-EBI GWAS Catalog",
 	"description": "The NHGRI-EBI GWAS Catalog is a catalog of published genome-wide association studies, assaying at >100,000 SNPs and all SNP-trait associations with p-values &lt; 1.0 x 10<sup>-5</sup>.",
-	"version": "v1.0.2_e96_r2019-04-21",
-	"release_date": "2019-04-21",
+	"version": "v1.0.2_e100_r2020-11-20",
+	"release_date": "2020-11-20",
 	"id_url": "https://www.ebi.ac.uk/gwas/",
 	"download_url": "https://www.ebi.ac.uk/gwas/docs/file-downloads",
 	"accession": "NHGRI_GWAS_CATALOG",
 	"type": "Genetic variation"
     },
     "preprocess": [
+	{
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
+		"skip": true,
+		"parameters" : {
+		    "type": "Genetic variation",
+		    "subtype": "GWAS summary statistics",
+		    "description": "@external_database.description",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "sourceId" : "@external_database.accession",
+		    "name": "@external_database.name"
+		}
+	    }
+	}, 
 	{
 	    "script": 
 	    { 
@@ -29,24 +46,29 @@
     ],
     "load": [
 	{
+	    "comment": "'resume' parameter will check before each insert;handle all the duplicates",
 	    "plugin": {
-		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
-		"parameters" : {
-		    "type": "Genetic variation",
-		    "subtype": "GWAS summary statistics",
-		    "description": "@external_database.description",
-		    "extDbRlsSpec": "@external_database.name|@external_database.version",
-		    "sourceId" : "@external_database.accession",
-		    "name": "@external_database.name"
-		}
-	    }
-	}, 
-	{
-	    "plugin": {
-		"name": "GenomicsDBData::Load::Plugin::InsertVariantCatalogResult",
+		"name": "GenomicsDBData::Load::Plugin::LoadVariantGWASResult",
 		"parameters": {
-		    "file": "@file.path/@file.preprocess_file",
-		    "sourceId": "@external_database.accession"
+		    "file": "@file.file+-preprocess.txt",
+		    "sourceId": "@external_database.accession",
+		    "fileDir" : "@file.path",
+		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
+		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
+		    "caddDatabaseDir": "@file.cadd_database_directory",
+		    "vepCacheDir": "@file.vep_cache_directory",
+		    "testAllele": "allele",
+		    "pvalue": "pvalue",
+		    "frequency": "frequency",
+		    "genomeBuild": "GRCh37.p13",
+		    "marker": "marker",
+		    "mapThruMarker": true,
+		    "allowAlleleMismatches": true,
+		    "resume": true,
+		    "genomeWideSignificanceThreshold": "9e-6",
+		    "restrictedStats": {
+			"other": ["DATE ADDED TO CATALOG", "PUBMEDID", "FIRST AUTHOR", "DATE", "JOURNAL", "LINK", "STUDY", "DISEASE/TRAIT", "INITIAL SAMPLE SIZE", "REPLICATION SAMPLE SIZE", "REGION", "REPORTED GENE(S)", "MAPPED_GENE", "UPSTREAM_GENE_ID", "DOWNSTREAM_GENE_ID", "SNP_GENE_IDS", "UPSTREAM_GENE_DISTANCE", "DOWNSTREAM_GENE_DISTANCE", "STRONGEST SNP-RISK ALLELE", "SNPS", "MERGED", "SNP_ID_CURRENT", "CONTEXT", "INTERGENIC", "OR or BETA", "95% CI (TEXT)", "PLATFORM [SNPS PASSING QC]", "CNV", "MAPPED_TRAIT", "MAPPED_TRAIT_URI", "STUDY ACCESSION", "GENOTYPING TECHNOLOGY"]
+		    }
 		}
 	    }
 	}

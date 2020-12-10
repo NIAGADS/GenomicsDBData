@@ -33,7 +33,7 @@
 		    "extDbRlsSpec": "@external_database.name|@external_database.version",
 		    "fileDir": "@file.path",
 		    "filePattern" : "@file.pattern",
-		    "schema": "sres"
+		    "schema": "results"
 		}
 	    }
 	}
