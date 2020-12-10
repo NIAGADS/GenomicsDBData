@@ -2,13 +2,13 @@ DROP MATERIALIZED VIEW IF EXISTS NIAGADS.TranscriptAttributes;
 
 CREATE MATERIALIZED VIEW NIAGADS.TranscriptAttributes AS (
        SELECT tf.parent_id AS gene_feature_id
-       , find_bin_index(nas.source_id, tl.start_min, tl.end_max) AS bin_index
+       , find_bin_index(nas.source_id, tl.start_min::bigint, tl.end_max::bigint) AS bin_index
        , tf.gene AS gene_source_id
        , tf.na_feature_id AS transcript_feature_id
        , tf.source_id AS transcript_source_id
        , tf.name AS transcript_name
-       , tl.start_min AS location_start
-       , tl.end_max AS location_end
+       , tl.start_min::bigint AS location_start
+       , tl.end_max::bigint AS location_end
        , tl.is_reversed
        , nas.source_id AS chromosome
        FROM DoTS.Transcript tf,

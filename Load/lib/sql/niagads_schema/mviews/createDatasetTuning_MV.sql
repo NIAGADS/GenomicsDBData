@@ -156,7 +156,7 @@ UNION ALL
 
 SELECT pan.protocol_app_node_id,
 pan.source_id AS track,
-sc.value AS characteristic,
+TRIM(sc.value) AS characteristic,
 NULL AS ontology_term_id,
 NULL AS term_source_id,
 q.name AS characteristic_type,
@@ -176,8 +176,8 @@ UNION ALL
 
 SELECT protocol_app_node_id, track,
 CASE WHEN characteristic LIKE 'age%' THEN 'age'
-WHEN characteristic LIKE 'APOE%' THEN 'APOE4 carrier status or allele number'
-ELSE characteristic END AS characteristic,
+WHEN characteristic LIKE 'APOE%' THEN 'APOε4 carrier status or allele number'
+ELSE TRIM(characteristic) END AS characteristic,
 NULL AS ontology_term_id,
 NULL AS term_source_id,
 characteristic_type, 
@@ -190,6 +190,34 @@ pan.source_id AS track,
 UNNEST(string_to_array(replace(sc.value, ' and ', ' '), ', ')) AS characteristic,
 q.name AS characteristic_type,
 'Covariate' AS filter_category,
+'Study Design' filter_category_parent,
+TRUE AS is_value
+FROM Study.Characteristic sc,
+SRes.OntologyTerm q,
+Study.ProtocolAppNode pan
+WHERE pan.protocol_app_node_id = sc.protocol_app_node_id
+AND q.ontology_term_id = sc.qualifier_id
+AND sc.value IS NOT NULL
+AND q.name LIKE 'covariate%') v 
+
+UNION ALL
+
+SELECT protocol_app_node_id, track,
+CASE WHEN characteristic LIKE 'age%' THEN 'age'
+WHEN characteristic LIKE 'APOE%' THEN 'APOε4 carrier status or allele number'
+ELSE characteristic END AS characteristic,
+NULL AS ontology_term_id,
+NULL AS term_source_id,
+'covariate_list' AS characteristic_type,
+NULL AS definition,
+filter_category,
+filter_category_parent,
+is_value FROM (
+SELECT pan.protocol_app_node_id,
+pan.source_id AS track,
+TRIM(sc.value) AS characteristic,
+q.name AS characteristic_type,
+'CovariateList' AS filter_category,
 'Study Design' filter_category_parent,
 TRUE AS is_value
 FROM Study.Characteristic sc,
