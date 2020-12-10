@@ -477,15 +477,27 @@ sub getVariantIdByRefSnp {
   my $result = undef;
   if (lc($marker) =~ m/rs/) {
     if ($alleles and $alleles !~ m/\?/g) { # if allele string contains a ?, then just match the rsId
-      $self->{plugin}->log("Lookup by marker: $marker - $alleles");
-      my ($ref, $alt) = split /:/, $alleles;
-      $self->{refsnpAlleleQh}->execute($marker, $ref, $alt);
-      $result = $self->{refsnpAlleleQh}->fetchall_arrayref({});
+      $self->{plugin}->log("Lookup by marker: $marker - $alleles") if $self->{plugin}->getArg('veryVerbose');
+      if ($alleles =~ /:/) {
+	my ($ref, $alt) = split /:/, $alleles;
+	$self->{refsnpAlleleQh}->execute($marker, $ref, $alt);
+	$result = $self->{refsnpAlleleQh}->fetchall_arrayref({});
+      }
+      else {
+	$self->{refsnpAlleleQh}->execute($marker, undef, $alleles);
+	$result = $self->{refsnpAlleleQh}->fetchall_arrayref({});
+      }
+      if (!@$result and $self->{plugin}->getArg('allowAlleleMismatches')) {
+	$self->{plugin}->log("Marker & allele ($marker - $alleles) not matched, looking up marker");
+	$self->{refsnpQh}->execute($marker); # lookup on just marker as fall back
+	$result = $self->{refsnpQh}->fetchall_arrayref({});
+      }
     }
     else {
       $self->{refsnpQh}->execute($marker);
       $result = $self->{refsnpQh}->fetchall_arrayref({});
     }
+  
     return @$result if ($result);
   }
   else {
