@@ -6,7 +6,8 @@ CREATE TABLE SRes.Motif (
        MOTIF_ID SERIAL NOT NULL,
        EXTERNAL_DATABASE_RELEASE_ID  NUMERIC(12) NOT NULL 
           REFERENCES SRes.ExternalDatabaseRelease(external_database_release_id),
-       MOTIF_SOURCE_ID		     CHARACTER VARYING(50), -- not all databases will have both
+       CHROMOSOME	             CHARACTER VARYING(25) NOT NULL,
+       MOTIF_SOURCE_ID		     CHARACTER VARYING(50) [],
        MATRIX_ID		     CHARACTER VARYING(50), 
        FEATURE_TYPE		     CHARACTER VARYING(50),
        ANNOTATION		     JSONB,
@@ -28,7 +29,8 @@ CREATE TABLE SRes.Motif (
 
 -- INDEXES
 
-CREATE INDEX MOTIF_MATRIX ON SRes.Motif(motif_source_id, matrix_id);
+CREATE INDEX MATRIX ON SRes.Motif(chromosome, matrix_id);
+CREATE INDEX MOTIF_SOURCE ON SRes.Motif USING GIN(MOTIF_SOURCE_ID);
 
 -- GRANTS
 
