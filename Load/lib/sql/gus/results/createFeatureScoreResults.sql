@@ -12,8 +12,6 @@ CREATE UNLOGGED TABLE Results.FeatureScore (
        LOCATION_END		     INTEGER NOT NULL,
        STRAND	    		     CHARACTER VARYING(1),
        SCORE			     NUMERIC,
-       SCORE_JSON		     JSONB,
-       DISPLAY			     JSONB,
        
        -- GUS HOUSEKEEPING
 
@@ -46,6 +44,11 @@ GRANT INSERT, SELECT, UPDATE, DELETE ON Results.FeatureScore TO gus_w;
 CREATE SEQUENCE Results.FeatureScore_SQ;
 GRANT SELECT ON Results.FeatureScore_SQ TO gus_w;
 GRANT SELECT ON Results.FeatureScore_SQ TO gus_r;
+
+-- TRIGGERS
+
+CREATE TRIGGER results_feature_score_bin_trigger BEFORE INSERT OR UPDATE ON Results.FeatureScore
+       FOR EACH ROW EXECUTE PROCEDURE set_row_bin_index();
 
 -- GUS CORE
 
