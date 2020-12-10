@@ -18,8 +18,9 @@ SELECT CASE
 	  AND metaseq_id = split_part(variantID, '_', 1) 
 	  AND ref_snp_id = split_part(variantID, '_', 2)
 	  AND chromosome = 'chr' || split_part(variantID, ':', 1)) END AS variant_primary_key)
-SELECT CASE WHEN variant_primary_key IS NULL THEN variantID
-ELSE variant_primary_key END INTO recordPK 
+--SELECT CASE WHEN variant_primary_key IS NULL THEN variantID
+--ELSE variant_primary_key END INTO recordPK 
+SELECT variant_primary_key INTO recordPK -- need to be able to track no matches
 FROM MatchedVariants;
 
 RETURN recordPK;

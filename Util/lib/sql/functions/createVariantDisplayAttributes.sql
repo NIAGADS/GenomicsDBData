@@ -8,7 +8,7 @@ CREATE OR REPLACE FUNCTION adsp_variant_display_flag(flag BOOLEAN)
 RETURNS text AS $$
 	SELECT CASE
 	       WHEN flag
-	       THEN build_icon_attribute('ADSP Variant', 'fa-check-square-o', 'red', NULL, true::text)::text
+	       THEN build_icon_attribute(NULL, 'fa-check', 'red', NULL, true::text)::text
 	       ELSE NULL END;
 $$ LANGUAGE SQL stable;
 
@@ -81,14 +81,16 @@ BEGIN
 	AND v.record_primary_key = recordPK),
 
 	filter_status AS (
-	SELECT recordPK AS record_primary_key, wes.wes_filter, wgs.wgs_filter 
-	FROM wes LEFT OUTER JOIN wgs ON wes.record_primary_key = wgs.record_primary_key)
+	SELECT wes.record_primary_key, wes.wes_filter, wgs.wgs_filter FROM wes LEFT OUTER JOIN wgs ON wes.record_primary_key = wgs.record_primary_key
+	UNION 
+	SELECT wgs.record_primary_key, wes.wes_filter, wgs.wgs_filter FROM wgs LEFT OUTER JOIN wes ON wes.record_primary_key = wgs.record_primary_key
+	)  
 
-	SELECT CASE WHEN v.is_adsp_variant IS NULL THEN FALSE ELSE v.is_adsp_variant END AS is_adsp_variant,
+	SELECT v.is_adsp_variant,
 	CASE WHEN annotation->'ADSP_WES'->>'FILTER_STATUS' = 'PASS' 
-	THEN TRUE ELSE FALSE END AS is_adsp_wes,
+	THEN TRUE ELSE NULL END AS is_adsp_wes,
 	CASE WHEN annotation->'ADSP_WGS'->>'FILTER_STATUS' = 'PASS' 
-	THEN TRUE ELSE FALSE END AS is_adsp_wgs,
+	THEN TRUE ELSE NULL END AS is_adsp_wgs,
 	filter_status.wes_filter,
 	filter_status.wgs_filter
 	FROM NIAGADS.Variant v LEFT OUTER JOIN filter_status 
@@ -129,16 +131,17 @@ BEGIN
 	WHERE v.adsp_qc->'ADSP_WES'->>'FILTER' = ot.name
 	AND v.record_primary_key = recordPK),
 
-
 	filter_status AS (
-	SELECT recordPK AS record_primary_key, wes.wes_filter, wgs.wgs_filter FROM wes LEFT OUTER JOIN wgs ON wes.record_primary_key = wgs.record_primary_key)
-
+	SELECT wes.record_primary_key, wes.wes_filter, wgs.wgs_filter FROM wes LEFT OUTER JOIN wgs ON wes.record_primary_key = wgs.record_primary_key
+	UNION 
+	SELECT wgs.record_primary_key, wes.wes_filter, wgs.wgs_filter FROM wgs LEFT OUTER JOIN wes ON wes.record_primary_key = wgs.record_primary_key
+	)  
 
 	SELECT is_adsp_variant(recordPK),
 	CASE WHEN v.adsp_qc->'ADSP_WES'->>'FILTER_STATUS' = 'PASS' 
-	THEN TRUE ELSE FALSE END AS is_adsp_wes,
+	THEN TRUE ELSE NULL END AS is_adsp_wes,
 	CASE WHEN v.adsp_qc->'ADSP_WGS'->>'FILTER_STATUS' = 'PASS' 
-	THEN TRUE ELSE FALSE END AS is_adsp_wgs,
+	THEN TRUE ELSE NULL END AS is_adsp_wgs,
 	filter_status.wes_filter,
 	filter_status.wgs_filter
 

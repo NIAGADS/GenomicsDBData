@@ -27,6 +27,51 @@ END;
 
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION get_summary_annotation_by_primary_key(variantPK TEXT)
+       RETURNS TABLE(record_primary_key TEXT, metaseq_id TEXT, display_metaseq_id TEXT, ref_snp_id TEXT,
+       is_adsp_variant BOOLEAN, most_severe_consequence TEXT, msc_impact TEXT, display_allele TEXT, variant_class_abbrev TEXT)
+    AS $$  
+DECLARE metaseqId TEXT;
+DECLARE refSnpId TEXT;
+DECLARE chrm TEXT;
+DECLARE ref_allele TEXT;
+DECLARE alt_allele TEXT;
+DECLARE POSITION INTEGER;
+BEGIN
+	-- metaseq_id, display_metaseq_id, ref_snp_id, is_adsp_variant, variant_class_abbrev, display_allele, ms.impact, ms.conseq
+	SELECT split_part(variantPK, '_', 1) INTO metaseqId;
+	SELECT split_part(variantPK, '_', 2) INTO refSnpId;
+	SELECT 'chr' || split_part(variantPK, ':', 1)::text INTO chrm;
+
+	SELECT split_part(metaseqId, ':', 3) INTO ref_allele;
+	SELECT split_part(metaseqId, ':', 4) INTO alt_allele;
+	SELECT split_part(metaseqId, ':', 2)::integer INTO position;
+
+	RETURN QUERY
+
+	SELECT variantPK AS variant_primary_key,
+	v.metaseq_id,
+	truncate_str(v.metaseq_id, 27) AS display_metaseq_id,
+	v.ref_snp_id::text,
+	v.is_adsp_variant,
+	v.adsp_ms_consequence AS most_severe_consequence,
+	v.adsp_most_severe_consequence->>'impact' AS msc_impact,
+	da.display_allele,
+	da.variant_class_abbrev
+	FROM AnnotatedVDB.Variant v,
+	normalize_alleles(ref_allele, alt_allele) na, 
+	display_allele_attributes(ref_allele, alt_allele, na.ref, na.alt, position) da
+	WHERE LEFT(v.metaseq_id, 50) = LEFT(metaseqId, 50)
+	AND v.metaseq_id = metaseqId
+	AND CASE WHEN LENGTH(refSnpId) = 0 THEN TRUE
+	ELSE v.ref_snp_id = refSnpId END 
+	AND v.chromosome = chrm;
+
+
+END;
+
+$$ LANGUAGE plpgsql;
+
 
 CREATE OR REPLACE FUNCTION get_adsp_qc_by_primary_key(variantPK TEXT)
        RETURNS TABLE(record_primary_key TEXT, adsp_qc JSONB) AS $$
@@ -161,7 +206,7 @@ BEGIN
 	SELECT split_part(variantPK, '_', 2) INTO refSnpId;
 	SELECT 'chr' || split_part(variantPK, ':', 1)::text INTO chrm;
 
-	SELECT CASE WHEN is_adsp_variant IS NULL THEN FALSE ELSE is_adsp_variant END INTO flag
+	SELECT is_adsp_variant INTO flag
 	FROM AnnotatedVDB.Variant v
 	WHERE LEFT(v.metaseq_id, 50) = LEFT(metaseqId, 50)
 	AND v.metaseq_id = metaseqId

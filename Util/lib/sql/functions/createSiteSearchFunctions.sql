@@ -1,7 +1,7 @@
 -- site search  -- one function for each record type
 
 CREATE OR REPLACE FUNCTION variant_text_search(searchTerm TEXT) 
-RETURNS TABLE ( primary_key CHARACTER VARYING,
+RETURNS TABLE ( primary_key TEXT,
 	      	display TEXT,
 		record_type TEXT,
 		match_rank INTEGER,
@@ -13,41 +13,45 @@ BEGIN
 
 RETURN QUERY 
 
-SELECT v.record_pk AS primary_key,
-CASE WHEN v.source_id IS NOT NULL THEN v.source_id
-WHEN LENGTH(split_part(v.record_pk, '_', 1)) > 30 THEN substr(split_part(v.record_pk, '_', 1), 0, 27) ELSE split_part(v.record_pk, '_', 1) END AS display,
+WITH STerm AS (
+SELECT searchTerm AS search_term, 
+REPLACE(REPLACE(REPLACE(REPLACE(TRIM(searchTerm),'-', ':'), '/', ':'), 'chr', ''),'MT','M')::text AS term),
+
+matched_variant AS (
+--refsnp match (includes merges)
+SELECT st.search_term, st.term, record_primary_key, 1 AS match_ranking
+FROM STerm st, find_variant_by_refsnp(LOWER(st.term))
+WHERE LOWER(st.term) LIKE 'rs%'
+
+UNION
+
+-- metaseq, include switching alleles
+SELECT st.search_term, st.term, record_primary_key, 2 AS match_ranking
+FROM STerm st, find_variant_by_metaseq_id_variations(st.term)
+WHERE st.term LIKE '%:%' AND array_length(regexp_split_to_array(st.term, ':'),1) = 4
+
+UNION
+
+-- by position
+SELECT st.search_term, st.term, record_primary_key, 3 AS match_ranking 
+FROM STerm st, find_variant_by_position('chr' || split_part(st.term, ':', 1), split_part(st.term, ':', 2)::integer)
+WHERE st.term LIKE '%:%' AND array_length(regexp_split_to_array(st.term, ':'),1) = 2
+)
+
+SELECT mv.record_primary_key AS primary_key, 
+sa.display_metaseq_id || COALESCE(' (' || sa.ref_snp_id || ') ', '') AS display,
 'variant' AS record_type,
-1 AS match_ranking,
-CASE WHEN mv.term LIKE 'rs%' AND v.source_id != mv.term THEN 'merged from: ' || mv.term ELSE replace(mv.term, '_', ':') END AS matched_term,
-CASE WHEN v.is_adsp_variant THEN ' ADSP VARIANT' ELSE 'VARIANT' END
-|| ' // ' || variant_class_abbrev
-|| ' // Alleles: ' || display_allele
-|| COALESCE(' // ' || v.most_severe_consequence, '')
-|| COALESCE(' // ' || (v.annotation->'VEP_MS_CONSEQUENCE'->>'impact')::text, '') AS description
-FROM NIAGADS.Variant v,
-(SELECT TRIM(searchTerm) AS term, find_variant_primary_key(TRIM(searchTerm)) AS record_pk) mv
-WHERE v.record_pk = mv.record_pk
-
-UNION ALL
-
-SELECT v.record_pk AS primary_key,
-CASE WHEN v.source_id IS NOT NULL THEN v.source_id
-WHEN LENGTH(split_part(v.record_pk, '_', 1)) > 30 THEN substr(split_part(v.record_pk, '_', 1), 0, 27) ELSE split_part(v.record_pk, '_', 1) END AS display,
-'variant' AS record_type,
-2 AS match_ranking,
-CASE WHEN TRIM(searchTerm) LIKE 'rs%' AND v.source_id != TRIM(searchTerm) THEN 'merged from: ' || TRIM(searchTerm) ELSE TRIM(searchTerm) END  AS matched_term,
-CASE WHEN v.is_adsp_variant THEN ' ADSP VARIANT' ELSE 'VARIANT' END
-|| ' // ' || variant_class_abbrev
-|| ' // Alleles: ' || display_allele
-|| COALESCE(' // ' || v.most_severe_consequence, '')
-|| COALESCE(' // ' || (v.annotation->'VEP_MS_CONSEQUENCE'->>'impact')::text, '') AS description
-FROM NIAGADS.Variant v
-WHERE (TRIM(searchTerm) ~ '^[0-9]' AND TRIM(searchTerm) LIKE '%:%' AND array_length(regexp_split_to_array(TRIM(searchTerm), ':'),1) = 2) AND (v.chromosome = 'chr' || split_part(TRIM(searchTerm), ':', 1)
-AND v.position = split_part(TRIM(searchTerm), ':', 2)::integer AND v.has_annotation)
-OR (TRIM(searchTerm) ~ '^[0-9]' AND TRIM(searchTerm) LIKE '%:%' AND array_length(regexp_split_to_array(TRIM(searchTerm), ':'),1) = 3) AND (v.chromosome = 'chr' || split_part(TRIM(searchTerm), ':', 1)
-AND v.position = split_part(TRIM(searchTerm), ':', 2)::integer AND (v.ref_allele = split_part(TRIM(searchTerm), ':', 3)  OR v.alt_allele = split_part(TRIM(searchTerm), ':', 3)) AND v.has_annotation)
-
-ORDER BY match_ranking ASC;
+mv.match_ranking,
+CASE WHEN LOWER(mv.term) LIKE 'rs%' AND sa.ref_snp_id != LOWER(mv.term) THEN 'merged from: ' || LOWER(mv.term) 
+WHEN LOWER(mv.term) LIKE 'rs%' THEN LOWER(mv.term)
+ELSE mv.term END AS matched_term,
+CASE WHEN sa.is_adsp_variant THEN 'ADSP VARIANT' ELSE 'VARIANT' END
+|| ' // ' || sa.variant_class_abbrev
+|| ' // Alleles: ' || sa.display_allele
+|| COALESCE(' // ' || sa.most_severe_consequence, '')
+|| COALESCE(' // ' || sa.msc_impact, '') AS description
+FROM matched_variant mv, get_summary_annotation_by_primary_key(mv.record_primary_key) sa
+ORDER BY mv.match_ranking ASC;
 
 END; 
 

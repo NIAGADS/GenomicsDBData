@@ -10,7 +10,8 @@ BEGIN
 	       v.is_adsp_variant, v.bin_index
 	FROM AnnotatedVDB.Variant v, searchTerm
  	WHERE v.ref_snp_id = searchTerm.ref_snp_id
-	AND array_sort(ARRAY[refA, altA]) = array_sort(ARRAY[split_part(v.metaseq_id, ':', 3), split_part(v.metaseq_id, ':', 4)]);
+	AND array_sort(ARRAY[split_part(v.metaseq_id, ':', 3), split_part(v.metaseq_id, ':', 4)]) @> 
+	CASE WHEN refA IS NULL THEN ARRAY[altA] ELSE array_sort(ARRAY[refA, altA]) END;
 END;
 
 $$ LANGUAGE plpgsql;
