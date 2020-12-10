@@ -187,10 +187,12 @@ loadResource -c $CONFIG_DIR/annotations/exac_freq.json  --load data --verbose --
 
 # NHGRI GWAS Catalog
 
-loadResource -c $CONFIG_DIR/reference_databases/gwas_catalog.json --load xdbr --verbose --commit > $DATA_DIR/logs/load_nhgri_gc_xdbr.log 2>&1
-loadResource -c $CONFIG_DIR/reference_databases/gwas_catalog.json --preprocess --verbose > $DATA_DIR/logs/preprocess_nhgri_gc.log 2>&1
-loadResource -c $CONFIG_DIR/reference_databases/gwas_catalog.json --load --commit --verbose > $DATA_DIR/logs/load_nhgri_gc.log 2>&1
+loadResource -c $CONFIG_DIR/reference_databases/gwas_catalog.json --load xdbr --verbose --commit > $DATA_DIR/logs/reference_databases/load_nhgri_gc_xdbr.log 2>&1
+loadResource -c $CONFIG_DIR/reference_databases/gwas_catalog.json --preprocess --verbose > $DATA_DIR/logs/reference_databases/preprocess_nhgri_gc.log 2>&1
 
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/reference_databases/gwas_catalog.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/reference_databases/load_nhgri_find_novel_variants.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/reference_databases/gwas_catalog.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/reference_databases/load_nhgri_load_variants.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/reference_databases/gwas_catalog.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/reference_databases/load_nhgri_load_results.log 2>&1
 
 
 
@@ -326,6 +328,23 @@ loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00065_sv
 loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00065_sv.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00065_sv_load_variants.log 2>&1
 loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00065_sv.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00065_sv_load_result.log 2>&1
 
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00065_gr_cadd15.json --preprocess --verbose --commit > $DATA_DIR/logs/datasets/load_NG00065_gr_cadd15_placeholders.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00065_gr_cadd15.json --load data --verbose --commit > $DATA_DIR/logs/datasets/load_NG00065_gr_cadd15.log 2>&1
+
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00065_gr_cadd20.json --preprocess --verbose --commit > $DATA_DIR/logs/datasets/load_NG00065_gr_cadd20_placeholders.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00065_gr_cadd20.json --load data --verbose --commit > $DATA_DIR/logs/datasets/load_NG00065_gr_cadd20.log 2>&1
+
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00065_gr_impactM.json --preprocess --verbose --commit > $DATA_DIR/logs/datasets/load_NG00065_gr_impactM_placeholders.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00065_gr_impactM.json --load data --verbose --commit > $DATA_DIR/logs/datasets/load_NG00065_gr_impactM.log 2>&1
+
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00065_gr_impactH.json --preprocess --verbose --commit > $DATA_DIR/logs/datasets/load_NG00065_gr_impactH_placeholders.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00065_gr_impactH.json --load data --verbose --commit > $DATA_DIR/logs/datasets/load_NG00065_gr_impactH.log 2>&1
+
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00065_gr_lof.json --preprocess --verbose --commit > $DATA_DIR/logs/datasets/load_NG00065_gr_lof_placeholders.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00065_gr_lof.json --load data --verbose --commit > $DATA_DIR/logs/datasets/load_NG00065_gr_lof.log 2>&1
+
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00065_gr_lof.json --tuning --verbose --commit > $DATA_DIR/logs/datasets/load_NG00065_gr_tuning.log 2>&1
+
 # NG00073
 
 loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00073.json --load data  --commit > $DATA_DIR/logs/datasets/load_NG00073_placeholders.log 2>&1 # comment out LoadVariantGwAS for this step/comment out InsertStudy & InsertProtocolAppNodes for next
@@ -407,8 +426,8 @@ loadResource -c $CONFIG_DIR/annotations/fantom5.json --load xdbr --commit > $DAT
 loadResource -c $CONFIG_DIR/annotations/fantom5.json --preprocess --verbose --commit > $DATA_DIR/logs/load_fantom5_study.log 2>&1
 loadResource -c $CONFIG_DIR/annotations/fantom5.json --load data --verbose --commit > $DATA_DIR/logs/load_fantom5.log 2>&1
 
-loadResource -c $CONFIG_DIR/annotations/roadmap_enhancers.json --load xdbr --commit > $DATA_DIR/logs/load_roadmap_enhancers_xdbr.log 2>&1
-loadResource -c $CONFIG_DIR/annotations/roadmap_enhancers.json --preprocess  --commit > $DATA_DIR/logs/load_roadmap_enhancers_study.log 2>&1
-loadResource -c $CONFIG_DIR/annotations/roadmap_enhancers.json --load data --verbose --commit > $DATA_DIR/logs/load_roadmap_enhancers.log 2>&1
+loadResource -c $CONFIG_DIR/annotations/roadmap_enhancers.json --load xdbr --commit > $DATA_DIR/logs/filer/load_roadmap_enhancers_xdbr.log 2>&1
+loadResource -c $CONFIG_DIR/annotations/roadmap_enhancers.json --preprocess  --commit > $DATA_DIR/logs/filer/load_roadmap_enhancers_study.log 2>&1
+loadResource -c $CONFIG_DIR/annotations/roadmap_enhancers.json --load data --verbose --commit > $DATA_DIR/logs/filer/load_roadmap_enhancers.log 2>&1
 
 
