@@ -148,7 +148,7 @@ sub new {
   my $argumentDeclaration    = &getArgumentsDeclaration();
 
   $self->initialize({requiredDbVersion => 4.0,
-		     cvsRevision => '$Revision: 13 $',
+		     cvsRevision => '$Revision: 15 $',
 		     name => ref($self),
 		     revisionNotes => '',
 		     argsDeclaration => $argumentDeclaration,
@@ -180,6 +180,7 @@ sub run {
   foreach my $f (@files) {
     $f =~ m/\.(\d+|MT)\./;
     my $chromosome = $1;
+    $self->{chromosomse} = "chr$chromosome";
     if ($chrms) {
       if (exists $chrmHash{$chromosome}) {
 	$self->loadResult($f) if ($schema eq "results");
@@ -278,6 +279,10 @@ sub loadMatrices {
   my ($self) = @_;
   my $count = 0;
   foreach my $matrixId (keys %$MATRICES) {
+    my @sources = @{$MATRICES->{$matrixId}->{motif_source_id}};
+    my $sources = "'{'" . join(',', @sources) . "'}'";
+    $MATRICES->{$matrixId}->{motif_source_id} = $sources;
+
     my $motif = GUS::Model::SRes::Motif
       ->new($MATRICES->{$matrixId});
 
@@ -295,26 +300,32 @@ sub setMatrixValues {
 
   my $annotation = $self->generateAnnotationObj($data->{annotation});
   my $matrixId = $annotation->{binding_matrix_stable_id};
+  my $sourceId = $annotation->{stable_id};
 
   if (!exists $MATRICES->{$matrixId}) {
     my $featureType = $data->{feature_type};
     $featureType =~ s/_/ /g;
 
-    my $sourceId = $annotation->{stable_id};
-
     delete $annotation->{stable_id};
     delete $annotation->{binding_matrix_stable_id};
+    my @sources = ($sourceId);
 
     my %values = (external_database_release_id => $self->{external_database_release_id},
-		  motif_source_id => $sourceId,
 		  matrix_id => $matrixId,
+		  motif_source_id => \@sources,
 		  feature_type => $featureType,
-		  annotation => Utils::to_json($annotation)
+		  annotation => Utils::to_json($annotation),
+		  chromosome => $self->{chromosome}
 		 );
 
     $MATRICES->{$matrixId} = \%values;
     $count++;
   }
+
+  my @sources = @{$MATRICES->{$matrixId}->{motif_source_id}};
+  push(@sources, $sourceId);
+  $MATRICES->{$matrixId}->{motif_source_id} = \@sources;
+
   return $count;
 }
 
@@ -371,6 +382,7 @@ sub generateAnnotationObj {
     if (exists $annotation{transcription_factor_complex});
   $annotation{epigenomes_with_experimental_evidence} = $self->str2array($annotation{epigenomes_with_experimental_evidence})
     if (exists $annotation{epigenomes_with_experimental_evidence});
+
   return \%annotation;
 }
 
