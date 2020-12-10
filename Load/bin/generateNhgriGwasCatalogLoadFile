@@ -1,0 +1,123 @@
+#!/usr/bin/env python
+#pylint: disable=invalid-name
+#pylint: disable=no-member
+'''
+Generates load NGHRI GWAS Catalog tsv file
+'''
+
+
+from __future__ import with_statement
+from __future__ import print_function
+
+import re
+import argparse
+import os.path as path
+import csv
+import json
+
+from GenomicsDBData.Util.utils import qw, warning, die, xstr, xstrN
+
+def row2value_tuple(fields, row):
+    '''
+    covert row values to consistently ordered tuple
+    '''
+    # these two things cause problems later for postgres json
+    row = {key : value.replace('"', '') if value is not None else value for key, value in row.iteritems()}
+    row = {key : value.replace('|', '-') if value is not None else value for key, value in row.iteritems()}
+    row = {key : value.replace('\\x3b', ';') if value is not None else value for key, value in row.iteritems()}
+    values = [xstrN(row[f]) for f in fields] # get rid of quotes in json
+    return tuple(values)
+
+
+def generate_load_file():
+    '''
+    parse input file and generate load file w/one variant per load file
+    extract effect alleles
+    '''
+
+    pattern = re.compile(' \(.+\)')
+
+    fileName = path.join(args.dir, args.fileName)
+    outputFile = path.join(args.dir, args.fileName + "-preprocess.txt")
+
+    header = qw('chromosome marker allele frequency pvalue') # position is only valid for GRCh38
+
+    with open(outputFile, 'w') as of:
+        with open(fileName) as f:
+            reader = csv.DictReader(f, delimiter='\t')
+            fields = reader.fieldnames
+            header = header + fields
+            print('\t'.join(header), file=of)
+            for row in reader:
+                try:
+                    frequency = row['RISK ALLELE FREQUENCY']
+                    if frequency == 'NR' or frequency == '' or ',' in frequency or not frequency.replace('.','').isdigit(): 
+                        frequency = 'NULL'
+                    elif '-' in frequency: # range
+                        frequency = 'NULL'
+                    elif ' ' in frequency:
+                        frequency = frequency.split(' ')[0]
+                        
+                    frequency = re.sub(pattern, '', frequency)
+                    
+                    pvalue = re.sub(pattern, '', row['P-VALUE']) if row['P-VALUE'] != '' else '' 
+                    
+                    valuesTuple = row2value_tuple(fields, row)
+                    
+                    sSnp = row['STRONGEST SNP-RISK ALLELE']
+                    variants = [sSnp]
+                    if ';' in sSnp:
+                        variants = sSnp.split(';')
+                    if ', ' in sSnp:
+                        variants = sSnp.split(',')
+                    
+
+                    for snp in variants:
+                        snp = snp.strip()
+                        if 'chr' in snp.lower() or not snp.startswith('rs'):
+                            if '37' in args.genomeBuild:
+                                warning("WARNING: GRCh37", "Skipping positional/malformed variant:", snp)
+                                continue
+                            else:
+                                die("Not yet implemented: GRCh38 - TODO: Allow and correct positional-based variants:" + snp )
+                                
+                        if ' x ' in snp:
+                            continue # SNP X SNP interaction
+                        
+                        if '--' in snp:
+                            snp = snp.replace('--', '-')
+
+                        if '-' in snp:
+                            alleles = snp.split('-')
+                            marker = alleles.pop(0)
+                        else:
+                            marker = snp
+                            alleles = ['?']
+
+                        alleles = ['?' if a == '' else a for a in alleles]
+                        alleles = list(dict.fromkeys(alleles)) # remove duplicates
+
+                        # some rsIds have a random alpha-char after them
+                        m = re.search('(rs\d+)', marker) 
+                        marker = m.group(1)
+
+                        if '?' in alleles:
+                            alleles = ['?'] # if list of alleles includes a ? then the result will be mapped to all alleles anyway, so others do not matter
+                        for a in alleles:
+                            print('\t'.join((xstr(row["CHR_ID"]), xstr(marker.rstrip()), xstrN(a), xstrN(frequency), xstrN(pvalue)) +  valuesTuple), file=of)
+                except:
+                    warning(row)
+                    raise
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="generate load file NHGRI GWAS Catalog tsv file")
+    parser.add_argument('-f', '--fileName', help="file name", required=True)
+    parser.add_argument('-d', '--dir', help="working directory", required=True)
+    parser.add_argument('-g', '--genomeBuild', help="genome build (can match by position only if GRCh38", required=True)
+
+    args = parser.parse_args()
+
+    generate_load_file()
+
+
+# DATE ADDED TO CATALOG	PUBMEDID	FIRST AUTHOR	DATE	JOURNAL	LINK	STUDY	DISEASE/TRAIT	INITIAL SAMPLE SIZE	REPLICATION SAMPLE SIZE	REGION	CHR_ID	CHR_POS	REPORTED GENE(S)	MAPPED_GENE	UPSTREAM_GENE_ID	DOWNSTREAM_GENE_ID	SNP_GENE_IDS	UPSTREAM_GENE_DISTANCE	DOWNSTREAM_GENE_DISTANCE	STRONGEST SNP-RISK ALLELE	SNPS	MERGED	SNP_ID_CURRENT	CONTEXT	INTERGENIC	RISK ALLELE FREQUENCY	P-VALUE		P-VALUE (TEXT)	OR or BETA	95% CI (TEXT)	PLATFORM [SNPS PASSING QC]	CNV	MAPPED_TRAIT	MAPPED_TRAIT_URI	STUDY ACCESSION
