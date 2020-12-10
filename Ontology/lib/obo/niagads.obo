@@ -414,6 +414,16 @@ id: NO_0000064
 name: Caribbean Hispanic
 def: "hispanic ancestry; specifically from the Caribbean"
 
+[Term]
+id: NO_0000070
+name: FILER_TISSUE_CATEGORY
+def: "tissue/cell classification used in FILER resource"
+
+[Term]
+id: NO_0000071
+name: FILER_BIOSAMPLE_TYPE
+def: "biosample classification used in FILER resource"
+
 
 	
 
