@@ -219,6 +219,14 @@ sub getArgumentsDeclaration {
 		  isList         => 0 
 		}),
 
+
+     booleanArg({ name  => 'allowAlleleMismatches',
+		  descr => 'flag if map to marker even in alleles do not match exactly',
+		  constraintFunc => undef,
+		  reqd           => 0,
+		  isList         => 0 
+		}),
+
      booleanArg({ name  => 'markerIsMetaseqId',
 		  descr => 'flag if marker is a metaseq_id; to be used with map thru marker',
 		  constraintFunc => undef,
@@ -327,6 +335,7 @@ sub getArgumentsDeclaration {
 		  reqd => 0
 		}),
 
+
      booleanArg({ name  => 'skipVep',
 		  descr => 'skip VEP run; when novel variants contain INDELS takes a long time to run VEP + likelihood of running into a new consequence in the result is high; use this to use the existing JSON file to try and do the AnnotatedVDB update',
 		  constraintFunc => undef,
@@ -386,7 +395,7 @@ sub new {
   my $argumentDeclaration = &getArgumentsDeclaration();
 
   $self->initialize({requiredDbVersion => 4.0,
-		     cvsRevision       => '$Revision: 506 $',
+		     cvsRevision       => '$Revision: 521 $',
 		     name => ref($self),
 		     revisionNotes => '',
 		     argsDeclaration => $argumentDeclaration,
@@ -703,7 +712,6 @@ sub cleanAndSortInput {
       $metaseqId = join(':', $chromosome, $position, $ref, $alt); # in case chromosome/alleles were corrected
     }
 
-
     $self->error("--testAllele not specified and unable to extract from marker.  Must specify 'testAllele'") if (!$test);
 
     my $rv = {chromosome => $chromosome, position => $position, refAllele => $ref, altAllele => $alt, testAllele => $test, marker => $marker, metaseq_id => $metaseqId};
@@ -808,9 +816,11 @@ sub findNovelVariants {
     my $metaseqId = $row{metaseq_id};
     my $marker = ($self->getArg('marker')) ? $row{marker} : undef;
     my ($chromosome, $position, $ref, $alt) = split /:/, $metaseqId;
+    my $alleles = ($ref and $ref ne '') ? "$ref:$alt" : $row{test_allele}; 
 
     # my $startTime = Utils::getTime();
-    my (@dbVariantIds) = $va->getAnnotatedVariants($metaseqId, $marker, "$ref:$alt", 1); # 1 -> firstHitOnly for metaseq_id matches 
+
+    my (@dbVariantIds) = $va->getAnnotatedVariants($metaseqId, $marker, $alleles, 1); # 1 -> firstHitOnly for metaseq_id matches 
     # my ($elapsedTime, $tmessage) = ::elapsed_time($startTime);
     # $self->log($tmessage) if $self->getArg('veryVerbose');
     if (!@dbVariantIds) { # if variant not in AnnotatedVDB.Variant, write to file 
@@ -830,7 +840,7 @@ sub findNovelVariants {
       $self->log("Mapped to: " . Dumper(\@dbVariantIds)) if ($self->getArg('veryVerbose'));
       $self->log("Mapped to: " . $dbVariantIds[0]->{record_primary_key}) if ($self->getArg('verbose'));
 
-      if (scalar @dbVariantIds > 1) { # mostly due to multiple refsnps mapped to same position; but sanity check
+      if (scalar @dbVariantIds > 1 and !$self->getArg('mapThruMarker') and !$self->getArg('markerIsMetaseqId')) { # mostly due to multiple refsnps mapped to same position; but sanity check
 	$self->log("WARNING: Variant $metaseqId mapped to multiple annotated variants:");
 	$self->log(Dumper(\@dbVariantIds));
       }
@@ -896,7 +906,7 @@ sub loadVariants {
   my $updateAvQh = undef;
   my $selectAvQh = undef;
   
-  my $previousPK = undef; # for checking duplicates loaded in same batch (some files have multiple p-values for single variants
+  my $previousPK = {}; # for checking duplicates loaded in same batch (some files have multiple p-values for single variants)
   
   my $fileName = $self->sortPreprocessedResult();
   open(my $fh, $fileName ) || $self->error("Unable to open $fileName for reading");
@@ -920,6 +930,7 @@ sub loadVariants {
 	    if ($self->getArg('commit' )); # b/c table is not logged
 	@updateAvDbBuffer = ();
 	$insertRecordBuffer = "";
+	$previousPK = {}; # new chromosome so, erase old dups
       }
 
       $selectAvQh->finish() if $selectAvQh;
@@ -937,15 +948,17 @@ sub loadVariants {
     if ($resume || !($dbv->{has_genomicsdb_annotation})) {
       # after a while this will be true for most
       # but double check in case of resume or check all if resume flag is specified
-      if (!$previousPK || $previousPK ne $recordPK) {
+      if (not exists $previousPK->{$recordPK}) {
 	my $variant = GUS::Model::NIAGADS::Variant->new({record_primary_key => $recordPK});
 	unless ($variant->retrieveFromDB()) {
 	  $self->log("Variant $recordPK not found in GenomicsDB.") 
 	    if $self->getArg('veryVerbose');
 	  my $props = $self->{annotator}->inferVariantLocationDisplay($ref, $alt, $position, $position);
+
 	  $insertRecordBuffer .= VariantLoadUtils::generateCopyStr($self, $dbv, $props,
 								   undef, $dbv->{is_adsp_variant});
 	  ++$insertedRecordCount;
+	  $previousPK->{$recordPK} = 1;
 	}
 	else {
 	  $self->log("Variant mapped to annotated variant $recordPK")
@@ -954,7 +967,7 @@ sub loadVariants {
 	}
       }
       else {
-	$self->log("Duplicate variant found $recordPK - $previousPK");
+	$self->log("Duplicate variant found $recordPK") if $self->getArg('veryVerbose');
 	$duplicateRecordCount++;
       }
     }
@@ -984,8 +997,8 @@ sub loadVariants {
     unless ($totalVariantCount % 10000) {
       $self->log("Read $totalVariantCount lines; updates: $existingRecordCount; inserts: $insertedRecordCount; duplicates: $duplicateRecordCount; AVDB updates: $updatedRecordCount");
       $self->undefPointerCache();
-    } 
-    $previousPK = $recordPK;
+    }
+    $previousPK->{$recordPK} = 1;
   }
 
   # insert residuals
@@ -1073,10 +1086,14 @@ sub writeCleanedInput {
 sub writePreprocessedResult {
   my ($self, $fh, $dbVariant, $input) = @_;
 
+  my ($dchr, $dpos, $dref, $dalt) = split /:/, $dbVariant->{metaseq_id};
+  my $chr = ($input->{chr}) ? $input->{chr} : $dchr;
+  my $pos = ($input->{bp}) ? $input->{bp} : $dpos;
+
   # (chr bp allele1 allele2 freq1 pvalue neg_log10_p display_p has_gws test_allele restricted_stats_json db_variant_json);
   print $fh join("\t",
-	     ($input->{chr},
-	      $input->{bp},
+	     ($chr,
+	      $pos,
 	      $input->{allele1},
 	      $input->{allele2},
 	      $input->{freq1},
@@ -1115,8 +1132,13 @@ sub buildRestrictedStatsJson {
   my ($self, @values) = @_;
   my $stats = {};
   while (my ($stat, $index) = each %$RESTRICTED_STATS_FIELD_MAP) {
-    $stats->{$stat} = (looks_like_number($values[$index])) ? $values[$index] * 1.0 : $values[$index];
-    $stats->{$stat} = "Infinity" if ($values[$index] =~ m/inf/i);
+    my $tValue = lc($values[$index]);
+    if ($tValue eq "infinity" or $tValue =~ m/^inf$/) {
+      $stats->{$stat} = "Infinity";
+    }
+    else { # otherwise replaces Infinity w/inf which will cause problems w/load b/c inf s not a number in postgres
+      $stats->{$stat} = (looks_like_number($values[$index])) ? $values[$index] * 1.0 : $values[$index];
+    }
   }
   return Utils::to_json($stats);
 }
