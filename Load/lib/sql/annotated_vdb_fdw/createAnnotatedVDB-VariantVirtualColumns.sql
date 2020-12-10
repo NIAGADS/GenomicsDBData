@@ -27,6 +27,6 @@ $$ LANGUAGE SQL stable;
 
 CREATE OR REPLACE FUNCTION adsp_ms_consequence(v AnnotatedVDB.Variant) 
 RETURNS TEXT AS $$
-	SELECT DISTINCT array_to_string(json_array_cast_to_text((v.adsp_most_severe_consequence->'consequence_terms')::json), ',')  
+	SELECT DISTINCT replace(array_to_string(json_array_cast_to_text((v.adsp_most_severe_consequence->'consequence_terms')::json), ','), '_', ' ')  
 
 $$ LANGUAGE SQL stable;
