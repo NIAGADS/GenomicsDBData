@@ -187,6 +187,6 @@
 		}
 	    }
 	}
-    ]
-
+    ],
+    "tuning":["$GUS_HOME/lib/sql/niagads_schema/mviews/createGeneAssociationTuning_MV.sql"]
 }
