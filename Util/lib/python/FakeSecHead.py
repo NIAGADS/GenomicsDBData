@@ -18,3 +18,5 @@ class FakeSecHead(object):
                 self.sechead = None
         else: 
             return self.fp.readline()
+
+

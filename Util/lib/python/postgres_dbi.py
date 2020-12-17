@@ -6,9 +6,14 @@ management
 import psycopg2
 import psycopg2.extras
 import os
+import sys
 
-from GenomicsDBData.Util.FakeSecHead import FakeSecHead #,warning
-from ConfigParser import SafeConfigParser
+from GenomicsDBData.Util.FakeSecHead import FakeSecHead 
+try:  # package name changes from 2.7 -> 3
+    from ConfigParser import SafeConfigParser
+except ImportError: # python3
+    from configparser import SafeConfigParser
+
 
 class Database(object):
     '''
@@ -126,7 +131,12 @@ class Database(object):
         parse gus config file for DB connection info
         '''
         config_parser = SafeConfigParser()
-        config_parser.readfp(FakeSecHead(open(self.gusConfigFile)))
+        if sys.version_info[0] < 3: # python 2.7 solution
+            config_parser.readfp(FakeSecHead(open(self.gusConfigFile)))
+        else:
+            with open(self.gusConfigFile, 'r') as fh:
+                config_string = '[section]\n' + fh.read()
+                config_parser.read_string(config_string)
 
         self.dsn = config_parser.get('section', 'dbiDsn');
         self.user = config_parser.get('section', 'databaseLogin')
