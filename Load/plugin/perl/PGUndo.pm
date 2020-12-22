@@ -1,4 +1,4 @@
-package GenomicsDBData::Util::Plugin::PGUndo;
+package GenomicsDBData::Load::Plugin::PGUndo;
 
 @ISA = qw(GUS::PluginMgr::Plugin);
 
@@ -138,7 +138,7 @@ sub new {
    bless($self, $class);
 
    $self->initialize({requiredDbVersion => 4.0,
-                      cvsRevision => '$Revision: 22449 $',
+                      cvsRevision => '$Revision: 22450 $',
                       name => ref($self),
                       argsDeclaration => $argsDeclaration,
                       documentation => $documentation

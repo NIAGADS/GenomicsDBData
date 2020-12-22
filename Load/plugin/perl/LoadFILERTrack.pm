@@ -14,7 +14,14 @@ use File::Slurp;
 # use File::Fetch;
 
 use LWP::UserAgent;
-use Gzip::Faster;
+use HTTP::Request;
+# use Gzip::Faster;
+
+# use Compress::Zlib;
+
+use IO::Uncompress::Gunzip;
+
+use Package::Alias Utils => 'GenomicsDBData::Load::Utils';
 
 use GUS::Model::Study::Study;
 use GUS::Model::Study::StudyLink;
@@ -221,7 +228,7 @@ sub new {
   my $argumentDeclaration = &getArgumentsDeclaration();
 
   $self->initialize({requiredDbVersion => 4.0,
-		     cvsRevision => '$Revision: 4 $',
+		     cvsRevision => '$Revision: 14 $',
 		     name => ref($self),
 		     revisionNotes => '',
 		     argsDeclaration => $argumentDeclaration,
@@ -277,10 +284,11 @@ sub loadDatasets {
   my ($self, $annotation) = @_;
   while (my ($track, $properties)  = each %$annotation) {
     next if $track eq "dataset";
-    $self->log("Processing dataset $track with the following annotation: " . Dumper($properties));
+    $self->log("Processing dataset $track with the following annotation: " . Dumper($properties)) 
+      if $self->getArg('veryVerbose');
     my $protocolAppNodeId = $self->loadProtocolAppNode($properties);
     if (!$self->getArg('validateOntologyTerms') or $self->getArg('commit')) {
-      my $fileName = $self->getArg('filerUri') . "/" . $annotation->{uri};
+      my $fileName = $self->getArg('filerUri') . "/" . $properties->{uri};
       $self->loadFeatureScores($fileName, $protocolAppNodeId, $properties);
     }
   }
@@ -331,7 +339,6 @@ sub parseAnnotation {
     $fileProps->{$trackId} = {source_id => $trackId,
 			   name => $values[$columnMap{name}]};
 
-    $fileProps->{$trackId}->{uri} = $values[$columnMap{filer_path}] . "/" . $values[$columnMap{file}];
 
     $fileProps->{$trackId}->{description} = $values[$columnMap{description}] if (exists $columnMap{description});
     if (exists $self->{subtype_id}) {
@@ -350,17 +357,21 @@ sub parseAnnotation {
 
     $fileProps->{$trackId}->{track_display} = TO_JSON($trackDisplay) if (scalar keys %$trackDisplay > 0);
     $fileProps->{$trackId}->{characteristics} = $self->extractCharacteristics(\%columnMap, @values);
+
     if (!$bedFields) {
       $self->error("No BED 'FILER_FILE_FORMAT' found in annotation for file $file.  Must add to annotation file or specify (bed) file type (for all files) using the --bedType option.")
 	if !(exists $columnMap{file_type});
 
-      $fileProps->{$trackId}->{file_type} = $values[$columnMap{file_type}];
-      $fileProps->{$trackId}->{bed_fields} = $self->getBedFields($values[$columnMap{file_type}]);
+      $fileProps->{$trackId}->{file_type} = $values[$columnMap{filer_file_format}];
+      $fileProps->{$trackId}->{bed_fields} = $self->getBedFields($values[$columnMap{filer_file_format}]);
     }
     else {
       $fileProps->{$trackId}->{bed_fields} = $bedFields;
       $fileProps->{$trackId}->{file_type} = $bedFileType;
     }
+
+    $fileProps->{$trackId}->{uri} = $values[$columnMap{filer_path}] . "/" . $fileProps->{$trackId}->{file_type} 
+      . "/" . $values[$columnMap{filer_genome_build}] . "/" . $values[$columnMap{file}];
 
   }
 
@@ -393,44 +404,37 @@ sub extractCharacteristics {
 
 sub getFh {
   my ($self, $uri) = @_;
+
+  my @tpath = split "/", $uri;
+  my $targetFile = $self->getArg('fileDir') . '/' . $tpath[-1];
+
+  $self->log("FETCHING $uri and saving to $targetFile.");
   my $ua = LWP::UserAgent->new();
-  my $response = $ua->request ($uri);
-  my $text = undef;
+  my $response = $ua->get($uri, ':content_file' => $targetFile);
   if ($response->is_success ()) {
-    $self->log("Successfully fetched $uri");
-    my $content_encoding = $response->header ('Content-Encoding');
-    if ($content_encoding eq 'gzip') {
-      $self->log("Unzipping...");
-      $text = gunzip ($response->content);
+    if ($response->header('Client-Aborted') ne 'die') {
+      $self->log("UNCOMPRESSING $targetFile.");
+      open(my $fh, "gunzip -c $targetFile |");
+      return ($fh, $targetFile);
     }
     else {
-      $text = $response->content;
+      $self->log("FETCH ERROR: GET $uri failed.  Error Writing response to $targetFile.");
     }
   }
   else {
-    $self->error("get '$uri' failed: " . $response->status_line);
+    $self->error("FETCH ERROR: GET $uri failed: " . $response->status_line);
   }
-  open(my $fh, "<", \$text);
-  return $fh;
+  return undef, undef;
 }
-
 
 sub loadFeatureScores {
   my ($self, $uri, $protocolAppNodeId, $properties) = @_;
 
-  my $fh = get($uri);
- 
-  # if ($uri =~ /\.gz$/) {
-   # $self->log("Uncompressing input file...");
-   # open($fh, "gunzip -c $file |");
-   # $self->log("...done.");
-  #}
-  #else {
-  #  open($fh, $file) or $self->error("Unable to open: $file");
-  #}
+  my ($fh, $tempFile) = $self->getFh($uri);
 
   my $lineCount = 0;
 
+  $self->log("PROCESSING $tempFile.");
   while (<$fh>) {
     next if m/^track/;		# skip track lines
     chomp;
@@ -444,14 +448,14 @@ sub loadFeatureScores {
     $featureScore->submit();
 
     if (++$lineCount % 50000 == 0) {
-      $self->log("Inserted $lineCount records.");
+      $self->log("INSERTED $lineCount records.");
       $self->undefPointerCache();
     }
   }
   $fh->close();
-  $self->log("Done. Inserted $lineCount records from $file.");
+  $self->log("DONE. INSERTED $lineCount records from $uri.");
   $self->undefPointerCache();
-
+  unlink($tempFile);
 }
 
 sub assembleFeature {
@@ -472,7 +476,7 @@ sub assembleFeature {
 		location_start => $locStart,
 		location_end => $locEnd};
 
-  $result->{feature_name} = VariantAnnotator::truncateStr($data->[$bedColumnMap->{name}], 22)
+  $result->{feature_name} = Utils::truncateStr($data->[$bedColumnMap->{name}], 22)
     if (exists $bedColumnMap->{name});
   $result->{strand} = $data->[$bedColumnMap->{strand}] 
     if (exists $bedColumnMap->{strand});
