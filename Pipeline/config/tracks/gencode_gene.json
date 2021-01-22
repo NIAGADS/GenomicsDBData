@@ -1,0 +1,16 @@
+{
+  "file": {
+      "path": "$DATA_DIR/GENCODE/igv-track/json"
+    },
+
+  "load": [
+	{
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::LoadGTFGeneTrackJson",
+		"parameters" : {
+		    "fileDir": "@file.path"
+		}
+	    }
+	}
+  ]
+}
