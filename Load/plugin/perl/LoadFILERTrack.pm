@@ -77,6 +77,23 @@ sub getArgumentsDeclaration {
 	       }),
 
 
+     fileArg({name => 'skip',
+	      descr => 'full path to newline separated list of tracks to skip',
+	      constraintFunc=> undef,
+	      reqd  => 0,
+	      isList => 0,
+	      mustExist => 1,
+	      format => "TXT"
+	     }),
+
+
+     booleanArg({name => 'logCompletedTracks',
+	  descr => 'logs completed tracks; can be used as a "skip" file',
+	      constraintFunc=> undef,
+	      reqd  => 0,
+	      isList => 0,
+	     }),
+
      stringArg({name => 'study',
 		descr => 'study source id; ProtocolAppNode source_ids will be generated as studySourceId_datasetSourceId where datasetSourceId should be specified in the "SOURCE_ID" field of the annotation file',
 		constraintFunc=> undef,
@@ -228,7 +245,7 @@ sub new {
   my $argumentDeclaration = &getArgumentsDeclaration();
 
   $self->initialize({requiredDbVersion => 4.0,
-		     cvsRevision => '$Revision: 14 $',
+		     cvsRevision => '$Revision: 18 $',
 		     name => ref($self),
 		     revisionNotes => '',
 		     argsDeclaration => $argumentDeclaration,
@@ -252,13 +269,20 @@ sub run {
   $self->{type_id} = $self->getOntologyTermId($TYPE);
   $self->{subtype_id} =  $self->getOntologyTermId($TYPE) if ($self->getArg('trackSubType') );
   $self->{bed_field_key} = $self->parseBedFieldKey();
-  
 
   my $annotation = $self->parseAnnotation();
-
   $self->log(Dumper($annotation)) if $self->getArg('veryVerbose');
 
+  if ($self->getArg('logCompletedTracks')) {
+    my $trackLogFile = $self->getArg('fileDir') . '/completed-tracks.log';
+    open(my $fh, '>', $trackLogFile) || $self->error("Unable to create track log file: $trackLogFile");
+    $self->{track_log_fh} = $fh;
+  }
+
+  $self->loadSkips() if ($self->getArg('skip'));
+
   $self->loadDatasets($annotation);
+  $self->{track_log_fh}->close() if exists ($self->{track_log_fh});
   # $self->clean();
 
 }
@@ -266,6 +290,17 @@ sub run {
 # ----------------------------------------------------------------------
 # methods called by run
 # ----------------------------------------------------------------------
+
+sub loadSkips {
+  my ($self) = @_;
+  open(my $fh, $self->getArg('skip')) || $self->error("Unable to open skip file:" . $self->getArg('skip'));
+  my $skips = {};
+  while(my $line = <$fh>) {
+    chomp $line;
+    $skips->{$line} = 1;
+  }
+  $self->{skips} = $skips;
+}
 
 sub parseBedFieldKey {
   my ($self) = @_;
@@ -282,14 +317,31 @@ sub parseBedFieldKey {
 
 sub loadDatasets {
   my ($self, $annotation) = @_;
+  my $logTracks = $self->getArg('logCompletedTracks');
+  my $lfh = $self->{track_log_fh};
+  my $skips = (exists $self->{skips}) ? $self->{skips} : undef;
+
   while (my ($track, $properties)  = each %$annotation) {
     next if $track eq "dataset";
     $self->log("Processing dataset $track with the following annotation: " . Dumper($properties)) 
       if $self->getArg('veryVerbose');
+
+
     my $protocolAppNodeId = $self->loadProtocolAppNode($properties);
     if (!$self->getArg('validateOntologyTerms') or $self->getArg('commit')) {
       my $fileName = $self->getArg('filerUri') . "/" . $properties->{uri};
+      
+      if (defined $skips) {
+	if (exists $skips->{$track}) {
+	  $self->log("SKIPPING: $track / $fileName");
+	  next;
+	}
+      }
+      
       $self->loadFeatureScores($fileName, $protocolAppNodeId, $properties);
+      if ($logTracks) {
+	print $lfh "$track\n";
+      }
     }
   }
 }
@@ -370,6 +422,7 @@ sub parseAnnotation {
       $fileProps->{$trackId}->{file_type} = $bedFileType;
     }
 
+    # eg. Annotationtracks/ROADMAP_Enhancers/ChIP-seq/bed4/hg19
     $fileProps->{$trackId}->{uri} = $values[$columnMap{filer_path}] . "/" . $fileProps->{$trackId}->{file_type} 
       . "/" . $values[$columnMap{filer_genome_build}] . "/" . $values[$columnMap{file}];
 
@@ -554,7 +607,7 @@ sub loadProtocolAppNode {
     $protocolAppNode->setName($properties->{name});
     $protocolAppNode->setSubtypeId($properties->{subtype_id});
     $protocolAppNode->setTypeId($self->{type_id});
-    $protocolAppNode->setUri($self->{uri});
+    $protocolAppNode->setUri($properties->{uri});
     $protocolAppNode->setDescription($properties->{description}) if (exists $properties->{description});
     $protocolAppNode->setTrackDisplay($properties->{track_display}) if (exists $properties->{track_display});
 
