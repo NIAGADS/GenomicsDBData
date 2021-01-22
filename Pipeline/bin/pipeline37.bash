@@ -405,11 +405,6 @@ loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00089.js
 
 
 
-## HERE
-
-
-
-
 
 
 
@@ -422,12 +417,15 @@ loadResource -c $CONFIG_DIR/reference_databases/ensembl_motifs.json --preprocess
 loadResource -c $CONFIG_DIR/reference_databases/ensembl_motifs.json --load data --verbose --commit > $DATA_DIR/logs/reference_databases/load_ensembl_motifs.log 2>&1
 
 
-loadResource -c $CONFIG_DIR/annotations/fantom5.json --load xdbr --commit > $DATA_DIR/logs/load_fantom5_xdbr.log 2>&1
-loadResource -c $CONFIG_DIR/annotations/fantom5.json --preprocess --verbose --commit > $DATA_DIR/logs/load_fantom5_study.log 2>&1
-loadResource -c $CONFIG_DIR/annotations/fantom5.json --load data --verbose --commit > $DATA_DIR/logs/load_fantom5.log 2>&1
+
+
+# roadmap enhancers
 
 loadResource -c $CONFIG_DIR/annotations/roadmap_enhancers.json --load xdbr --commit > $DATA_DIR/logs/filer/load_roadmap_enhancers_xdbr.log 2>&1
 loadResource -c $CONFIG_DIR/annotations/roadmap_enhancers.json --preprocess  --commit > $DATA_DIR/logs/filer/load_roadmap_enhancers_study.log 2>&1
 loadResource -c $CONFIG_DIR/annotations/roadmap_enhancers.json --load data --verbose --commit > $DATA_DIR/logs/filer/load_roadmap_enhancers.log 2>&1
 
 
+# IGV Tracks
+# ============================
+loadResource -c $CONFIG_DIR/tracks/gencode_gene.json --load data --commit > $DATA_DIR/logs/load_gencode_gene_track.log 2>&1
