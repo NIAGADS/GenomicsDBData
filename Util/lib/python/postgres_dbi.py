@@ -9,11 +9,11 @@ import os
 import sys
 
 from GenomicsDBData.Util.FakeSecHead import FakeSecHead 
-try:  # package name changes from 2.7 -> 3
-    from ConfigParser import SafeConfigParser
-except ImportError: # python3
-    from configparser import SafeConfigParser
 
+if sys.version_info < (2, 6):
+    from ConfigParser import SafeConfigParser
+else:
+    from configparser import SafeConfigParser
 
 class Database(object):
     '''
