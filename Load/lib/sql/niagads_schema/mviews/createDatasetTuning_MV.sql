@@ -1,6 +1,8 @@
+DROP MATERIALIZED VIEW IF EXISTS NIAGADS.NeuropathologyTrackCategories;
 DROP MATERIALIZED VIEW IF EXISTS NIAGADS.ProtocolAppNodeCharacteristic;
 DROP MATERIALIZED VIEW IF EXISTS NIAGADS.TrackAttributes;
 DROP MATERIALIZED VIEW IF EXISTS NIAGADS.DatasetAttributes;
+
 
 -------------------------------
 
@@ -202,21 +204,13 @@ AND q.name LIKE 'covariate%') v
 
 UNION ALL
 
-SELECT protocol_app_node_id, track,
-CASE WHEN characteristic LIKE 'age%' THEN 'age'
-WHEN characteristic LIKE 'APOE%' THEN 'APOε4 carrier status or allele number'
-ELSE characteristic END AS characteristic,
+SELECT pan.protocol_app_node_id,
+pan.source_id AS track,
+TRIM(sc.value) AS characteristic,
 NULL AS ontology_term_id,
 NULL AS term_source_id,
 'covariate_list' AS characteristic_type,
 NULL AS definition,
-filter_category,
-filter_category_parent,
-is_value FROM (
-SELECT pan.protocol_app_node_id,
-pan.source_id AS track,
-TRIM(sc.value) AS characteristic,
-q.name AS characteristic_type,
 'CovariateList' AS filter_category,
 'Study Design' filter_category_parent,
 TRUE AS is_value
@@ -226,7 +220,7 @@ Study.ProtocolAppNode pan
 WHERE pan.protocol_app_node_id = sc.protocol_app_node_id
 AND q.ontology_term_id = sc.qualifier_id
 AND sc.value IS NOT NULL
-AND q.name LIKE 'covariate%') v 
+AND q.name LIKE 'covariate%'
 
 UNION ALL
 
@@ -257,6 +251,20 @@ NULL AS filter_category_parent,
 NULL AS is_value
 FROM TempCharacteristics
 GROUP BY protocol_app_node_id, track
+
+UNION ALL
+
+SELECT protocol_app_node_id, track, string_agg(characteristic, '//'),
+NULL AS ontology_term, NULL AS term_source_id,
+'phenotype_list' AS characteristic_type,
+NULL AS definition,
+NULL AS filter_category,
+NULL AS filter_category_parent,
+NULL AS is_value
+FROM TempCharacteristics
+WHERE characteristic_type NOT LIKE 'covariate%'
+GROUP BY protocol_app_node_id, track
+
 );
 
 GRANT SELECT ON NIAGADS.ProtocolAppNodeCharacteristic TO gus_r, gus_w, comm_wdk_w;
@@ -268,3 +276,41 @@ CREATE INDEX PAC_INDX04 ON NIAGADS.ProtocolAppNodeCharacteristic(filter_category
 CREATE INDEX PAC_INDX05 ON NIAGADS.ProtocolAppNodeCharacteristic(filter_category, characteristic, track);
 CREATE INDEX PAC_INDX06 ON NIAGADS.protocolAppNodeCharacteristic(filter_category, filter_category_parent, characteristic, track) WHERE track LIKE 'NG%';
 CREATE INDEX PAC_INDX07 ON NIAGADS.ProtocolAppNodeCharacteristic(track) WHERE track LIKE 'NG%';
+
+---------------------------
+
+
+CREATE MATERIALIZED VIEW NIAGADS.NeuropathologyTrackCategories AS (
+SELECT track, characteristic_type,  characteristic,
+CASE WHEN characteristic LIKE '%late onset%'  THEN 'LOAD'
+WHEN characteristic LIKE '%Alz%' THEN 'AD'
+WHEN characteristic LIKE 'Progressive%' THEN 'PSP'
+WHEN characteristic LIKE 'Fronto%' THEN 'FTD'
+WHEN characteristic SIMILAR TO '%(plaques|dementia|memory|visuospatial|tangles|amyloid|aging|score|Braak|CERAD|measurement|impairment)%' THEN 'Other Neuropathology'
+WHEN characteristic IN ('tau', 'pTau181', 'clusterin') THEN 'CSF Biomarker'
+WHEN characteristic LIKE 'A%' AND characteristic_type = 'biomarker' THEN 'CSF Biomarker'
+WHEN characteristic LIKE 'Lewy%' THEN 'LBD'
+WHEN characteristic LIKE 'vascular%' THEN 'VBI'
+WHEN characteristic LIKE 'Parkinson%' THEN 'PD'
+ELSE characteristic END AS category_abbrev,
+
+CASE WHEN characteristic LIKE '%late onset%'  THEN 'late onset Alzheimer''s disease'
+WHEN characteristic LIKE '%Alz%' THEN 'Alzheimer''s disease'
+WHEN characteristic LIKE 'Progressive%' THEN 'Progressive supranuclear palsy'
+WHEN characteristic LIKE 'Fronto%' THEN 'Frontotemporal demential'
+WHEN characteristic SIMILAR TO '%(plaques|dementia|memory|visuospatial|tangles|amyloid|aging|score|Braak|CERAD|measurement|impairment)%' THEN 'AD/ADRD related neuropathology'
+WHEN characteristic IN ('tau', 'pTau181', 'clusterin') THEN 'Cerebrospinal fluid biomarker for AD'
+WHEN characteristic LIKE 'A%' AND characteristic_type = 'biomarker' THEN 'Cerebrospinal fluid biomarker for AD'
+WHEN characteristic LIKE 'Lewy%' THEN 'Lewy body disease or neuropathology'
+WHEN characteristic LIKE 'vascular%' THEN 'Vascular brain injury'
+WHEN characteristic LIKE 'Parkinson%' THEN 'Parkinson''s disease'
+ELSE characteristic END AS category
+FROM NIAGADS.ProtocolAppNodeCharacteristic 
+WHERE track LIKE 'NG0%' AND track NOT LIKE '%SKATO%'
+AND characteristic_type IN ('diagnosis', 'neuropathology', 'biomarker')
+AND characteristic NOT LIKE 'autopsy%');
+
+GRANT SELECT ON NIAGADS.NeuropathologyTrackCategories TO gus_r, gus_w, comm_wdk_w;
+
+CREATE INDEX NEUROPATH_IND01 ON NIAGADS.NeuropathologytrackCategories(track);
+CREATE INDEX NEUROPATH_IND02 ON NIAGADS.NeuropathologytrackCategories(category_abbrev, track);

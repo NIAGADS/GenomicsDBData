@@ -29,16 +29,20 @@ Results.VariantGWAS r
 WHERE ta.track = %(track)s
 AND ta.protocol_app_node_id = r.protocol_app_node_id"""
 
-GENE_SQL='''SELECT ga.gene_symbol, ga.source_id, ga.chromosome, ga.location_start, ga.location_end, max(r.neg_log10_pvalue) AS peak_height,
-count(DISTINCT variant_record_primary_key) AS num_variants,
+GENE_SQL='''WITH result AS (
+SELECT r.variant_record_primary_key, r.neg_log10_pvalue, 
+adsp_most_severe_consequence(r.variant_record_primary_key)->>'gene_id' AS gene_source_id --a.* 
+FROM NIAGADS.TrackAttributes ta, Results.VariantGWAS r
+WHERE ta.track = %(track)s
+AND ta.protocol_app_node_id = r.protocol_app_node_id
+AND r.neg_log10_pvalue > 3 )
+SELECT ga.gene_symbol, ga.source_id, ga.chromosome, ga.location_start, ga.location_end, max(r.neg_log10_pvalue) AS peak_height,
+count(DISTINCT r.variant_record_primary_key) AS num_variants,
 sum(CASE WHEN r.neg_log10_pvalue > -1 * log('5e-8') THEN 1 ELSE 0 END) AS num_sig_variants,
 string_agg(DISTINCT variant_record_primary_key, ',') AS variants
-FROM NIAGADS.TrackAttributes ta, CBIL.GeneAttributes ga, Results.VariantGWAS r
-WHERE ta.track = %(track)s
-AND r.neg_log10_pvalue > 3 -- -1 * log('5e-8')
-AND ga.bin_index_5kb_flank @> r.bin_index
-AND int8range(ga.location_start - 5000, ga.location_end + 5000, '[]') @> split_part(r.variant_record_primary_key, ':', 2)::bigint
-AND ta.protocol_app_node_id = r.protocol_app_node_id
+FROM CBIL.GeneAttributes ga, result r
+WHERE r.gene_source_id = ga.source_id
+AND ga.gene_type = 'protein coding'
 GROUP BY ga.gene_symbol, ga.source_id, ga.chromosome, ga.location_start, ga.location_end
 ORDER BY ga.chromosome, ga.location_start, ga.location_end'''
 

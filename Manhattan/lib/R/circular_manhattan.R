@@ -1,6 +1,4 @@
-library(CMplot)
-
-
+source(paste0(Sys.getenv("GUS_HOME"), "/lib/R/Manhattan/CMplot.r"))
 
 chrLabels  <- function(x) {
     chrlabs = unique(x)
@@ -8,16 +6,23 @@ chrLabels  <- function(x) {
     sort(factor(chrlabs,levels=chrOrder, ordered=TRUE))
 }
 
-cmanhattan <- function(data, r=1, toFile=FALSE, suffix="", filter=NULL, annotation=NULL) { 
-
-    cdata  <- data[, c("SNP", "CHR", "BP", "P", "neg_log10_pvalue")]
-    
+filterData  <- function(data, filter=NULL) {
+    cdata  <- NULL
     if (!is.null(filter)) {
-        cdata  <- cdata[cdata$neg_log10_pvalue > -log10(filter), ]
+        cdata  <- data[data$neg_log10_pvalue > -log10(filter), ]        
+        cdata  <- cdata[, c("SNP", "CHR", "BP", "P")]
     }
-    
-    chrLabels = chrLabels(cdata$CHR)
+    else {
+        cdata  <- data[, c("SNP", "CHR", "BP", "P")]
+    }
+    cdata
+}
 
+cmanhattan <- function(data, r=1, toFile=FALSE, fileName="cmanhattan", fileType="png", filter=NULL) {
+
+    cdata  <- filterData(data, filter)
+
+    chrLabels = chrLabels(cdata$CHR)
     
     CMplot(cdata,type="p", plot.type="c", r=1,
            col=c("grey30","grey60"),
@@ -34,10 +39,9 @@ cmanhattan <- function(data, r=1, toFile=FALSE, suffix="", filter=NULL, annotati
            outward=FALSE,
            width=10,height=10,
            file.output=toFile,
-           file="pdf",
-           memo=suffix,
+           file.name=fileName,
+           file=fileType,
            signal.cex = 0.4, cex=c(0.2,0.4,1))
-
 }
 
 
@@ -74,18 +78,14 @@ generateHighlight  <- function(data, genes) {
 
 }
 
-manhattan  <- function(data, genes=NULL, toFile=FALSE, fileName="", filter=NULL, annotation=NULL) { 
+manhattan  <- function(data, genes=NULL, toFile=FALSE, fileName="manhattan", fileType="png", filter=NULL, annotation=NULL) { 
 
-    cdata  <- data[, c("SNP", "CHR", "BP", "P", "neg_log10_pvalue")]
-    
-    if (!is.null(filter)) {
-        cdata  <- cdata[cdata$neg_log10_pvalue > -log10(filter), ]
-    }
+    cdata  <- filterData(data, filter)
 
     chrLabels = chrLabels(cdata$CHR)
 
     highlights  <- generateHighlight(data, genes)
-
+    
     if(is.null(highlights)) {    
         CMplot(cdata, plot.type="m",
                LOG10=TRUE, ylim=NULL,
@@ -102,10 +102,8 @@ manhattan  <- function(data, genes=NULL, toFile=FALSE, fileName="", filter=NULL,
                signal.pch=c(19,19),
                cex=c(0.2,0.5,1),
                file.output=toFile,
-               file="pdf",
-               memo=fileName,
-               ##highlight.text=topSNPs,
-               ##highlight=topSNPs,
+               file=fileType,
+               file.name=fileName,
                highlight.text.cex=1.4,
                width=18,height=6)
     } else {
@@ -124,8 +122,8 @@ manhattan  <- function(data, genes=NULL, toFile=FALSE, fileName="", filter=NULL,
                signal.pch=c(19,19),
                cex=c(0.2,0.5,1),
                file.output=toFile,
-               file="pdf",
-               memo=fileName,
+               file=fileType,
+               file.name=fileName,
                highlight.text=highlights$genes,
                highlight=highlights$snps,
                highlight.text.cex=1.4,
