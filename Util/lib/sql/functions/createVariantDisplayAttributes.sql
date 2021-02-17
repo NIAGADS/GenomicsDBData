@@ -4,6 +4,48 @@ RETURNS text AS $$
 $$ LANGUAGE SQL stable;
 
 
+CREATE OR REPLACE FUNCTION adsp_most_severe_consequence_niagads(recordPK TEXT)
+RETURNS jsonb AS $$
+
+SELECT annotation->'ADSP_MOST_SEVERE_CONSEQUENCE'
+FROM NIAGADS.Variant
+WHERE record_primary_key = recordPK;
+
+$$ LANGUAGE SQL stable;
+
+
+CREATE OR REPLACE FUNCTION adsp_msc_consequence_niagads(recordPK TEXT, gene TEXT)
+RETURNS text AS $$
+
+SELECT CASE WHEN annotation->'ADSP_MOST_SEVERE_CONSEQUENCE'->>'gene_id' = gene
+THEN  replace(array_to_string(json_array_cast_to_text((annotation->'ADSP_MOST_SEVERE_CONSEQUENCE'->'consequence_terms')::json), ','), '_', ' ')
+ELSE NULL END
+FROM NIAGADS.Variant
+WHERE record_primary_key = recordPK;
+
+$$ LANGUAGE SQL stable;
+
+
+CREATE OR REPLACE FUNCTION adsp_msc_impact_niagads(recordPK TEXT, gene TEXT)
+RETURNS text AS $$
+
+SELECT CASE WHEN annotation->'ADSP_MOST_SEVERE_CONSEQUENCE'->>'gene_id' = gene
+THEN annotation->'ADSP_MOST_SEVERE_CONSEQUENCE'->>'vep_impact' ELSE NULL END
+FROM NIAGADS.Variant
+WHERE record_primary_key = recordPK;
+
+$$ LANGUAGE SQL stable;
+
+
+CREATE OR REPLACE FUNCTION adsp_variant_display_flag_niagads(recordPK TEXT)
+RETURNS text AS $$
+	SELECT CASE
+	       WHEN (SELECT is_adsp_variant FROM NIAGADS.Variant WHERE record_primary_key = recordPK)
+	       THEN build_icon_attribute(NULL, 'fa-check', 'red', NULL, true::text)::text
+	       ELSE NULL END;
+$$ LANGUAGE SQL stable;
+
+
 CREATE OR REPLACE FUNCTION adsp_variant_display_flag(flag BOOLEAN)
 RETURNS text AS $$
 	SELECT CASE
@@ -56,29 +98,38 @@ CREATE OR REPLACE FUNCTION adsp_qc_status_niagads(recordPK TEXT)
   wes_filter JSONB, wgs_filter JSONB) AS $$
 BEGIN
 	RETURN QUERY
-	WITH wgs AS (	
-	SELECT recordPK AS record_primary_key, jsonb_build_object(
+	WITH Variant AS (
+	SELECT v.record_primary_key, v.is_adsp_variant,
+	v.annotation->'ADSP_WGS'->>'FILTER' AS wgs_filter_status, 
+	v.annotation->'ADSP_WES'->>'FILTER' AS wes_filter_status,
+	CASE WHEN annotation->'ADSP_WES'->>'FILTER_STATUS' = 'PASS' 
+	THEN TRUE ELSE NULL END AS is_adsp_wes,
+	CASE WHEN annotation->'ADSP_WGS'->>'FILTER_STATUS' = 'PASS' 
+	THEN TRUE ELSE NULL END AS is_adsp_wgs
+	FROM NIAGADS.Variant v
+	WHERE v.record_primary_key = recordPK),
+	
+	wgs AS (	
+	SELECT v.record_primary_key, jsonb_build_object(
 	'text', REPLACE(REPLACE(ot.definition, 'Baylor', 'ATLAS'), 'Broad', 'GATK'),
 	'json', CASE WHEN split_part(ot.definition, ':', 1) = 'PASS' 
 	THEN build_text_attribute('PASS', split_part(replace(replace(ot.definition, 'Baylor', 'ATLAS'), 'Broad', 'GATK'), ': ', 2), 'blue') 
 	WHEN split_part(ot.definition, ':', 1) = 'FAIL' 
 	THEN build_text_attribute('FAIL', split_part(replace(replace(ot.definition, 'Baylor', 'ATLAS'), 'Broad', 'GATK'), ': ', 2), 'red') END) 
 	AS wgs_filter
-	FROM NIAGADS.Variant v, SRes.OntologyTerm ot
-	WHERE v.annotation->'ADSP_WGS'->>'FILTER' = ot.name
-	AND v.record_primary_key = recordPK),
+	FROM Variant v, NIAGADS.OntologyTerm ot
+	WHERE wgs_filter_status = ot.name),
 
 	wes AS (
-	SELECT recordPK AS record_primary_key, jsonb_build_object(
+	SELECT v.record_primary_key, jsonb_build_object(
 	'text', REPLACE(REPLACE(ot.definition, 'Baylor', 'ATLAS'), 'Broad', 'GATK'),
 	'json', CASE WHEN split_part(ot.definition, ':', 1) = 'PASS' 
 	THEN build_text_attribute('PASS', split_part(replace(replace(ot.definition, 'Baylor', 'ATLAS'), 'Broad', 'GATK'), ': ', 2), 'blue') 
 	WHEN split_part(ot.definition, ':', 1) = 'FAIL' 
 	THEN build_text_attribute('FAIL', split_part(replace(replace(ot.definition, 'Baylor', 'ATLAS'), 'Broad', 'GATK'), ': ', 2), 'red') END) 
 	AS wes_filter
-	FROM NIAGADS.Variant v, SRes.OntologyTerm ot
-	WHERE v.annotation->'ADSP_WES'->>'FILTER' = ot.name
-	AND v.record_primary_key = recordPK),
+	FROM Variant v, NIAGADS.OntologyTerm ot
+	WHERE wes_filter_status = ot.name),
 
 	filter_status AS (
 	SELECT wes.record_primary_key, wes.wes_filter, wgs.wgs_filter FROM wes LEFT OUTER JOIN wgs ON wes.record_primary_key = wgs.record_primary_key
@@ -87,15 +138,12 @@ BEGIN
 	)  
 
 	SELECT v.is_adsp_variant,
-	CASE WHEN annotation->'ADSP_WES'->>'FILTER_STATUS' = 'PASS' 
-	THEN TRUE ELSE NULL END AS is_adsp_wes,
-	CASE WHEN annotation->'ADSP_WGS'->>'FILTER_STATUS' = 'PASS' 
-	THEN TRUE ELSE NULL END AS is_adsp_wgs,
+	v.is_adsp_wes,
+	v.is_adsp_wgs,
 	filter_status.wes_filter,
 	filter_status.wgs_filter
-	FROM NIAGADS.Variant v LEFT OUTER JOIN filter_status 
-	ON filter_status.record_primary_key = v.record_primary_key
-	WHERE v.record_primary_key = recordPK;
+	FROM Variant v LEFT OUTER JOIN filter_status 
+	ON filter_status.record_primary_key = v.record_primary_key;
 END;
 
 

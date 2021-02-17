@@ -29,17 +29,17 @@ $$ LANGUAGE SQL stable;
 
 CREATE OR REPLACE FUNCTION most_severe_consequence(v NIAGADS.Variant)
 RETURNS text AS $$
-	SELECT multi_replace(v.annotation->'VEP_MS_CONSEQUENCE'->>'consequence_terms', ARRAY[']' , '[', '_', ', ', '"'], ARRAY['', '', ' ', ' & ', '']);
+	SELECT replace(array_to_string(json_array_cast_to_text((v.annotation->'ADSP_MOST_SEVERE_CONSEQUENCE'->'consequence_terms')::json), ','), '_', ' ');
 $$ LANGUAGE SQL stable;
 
 CREATE OR REPLACE FUNCTION msc_impacted_gene_link(v NIAGADS.Variant)
 RETURNS text AS $$
-	SELECT build_link_attribute(v.annotation->'VEP_MS_CONSEQUENCE'->>'gene_symbol', '/record/gene/', v.annotation->'VEP_MS_CONSEQUENCE'->>'gene_id', 'view gene annotations')::text;
+	SELECT build_link_attribute(v.annotation->'ADSP_MOST_SEVERE_CONSEQUENCE'->>'gene_symbol', '/record/gene/', v.annotation->'ADSP_MOST_SEVERE_CONSEQUENCE'->>'gene_id', 'view gene annotations')::text;
 $$ LANGUAGE SQL stable;
 
 CREATE OR REPLACE FUNCTION msc_impacted_transcript(v NIAGADS.Variant)
 RETURNS text AS $$
-	SELECT build_link_attribute(v.annotation->'VEP_MS_CONSEQUENCE'->>'transcript_id',
+	SELECT build_link_attribute(v.annotation->'ADSP_MOST_SEVERE_CONSEQUENCE'->>'transcript_id',
 	CASE
 		WHEN 'GRCh37' = 'GRCh37'
 		THEN '+ENSEMBL_TRANSCRIPT_URL_GRCh37+'
@@ -55,33 +55,17 @@ $$ LANGUAGE SQL stable;
 
 CREATE OR REPLACE FUNCTION msc_is_coding(v NIAGADS.Variant)
 RETURNS text AS $$
-SELECT CASE WHEN (v.annotation->'VEP_MS_CONSEQUENCE'->>'is_coding')::BOOLEAN
+SELECT CASE WHEN (v.annotation->'ADSP_MOST_SEVERE_CONSEQUENCE'->>'consequence_is_coding')::BOOLEAN
 THEN build_icon_attribute('Coding', 'fa-check', 'green', NULL, 'true')::text
 ELSE NULL END;
 $$ LANGUAGE SQL stable;
+
 
 CREATE OR REPLACE FUNCTION adsp_variant_display_flag(v NIAGADS.Variant)
 RETURNS text AS $$
 	SELECT CASE
 	       WHEN v.is_adsp_variant
-	       THEN build_icon_attribute('ADSP Variant', 'fa-check-square-o', 'red', NULL, true::text)::text
-	       ELSE NULL END;
-$$ LANGUAGE SQL stable;
-
-
-CREATE OR REPLACE FUNCTION adsp_wes_display_flag(v NIAGADS.Variant)
-RETURNS text AS $$
-       SELECT CASE
-       	      WHEN v.is_adsp_wes
-	      THEN build_nonlink_badge_attribute('WES', true::text, NULL, 'red')::text
-	      ELSE NULL END;
-$$ LANGUAGE SQL stable;
-
-CREATE OR REPLACE FUNCTION adsp_wgs_display_flag(v NIAGADS.Variant)
-RETURNS text AS $$
-	SELECT CASE
-	       WHEN v.is_adsp_wgs
-	       THEN build_nonlink_badge_attribute('WGS', true::text, NULL, 'red')::text
+	       THEN build_icon_attribute('ADSP Variant', 'fa-check', 'red', NULL, true::text)::text
 	       ELSE NULL END;
 $$ LANGUAGE SQL stable;
 
@@ -93,3 +77,5 @@ RETURNS text AS $$
 	       THEN build_icon_attribute(NULL, 'fa-check', 'green', NULL, true::text)::text
 	       ELSE NULL END;
 $$ LANGUAGE SQL stable;
+
+

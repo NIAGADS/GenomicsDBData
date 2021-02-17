@@ -1,0 +1,68 @@
+{
+    "file": {
+	"filePattern": "genetic_map_GRCh37_chr",
+	"fileDir": "$DATA_DIR/HapMap"
+
+    },
+    "external_database": {
+	"name": "NCBI HapMap",
+	"description": "a haplotype map of the human genome, HapMap, which would describe the common patterns of human DNA sequence variation. Through this research millions of SNPs were discovered and many GWAS studies used this dataset in research for disease association. This project was a necessary stepping stone for the 1KG project which utilizes many of the same populations",
+	"version": "2011-01_phaseII_B37",
+	"id_url": "https://www.ncbi.nlm.nih.gov/variation/news/NCBI_retiring_HapMap/",
+	"download_url": "https://ftp.ncbi.nlm.nih.gov/hapmap/",
+	"accession": "HapMap",
+	"type": "Genetic variation"
+    },
+    "preprocess": [
+	{
+	    "comment": "not really preprocessing but necessary to do it independently",
+	    "plugin":
+	    {
+		"skip":true,
+		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
+		"parameters":
+		{
+		    "name": "HapMap Combined Recombination Map",
+		    "description": "Calculated rates of combined recombination from HapMap Phase II (2011-01 B37)",
+		    "sourceId": "HAPMAP_RECOMB",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version"
+		}
+	    }
+	},
+	{
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
+		"parameters" : {
+		    "type": "Genetic variation",
+		    "subtype": "recombination rate",
+		    "description": "Calculated rates of combined recombination from HapMap Phase II (2011-01 B37)",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "sourceId" : "HAPMAP_RECOMB",
+		    "name": "HapMap Combined Recombination Map",
+		    "studyId": "HAPMAP_RECOMB",
+		    "uri": "ftp://ftp.ncbi.nlm.nih.gov/hapmap/recombination/2011-01_phaseII_B37/"
+		}
+	    }
+	}
+    ],
+    "load": [
+	{
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::LoadFeatureScoreFromCSV",
+		"parameters": {
+		    "fileDir": "@file.fileDir",
+		    "filePattern": "@file.filePattern",
+		    "sourceId": "HAPMAP_RECOMB",
+		    "columnMap": {
+			"Chromosome": "chromosome",
+			"Position(bp)": "location_start",
+			"Rate(cM/Mb)": "score",
+			"Map(cM)": "position_cm"
+		    }
+		}
+	    }
+	}
+    ]
+}
+
+

@@ -8,9 +8,10 @@ import psycopg2.extras
 import os
 import sys
 
+from GenomicsDBData.Util.utils import warning
 from GenomicsDBData.Util.FakeSecHead import FakeSecHead 
 
-if sys.version_info < (2, 6):
+if sys.version_info.major < 3:
     from ConfigParser import SafeConfigParser
 else:
     from configparser import SafeConfigParser
@@ -131,7 +132,7 @@ class Database(object):
         parse gus config file for DB connection info
         '''
         config_parser = SafeConfigParser()
-        if sys.version_info[0] < 3: # python 2.7 solution
+        if sys.version_info.major < 3: # python 2.7 solution
             config_parser.readfp(FakeSecHead(open(self.gusConfigFile)))
         else:
             with open(self.gusConfigFile, 'r') as fh:

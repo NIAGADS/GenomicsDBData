@@ -429,3 +429,10 @@ loadResource -c $CONFIG_DIR/annotations/roadmap_enhancers.json --load data --ver
 # IGV Tracks
 # ============================
 loadResource -c $CONFIG_DIR/tracks/gencode_gene.json --load data --commit > $DATA_DIR/logs/load_gencode_gene_track.log 2>&1
+
+
+# LocusZoom Tracks
+
+loadResource -c $CONFIG_DIR/tracks/hapmap_recombination.json --load xdbr --commit > $DATA_DIR/logs/load_hapmap_xdbr.log 2>&1
+loadResource -c $CONFIG_DIR/tracks/hapmap_recombination.json --preprocess --commit > $DATA_DIR/logs/load_hapmap_placeholders.log 2>&1
+loadResource -c $CONFIG_DIR/tracks/hapmap_recombination.json --load data --commit > $DATA_DIR/logs/load_hapmap.log 2>&1

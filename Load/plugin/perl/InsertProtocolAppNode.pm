@@ -39,6 +39,13 @@ sub getArgumentsDeclaration {
                  isList         => 0 
 	       }),
 
+      stringArg({ name  => 'uri',
+                 descr => "uri",
+                 constraintFunc => undef,
+                 reqd           => 0,
+                 isList         => 0 
+	       }),
+
      stringArg({ name  => 'attribution',
                  descr => "attribution",
                  constraintFunc => undef,
@@ -137,7 +144,7 @@ sub new {
   my $argumentDeclaration    = &getArgumentsDeclaration();
 
   $self->initialize({requiredDbVersion => 4.0,
-		     cvsRevision => '$Revision: 24 $',
+		     cvsRevision => '$Revision: 26 $',
 		     name => ref($self),
 		     revisionNotes => '',
 		     argsDeclaration => $argumentDeclaration,
@@ -194,6 +201,9 @@ sub loadProtocolAppNode {
 
     $protocolAppNode->setDescription($self->getArg('description'))
       if ($self->getArg('description'));
+
+    $protocolAppNode->setUri($self->getArg('uri'))
+      if ($self->getArg('uri'));
 
     $protocolAppNode->submit() unless ($protocolAppNode->retrieveFromDB());
 

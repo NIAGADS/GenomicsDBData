@@ -1,3 +1,5 @@
+-- lookups against AnnotatedVDB.Variant
+
 CREATE OR REPLACE FUNCTION get_variant_annotation_by_primary_key(variantPK TEXT)
        RETURNS TABLE(record_primary_key TEXT,
        adsp_most_severe_consequence JSONB, cadd_scores JSONB, allele_frequencies JSONB) AS $$
@@ -111,7 +113,7 @@ $$ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION get_other_annotation_by_primary_key(variantPK TEXT)
-       RETURNS TABLE(record_primary_key TEXT, adsp_qc JSONB) AS $$
+       RETURNS TABLE(record_primary_key TEXT, annotation JSONB) AS $$
 
 DECLARE metaseqId TEXT;
 DECLARE refSnpId TEXT;
