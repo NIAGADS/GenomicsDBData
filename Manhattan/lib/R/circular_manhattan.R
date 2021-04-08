@@ -10,12 +10,65 @@ filterData  <- function(data, filter=NULL) {
     cdata  <- NULL
     if (!is.null(filter)) {
         cdata  <- data[data$neg_log10_pvalue > -log10(filter), ]        
-        cdata  <- cdata[, c("SNP", "CHR", "BP", "P")]
+        cdata  <- cdata[, c("variant_record_primary_key", "CHR", "BP", "P")]
     }
     else {
-        cdata  <- data[, c("SNP", "CHR", "BP", "P")]
+        cdata  <- data[, c("variant_record_primary_key", "CHR", "BP", "P")]
     }
+    colnames(cdata)  <- c("SNP", "CHR", "BP", "P")
     cdata
+}
+
+
+filterHighlight  <- function(annotation, maxHits = 20) {
+    ## when some hits are significant, only label those
+    numGwSig  <- sum(annotation$is_significant == 1)
+    numSig  <- sum(annotation$is_significant == 2)
+    totalSig  <- numGwSig + numSig
+    if (totalSig  == 0) {
+        return(NULL)
+    }
+    
+    if (numGwSig == 0) { # just return the top 5 hits
+        return(annotation[1:5, ])
+    }
+
+    ## isolate significant results
+    fAnnotation  <- annotation[annotation$is_significant == 1, ]
+    
+    if (numGwSig > maxHits) {
+        ## filter for genes
+        gAnnotation  <- filterHighlightsByType(fAnnotation, maxHits, "gene", "protein coding")
+        numGeneHits  <- nrow(gAnnotation)
+     
+        if (numGeneHits < maxHits) {
+            remainingAllowableHits = maxHits - numGeneHits
+            vAnnotation  <- filterHighlightsByType(fAnnotation, remainingAllowableHits, "variant")
+            return(rbind(gAnnotation, vAnnotation))
+        }
+        else {
+            return(gAnnotation)
+        }
+        
+    }
+
+    ## otherwise return hits w/genome wide significance
+    return(fAnnotation);
+}
+
+filterHighlightsByType  <- function(annotation, maxHits, hitType="gene", hitSubType=NULL) {
+  
+    fAnnotation  <- annotation[annotation$hit_type == hitType, ]
+
+    if (!is.null(hitSubType)) {
+        fAnnotation  <- fAnnotation[fAnnotation$hit_subtype == hitSubType, ]
+    }
+    
+    if (nrow(fAnnotation) > maxHits) {
+        fAnnotation  <- fAnnotation[1:maxHits, ]
+    }
+
+    return(fAnnotation)
 }
 
 cmanhattan <- function(data, r=1, toFile=FALSE, fileName="cmanhattan", fileType="png", filter=NULL) {
@@ -45,55 +98,80 @@ cmanhattan <- function(data, r=1, toFile=FALSE, fileName="cmanhattan", fileType=
 }
 
 
-generateHighlight  <- function(data, genes) {
+generateHighlight  <- function(annotation) {
     ## identify top SNP per gene and label
     
-    if (is.null(genes)) {
+    if (is.null(annotation)) {
         return (NULL)
     }
 
-    ## filter for  genes that have significant variants
-    sigGindex  <- genes$num_sig_variants > 0
-    if (sum(sigGindex) == 0) {
+    ## filter for annotation that have significant variants
+    fAnnotation  <- filterHighlight(annotation)
+    if (is.null(fAnnotation)) {
         return (NULL)
     }
-    
-    sigG  <- genes[sigGindex, ]
-    
-    highlightSNPs  <-  NULL
-    highlightGenes  <- NULL
-
-    for (index in 1:nrow(sigG)) {
-        sg <- sigG[index, ]
-        variants  <- sg$variants
         
-        subset  <-  data[data$variant_record_primary_key %in% unlist(strsplit(variants, split=",")), ]
-        subset  <- subset[order(-subset$neg_log10_pvalue), ]
+    highlightSNPs  <-  NULL
+    highlightFeatures  <- NULL
 
-        highlightSNPs  <- c(highlightSNPs, subset$SNP[1])
-        highlightGenes <- c(highlightGenes, sg$gene_symbol)
+    for (index in 1:nrow(fAnnotation)) {
+        highlightSNPs  <- c(highlightSNPs, fAnnotation[index, "variant"])
+        highlightFeatures <- c(highlightFeatures, fAnnotation[index, "hit_display_value"])
     }
 
-    list(snps = highlightSNPs, genes = highlightGenes)
+    list(snps = highlightSNPs, features = highlightFeatures, significanceLevel = fAnnotation[1, "is_significant"])
 
 }
 
-manhattan  <- function(data, genes=NULL, toFile=FALSE, fileName="manhattan", fileType="png", filter=NULL, annotation=NULL) { 
+
+snpDensity  <- function(data, toFile=FALSE, fileName="snp-density", fileType="png") {
+    cdata  <- filterData(data, 1e-5)
+    CMplot(cdata,
+           plot.type="d",
+           bin.size=5e5,
+           chr.den.col=c("darkgreen", "yellow", "red"),
+           file=fileType,
+           file.output=toFile,
+           file.name=fileName,
+           width=9,
+           height=6,
+           main="No. Variants (p < 1e-5)"
+    )
+}
+
+qq <- function(data, toFile=FALSE, fileName="qq", fileType="png") {
+    CMplot(data,plot.type="q",
+           box=FALSE,
+           file=fileType,
+           conf.int=TRUE,
+           conf.int.col=NULL,
+           threshold.col="red",
+           threshold.lty=2,
+           file.output=toFile,
+           file.name=fileName,
+           width=5,
+           height=5,
+           verbose=TRUE
+           )
+}
+
+manhattan  <- function(data, annotation=NULL, toFile=FALSE, fileName="manhattan", fileType="png", filter=NULL) { 
 
     cdata  <- filterData(data, filter)
 
     chrLabels = chrLabels(cdata$CHR)
 
-    highlights  <- generateHighlight(data, genes)
+    highlights  <- generateHighlight(annotation)
     
     if(is.null(highlights)) {    
         CMplot(cdata, plot.type="m",
+               chr.labels=chrLabels,
                LOG10=TRUE, ylim=NULL,
                col=c("grey30","grey60"),
-               threshold=c(1e-6,1e-4),
+               threshold=c(5e-8,1e-5),
+               threshold.col=c("red","blue"),
                threshold.lty=c(1,2),
                threshold.lwd=c(1,1),
-               threshold.col=c("black","grey"),
                amplify=TRUE,
                bin.size=5e6,
                chr.den.col=c("darkgreen", "yellow", "red"),
@@ -107,13 +185,15 @@ manhattan  <- function(data, genes=NULL, toFile=FALSE, fileName="manhattan", fil
                highlight.text.cex=1.4,
                width=18,height=6)
     } else {
+        highlightColor  <- "green"
         CMplot(cdata, plot.type="m",
+               chr.labels=chrLabels,
                LOG10=TRUE, ylim=NULL,
                col=c("grey30","grey60"),
-               threshold=c(1e-6,1e-4),
+                threshold=c(5e-8,1e-5),
+               threshold.col=c("red","blue"),
                threshold.lty=c(1,2),
                threshold.lwd=c(1,1),
-               threshold.col=c("black","grey"),
                amplify=TRUE,
                bin.size=5e6,
                chr.den.col=c("darkgreen", "yellow", "red"),
@@ -124,9 +204,11 @@ manhattan  <- function(data, genes=NULL, toFile=FALSE, fileName="manhattan", fil
                file.output=toFile,
                file=fileType,
                file.name=fileName,
-               highlight.text=highlights$genes,
+               highlight.text=highlights$features,
                highlight=highlights$snps,
-               highlight.text.cex=1.4,
+               highlight.col=highlightColor,
+               highlight.text.cex=1.1,
                width=18,height=6)
     }
 }
+   

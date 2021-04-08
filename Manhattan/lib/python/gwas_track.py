@@ -27,9 +27,23 @@ split_part(r.variant_record_primary_key, ':',2)::bigint AS "BP"
 FROM NIAGADS.TrackAttributes ta,
 Results.VariantGWAS r
 WHERE ta.track = %(track)s
-AND ta.protocol_app_node_id = r.protocol_app_node_id"""
+AND ta.protocol_app_node_id = r.protocol_app_node_id
+AND neg_log10_pvalue > -1 * log(0.5)"""
 
-GENE_SQL='''WITH result AS (
+GENE_SQL='''
+SELECT hit, hit_type, hit_display_value,
+chromosome, location_start, location_end,
+neg_log10_pvalue AS peak_height, 
+CASE WHEN neg_log10_pvalue >= -1 * log('5e-8') THEN 1 ELSE 0 END AS is_significant,
+ld_reference_variant AS variant, rank
+FROM NIAGADS.DatasetTopFeatures 
+WHERE track = %(track)s
+AND hit_type = 'gene'
+AND CASE WHEN hit_type = 'gene' AND gene_type = 'protein coding' THEN TRUE WHEN hit_type = 'variant' THEN TRUE ELSE FALSE END
+ORDER BY rank
+'''
+
+GENE_SQL_OLD='''WITH result AS (
 SELECT r.variant_record_primary_key, r.neg_log10_pvalue, 
 adsp_most_severe_consequence(r.variant_record_primary_key)->>'gene_id' AS gene_source_id --a.* 
 FROM NIAGADS.TrackAttributes ta, Results.VariantGWAS r
@@ -123,8 +137,6 @@ class GWASTrack(object):
         return self._track + ': ' + self._name + ' (' + self._attribution + ')'
 
 
-
-    
     def fetch_title(self):
         if self._database is None:
             raise ConnectionDoesNotExist("gwas_track object database connection not initialized")
@@ -137,7 +149,6 @@ class GWASTrack(object):
             self._name, self._attribution = cursor.fetchone()
 
             
-
     def fetch_track_data(self):
         if self._database is None:
             raise ConnectionDoesNotExist("gwas_track object database connection not initialized")
@@ -167,7 +178,7 @@ class GWASTrack(object):
             raise ValueError("Must set track value")
 
         warning("Fetching gene annotation")
-        self._gene_annotation = pd.read_sql_query(GENE_SQL, self._database, params={'track':self._track}, index_col = 'source_id')
+        self._gene_annotation = pd.read_sql_query(GENE_SQL, self._database, params={'track':self._track}, index_col = 'hit')
         warning("Done", "Fetched", len(self._gene_annotation), "rows")
 
 

@@ -1,6 +1,7 @@
 package GenomicsDBData::Load::PluginUtils;
 
 use GUS::Model::Study::ProtocolAppNode;
+use GUS::Model::Study::Study;
 
 use JSON::XS;
 
@@ -85,6 +86,12 @@ sub createDirectory {
   return $fullPath;
 }
 
+sub fileExists {
+  my ($plugin, $file) = @_;
+  return 1 if (-e $file);
+  return 0;
+}
+
 
 sub getProtocolAppNodeId {
   my ($plugin, $sourceId) = @_;
@@ -94,6 +101,16 @@ sub getProtocolAppNodeId {
     unless $protocolAppNode->retrieveFromDB();
 
   return $protocolAppNode->getProtocolAppNodeId();
+}
+
+sub getStudyId {
+  my ($plugin, $sourceId) = @_;
+  my $study = GUS::Model::Study::Study
+    ->new({source_id => $sourceId});
+  $plugin->error("No study found for $sourceId")
+    unless $study->retrieveFromDB();
+
+  return $study->getStudyId();
 }
 
 

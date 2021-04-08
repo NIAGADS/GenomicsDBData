@@ -352,7 +352,7 @@ CMplot <- function(
     DensityPlot <- function(
                             map,
                             col=c("darkgreen", "yellow", "red"),
-                            main="SNP Density",
+                            main="",
                             chr.labels=NULL, 
                             bin=1e6,
                             band=3,
@@ -394,7 +394,7 @@ CMplot <- function(
         chorm.maxlen <- max(pos)
         bp <- ifelse(chorm.maxlen < 1e6, 1e3, 1e6)
         bp_label <- ifelse(bp == 1e3, "Kb", "Mb")
-        main <- paste("The number of SNPs within ", bin / bp, bp_label, " window size", sep="")
+        main <- paste(main, " / ", bin / bp, bp_label, sep="")
         if(plot)    plot(NULL, xlim=c(0, chorm.maxlen + chorm.maxlen/10), ylim=c(0, length(chr.num) * band + band), main=main,axes=FALSE, xlab="", ylab="", xaxs="i", yaxs="i")
         pos.x <- list()
         col.index <- list()
@@ -529,10 +529,13 @@ CMplot <- function(
         if(file.output){
             ht=ifelse(is.null(height), 6, height)
             wh=ifelse(is.null(width), 9, width)
-            if(file=="jpg") jpeg(paste("SNP-Density.",paste(taxa,collapse="."),".jpg",sep=""), width = wh*dpi,height=ht*dpi,res=dpi,quality = 100)
-            if(file=="pdf") pdf(paste("SNP-Density.",paste(taxa,collapse="."),".pdf",sep=""), width = wh,height=ht)
-            if(file=="tiff")    tiff(paste("SNP-Density.",paste(taxa,collapse="."),".tiff",sep=""), width = wh*dpi,height=ht*dpi,res=dpi)
-            ## par(xpd=TRUE)
+            if(file=="jpg") jpeg(paste0(file.name, ".jpg"), width = wh*dpi,height=ht*dpi,res=dpi,quality = 100)
+            if(file=="pdf") pdf(paste0(file.name, ".pdf"), width = wh,height=ht)
+            if(file=="svg") svg(paste0(file.name, ".svg"), width = wh,height=ht)
+            if(file=="png") {
+                png(paste0(file.name, ".png"), width = wh * dpi ,height=ht * dpi, res=dpi)
+            }
+            if(file=="tiff")    tiff(paste0(file.name, ".tiff"), width = wh*dpi,height=ht*dpi,res=dpi)
             par(mar=c(mar[1], mar[2], mar[3]+1, mar[4]))
         }else{
             ht=ifelse(is.null(height), 6, height)
@@ -2142,9 +2145,14 @@ CMplot <- function(
             if(file.output){
                 ht=ifelse(is.null(height), 5.5, height)
                 wh=ifelse(is.null(width), 3.5, width)
-                if(file=="jpg") jpeg(paste("Multracks-QQplot.",paste(taxa,collapse="."),".jpg",sep=""), width = R*wh*dpi,height=ht*dpi,res=dpi,quality = 100)
-                if(file=="pdf") pdf(paste("Multracks-QQplot.",paste(taxa,collapse="."),".pdf",sep=""), width = R*wh,height=ht)
-                if(file=="tiff")    tiff(paste("Multracks-QQplot.",paste(taxa,collapse="."),".tiff",sep=""), width = R*wh*dpi,height=ht*dpi,res=dpi)
+                    if(file=="jpg") jpeg(paste0(file.name, ".jpg"), width = R*wh*dpi,height=ht*dpi,res=dpi,quality = 100)
+                    if(file=="pdf") pdf(paste0(file.name, ".pdf"), width = wh,height=ht)
+                    if(file=="svg") svg(paste0(file.name, ".svg"), width = wh,height=ht)
+                    if(file=="png") {
+                        png(paste0(file.name, ".png"), width = R*wh*dpi,height=ht*dpi,res=dpi)
+                    }
+                    if(file=="tiff")    tiff(paste0(file.name, ".tiff"), width = R*wh*dpi,height=ht*dpi,res=dpi,quality = 100)
+
                 par(mfcol=c(1,R),xpd=TRUE)
             }else{
                 ht=ifelse(is.null(height), 5.5, height)

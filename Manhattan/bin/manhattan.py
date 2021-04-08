@@ -15,7 +15,7 @@ from rpy2.robjects import r, pandas2ri
 from GenomicsDBData.Manhattan.gwas_track import GWASTrack
 from GenomicsDBData.Util.utils import warning
 
-BASIC_MANHATTAN_PLOT_SCRIPT = os.path.join(os.environ['GUS_HOME'], 'lib', 'R', 'Manhattan', 'basic_manhattan.R')
+BASIC_MANHATTAN_PLOT_SCRIPT = os.path.join(os.environ['GUS_HOME'], 'lib', 'R', 'Manhattan', 'circular_manhattan.R')
 CIRCULAR_MANHATTAN_PLOT_SCRIPT = os.path.join(os.environ['GUS_HOME'], 'lib', 'R', 'Manhattan', 'circular_manhattan.R')
 VERTICAL_MANHATTAN_PLOT_SCRIPT = os.path.join(os.environ['GUS_HOME'], 'lib', 'R', 'Manhattan', 'vertical_manhattan.R')
 
@@ -33,13 +33,13 @@ def plot_circular_manhattan():
     
     svgFile = os.path.join(args.outputPath, args.track + "-cmanhattan.svg")
     grdevices.svg(file=svgFile, width=512, height=512)
-    circular.manhattan(track.get_data())
+    circular.cmanhattan(track.get_data(), toFile=True, fileName=args.track + "-circular", fileTyoe="png", filter=0.5)
     grdevices.devoff()
 
 
 def plot_vertical_manhattan():
     ''' plot veritical manhattan '''
-    vertical = load_function(VERICAL_MANHATTAN_PLOT_SCRIPT, "vertical")
+    vertical = load_function(VERTICAL_MANHATTAN_PLOT_SCRIPT, "vertical")
     
     svgFile = os.path.join(args.outputPath, args.track + "-vmanhattan.svg")
     grdevices.svg(file=svgFile, width=512, height=512)

@@ -2,15 +2,14 @@
 DROP TABLE IF EXISTS NIAGADS.TrackManhattan;
 DROP SEQUENCE IF EXISTS NIAGADS.TrackManhattan_SQ;
 
+CREATE TYPE manhattan_variation AS ENUM ('circular', 'standard', 'vertical');
+CREATE TYPE file_type AS ENUM ('png', 'pdf', 'svg');
 CREATE TABLE NIAGADS.TrackManhattan (
        TRACK_MANHATTAN_ID	     SERIAL PRIMARY KEY,
        TRACK			     CHARACTER VARYING(100) NOT NULL,
-       MANHATTAN_PDF		     BYTEA,
-       CIRCULAR_MANHATTAN_PDF	     BYTEA,
-       ANNOTATED_MANHATTAN_PDF	     BYTEA,
-       MANHATTAN_PNG		     BYTEA,
-       CIRCULAR_MANHATTAN_PNG	     BYTEA,
-       ANNOTATED_MANHATTAN_PNG	     BYTEA,
+       PLOT		     	     BYTEA,
+       PLOT_TYPE		     MANHATTAN_VARIATION,
+       EXTENSION		     FILE_TYPE,
 
        -- GUS HOUSEKEEPING
 

@@ -45,7 +45,7 @@ FROM topHits
 ),
 
 topRankedHits AS (
-SELECT h.*, 
+SELECT h.*, ga.gene_type,
 ga.gene_symbol AS hit_display_value,
 ga.chromosome, ga.location_start, ga.location_end
 FROM rankedHits h, CBIL.GeneAttributes ga
@@ -55,7 +55,7 @@ AND rank <= 100
 
 UNION ALL
 
-SELECT h.*,
+SELECT h.*, NULL AS gene_type,
 hit AS hit_display_value,
 'chr' || split_part(h.ld_reference_variant, ':', 1) AS chromosome,
 split_part(h.ld_reference_variant, ':', 2)::integer AS location_start,
