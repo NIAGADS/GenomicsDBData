@@ -29,7 +29,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-CREATE OR REPLACE FUNCTION get_variant_primary_keys(variantID TEXT)
+CREATE OR REPLACE FUNCTION get_variant_primary_keys(variantID TEXT, firstHitOnly BOOLEAN DEFAULT TRUE) 
        RETURNS TABLE(search_term TEXT, variant_primary_key TEXT) AS $$
 --DECLARE
 	--recordPK TEXT;
@@ -41,7 +41,7 @@ MatchedVariants AS (
 SELECT variant.id AS search_term,
 CASE 
  WHEN LOWER(variant.id) LIKE 'rs%' AND LOWER(variant.id) NOT LIKE '%:%' THEN 
-        (SELECT record_primary_key FROM find_variant_by_refsnp(LOWER(variant.id), TRUE))
+        (SELECT record_primary_key FROM find_variant_by_refsnp(LOWER(variant.id), firstHitOnly))
  WHEN LOWER(variant.id) LIKE '%:%' AND LOWER(variant.id) NOT LIKE '%_rs%' THEN
         (SELECT record_primary_key AS source_id FROM find_variant_by_metaseq_id_variations(variant.id, TRUE))
  WHEN LOWER(variant.id) LIKE '%_rs%' AND LOWER(variant.id) LIKE '%:%' THEN
