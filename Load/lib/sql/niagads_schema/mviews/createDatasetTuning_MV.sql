@@ -282,8 +282,8 @@ CREATE INDEX PAC_INDX07 ON NIAGADS.ProtocolAppNodeCharacteristic(track) WHERE tr
 
 CREATE MATERIALIZED VIEW NIAGADS.NeuropathologyTrackCategories AS (
 SELECT track, characteristic_type,  characteristic,
-CASE WHEN characteristic LIKE '%late onset%'  THEN 'LOAD'
-WHEN characteristic LIKE '%Alz%' THEN 'AD'
+CASE --WHEN characteristic LIKE '%late onset%'  THEN 'LOAD'
+WHEN characteristic LIKE '%Alz%' THEN 'AD/LOAD'
 WHEN characteristic LIKE 'Progressive%' THEN 'PSP'
 WHEN characteristic LIKE 'Fronto%' THEN 'FTD'
 WHEN characteristic SIMILAR TO '%(plaques|dementia|memory|visuospatial|tangles|amyloid|aging|score|Braak|CERAD|measurement|impairment)%' THEN 'Other Neuropathology'
@@ -294,8 +294,8 @@ WHEN characteristic LIKE 'vascular%' THEN 'VBI'
 WHEN characteristic LIKE 'Parkinson%' THEN 'PD'
 ELSE characteristic END AS category_abbrev,
 
-CASE WHEN characteristic LIKE '%late onset%'  THEN 'late onset Alzheimer''s disease'
-WHEN characteristic LIKE '%Alz%' THEN 'Alzheimer''s disease'
+CASE --WHEN characteristic LIKE '%late onset%'  THEN 'late onset Alzheimer''s disease'
+WHEN characteristic LIKE '%Alz%' THEN 'Alzheimer''s disease/late onset AD'
 WHEN characteristic LIKE 'Progressive%' THEN 'Progressive supranuclear palsy'
 WHEN characteristic LIKE 'Fronto%' THEN 'Frontotemporal demential'
 WHEN characteristic SIMILAR TO '%(plaques|dementia|memory|visuospatial|tangles|amyloid|aging|score|Braak|CERAD|measurement|impairment)%' THEN 'AD/ADRD related neuropathology'

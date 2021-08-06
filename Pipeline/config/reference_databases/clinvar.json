@@ -1,0 +1,53 @@
+{
+    "file": {
+	"path": "$DATA_DIR/clinvar",
+	"file": "clinvar_20210501.vcf",
+	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
+	"cadd_database_directory": "$DATA_DIR/CADD/v16",
+	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
+	"vep_cache_directory": "$DATA_DIR/VEP_CACHE"
+    },
+    "external_database": {
+	"name": "ClinVar",
+	"description": "NCBI's ClinVar database is a freely accessible, public archive of reports of the relationships among human variations and phenotypes, with supporting evidence",
+	"version": "2021-05-01",
+	"release_date": "2021-05-01",
+	"id_url": "https://www.ncbi.nlm.nih.gov/clinvar/",
+	"download_url": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/",
+	"accession": "CLINVAR",
+	"type": "Genetic variation"
+    },
+    "preprocess": [
+	{
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
+		"parameters" : {
+		    "type": "Genetic variation",
+		    "subtype": "disease susceptibility trait",
+		    "description": "@external_database.description",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "sourceId" : "@external_database.accession",
+		    "name": "@external_database.name"
+		}
+	    }
+	}
+    ],
+    "load": [
+	{
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::LoadClinvar",
+		"parameters": {
+		    "file": "@file.file",
+		    "sourceId": "@external_database.accession",
+		    "fileDir" : "@file.path",
+		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
+		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
+		    "caddDatabaseDir": "@file.cadd_database_directory",
+		    "vepCacheDir": "@file.vep_cache_directory",
+		    "genomeBuild": "GRCh37.p13",
+		    "mapThruMarker": true
+		}
+	    }
+	}
+    ]
+}
