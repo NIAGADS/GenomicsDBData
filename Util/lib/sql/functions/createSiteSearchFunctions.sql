@@ -1,5 +1,62 @@
 -- site search  -- one function for each record type
 
+CREATE OR REPLACE FUNCTION ontology_text_search(searchTerm TEXT)
+RETURNS TABLE (ontology_term TEXT,
+	       ontology_term_id TEXT,
+	       category TEXT,
+	       description TEXT,
+match_rank INTEGER,
+	       matched_term TEXT
+
+	       )
+
+AS $$
+BEGIN
+RETURN QUERY
+
+WITH
+exact_term_match AS (
+SELECT 1 AS match_ranking, name, ot.source_id, ot.category, ot.definition, name AS match
+FROM SRes.OntologyTerm ot
+WHERE name ILIKE TRIM(searchTerm)),
+
+exact_id_match AS (
+SELECT 2 AS match_ranking, NAME, ot.source_id, ot.category, ot.definition, NAME AS match
+FROM SRes.OntologyTerm  ot
+WHERE source_id = TRIM(REPLACE(searchTerm, ':', '_'))),
+
+partial_term_match AS (
+SELECT 3 AS match_ranking, NAME, ot.source_id, ot.category, ot.definition, NAME AS match
+FROM SRes.OntologyTerm ot
+WHERE NAME ILIKE '%' || TRIM(searchTerm) || '%'),
+
+definition_match AS (
+SELECT 4 AS match_ranking, NAME, ot.source_id, ot.category, ot.definition, ot.definition AS match
+FROM SRes.OntologyTerm ot
+WHERE definition ILIKE '%' || TRIM(searchTerm) || '%'),
+
+matches AS (
+SELECT * FROM exact_term_match
+UNION
+SELECT * FROM exact_id_match
+UNION
+SELECT * FROM partial_term_match
+UNION
+SELECT * FROM definition_match
+)
+
+SELECT DISTINCT NAME::TEXT AS ontology_term, m.source_id::TEXT AS ontology_term_id, m.category::TEXT, m.definition::TEXT AS description,
+first_value(match_ranking) OVER (PARTITION BY m.source_id ORDER BY match_ranking ASC) -1 AS match_rank,
+first_value(match::TEXT) OVER (PARTITION BY m.source_id ORDER BY match_ranking ASC)::text AS matched_term
+FROM matches m
+ORDER BY match_rank ASC;
+
+END; 
+
+$$ LANGUAGE plpgsql;
+
+
+
 CREATE OR REPLACE FUNCTION variant_text_search(searchTerm TEXT) 
 RETURNS TABLE ( primary_key TEXT,
 	      	display TEXT,
@@ -81,9 +138,9 @@ WHERE ga.source_id = TRIM(searchTerm)
 UNION ALL
 
 -- exact: gene_symbol
-SELECT ga.source_id,  1 AS match_ranking, ga.gene_symbol AS matched_term
+SELECT ga.source_id, 1 AS match_ranking, ga.gene_symbol AS matched_term
 FROM CBIL.GeneAttributes ga
-WHERE ga.gene_symbol ILIKE TRIM(searchTerm) 
+WHERE ga.gene_symbol = TRIM(searchTerm)
 
 UNION ALL
 
