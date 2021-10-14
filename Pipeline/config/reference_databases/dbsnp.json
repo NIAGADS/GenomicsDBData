@@ -122,6 +122,7 @@
 	{
 	    "plugin": {
 		"skip": true,
+		"comment": "OBSOLETE -- now loaded in AnnotatedVDB",
 		"name": "GenomicsDBData::Load::Plugin::LoadVariantsFromVcf",
 		"parameters": {
 		    "vcfFileDir": "@file.path",
@@ -137,6 +138,8 @@
     "load": [
 	{
 	    "plugin": {
+		"skip": true,
+		"comment": "OBSOLETE -- now loaded in AnnotatedVDB",
 		"name": "GenomicsDBData::Load::Plugin::LoadVariantsFromVcf",
 		"parameters": {
 		    "vcfFileDir": "@file.path",
