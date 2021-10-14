@@ -1,0 +1,28 @@
+{
+    "file": {
+	"path": "$SHARED_DATA_DIR/ontologies/cell_line",
+	"file": "clo_merged.owl"
+    },
+    "external_database": {
+	"name": "Cell Line Ontology",
+	"description": "The Cell Line Ontology (CLO) is a community-driven ontology that is developed to standardize and integrate cell line information and support computer-assisted reasoning.",
+	"version": "2021-08-06",
+	"release_date": "2021-08-06",
+	"download_url": "http://purl.obolibrary.org/obo/clo.owl",
+	"id_url": "http://www.obofoundry.org/ontology/clo.html",
+	"accession": "CLO",
+	"type": "Ontology and terminology"
+    },
+    "load": [
+	{ 
+	    "plugin": {
+		"name": "GUS::Supported::Plugin::InsertOntologyTermsAndRelationships",
+		"parameters": {
+		    "inFile": "@file.path/@file.file",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "relTypeExtDbRlsSpec": "Niagads Ontology|current"
+		}
+	    }
+	}
+    ]
+}
