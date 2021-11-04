@@ -1,0 +1,26 @@
+{
+    "file": {
+	"path": "$SHARED_DATA_DIR/ontologies/ndd",
+	"file": "niagads_dd.owl"
+    },
+       "external_database": {
+	"name": "NIAGADS Data Dictionary",
+	"description": "The NIAGADS Data Dictionary is an application specific ontology developed in support of the NIAGADS data submission by combining parts of several biological ontologies, such as cell lines, anatomy, disease and chemical compounds with community-defined terms.",
+	"version": "current",
+	"accession": "NDD",
+	"type": "Ontology and terminology"
+    },
+    "load": [
+	{ 
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::InsertOntologyTermsAndRelationships",
+		"parameters": {
+		    "inFile": "@file.path/@file.file",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "relTypeExtDbRlsSpec": "NIAGADS Data Dictionary|current",
+		    "isPreferred": "true"
+		}
+	    }
+	}
+    ]
+}
