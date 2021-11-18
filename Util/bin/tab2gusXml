@@ -46,7 +46,8 @@ def print_record(record, table):
     print('<' + table + '>')
 
     for field in record:
-        print('\t<' + field + '>' + xstr(record[field]) + '</' + field + '>')
+        if record[field] is not None and record[field] != '':
+            print('\t<' + field + '>' + xstr(record[field]) + '</' + field + '>')
 
     print('</' + table + '>')
 
