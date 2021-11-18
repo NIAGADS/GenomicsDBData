@@ -1,0 +1,1208 @@
+TERM_SOURCE_ID	CATEGORY_LEVEL_1	CATEGORY_LEVEL_2	CATEGORY_LEVEL_3	CATEGORY_LEVEL_4
+CHEBI_47778	chemical entity			
+CHEBI_16113	chemical entity			
+CHEBI_3098	chemical entity			
+CHEBI_3766	chemical entity			
+CHEBI_5613	chemical entity			
+CHEBI_60479	chemical entity			
+CHEBI_6437	chemical entity			
+CHEBI_64482	chemical entity			
+CHEBI_18059	chemical entity			
+CHEBI_33575	chemical entity			
+CHEBI_24431	chemical entity			
+CHEBI_50860	chemical entity			
+CHMO_0000104	assay	imaging assay		
+CHMO_0000113	assay	imaging assay		
+CHMO_0000524	assay	mass spectrometry		
+CHMO_0000701	assay	mass spectrometry		
+CHMO_0001746	assay	mass spectrometry		
+CHMO_0002719	assay	mass spectrometry		
+CHMO_0002719	assay	mass spectrometry		
+OBI_0000185	assay	imaging assay		
+CL_0000129	biomaterial characteristic	specimen type	cell	
+CL_2000095	biomaterial characteristic	specimen type	cell	
+CL_0000128	biomaterial characteristic	specimen type	cell	
+CL_0002375	biomaterial characteristic	specimen type	cell	
+CL_0000540	biomaterial characteristic	specimen type	cell	
+CL_0002322	biomaterial characteristic	specimen type	cell	
+CL_2000001	biomaterial characteristic	specimen type	cell	
+CL_0002573	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000057	biomaterial characteristic	specimen type	cell	
+CL_0000127	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000235	biomaterial characteristic	specimen type	cell	
+CL_2000074	biomaterial characteristic	specimen type	cell	
+CL_0000066	biomaterial characteristic	specimen type	cell	
+CL_0000945	biomaterial characteristic	specimen type	cell	
+CL_0000576	biomaterial characteristic	specimen type	cell	
+CL_0011005	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000000	biomaterial characteristic	specimen type	cell	
+CLO_0001915	biomaterial characteristic	specimen type	cell line	
+CLO_0008425	biomaterial characteristic	specimen type	cell line	
+CLO_0009058	biomaterial characteristic	specimen type	cell line	
+CLO_0009059	biomaterial characteristic	specimen type	cell line	
+CLO_0009464	biomaterial characteristic	specimen type	cell line	
+CLO_0009828	biomaterial characteristic	specimen type	cell line	
+CLO_0037279	biomaterial characteristic	specimen type	cell line	
+CLO_0009015	biomaterial characteristic	specimen type	cell line	
+CLO_0000031	biomaterial characteristic	specimen type	cell line	
+DOID_171	biomaterial characteristic	clinical history	diagnosis	
+DOID_0070004	biomaterial characteristic	clinical history	diagnosis	
+DOID_1040	biomaterial characteristic	clinical history	diagnosis	
+DOID_9970	biomaterial characteristic	clinical history	diagnosis	
+DOID_0080832	biomaterial characteristic	clinical history	diagnosis	
+DOID_1793	biomaterial characteristic	clinical history	diagnosis	
+DOID_219	biomaterial characteristic	clinical history	diagnosis	
+DOID_4	biomaterial characteristic	clinical history	diagnosis	
+DOID_162	biomaterial characteristic	clinical history	diagnosis	
+EFO_0006514	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_1001870	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+EFO_0009268	biomaterial characteristic	clinical history	family history	AD/ADRD or neuropathology
+Orphanet_1020	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+EFO_0007798	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0009752	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0004874	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0004760	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0004763	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0005194	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0004670	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0007655	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0001272	biomaterial characteristic	clinical history	age	
+EFO_0005292	biomaterial characteristic	specimen type	cell line	
+EFO_0000572	biomaterial characteristic	specimen type	cell	
+EFO_0000513	biomaterial characteristic	genotype		
+CHEBI_59163	biomaterial characteristic	clinical history	diagnostic factor	
+EFO_0006848	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+NCIT_C20047	biomaterial characteristic	clinical history		
+ERO_0001726	assay	high throughput sample analysis		
+ERO_0001686	assay	high throughput sample analysis		
+ERO_0001688	assay	high throughput sample analysis		
+ERO_0002175	material processing	labeling	mass spectrometry labeling	
+ERO_0002178	assay	imaging assay		
+ERO_0001362	assay	immunoassay		
+ERO_0001830	assay	imaging assay		
+ERO_0000657	assay	metagenomics assay		
+OBI_0000070	assay			
+OBI_0000070	assay			
+ERO_0000696	assay	high throughput sample analysis		
+OBI_0600038	material processing	labeling		
+ERO_0001312	assay	imaging assay		
+HANCESTRO_0304	biomaterial characteristic	ancestry		
+HANCESTRO_0004	biomaterial characteristic	ancestry		
+HP_0100256	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0007488	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0005180	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0004975	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0019037	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0017276	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0007433	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+HP_0000726	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+HP_0100543	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0005621	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0005620	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0005544	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+HP_0002185	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0011401	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0004648	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0004976	biomaterial characteristic	clinical history	diagnosis	
+MONDO_0005148	biomaterial characteristic	clinical history	diagnosis	
+MONDO_0007803	biomaterial characteristic	clinical history	diagnosis	
+MONDO_0021042	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0022308	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0005059	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0003306	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0008315	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0001657	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0008903	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0002009	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0008170	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004993	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0016642	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0002898	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004970	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0005105	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0016642	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0018177	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004985	biomaterial characteristic	clinical history	diagnosis	
+MONDO_0002039	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0001627	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0004992	biomaterial characteristic	clinical history	diagnosis	
+NCIT_C18479	biomaterial characteristic	clinical history	diagnosis	
+PR_000005615	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+PR_Q8IZY2	protein	protein		
+PR_000010173	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+PR_000026990	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+PR_000025583	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+PR_000000001	protein	protein		
+PATO_0000384	biomaterial characteristic	biological sex		
+PATO_0000383	biomaterial characteristic	biological sex		
+OBI_0000794	sequence feature annotation	sequence feature annotation		
+OBI_0002588	computing methods	machine learning		
+OBI_0001418	study design	compound treatment design		
+OGMS_0000015	biomaterial characteristic	clinical history		
+OBI_0500001	study design	clinical study design		
+OBI_0001910	biomaterial characteristic	specimen type	cell	
+OBI_0000716	assay	ChIP assay		
+OBI_0002020	assay	epigenetic modification assay		
+OBI_0001204	assay	microarray	DNA microarray	
+OBI_0000424	assay	transcription profiling assay		
+OBI_0001852	material processing	library preparation		
+OBI_0001986	assay	immuno staining assay		
+OBI_0002039	assay	ATAC assay		
+OBI_0001271	assay	sequencing assay	RNA sequencing assay	
+OBI_0000626	assay	sequencing assay	DNA sequencing assay	
+OBI_0002763	assay	sequencing assay		
+OBI_0001926	assay	transcription profiling assay		
+IAO_0000064	computational method	algorithm		
+OBI_0500000	study design			
+OBI_0000905	sequence feature annotation			
+OGMS_0000073	biomaterial characteristic	clinical history	diagnosis	
+OBI_0000070	assay			
+OBI_0000711	material processing	library preparation		
+UBERON_0000178	biomaterial characteristic	specimen type	tissue	
+UBERON_0002371	biomaterial characteristic	specimen type	tissue	
+UBERON_0000310	biomaterial characteristic	specimen type	tissue	
+UBERON_0001359	biomaterial characteristic	specimen type	tissue	
+UBERON_0001155	biomaterial characteristic	specimen type	tissue	
+UBERON_0000059	biomaterial characteristic	specimen type	tissue	
+UBERON_0002048	biomaterial characteristic	specimen type	tissue	
+UBERON_0001021	biomaterial characteristic	specimen type	tissue	
+UBERON_0000992	biomaterial characteristic	specimen type	tissue	
+UBERON_0001264	biomaterial characteristic	specimen type	tissue	
+UBERON_0001003	biomaterial characteristic	specimen type	tissue	
+UBERON_0002106	biomaterial characteristic	specimen type	tissue	
+UBERON_0002626	biomaterial characteristic	specimen type	tissue	
+UBERON_0001871	biomaterial characteristic	specimen type	tissue	
+UBERON_0001872	biomaterial characteristic	specimen type	tissue	
+UBERON_0002113	biomaterial characteristic	specimen type	tissue	
+UBERON_0000044	biomaterial characteristic	specimen type	tissue	
+UBERON_0006956	biomaterial characteristic	specimen type	tissue	
+UBERON_0000029	biomaterial characteristic	specimen type	tissue	
+UBERON_0001969	biomaterial characteristic	specimen type	tissue	
+UBERON_0001869	biomaterial characteristic	specimen type	tissue	
+UBERON_0001869	biomaterial characteristic	specimen type	tissue	
+UBERON_0001870	biomaterial characteristic	specimen type	tissue	
+UBERON_0001891	biomaterial characteristic	specimen type	tissue	
+UBERON_0001911	biomaterial characteristic	specimen type	tissue	
+UBERON_0002107	biomaterial characteristic	specimen type	tissue	
+UBERON_0002702	biomaterial characteristic	specimen type	tissue	
+UBERON_0002739	biomaterial characteristic	specimen type	tissue	
+UBERON_0002766	biomaterial characteristic	specimen type	tissue	
+UBERON_0004024	biomaterial characteristic	specimen type	tissue	
+UBERON_0005291	biomaterial characteristic	specimen type	tissue	
+UBERON_0005343	biomaterial characteristic	specimen type	tissue	
+UBERON_0014740	biomaterial characteristic	specimen type	tissue	
+UBERON_0016530	biomaterial characteristic	specimen type	tissue	
+UBERON_0034891	biomaterial characteristic	specimen type	tissue	
+UBERON_0022352	biomaterial characteristic	specimen type	tissue	
+UBERON_0002129	biomaterial characteristic	specimen type	tissue	
+UBERON_0001876	biomaterial characteristic	specimen type	tissue	
+UBERON_0002362	biomaterial characteristic	specimen type	tissue	
+UBERON_0002021	biomaterial characteristic	specimen type	tissue	
+UBERON_0000956	biomaterial characteristic	specimen type	tissue	
+UBERON_0001873	biomaterial characteristic	specimen type	tissue	
+UBERON_0001874	biomaterial characteristic	specimen type	tissue	
+UBERON_0001882	biomaterial characteristic	specimen type	tissue	
+UBERON_0001890	biomaterial characteristic	specimen type	tissue	
+UBERON_0001977	biomaterial characteristic	specimen type	tissue	
+UBERON_0002037	biomaterial characteristic	specimen type	tissue	
+UBERON_0002435	biomaterial characteristic	specimen type	tissue	
+UBERON_0002436	biomaterial characteristic	specimen type	tissue	
+UBERON_0002576	biomaterial characteristic	specimen type	tissue	
+UBERON_0002703	biomaterial characteristic	specimen type	tissue	
+UBERON_0002751	biomaterial characteristic	specimen type	tissue	
+UBERON_0002769	biomaterial characteristic	specimen type	tissue	
+UBERON_0002771	biomaterial characteristic	specimen type	tissue	
+UBERON_0002795	biomaterial characteristic	specimen type	tissue	
+UBERON_0002998	biomaterial characteristic	specimen type	tissue	
+UBERON_0003714	biomaterial characteristic	specimen type	tissue	
+UBERON_0004167	biomaterial characteristic	specimen type	tissue	
+UBERON_0009834	biomaterial characteristic	specimen type	tissue	
+UBERON_0016525	biomaterial characteristic	specimen type	tissue	
+UBERON_0016530	biomaterial characteristic	specimen type	tissue	
+UBERON_0016538	biomaterial characteristic	specimen type	tissue	
+UBERON_0022353	biomaterial characteristic	specimen type	tissue	
+UBERON_0001872	biomaterial characteristic	specimen type	tissue	
+UBERON_0034751	biomaterial characteristic	specimen type	tissue	
+UBERON_0000922	biomaterial characteristic	developmental stage		
+UBERON_0003210	biomaterial characteristic	specimen type	tissue	
+UBERON_0000955	biomaterial characteristic	specimen type	tissue	
+UBERON_0000061	biomaterial characteristic	specimen type		
+UBERON_0000467	biomaterial characteristic	anatomical system		
+UBERON_0001016	biomaterial characteristic	anatomical system		
+UBERON_0002390	biomaterial characteristic	anatomical system		
+UBERON_0000949	biomaterial characteristic	anatomical system		
+CL_0000006	biomaterial characteristic	specimen type	cell	
+CL_0000028	biomaterial characteristic	specimen type	cell	
+CL_0000029	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000099	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000100	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000101	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000102	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000103	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000104	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000105	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000106	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000107	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000108	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000109	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000110	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000111	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000112	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000116	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000117	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000118	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000119	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000120	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000121	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000122	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000198	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000199	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000200	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000202	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000203	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000204	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000205	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000206	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000207	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000208	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000209	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000210	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000246	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000247	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000251	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000253	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000287	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000376	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000379	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000381	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000397	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000402	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000406	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000410	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000488	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000489	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000490	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000494	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000495	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000496	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000497	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000498	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000526	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000527	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000528	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000530	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000531	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000532	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000533	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000534	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000535	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000536	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000544	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000551	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000555	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000561	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000567	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000573	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000587	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000589	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000591	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000598	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000601	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000602	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000604	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000609	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000617	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000626	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000673	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000678	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000679	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000687	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000690	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000691	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000693	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000694	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000695	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000697	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000700	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000702	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000705	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000707	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000709	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000717	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000740	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000741	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000745	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000748	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000749	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000750	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000751	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000752	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000753	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000754	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000755	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000756	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000757	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000758	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000759	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000760	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000761	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000847	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000848	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000849	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000850	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000855	biomaterial characteristic	specimen type	cell	neural cell
+CL_0000856	biomaterial characteristic	specimen type	cell	neural cell
+CL_0001031	biomaterial characteristic	specimen type	cell	neural cell
+CL_0001032	biomaterial characteristic	specimen type	cell	neural cell
+CL_0001033	biomaterial characteristic	specimen type	cell	neural cell
+CL_0002069	biomaterial characteristic	specimen type	cell	neural cell
+CL_0002070	biomaterial characteristic	specimen type	cell	neural cell
+CL_0002285	biomaterial characteristic	specimen type	cell	neural cell
+CL_0002286	biomaterial characteristic	specimen type	cell	neural cell
+CL_0002287	biomaterial characteristic	specimen type	cell	neural cell
+CL_0002288	biomaterial characteristic	specimen type	cell	neural cell
+CL_0002289	biomaterial characteristic	specimen type	cell	neural cell
+CL_0002374	biomaterial characteristic	specimen type	cell	neural cell
+CL_0002450	biomaterial characteristic	specimen type	cell	neural cell
+CL_0002487	biomaterial characteristic	specimen type	cell	neural cell
+CL_0002608	biomaterial characteristic	specimen type	cell	neural cell
+CL_0002609	biomaterial characteristic	specimen type	cell	neural cell
+CL_0002610	biomaterial characteristic	specimen type	cell	neural cell
+CL_0002611	biomaterial characteristic	specimen type	cell	neural cell
+CL_0002612	biomaterial characteristic	specimen type	cell	neural cell
+CL_0002613	biomaterial characteristic	specimen type	cell	neural cell
+CL_0002614	biomaterial characteristic	specimen type	cell	neural cell
+CL_0002628	biomaterial characteristic	specimen type	cell	neural cell
+CL_0002629	biomaterial characteristic	specimen type	cell	neural cell
+CL_0005000	biomaterial characteristic	specimen type	cell	neural cell
+CL_0005007	biomaterial characteristic	specimen type	cell	neural cell
+CL_0005008	biomaterial characteristic	specimen type	cell	neural cell
+CL_0005023	biomaterial characteristic	specimen type	cell	neural cell
+CL_0005024	biomaterial characteristic	specimen type	cell	neural cell
+CL_0005025	biomaterial characteristic	specimen type	cell	neural cell
+CL_0007011	biomaterial characteristic	specimen type	cell	neural cell
+CL_0007017	biomaterial characteristic	specimen type	cell	neural cell
+CL_0008010	biomaterial characteristic	specimen type	cell	neural cell
+CL_0008013	biomaterial characteristic	specimen type	cell	neural cell
+CL_0008015	biomaterial characteristic	specimen type	cell	neural cell
+CL_0008021	biomaterial characteristic	specimen type	cell	neural cell
+CL_0008025	biomaterial characteristic	specimen type	cell	neural cell
+CL_0008027	biomaterial characteristic	specimen type	cell	neural cell
+CL_0008028	biomaterial characteristic	specimen type	cell	neural cell
+CL_0008029	biomaterial characteristic	specimen type	cell	neural cell
+CL_0008030	biomaterial characteristic	specimen type	cell	neural cell
+CL_0008031	biomaterial characteristic	specimen type	cell	neural cell
+CL_0008032	biomaterial characteristic	specimen type	cell	neural cell
+CL_0008037	biomaterial characteristic	specimen type	cell	neural cell
+CL_0008038	biomaterial characteristic	specimen type	cell	neural cell
+CL_0008039	biomaterial characteristic	specimen type	cell	neural cell
+CL_0009000	biomaterial characteristic	specimen type	cell	neural cell
+CL_0010009	biomaterial characteristic	specimen type	cell	neural cell
+CL_0010010	biomaterial characteristic	specimen type	cell	neural cell
+CL_0010011	biomaterial characteristic	specimen type	cell	neural cell
+CL_0010012	biomaterial characteristic	specimen type	cell	neural cell
+CL_0010022	biomaterial characteristic	specimen type	cell	neural cell
+CL_0011000	biomaterial characteristic	specimen type	cell	neural cell
+CL_0011001	biomaterial characteristic	specimen type	cell	neural cell
+CL_0011002	biomaterial characteristic	specimen type	cell	neural cell
+CL_0011003	biomaterial characteristic	specimen type	cell	neural cell
+CL_0011006	biomaterial characteristic	specimen type	cell	neural cell
+CL_0011100	biomaterial characteristic	specimen type	cell	neural cell
+CL_0011102	biomaterial characteristic	specimen type	cell	neural cell
+CL_0011103	biomaterial characteristic	specimen type	cell	neural cell
+CL_0011104	biomaterial characteristic	specimen type	cell	neural cell
+CL_0011105	biomaterial characteristic	specimen type	cell	neural cell
+CL_0011106	biomaterial characteristic	specimen type	cell	neural cell
+CL_0011109	biomaterial characteristic	specimen type	cell	neural cell
+CL_0011110	biomaterial characteristic	specimen type	cell	neural cell
+CL_0011111	biomaterial characteristic	specimen type	cell	neural cell
+CL_0011112	biomaterial characteristic	specimen type	cell	neural cell
+CL_0011113	biomaterial characteristic	specimen type	cell	neural cell
+CL_0012001	biomaterial characteristic	specimen type	cell	neural cell
+CL_0015000	biomaterial characteristic	specimen type	cell	neural cell
+CL_1000001	biomaterial characteristic	specimen type	cell	neural cell
+CL_1000082	biomaterial characteristic	specimen type	cell	neural cell
+CL_1000245	biomaterial characteristic	specimen type	cell	neural cell
+CL_1000378	biomaterial characteristic	specimen type	cell	neural cell
+CL_1000379	biomaterial characteristic	specimen type	cell	neural cell
+CL_1000380	biomaterial characteristic	specimen type	cell	neural cell
+CL_1000381	biomaterial characteristic	specimen type	cell	neural cell
+CL_1000382	biomaterial characteristic	specimen type	cell	neural cell
+CL_1000383	biomaterial characteristic	specimen type	cell	neural cell
+CL_1000384	biomaterial characteristic	specimen type	cell	neural cell
+CL_1000385	biomaterial characteristic	specimen type	cell	neural cell
+CL_1000606	biomaterial characteristic	specimen type	cell	neural cell
+CL_1001434	biomaterial characteristic	specimen type	cell	neural cell
+CL_1001435	biomaterial characteristic	specimen type	cell	neural cell
+CL_1001436	biomaterial characteristic	specimen type	cell	neural cell
+CL_1001437	biomaterial characteristic	specimen type	cell	neural cell
+CL_1001451	biomaterial characteristic	specimen type	cell	neural cell
+CL_1001474	biomaterial characteristic	specimen type	cell	neural cell
+CL_1001502	biomaterial characteristic	specimen type	cell	neural cell
+CL_1001503	biomaterial characteristic	specimen type	cell	neural cell
+CL_1001505	biomaterial characteristic	specimen type	cell	neural cell
+CL_1001509	biomaterial characteristic	specimen type	cell	neural cell
+CL_1001561	biomaterial characteristic	specimen type	cell	neural cell
+CL_1001569	biomaterial characteristic	specimen type	cell	neural cell
+CL_1001571	biomaterial characteristic	specimen type	cell	neural cell
+CL_1001582	biomaterial characteristic	specimen type	cell	neural cell
+CL_1001611	biomaterial characteristic	specimen type	cell	neural cell
+CL_2000019	biomaterial characteristic	specimen type	cell	neural cell
+CL_2000023	biomaterial characteristic	specimen type	cell	neural cell
+CL_2000024	biomaterial characteristic	specimen type	cell	neural cell
+CL_2000027	biomaterial characteristic	specimen type	cell	neural cell
+CL_2000028	biomaterial characteristic	specimen type	cell	neural cell
+CL_2000029	biomaterial characteristic	specimen type	cell	neural cell
+CL_2000031	biomaterial characteristic	specimen type	cell	neural cell
+CL_2000032	biomaterial characteristic	specimen type	cell	neural cell
+CL_2000034	biomaterial characteristic	specimen type	cell	neural cell
+CL_2000037	biomaterial characteristic	specimen type	cell	neural cell
+CL_2000047	biomaterial characteristic	specimen type	cell	neural cell
+CL_2000048	biomaterial characteristic	specimen type	cell	neural cell
+CL_2000049	biomaterial characteristic	specimen type	cell	neural cell
+CL_2000056	biomaterial characteristic	specimen type	cell	neural cell
+CL_2000086	biomaterial characteristic	specimen type	cell	neural cell
+CL_2000087	biomaterial characteristic	specimen type	cell	neural cell
+CL_2000088	biomaterial characteristic	specimen type	cell	neural cell
+CL_2000089	biomaterial characteristic	specimen type	cell	neural cell
+CL_2000090	biomaterial characteristic	specimen type	cell	neural cell
+CL_2000097	biomaterial characteristic	specimen type	cell	neural cell
+CL_3000002	biomaterial characteristic	specimen type	cell	neural cell
+CL_3000003	biomaterial characteristic	specimen type	cell	neural cell
+CL_3000004	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023000	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023001	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023002	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023007	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023008	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023009	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023010	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023011	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023012	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023013	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023014	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023015	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023016	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023017	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023018	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023019	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023022	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023023	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023024	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023025	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023027	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023028	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023030	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023031	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023034	biomaterial characteristic	specimen type	cell	neural cell
+CL_4023036	biomaterial characteristic	specimen type	cell	neural cell
+HANCESTRO_0005	biomaterial characteristic	ancestry		
+HANCESTRO_0006	biomaterial characteristic	ancestry		
+HANCESTRO_0007	biomaterial characteristic	ancestry		
+HANCESTRO_0008	biomaterial characteristic	ancestry		
+HANCESTRO_0009	biomaterial characteristic	ancestry		
+HANCESTRO_0010	biomaterial characteristic	ancestry		
+HANCESTRO_0011	biomaterial characteristic	ancestry		
+HANCESTRO_0013	biomaterial characteristic	ancestry		
+HANCESTRO_0014	biomaterial characteristic	ancestry		
+HANCESTRO_0015	biomaterial characteristic	ancestry		
+HANCESTRO_0016	biomaterial characteristic	ancestry		
+HANCESTRO_0017	biomaterial characteristic	ancestry		
+HANCESTRO_0018	biomaterial characteristic	ancestry		
+HANCESTRO_0019	biomaterial characteristic	ancestry		
+HANCESTRO_0020	biomaterial characteristic	ancestry		
+HANCESTRO_0021	biomaterial characteristic	ancestry		
+HANCESTRO_0022	biomaterial characteristic	ancestry		
+HANCESTRO_0023	biomaterial characteristic	ancestry		
+HANCESTRO_0024	biomaterial characteristic	ancestry		
+HANCESTRO_0025	biomaterial characteristic	ancestry		
+HANCESTRO_0026	biomaterial characteristic	ancestry		
+HANCESTRO_0027	biomaterial characteristic	ancestry		
+HANCESTRO_0286	biomaterial characteristic	ancestry		
+HANCESTRO_0290	biomaterial characteristic	ancestry status		
+HANCESTRO_0305	biomaterial characteristic	ancestry status		
+HANCESTRO_0306	biomaterial characteristic	ancestry		
+HANCESTRO_0307	biomaterial characteristic	ancestry		
+HANCESTRO_0309	biomaterial characteristic	ancestry		
+HANCESTRO_0310	biomaterial characteristic	ancestry		
+HANCESTRO_0311	biomaterial characteristic	ancestry		
+HANCESTRO_0312	biomaterial characteristic	ancestry		
+HANCESTRO_0313	biomaterial characteristic	ancestry		
+HANCESTRO_0314	biomaterial characteristic	ancestry		
+HANCESTRO_0315	biomaterial characteristic	ancestry		
+HANCESTRO_0316	biomaterial characteristic	ancestry		
+HANCESTRO_0317	biomaterial characteristic	ancestry		
+HANCESTRO_0318	biomaterial characteristic	ancestry		
+HANCESTRO_0319	biomaterial characteristic	ancestry		
+HANCESTRO_0320	biomaterial characteristic	ancestry		
+HANCESTRO_0321	biomaterial characteristic	ancestry		
+HANCESTRO_0322	biomaterial characteristic	ancestry		
+HANCESTRO_0323	biomaterial characteristic	ancestry		
+HANCESTRO_0324	biomaterial characteristic	ancestry		
+HANCESTRO_0331	biomaterial characteristic	ancestry		
+HANCESTRO_0332	biomaterial characteristic	ancestry		
+HANCESTRO_0333	biomaterial characteristic	ancestry		
+HANCESTRO_0334	biomaterial characteristic	ancestry		
+HANCESTRO_0335	biomaterial characteristic	ancestry		
+HANCESTRO_0336	biomaterial characteristic	ancestry		
+HANCESTRO_0337	biomaterial characteristic	ancestry		
+HANCESTRO_0338	biomaterial characteristic	ancestry		
+HANCESTRO_0339	biomaterial characteristic	ancestry		
+HANCESTRO_0340	biomaterial characteristic	ancestry		
+HANCESTRO_0341	biomaterial characteristic	ancestry		
+HANCESTRO_0342	biomaterial characteristic	ancestry		
+HANCESTRO_0343	biomaterial characteristic	ancestry		
+HANCESTRO_0344	biomaterial characteristic	ancestry		
+HANCESTRO_0345	biomaterial characteristic	ancestry		
+HANCESTRO_0346	biomaterial characteristic	ancestry		
+HANCESTRO_0347	biomaterial characteristic	ancestry		
+HANCESTRO_0348	biomaterial characteristic	ancestry		
+HANCESTRO_0349	biomaterial characteristic	ancestry		
+HANCESTRO_0350	biomaterial characteristic	ancestry		
+HANCESTRO_0351	biomaterial characteristic	ancestry		
+HANCESTRO_0352	biomaterial characteristic	ancestry		
+HANCESTRO_0353	biomaterial characteristic	ancestry		
+HANCESTRO_0354	biomaterial characteristic	ancestry		
+HANCESTRO_0355	biomaterial characteristic	ancestry		
+HANCESTRO_0356	biomaterial characteristic	ancestry		
+HANCESTRO_0357	biomaterial characteristic	ancestry		
+HANCESTRO_0358	biomaterial characteristic	ancestry		
+HANCESTRO_0359	biomaterial characteristic	ancestry		
+HANCESTRO_0360	biomaterial characteristic	ancestry		
+HANCESTRO_0361	biomaterial characteristic	ancestry		
+HANCESTRO_0362	biomaterial characteristic	ancestry		
+HANCESTRO_0363	biomaterial characteristic	ancestry		
+HANCESTRO_0364	biomaterial characteristic	ancestry		
+HANCESTRO_0365	biomaterial characteristic	ancestry		
+HANCESTRO_0366	biomaterial characteristic	ancestry		
+HANCESTRO_0367	biomaterial characteristic	ancestry		
+HANCESTRO_0368	biomaterial characteristic	ancestry		
+HANCESTRO_0369	biomaterial characteristic	ancestry		
+HANCESTRO_0370	biomaterial characteristic	ancestry		
+HANCESTRO_0371	biomaterial characteristic	ancestry		
+HANCESTRO_0372	biomaterial characteristic	ancestry		
+HANCESTRO_0373	biomaterial characteristic	ancestry		
+HANCESTRO_0374	biomaterial characteristic	ancestry		
+HANCESTRO_0375	biomaterial characteristic	ancestry		
+HANCESTRO_0376	biomaterial characteristic	ancestry		
+HANCESTRO_0377	biomaterial characteristic	ancestry		
+HANCESTRO_0378	biomaterial characteristic	ancestry		
+HANCESTRO_0379	biomaterial characteristic	ancestry		
+HANCESTRO_0380	biomaterial characteristic	ancestry		
+HANCESTRO_0381	biomaterial characteristic	ancestry		
+HANCESTRO_0382	biomaterial characteristic	ancestry		
+HANCESTRO_0383	biomaterial characteristic	ancestry		
+HANCESTRO_0384	biomaterial characteristic	ancestry		
+HANCESTRO_0385	biomaterial characteristic	ancestry		
+HANCESTRO_0386	biomaterial characteristic	ancestry		
+HANCESTRO_0387	biomaterial characteristic	ancestry		
+HANCESTRO_0388	biomaterial characteristic	ancestry		
+HANCESTRO_0389	biomaterial characteristic	ancestry		
+HANCESTRO_0390	biomaterial characteristic	ancestry		
+HANCESTRO_0391	biomaterial characteristic	ancestry		
+HANCESTRO_0392	biomaterial characteristic	ancestry		
+HANCESTRO_0393	biomaterial characteristic	ancestry		
+HANCESTRO_0394	biomaterial characteristic	ancestry		
+HANCESTRO_0395	biomaterial characteristic	ancestry		
+HANCESTRO_0396	biomaterial characteristic	ancestry		
+HANCESTRO_0397	biomaterial characteristic	ancestry		
+HANCESTRO_0398	biomaterial characteristic	ancestry		
+HANCESTRO_0399	biomaterial characteristic	ancestry		
+HANCESTRO_0400	biomaterial characteristic	ancestry		
+HANCESTRO_0401	biomaterial characteristic	ancestry		
+HANCESTRO_0402	biomaterial characteristic	ancestry		
+HANCESTRO_0403	biomaterial characteristic	ancestry		
+HANCESTRO_0404	biomaterial characteristic	ancestry		
+HANCESTRO_0405	biomaterial characteristic	ancestry		
+HANCESTRO_0406	biomaterial characteristic	ancestry		
+HANCESTRO_0407	biomaterial characteristic	ancestry		
+HANCESTRO_0408	biomaterial characteristic	ancestry		
+HANCESTRO_0409	biomaterial characteristic	ancestry		
+HANCESTRO_0410	biomaterial characteristic	ancestry		
+HANCESTRO_0411	biomaterial characteristic	ancestry		
+HANCESTRO_0412	biomaterial characteristic	ancestry		
+HANCESTRO_0413	biomaterial characteristic	ancestry		
+HANCESTRO_0414	biomaterial characteristic	ancestry		
+HANCESTRO_0415	biomaterial characteristic	ancestry		
+HANCESTRO_0416	biomaterial characteristic	ancestry		
+HANCESTRO_0417	biomaterial characteristic	ancestry		
+HANCESTRO_0418	biomaterial characteristic	ancestry		
+HANCESTRO_0419	biomaterial characteristic	ancestry		
+HANCESTRO_0420	biomaterial characteristic	ancestry		
+HANCESTRO_0421	biomaterial characteristic	ancestry		
+HANCESTRO_0422	biomaterial characteristic	ancestry		
+HANCESTRO_0423	biomaterial characteristic	ancestry		
+HANCESTRO_0424	biomaterial characteristic	ancestry		
+HANCESTRO_0425	biomaterial characteristic	ancestry		
+HANCESTRO_0426	biomaterial characteristic	ancestry		
+HANCESTRO_0427	biomaterial characteristic	ancestry		
+HANCESTRO_0428	biomaterial characteristic	ancestry		
+HANCESTRO_0429	biomaterial characteristic	ancestry		
+HANCESTRO_0430	biomaterial characteristic	ancestry		
+HANCESTRO_0431	biomaterial characteristic	ancestry		
+HANCESTRO_0432	biomaterial characteristic	ancestry		
+HANCESTRO_0433	biomaterial characteristic	ancestry		
+HANCESTRO_0434	biomaterial characteristic	ancestry		
+HANCESTRO_0435	biomaterial characteristic	ancestry		
+HANCESTRO_0436	biomaterial characteristic	ancestry		
+HANCESTRO_0437	biomaterial characteristic	ancestry		
+HANCESTRO_0438	biomaterial characteristic	ancestry		
+HANCESTRO_0439	biomaterial characteristic	ancestry		
+HANCESTRO_0440	biomaterial characteristic	ancestry		
+HANCESTRO_0441	biomaterial characteristic	ancestry		
+HANCESTRO_0442	biomaterial characteristic	ancestry		
+HANCESTRO_0443	biomaterial characteristic	ancestry		
+HANCESTRO_0444	biomaterial characteristic	ancestry		
+HANCESTRO_0445	biomaterial characteristic	ancestry		
+HANCESTRO_0446	biomaterial characteristic	ancestry		
+HANCESTRO_0447	biomaterial characteristic	ancestry		
+HANCESTRO_0448	biomaterial characteristic	ancestry		
+HANCESTRO_0449	biomaterial characteristic	ancestry		
+HANCESTRO_0450	biomaterial characteristic	ancestry		
+HANCESTRO_0451	biomaterial characteristic	ancestry		
+HANCESTRO_0452	biomaterial characteristic	ancestry		
+HANCESTRO_0453	biomaterial characteristic	ancestry		
+HANCESTRO_0454	biomaterial characteristic	ancestry		
+HANCESTRO_0455	biomaterial characteristic	ancestry		
+HANCESTRO_0456	biomaterial characteristic	ancestry		
+HANCESTRO_0457	biomaterial characteristic	ancestry		
+HANCESTRO_0458	biomaterial characteristic	ancestry		
+HANCESTRO_0459	biomaterial characteristic	ancestry		
+HANCESTRO_0460	biomaterial characteristic	ancestry		
+HANCESTRO_0461	biomaterial characteristic	ancestry		
+HANCESTRO_0462	biomaterial characteristic	ancestry		
+HANCESTRO_0463	biomaterial characteristic	ancestry		
+HANCESTRO_0464	biomaterial characteristic	ancestry		
+HANCESTRO_0465	biomaterial characteristic	ancestry		
+HANCESTRO_0466	biomaterial characteristic	ancestry		
+HANCESTRO_0467	biomaterial characteristic	ancestry		
+HANCESTRO_0468	biomaterial characteristic	ancestry		
+HANCESTRO_0469	biomaterial characteristic	ancestry		
+HANCESTRO_0470	biomaterial characteristic	ancestry		
+HANCESTRO_0471	biomaterial characteristic	ancestry		
+HANCESTRO_0472	biomaterial characteristic	ancestry		
+HANCESTRO_0473	biomaterial characteristic	ancestry		
+HANCESTRO_0474	biomaterial characteristic	ancestry		
+HANCESTRO_0475	biomaterial characteristic	ancestry		
+HANCESTRO_0476	biomaterial characteristic	ancestry		
+HANCESTRO_0477	biomaterial characteristic	ancestry		
+HANCESTRO_0478	biomaterial characteristic	ancestry		
+HANCESTRO_0479	biomaterial characteristic	ancestry		
+HANCESTRO_0480	biomaterial characteristic	ancestry		
+HANCESTRO_0481	biomaterial characteristic	ancestry		
+HANCESTRO_0482	biomaterial characteristic	ancestry		
+HANCESTRO_0483	biomaterial characteristic	ancestry		
+HANCESTRO_0484	biomaterial characteristic	ancestry		
+HANCESTRO_0485	biomaterial characteristic	ancestry		
+HANCESTRO_0486	biomaterial characteristic	ancestry		
+HANCESTRO_0487	biomaterial characteristic	ancestry		
+HANCESTRO_0488	biomaterial characteristic	ancestry		
+HANCESTRO_0489	biomaterial characteristic	ancestry		
+HANCESTRO_0490	biomaterial characteristic	ancestry		
+HANCESTRO_0491	biomaterial characteristic	ancestry		
+HANCESTRO_0492	biomaterial characteristic	ancestry		
+HANCESTRO_0493	biomaterial characteristic	ancestry		
+HANCESTRO_0494	biomaterial characteristic	ancestry		
+HANCESTRO_0495	biomaterial characteristic	ancestry		
+HANCESTRO_0496	biomaterial characteristic	ancestry		
+HANCESTRO_0497	biomaterial characteristic	ancestry		
+HANCESTRO_0498	biomaterial characteristic	ancestry		
+HANCESTRO_0500	biomaterial characteristic	ancestry		
+HANCESTRO_0501	biomaterial characteristic	ancestry		
+HANCESTRO_0502	biomaterial characteristic	ancestry		
+HANCESTRO_0503	biomaterial characteristic	ancestry		
+HANCESTRO_0504	biomaterial characteristic	ancestry		
+HANCESTRO_0505	biomaterial characteristic	ancestry		
+HANCESTRO_0506	biomaterial characteristic	ancestry		
+HANCESTRO_0507	biomaterial characteristic	ancestry		
+HANCESTRO_0508	biomaterial characteristic	ancestry		
+HANCESTRO_0509	biomaterial characteristic	ancestry		
+HANCESTRO_0510	biomaterial characteristic	ancestry		
+HANCESTRO_0511	biomaterial characteristic	ancestry		
+HANCESTRO_0512	biomaterial characteristic	ancestry		
+HANCESTRO_0513	biomaterial characteristic	ancestry		
+HANCESTRO_0514	biomaterial characteristic	ancestry		
+HANCESTRO_0515	biomaterial characteristic	ancestry		
+HANCESTRO_0516	biomaterial characteristic	ancestry		
+HANCESTRO_0517	biomaterial characteristic	ancestry		
+HANCESTRO_0518	biomaterial characteristic	ancestry		
+HANCESTRO_0519	biomaterial characteristic	ancestry		
+HANCESTRO_0520	biomaterial characteristic	ancestry		
+HANCESTRO_0521	biomaterial characteristic	ancestry		
+HANCESTRO_0522	biomaterial characteristic	ancestry		
+HANCESTRO_0523	biomaterial characteristic	ancestry		
+HANCESTRO_0524	biomaterial characteristic	ancestry		
+HANCESTRO_0525	biomaterial characteristic	ancestry		
+HANCESTRO_0526	biomaterial characteristic	ancestry		
+HANCESTRO_0527	biomaterial characteristic	ancestry		
+HANCESTRO_0528	biomaterial characteristic	ancestry		
+HANCESTRO_0529	biomaterial characteristic	ancestry		
+HANCESTRO_0530	biomaterial characteristic	ancestry		
+HANCESTRO_0531	biomaterial characteristic	ancestry		
+HANCESTRO_0532	biomaterial characteristic	ancestry		
+HANCESTRO_0533	biomaterial characteristic	ancestry		
+HANCESTRO_0534	biomaterial characteristic	ancestry		
+HANCESTRO_0535	biomaterial characteristic	ancestry		
+HANCESTRO_0536	biomaterial characteristic	ancestry		
+HANCESTRO_0537	biomaterial characteristic	ancestry		
+HANCESTRO_0538	biomaterial characteristic	ancestry		
+HANCESTRO_0539	biomaterial characteristic	ancestry		
+HANCESTRO_0540	biomaterial characteristic	ancestry		
+HANCESTRO_0541	biomaterial characteristic	ancestry		
+HANCESTRO_0542	biomaterial characteristic	ancestry		
+HANCESTRO_0543	biomaterial characteristic	ancestry		
+HANCESTRO_0544	biomaterial characteristic	ancestry		
+HANCESTRO_0545	biomaterial characteristic	ancestry		
+HANCESTRO_0546	biomaterial characteristic	ancestry		
+HANCESTRO_0547	biomaterial characteristic	ancestry		
+HANCESTRO_0548	biomaterial characteristic	ancestry		
+HANCESTRO_0549	biomaterial characteristic	ancestry		
+HANCESTRO_0550	biomaterial characteristic	ancestry		
+HANCESTRO_0551	biomaterial characteristic	ancestry		
+HANCESTRO_0552	biomaterial characteristic	ancestry		
+HANCESTRO_0554	biomaterial characteristic	ancestry		
+HANCESTRO_0555	biomaterial characteristic	ancestry		
+HANCESTRO_0556	biomaterial characteristic	ancestry		
+HANCESTRO_0557	biomaterial characteristic	ancestry		
+HANCESTRO_0558	biomaterial characteristic	ancestry		
+HANCESTRO_0559	biomaterial characteristic	ancestry		
+HANCESTRO_0560	biomaterial characteristic	ancestry		
+HANCESTRO_0561	biomaterial characteristic	ancestry		
+HANCESTRO_0563	biomaterial characteristic	ancestry		
+HANCESTRO_0564	biomaterial characteristic	ancestry		
+HANCESTRO_0565	biomaterial characteristic	ancestry		
+HANCESTRO_0566	biomaterial characteristic	ancestry		
+HANCESTRO_0567	biomaterial characteristic	ancestry		
+HANCESTRO_0568	biomaterial characteristic	ancestry		
+HANCESTRO_0569	biomaterial characteristic	ancestry		
+HANCESTRO_0570	biomaterial characteristic	ancestry		
+HANCESTRO_0571	biomaterial characteristic	ancestry		
+HANCESTRO_0572	biomaterial characteristic	ancestry		
+HANCESTRO_0573	biomaterial characteristic	ancestry		
+HANCESTRO_0574	biomaterial characteristic	ancestry		
+HANCESTRO_0575	biomaterial characteristic	ancestry		
+HANCESTRO_0576	biomaterial characteristic	ancestry		
+HANCESTRO_0577	biomaterial characteristic	ancestry		
+HANCESTRO_0578	biomaterial characteristic	ancestry		
+HANCESTRO_0579	biomaterial characteristic	ancestry		
+HANCESTRO_0580	biomaterial characteristic	ancestry		
+HANCESTRO_0581	biomaterial characteristic	ancestry		
+HANCESTRO_0582	biomaterial characteristic	ancestry		
+HANCESTRO_0583	biomaterial characteristic	ancestry		
+HANCESTRO_0584	biomaterial characteristic	ancestry		
+HANCESTRO_0585	biomaterial characteristic	ancestry		
+HANCESTRO_0586	biomaterial characteristic	ancestry		
+HANCESTRO_0587	biomaterial characteristic	ancestry		
+HANCESTRO_0588	biomaterial characteristic	ancestry		
+HANCESTRO_0589	biomaterial characteristic	ancestry		
+HANCESTRO_0590	biomaterial characteristic	ancestry		
+HANCESTRO_0591	biomaterial characteristic	ancestry		
+HANCESTRO_0592	biomaterial characteristic	ancestry		
+HANCESTRO_0593	biomaterial characteristic	ancestry		
+HANCESTRO_0594	biomaterial characteristic	ancestry		
+HANCESTRO_0595	biomaterial characteristic	ancestry		
+HANCESTRO_0596	biomaterial characteristic	ancestry		
+HP_0002145	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0000814	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0000828	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0000870	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0000871	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0000872	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0000875	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0001014	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0001023	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0001394	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0001482	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0001606	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0001607	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0002582	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0002966	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0003539	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0003540	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0003541	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0003729	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0003730	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0003864	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004051	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004104	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004107	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004110	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004152	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004354	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004355	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004478	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004600	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004614	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004643	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004644	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004653	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004932	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004947	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004948	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004963	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004967	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0004996	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0005223	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0005224	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0005402	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0005525	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0006115	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0006147	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0006237	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0006861	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0007088	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0007089	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0007573	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0007896	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0008193	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0008199	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0008200	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0009539	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0009830	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0010360	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0010422	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0010643	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0010783	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0010796	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0010809	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0010820	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0011118	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0011194	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0011220	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0011513	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0011561	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0011562	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0011613	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0011647	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0011658	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0011706	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0011737	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0011743	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0011764	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0011777	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0011896	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0011908	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0011913	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0011996	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0012321	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0012344	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0012609	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0012630	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0012631	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0012883	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0013060	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0013108	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0013109	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0013167	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0013340	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0013625	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0013653	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0014036	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0014231	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0014233	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0014241	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0014265	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0014316	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0014604	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0014742	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0014796	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0015140	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0015164	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0015165	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0015166	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0015561	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0015608	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0015667	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0017279	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0017600	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0017809	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0017858	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0017893	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0017894	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0018004	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0018256	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0018433	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0018434	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0018435	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0018436	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0018437	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0018466	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0018689	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0018871	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0018872	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0018874	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0018935	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0019451	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0019455	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0019456	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0019457	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0019458	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0019460	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0019461	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0019468	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0019469	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0019470	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0019471	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0020078	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0020311	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0020316	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0020317	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0020320	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0020321	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0020322	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0020334	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0020511	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0020512	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0020526	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0020743	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0021367	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0024685	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0025488	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0025489	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0035112	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0044923	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+MONDO_0100087	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0100088	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+MONDO_0100291	biomaterial characteristic	clinical history	diagnosis	cancer or tumor
+NO_0000003	sequence feature annotation			
+NO_0000004	sequence feature annotation			
+NO_0000005	sequence feature annotation			
+NO_0000006	sequence feature annotation			
+NO_0000007	sequence feature annotation			
+NO_0000008	sequence feature annotation			
+NO_0000009	sequence feature annotation			
+NO_0000010	computing methods	algorithm		
+NO_0000011	biomaterial characteristic	clinical history	diagnostic factor	
+NO_0000012	computing methods	algorithm		
+NO_0000013	computing methods	covariate specification		
+NO_0000014	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+NO_0000015	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+NO_0000016	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+NO_0000017	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+NO_0000018	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+NO_0000019	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+NO_0000020	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+NO_0000021	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+NO_0000022	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+NO_0000023	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+NO_0000024	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+NO_0000025	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+NO_0000026	biomaterial characteristic	clinical history	diagnosis	AD/ADRD or neuropathology
+NO_0000033	biomaterial characteristic	specimen type	cell	
+NO_0000034	biomaterial characteristic	specimen type	cell	
+NO_0000035	biomaterial characteristic	specimen type	cell	
+NO_0000036	biomaterial characteristic	specimen type	cell line	
+NO_0000037	clinical history	clinical history		
+NO_0000047	biomaterial characteristic	ancestry		
+NO_0000048	biomaterial characteristic	ancestry		
+NO_0000058	chemical entity			
+NO_0000059	biomaterial characteristic	genotype		
+NO_0000060	biomaterial characteristic	genotype		
+NO_0000063	biomaterial characteristic	ancestry		
+NO_0000064	biomaterial characteristic	ancestry		
+OBCS_0000040	computing methods	covariate specification		
+OBI_0000115	study design	intervention design		
+OBI_0000634	assay	epigenetic modification assay		
+OBI_0000693	assay	epigenetic modification assay		
+OBI_0000695	assay	sequencing assay	DNA sequencing assay	
+OBI_0000697	assay	sequencing assay	DNA sequencing assay	
+OBI_0000706	assay	sequencing assay	DNA sequencing assay	
+OBI_0000723	assay	sequencing assay	DNA sequencing assay	
+OBI_0000724	assay	sequencing assay	DNA sequencing assay	
+OBI_0000730	assay	sequencing assay	DNA sequencing assay	
+OBI_0000734	assay	sequencing assay	DNA sequencing assay	
+OBI_0000748	assay	sequencing assay	DNA sequencing assay	
+OBI_0000951	study design	compound treatment design		
+OBI_0000985	study design	intervention design		
+OBI_0001162	study design			
+OBI_0001166	study design			
+OBI_0001195	study design			
+OBI_0001197	study design			
+OBI_0001199	study design			
+OBI_0001200	study design	genotyping design		
+OBI_0001202	study design			
+OBI_0001205	study design			
+OBI_0001211	study design			
+OBI_0001214	study design			
+OBI_0001226	study design			
+OBI_0001235	assay	transcription profiling assay		
+OBI_0001239	study design			
+OBI_0001252	study design			
+OBI_0001258	study design			
+OBI_0001259	study design			
+OBI_0001266	assay	epigenetic modification assay		
+OBI_0001278	study design			
+OBI_0001285	study design			
+OBI_0001286	study design			
+OBI_0001290	study design			
+OBI_0001293	study design			
+OBI_0001306	study design			
+OBI_0001310	study design			
+OBI_0001313	study design			
+OBI_0001323	study design			
+OBI_0001328	study design			
+OBI_0001329	study design			
+OBI_0001332	assay	epigenetic modification assay		
+OBI_0001335	assay	transcription profiling assay		
+OBI_0001336	study design			
+OBI_0001337	study design			
+OBI_0001358	study design			
+OBI_0001361	assay	transcription profiling assay		
+OBI_0001365	study design			
+OBI_0001374	study design			
+OBI_0001377	study design			
+OBI_0001387	study design			
+OBI_0001396	study design	intervention design		
+OBI_0001401	study design			
+OBI_0001403	study design	protein binding site identification design		
+OBI_0001408	study design			
+OBI_0001409	study design			
+OBI_0001410	study design			
+OBI_0001411	study design			
+OBI_0001417	study design	protein binding site identification design		
+OBI_0001422	study design			
+OBI_0001425	study design	protein binding site identification design		
+OBI_0001426	study design			
+OBI_0001427	study design	transcription profiling design		
+OBI_0001429	study design			
+OBI_0001430	study design	transcription profiling design		
+OBI_0001432	study design	study design		
+OBI_0001435	study design			
+OBI_0001440	study design			
+OBI_0001441	study design			
+OBI_0001444	study design			
+OBI_0001448	study design			
+OBI_0001454	study design			
+OBI_0001460	study design			
+OBI_0001463	assay	transcription profiling assay		
+OBI_0001464	study design			
+OBI_0001522	computing methods	assembly	sequence assembly algorithm	
+OBI_0001625	computing methods	annotation	sequence annotation algorithm	
+OBI_0001673	assay	transcription profiling assay		
+OBI_0001674	assay	transcription profiling assay		
+OBI_0001685	assay	epigenetic modification assay		
+OBI_0001849	assay	sequencing assay	DNA sequencing assay	
+OBI_0001850	assay	transcription profiling assay		
+OBI_0001853	assay	sequencing assay	DNA sequencing assay	
+OBI_0001859	assay	sequencing assay	DNA sequencing assay	
+OBI_0001861	assay	sequencing assay	DNA sequencing assay	
+OBI_0001862	assay	epigenetic modification assay		
+OBI_0001863	assay	epigenetic modification assay		
+OBI_0001864	assay	transcription profiling assay		
+OBI_0001919	assay	sequencing assay	DNA sequencing assay	
+OBI_0001922	assay	transcription profiling assay		
+OBI_0001924	assay	sequencing assay	DNA sequencing assay	
+OBI_0001957	study design			
+OBI_0001958	study design			
+OBI_0001965	study design			
+OBI_0002014	assay	epigenetic modification assay		
+OBI_0002015	assay	transcription profiling assay		
+OBI_0002016	assay	epigenetic modification assay		
+OBI_0002017	assay	epigenetic modification assay		
+OBI_0002029	assay	transcription profiling assay		
+OBI_0002033	assay	sequencing assay	RNA sequencing assay	
+OBI_0002034	assay	sequencing assay	RNA sequencing assay	
+OBI_0002038	assay	sequencing assay	RNA sequencing assay	
+OBI_0002041	assay	sequencing assay	RNA sequencing assay	
+OBI_0002042	assay	sequencing assay	DNA sequencing assay	
+OBI_0002044	assay	sequencing assay	RNA sequencing assay	
+OBI_0002045	assay	sequencing assay	RNA sequencing assay	
+OBI_0002086	assay	epigenetic modification assay		
+OBI_0002094	assay	epigenetic modification assay		
+OBI_0002112	assay	sequencing assay	RNA sequencing assay	
+OBI_0002113	assay	sequencing assay	RNA sequencing assay	
+OBI_0002114	assay	sequencing assay	RNA sequencing assay	
+OBI_0002117	assay	sequencing assay	DNA sequencing assay	
+OBI_0002118	assay	sequencing assay	DNA sequencing assay	
+OBI_0002142	assay	transcription profiling assay		
+OBI_0002143	assay	sequencing assay	RNA sequencing assay	
+OBI_0002144	assay	sequencing assay	DNA sequencing assay	
+OBI_0002445	assay	transcription profiling assay		
+OBI_0002446	study design			
+OBI_0002457	assay	sequencing assay	RNA sequencing assay	
+OBI_0002466	computing methods	alignment		
+OBI_0002468	computing methods	base calling		
+OBI_0002478	computing methods	alignment		
+OBI_0002484	computing methods	alignment		
+OBI_0002486	computing methods	alignment		
+OBI_0002571	assay	sequencing assay	RNA sequencing assay	
+OBI_0002572	assay	sequencing assay	RNA sequencing assay	
+OBI_0002575	assay	sequencing assay	RNA sequencing assay	
+OBI_0002590	study design	molecular interaction identification design		
+OBI_0002591	study design	molecular interaction identification design		
+OBI_0002592	study design	molecular interaction identification design		
+OBI_0002593	study design	molecular interaction identification design		
+OBI_0002594	study design	molecular interaction identification design		
+OBI_0002595	study design	molecular interaction identification design		
+OBI_0002596	study design	molecular interaction identification design		
+OBI_0002614	study design			
+OBI_0002615	study design			
+OBI_0002623	assay	sequencing assay	DNA sequencing assay	
+OBI_0002624	study design			
+OBI_0002629	assay	sequencing assay	RNA sequencing assay	
+OBI_0002631	assay	sequencing assay	RNA sequencing assay	
+OBI_0002674	study design			
+OBI_0002753	assay	sequencing assay	RNA sequencing assay	
+OBI_0002759	assay	sequencing assay	RNA sequencing assay	
+OBI_0002760	assay	sequencing assay	RNA sequencing assay	
+OBI_0002768	assay	sequencing assay	DNA sequencing assay	
+OBI_0002945	study design			
+OBI_0002961	assay	epigenetic modification assay		
+OBI_0002965	assay	transcription profiling assay		
+OBI_0003033	assay	sequencing assay	DNA sequencing assay	
+OBI_0003034	assay	sequencing assay	DNA sequencing assay	
+OBI_0300310	study design	intervention design		
+OBI_0300311	study design			
+OBI_0500002	study design	intervention design		
+OBI_0500003	study design	intervention design		
+OBI_0500004	study design	intervention design		
+OBI_0500005	study design			
+OBI_0500006	study design			
+OBI_0500007	study design	intervention design		
+OBI_0500008	study design	factorial design		
+OBI_0500009	study design			
+OBI_0500010	study design			
+OBI_0500011	study design	intervention design		
+OBI_0500012	study design	intervention design		
+OBI_0500013	study design	intervention design		
+OBI_0500014	study design	factorial design		
+OBI_0500015	study design	factorial design		
+OBI_0500016	study design	factorial design		
+OBI_0500017	study design			
+OBI_0500018	study design			
+OBI_0500019	study design			
+OBI_0500020	study design			
+OBI_2100402	assay	sequencing assay	DNA sequencing assay	
+UBERON_0002802	biomaterial characteristic	specimen type	tissue	
+UBERON_0002803	biomaterial characteristic	specimen type	tissue	
+UBERON_0002806	biomaterial characteristic	specimen type	tissue	
+UBERON_0002807	biomaterial characteristic	specimen type	tissue	
+EFO_0004744	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0004749	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0004751	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0004814	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0004830	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0004840	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0005659	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0005660	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0006793	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0006798	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0007646	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0007656	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0007657	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0007707	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0007708	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0007709	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0007739	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0008466	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0009178	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0009179	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0009367	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0009392	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0010151	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0010588	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0010589	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0010590	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0010591	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0010699	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
+EFO_0010750	biomaterial characteristic	clinical history	diagnostic factor	AD biomarker
