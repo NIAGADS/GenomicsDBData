@@ -30,3 +30,11 @@ GRANT SELECT ON ALL TABLES IN SCHEMA Core, CoreVer, DoTS, DoTsVer, Model, ModelV
 GRANT SELECT ON ALL SEQUENCES IN SCHEMA Core, CoreVer, DoTS, DoTsVer, Model, ModelVer, Platform, PlatformVer, Results, ResultsVer, SRes, SResVer, Study, StudyVer TO gus_r;
 
 
+/* comm_wdk_w
+================================================================= */
+CREATE ROLE comm_wdk_w; -- gus read for web
+
+GRANT USAGE ON SCHEMA  DoTS, DoTsVer, Model, ModelVer, Platform, PlatformVer, Results, ResultsVer, SRes, SResVer, Study, StudyVer TO comm_wdk_w;
+
+GRANT SELECT ON ALL TABLES IN SCHEMA Core, CoreVer, DoTS, DoTsVer, Model, ModelVer, Platform, PlatformVer, Results, ResultsVer, SRes, SResVer, Study, StudyVer TO comm_wdk_w;
+

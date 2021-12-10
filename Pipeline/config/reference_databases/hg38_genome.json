@@ -1,15 +1,15 @@
 {
     "file": {
 	"path": "$DATA_DIR/GENCODE",
-	"file": "GRCh38.p10.genome.fa.gz"
+	"file": "GRCh38.p13.genome.fa.gz"
     },
     "external_database": {
 	"name": "GENCODE",
-	"version": "27/GRCh38.p10",
-	"release_date": "2017-08-01",
-	"download_url": "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/",
-	"id_url": "https://www.gencodegenes.org/human/release_27.html",
-	"description": "nucleotide sequence of the GRCh38.p10 human genome assembly version on all regions, including reference chromosomes, scaffolds, assembly patches and haplotypes",
+	"version": "36/GRCh38.p13",
+	"release_date": "2020-10-01",
+	"download_url": "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_36/",
+	"id_url": "https://www.gencodegenes.org/human/release_36.html",
+	"description": "nucleotide sequence of the GRCh38.p13 human genome assembly version on all regions, including reference chromosomes, scaffolds, assembly patches and haplotypes",
 	"accession": "GENCODE_GRCH38",
 	"type": "DNA sequence"
     },
@@ -27,5 +27,6 @@
 		}
 	    }
 	}
-    ]
+    ],
+    "tuning":["$GUS_HOME/lib/sql/patches/grch38_sequence_names.sql"]
 }

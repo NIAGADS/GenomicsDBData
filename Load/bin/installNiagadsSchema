@@ -33,24 +33,17 @@ ALSO: if you are adding a create script for the NIAGADS schema
       so that if needed, the create can be manually reversed
 """
 
-GUS_DIR='gus'
-GUS = '''
-createGusRoles.sql
-'''
-GUS_SQL_FILES = qw(GUS)
-DROP_GUS_SCHEMA_SQL_FILE = 'dropEntireGusSchemaPg.sql'
-
-FUNCTION_DIR = 'functions'
-FUNCTIONS = '''
-createArrayMinFunction.sql
-createDropAllConstraintsFunction.sql
-createDropAllIndexesFunction.sql
-createIdxFunction.sql
-'''
-FUNCTION_SQL_FILES = qw(FUNCTIONS)
 
 NIAGADS_DIR = 'niagads_schema'
 NIAGADS_TABLES = '''
+createGTFGeneTrack.sql
+createMergedVariants.sql
+createNDDCategories.sql
+createPopulation.sql
+createRecordGWASCounts.sql
+createStudyRelease.sql
+createVariantGWASResult.sql
+createVariantLDResult.sql
 createVariant.sql
 '''
 
@@ -119,11 +112,8 @@ if __name__ == '__main__':
     parser.add_argument('--gusConfigFile',
                         help="GUS config file. If not provided, assumes default: $GUS_HOME/conf/gus.config")
     parser.add_argument('--dropNiagads', help="drop NIAGADS schema?", action='store_true')
-    parser.add_argument('--dropGUS', help="drop GUS schema?", action='store_true')
-    parser.add_argument('--patchGUS', help="appy GUS patches", action='store_true')
     parser.add_argument('--createSchema', help="create NIAGADS schema", action='store_true')
     parser.add_argument('--createTables', help="create NIAGADS tables", action='store_true')
-    parser.add_argument('--createFunctions', help="create NIAGADS/public functions", action='store_true')
     parser.add_argument('-v', '--verbose', help="verbose output?", action='store_true')
     parser.add_argument('-p', '--psql', help="full path to psql executeable if not standard 'psql'", default="psql")
     
@@ -131,16 +121,8 @@ if __name__ == '__main__':
     
     database = Database(args.gusConfigFile)
 
-    if args.dropNiagads or args.dropGUS:
-        verify_database('NIAGADS' if args.dropNiagads else 'GUS', database)
-
-    if args.patchGUS:
-        for sqlFile in GUS_SQL_FILES:
-            filePath = path.join(FILE_PATH, GUS_DIR, sqlFile)
-            run_sql(filePath)
-    elif args.dropGUS:
-        filePath = path.join(FILE_PATH, GUS_DIR, DROP_GUS_SCHEMA_SQL_FILE)
-        run_sql(filePath)
+    if args.dropNiagads:
+       verify_database('NIAGADS', database)
 
     elif args.dropNiagads:
         filePath = path.join(FILE_PATH, NIAGADS_DIR, DROP_NIAGADS_SCHEMA_SQL_FILE)
@@ -152,12 +134,7 @@ if __name__ == '__main__':
 
     elif args.createTables:
         for sqlFile in NIAGADS_TABLES_SQL_FILES:
-            filePath = path.join(FILE_PATH, NIAGADS_DIR, sqlFile)
-            run_sql(filePath)
-
-    elif args.createFunctions:
-        for sqlFile in FUNCTION_SQL_FILES:
-            filePath = path.join(FILE_PATH, FUNCTION_DIR, sqlFile)
+            filePath = path.join(FILE_PATH, NIAGADS_DIR, 'tables', sqlFile)
             run_sql(filePath)
 
     else:

@@ -6,8 +6,8 @@
     "external_database": {
 	"name": "Sequence Ontology",
 	"description": "The Sequence Ontology (SO) defines a set of terms and relationships used to describe sequence features and attributes used in biological sequence annotation.",
-	"version": "3.1",
-	"release_date": "2018-09-13",
+	"version": "2021-11-22",
+	"release_date": "2021-11-22",
 	"download_url": "https://raw.githubusercontent.com/The-Sequence-Ontology/SO-Ontologies/master/releases/so-xp.owl/so.obo",
 	"id_url": "http://www.sequenceontology.org/",
 	"accession": "SO",

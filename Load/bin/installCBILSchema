@@ -33,24 +33,50 @@ ALSO: if you are adding a create script for the CBIL schema
       so that if needed, the create can be manually reversed
 """
 
+#createGusRoles.sql
 GUS_DIR='gus'
 GUS = '''
-createGusRoles.sql
+results/createFeatureScoreResults.sql
+results/createGeneAssociationResult.sql
+results/createMotifResult.sql
+results/createVariantGWASCatalogResult.sql
+results/createVariantGWASResult.sql
+results/createVariantLDResult.sql
+results/createVariantPhenotypeResult.sql
+results/createVariantScoreResults.sql
+sres/alterPathwayNode.sql
+sres/createDisease.sql
+sres/createMotif.sql
+sres/createPathwayDisease.sql
+study/alterProtocolAppNode.sql
+study/alterStudy.sql
 '''
+
 GUS_SQL_FILES = qw(GUS)
 DROP_GUS_SCHEMA_SQL_FILE = 'dropEntireGusSchemaPg.sql'
 
 FUNCTION_DIR = 'functions'
 FUNCTIONS = '''
-createArrayMinFunction.sql
-createDropAllConstraintsFunction.sql
-createDropAllIndexesFunction.sql
-createIdxFunction.sql
+array_utils/createArrayMinFunction.sql
+array_utils/createIdxFunction.sql
+array_utils/createArraySort.sql
+array_utils/createJsonbBuildArrayCheckNulls.sql
+array_utils/createCastJsonArray.sql
+db_admin/createDropAllConstraintsFunction.sql
+db_admin/createDropAllIndexesFunction.sql
+db_admin/createEstimateCounts.sql
+string_processing/createMultipleReplace.sql
+string_processing/createReverseStr.sqlb
+string_processing/createTruncateStr.sql
+variant_utils/createNormalizeAlleles.sql
 '''
+
 FUNCTION_SQL_FILES = qw(FUNCTIONS)
 
 CBIL_DIR = 'cbil_schema'
 CBIL_TABLES = '''
+createDatasetModelRef.sql
+createDbRefLink.sql
 createGoAssociation.sql
 '''
 
@@ -124,6 +150,7 @@ if __name__ == '__main__':
     parser.add_argument('--createSchema', help="create CBIL schema", action='store_true')
     parser.add_argument('--createTables', help="create CBIL tables", action='store_true')
     parser.add_argument('--createFunctions', help="create CBIL/public functions", action='store_true')
+    parser.add_argument('--skipAlterStatements', help="skip alter statements in case of resume", action='store_true')
     parser.add_argument('-v', '--verbose', help="verbose output?", action='store_true')
     parser.add_argument('-p', '--psql', help="full path to psql executeable if not standard 'psql'", default="psql")
     
@@ -137,6 +164,9 @@ if __name__ == '__main__':
     if args.patchGUS:
         for sqlFile in GUS_SQL_FILES:
             filePath = path.join(FILE_PATH, GUS_DIR, sqlFile)
+            if args.skipAlterStatements and 'alter' in filePath:
+                warning("SKIPPING:", filePath)
+                continue
             run_sql(filePath)
     elif args.dropGUS:
         filePath = path.join(FILE_PATH, GUS_DIR, DROP_GUS_SCHEMA_SQL_FILE)

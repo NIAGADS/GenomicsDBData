@@ -46,6 +46,7 @@
   <target name="GenomicsDBData-Installation" depends="GUS-Installation,
                                             GenomicsDBData/Load-Installation,
                                             GenomicsDBData/Util-Installation,
+					    GenomicsDBData/BinIndex-Installation,
                                             GenomicsDBData/Pipeline-Installation,
 					    GenomicsDBData/Ontology-Installation">
 
@@ -76,6 +77,13 @@
     </ant>
   </target>
 
+  <target name="GenomicsDBData/BinIndex-Installation" depends="ProjectTree">
+    <ant target="defaultComponentInstall">
+      <property name="project" value="GenomicsDBData"/>
+      <property name="component" value="BinIndex"/>
+    </ant>
+  </target>
+  
    <target name="GenomicsDBData/Manhattan-Installation" depends="ProjectTree">
     <ant target="defaultComponentInstall">
       <property name="project" value="GenomicsDBData"/>
