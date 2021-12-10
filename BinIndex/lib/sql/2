@@ -1,0 +1,635 @@
+-- table for variant ld result
+DROP TABLE IF EXISTS Results.FeatureScore;
+DROP TABLE
+DROP SEQUENCE IF EXISTS Results.FeatureScore_SQ;
+DROP SEQUENCE
+CREATE UNLOGGED TABLE Results.FeatureScore (
+       FEATURE_SCORE_ID	     SERIAL PRIMARY KEY,
+       PROTOCOL_APP_NODE_ID	     NUMERIC(12) NOT NULL,
+       BIN_INDEX		     LTREE NOT NULL,
+       FEATURE_NAME		     CHARACTER VARYING(100),
+       CHROMOSOME		     CHARACTER VARYING(10), -- e.g., 'chr10', for web query optimization and partition hash
+       LOCATION_START		     INTEGER NOT NULL,
+       LOCATION_END		     INTEGER NOT NULL,
+       STRAND	    		     CHARACTER VARYING(1),
+       SCORE			     NUMERIC,
+       POSITION_CM		     FLOAT,
+       
+       -- GUS HOUSEKEEPING
+       MODIFICATION_DATE	 DATE,
+       USER_READ		 NUMERIC(1),
+       USER_WRITE		 NUMERIC(1),
+       GROUP_READ		 NUMERIC(10),
+       GROUP_WRITE 		 NUMERIC(1),
+       OTHER_READ		 NUMERIC(1),
+       OTHER_WRITE		 NUMERIC(1),
+       ROW_USER_ID		 NUMERIC(12),
+       ROW_GROUP_ID		 NUMERIC(4),
+       ROW_PROJECT_ID		 NUMERIC(4),
+       ROW_ALG_INVOCATION_ID	 NUMERIC(12)
+);
+CREATE TABLE
+-- INDEXES
+CREATE INDEX FS_DATASET ON Results.FeatureScore USING BRIN(PROTOCOL_APP_NODE_ID);
+CREATE INDEX
+CREATE INDEX FS_BIN_INDEX ON Results.FeatureScore USING GIST(BIN_INDEX);
+CREATE INDEX
+-- GRANTS
+GRANT SELECT ON Results.FeatureScore TO gus_r;
+GRANT
+GRANT INSERT, SELECT, UPDATE, DELETE ON Results.FeatureScore TO gus_w;
+GRANT
+-- SEQUENCES
+CREATE SEQUENCE Results.FeatureScore_SQ;
+CREATE SEQUENCE
+GRANT SELECT ON Results.FeatureScore_SQ TO gus_w;
+GRANT
+GRANT SELECT ON Results.FeatureScore_SQ TO gus_r;
+GRANT
+-- TRIGGERS
+CREATE TRIGGER results_feature_score_bin_trigger BEFORE INSERT OR UPDATE ON Results.FeatureScore
+       FOR EACH ROW EXECUTE PROCEDURE set_row_bin_index();
+CREATE TRIGGER
+-- GUS CORE
+INSERT INTO Core.TableInfo
+    (table_id, name, table_type, primary_key_column, database_id, is_versioned,
+     is_view, view_on_table_id, superclass_table_id, is_updatable,
+     modification_date, user_read, user_write, group_read, group_write,
+     other_read, other_write, row_user_id, row_group_id, row_project_id,
+     row_alg_invocation_id)
+SELECT nextval('core.tableinfo_sq'), 'FeatureScore',
+       'Standard', 'FEATURE_SCORE_ID',
+       d.database_id, 0, 0, NULL, NULL, 1,now(), 1, 1, 1, 1, 1, 1, 1, 1,
+       p.project_id, 0
+FROM 
+     (SELECT MAX(project_id) AS project_id FROM core.ProjectInfo) p,
+     (SELECT database_id FROM core.DatabaseInfo WHERE NAME = 'Results') d
+WHERE 'FeatureScore' NOT IN (SELECT NAME FROM Core.TableInfo
+                                    WHERE database_id = d.database_id);
+INSERT 0 0
+-- table for Gene SKATO results
+-- https://cran.r-project.org/web/packages/seqMeta/vignettes/seqMeta.pdf
+DROP TABLE IF EXISTS Results.GeneAssociation;
+DROP TABLE
+DROP SEQUENCE IF EXISTS Results.GeneAssociation_SQ;
+DROP SEQUENCE
+CREATE TABLE Results.GeneAssociation (
+       GENE_ASSOCIATION_ID	  SERIAL PRIMARY KEY,
+       GENE_ID				 NUMERIC(10) NOT NULL,
+       PROTOCOL_APP_NODE_ID		 NUMERIC(12) NOT NULL,
+       P_VALUE				 FLOAT NOT NULL,
+       MIN_P_VALUE			 FLOAT, -- minimum p-value across all tests (SKAT-O)
+       RHO			 	 FLOAT, -- specifies which test yields PMIN
+       CUMULATIVE_MAF			 FLOAT, -- MAF of a variant across all variants in the gene
+       CUMULATIVE_MAC			 FLOAT, -- estimate cumulative minor allele count (ntotal * 2 * cmaf)
+       NUM_SNPS				 INTEGER, --count of variants included in the test
+       SCORES				 JSONB, -- additional scores or tallies; may vary by analysis
+       CAVEAT				 JSONB,
+       COMMENT				 JSONB,
+       MODIFICATION_DATE	 DATE,
+       USER_READ		 NUMERIC(1),
+       USER_WRITE		 NUMERIC(1),
+       GROUP_READ		 NUMERIC(10),
+       GROUP_WRITE 		 NUMERIC(1),
+       OTHER_READ		 NUMERIC(1),
+       OTHER_WRITE		 NUMERIC(1),
+       ROW_USER_ID		 NUMERIC(12),
+       ROW_GROUP_ID		 NUMERIC(4),
+       ROW_PROJECT_ID		 NUMERIC(4),
+       ROW_ALG_INVOCATION_ID	 NUMERIC(12),
+       FOREIGN KEY(GENE_ID) REFERENCES DoTS.Gene(GENE_ID),
+       FOREIGN KEY(PROTOCOL_APP_NODE_ID) REFERENCES Study.ProtocolAppNode(PROTOCOL_APP_NODE_ID)
+);
+CREATE TABLE
+CREATE INDEX GENE_TRAITASSOCIATION_IND01 ON Results.GeneAssociation (GENE_ID);
+CREATE INDEX
+CREATE INDEX GENE_TRAITASSOCIATION_IND02 ON Results.GeneAssociation (PROTOCOL_APP_NODE_ID);
+CREATE INDEX
+CREATE INDEX GENE_TRAITASSOCIATION_IND03 ON Results.GeneAssociation (P_VALUE);
+CREATE INDEX
+CREATE INDEX GENE_TRAITASSOCIATION_IND04 ON Results.GeneAssociation (MIN_P_VALUE);
+CREATE INDEX
+CREATE SEQUENCE Results.GeneAssociation_SQ;
+CREATE SEQUENCE
+GRANT SELECT ON Results.GeneAssociation TO gus_r;
+GRANT
+GRANT INSERT, SELECT, UPDATE, DELETE ON Results.GeneAssociation TO gus_w;
+GRANT
+GRANT SELECT ON Results.GeneAssociation_SQ TO gus_w;
+GRANT
+GRANT SELECT ON Results.GeneAssociation_SQ TO gus_r;
+GRANT
+INSERT INTO Core.TableInfo
+    (table_id, name, table_type, primary_key_column, database_id, is_versioned,
+     is_view, view_on_table_id, superclass_table_id, is_updatable,
+     modification_date, user_read, user_write, group_read, group_write,
+     other_read, other_write, row_user_id, row_group_id, row_project_id,
+     row_alg_invocation_id)
+SELECT nextval('core.tableinfo_sq'), 'GeneAssociation',
+       'Standard', 'GENE_ASSOCIATION_ID',
+       d.database_id, 0, 0, NULL, NULL, 1,now(), 1, 1, 1, 1, 1, 1, 1, 1,
+       p.project_id, 0
+FROM 
+     (SELECT MAX(project_id) AS project_id FROM core.ProjectInfo) p,
+     (SELECT database_id FROM core.DatabaseInfo WHERE NAME = 'Results') d
+WHERE 'GeneAssociation' NOT IN (SELECT NAME FROM Core.TableInfo
+                                    WHERE database_id = d.database_id);
+INSERT 0 0
+-- table for motif results
+DROP TABLE IF EXISTS Results.Motif;
+DROP TABLE
+DROP SEQUENCE IF EXISTS Results.Motif_SQ;
+DROP SEQUENCE
+CREATE UNLOGGED TABLE Results.Motif (
+       MOTIF_ID SERIAL NOT NULL,
+       EXTERNAL_DATABASE_RELEASE_ID  NUMERIC(12) NOT NULL,
+       CHROMOSOME		     CHARACTER VARYING(10) NOT NULL,
+       STRAND		     	     CHARACTER VARYING(2),
+       LOCATION_START		     INTEGER NOT NULL,
+       LOCATION_END		     INTEGER NOT NULL,
+       BIN_INDEX		     LTREE, -- NOT NULL/ can't be set b/c TRIGGER is "AFTER"
+       MOTIF_SOURCE_ID			     CHARACTER VARYING(50) NOT NULL,
+       MATRIX_ID		     CHARACTER VARYING(50) NOT NULL,
+       FEATURE_TYPE			     CHARACTER VARYING(50),
+       SCORE			     FLOAT,
+       ANNOTATION		     JSONB,
+       -- GUS HOUSEKEEPING
+       MODIFICATION_DATE	 DATE,
+       USER_READ		 NUMERIC(1),
+       USER_WRITE		 NUMERIC(1),
+       GROUP_READ		 NUMERIC(10),
+       GROUP_WRITE 		 NUMERIC(1),
+       OTHER_READ		 NUMERIC(1),
+       OTHER_WRITE		 NUMERIC(1),
+       ROW_USER_ID		 NUMERIC(12),
+       ROW_GROUP_ID		 NUMERIC(4),
+       ROW_PROJECT_ID		 NUMERIC(4),
+       ROW_ALG_INVOCATION_ID	 NUMERIC(12)
+) PARTITION BY LIST (CHROMOSOME);
+CREATE TABLE
+-- CREATE PARTITIONS
+CREATE OR REPLACE FUNCTION "public"."create_motif_partitions" ()  RETURNS integer
+  VOLATILE
+  AS $body$
+DECLARE
+      partition TEXT;
+      chr TEXT;
+    BEGIN
+
+      FOR chr IN
+        SELECT UNNEST(string_to_array('chr1 chr2 chr3 chr4 chr5 chr6 chr7 chr8 chr9 chr10 chr11 chr12 chr13 chr14 chr15 chr16 chr17 chr18 chr19 chr20 chr21 chr22 chrX chrY chrM', ' '))
+      LOOP
+        partition := 'Results.Motif' || '_' || chr::text;
+        IF NOT EXISTS(SELECT relname FROM pg_class WHERE relname=partition) THEN
+           EXECUTE 'CREATE TABLE ' || partition || ' PARTITION OF Results.Motif FOR VALUES IN (''' || chr || ''')';
+           RAISE NOTICE 'A partition has been created %',partition;
+         END IF;
+      END LOOP;
+      RETURN NULL;
+    END;
+$body$ LANGUAGE plpgsql;
+CREATE FUNCTION
+SELECT create_motif_partitions();
+ create_motif_partitions 
+-------------------------
+                        
+(1 row)
+
+-- TRIGGERS
+CREATE OR REPLACE FUNCTION "public"."create_motif_triggers" ()  RETURNS integer
+  VOLATILE
+  AS $body$
+DECLARE
+      partition TEXT;
+      chr TEXT;
+    BEGIN
+
+      FOR chr IN
+        SELECT UNNEST(string_to_array('chr1 chr2 chr3 chr4 chr5 chr6 chr7 chr8 chr9 chr10 chr11 chr12 chr13 chr14 chr15 chr16 chr17 chr18 chr19 chr20 chr21 chr22 chrX chrY chrM', ' '))
+      LOOP
+        partition := 'Results.Motif' || '_' || chr::text;
+	EXECUTE 'CREATE TRIGGER set_bin_trigger_motif_' || chr::text || ' BEFORE INSERT OR UPDATE ON ' || partition 
+	 || ' FOR EACH ROW EXECUTE PROCEDURE set_row_bin_index()';
+
+	RAISE NOTICE 'A trigger has been created for partition: %',partition;
+      END LOOP;
+      RETURN NULL;
+    END;
+$body$ LANGUAGE plpgsql;
+CREATE FUNCTION
+SELECT create_motif_triggers();
+ create_motif_triggers 
+-----------------------
+                      
+(1 row)
+
+-- INDEXES
+CREATE INDEX MOTIF_MATRIX ON Results.Motif(motif_source_id, matrix_id);
+CREATE INDEX
+/* CREATE INDEX MOTIF_BIN_INDEX ON Results.Motif USING GIST(BIN_INDEX);
+*/
+-- GRANTS
+GRANT SELECT ON Results.Motif TO gus_r;
+GRANT
+GRANT INSERT, SELECT, UPDATE, DELETE ON Results.Motif TO gus_w;
+GRANT
+-- SEQUENCES
+CREATE SEQUENCE Results.Motif_SQ;
+CREATE SEQUENCE
+GRANT SELECT ON Results.Motif_SQ TO gus_w;
+GRANT
+GRANT SELECT ON Results.Motif_SQ TO gus_r;
+GRANT
+-- GUS CORE
+INSERT INTO Core.TableInfo
+    (table_id, name, table_type, primary_key_column, database_id, is_versioned,
+     is_view, view_on_table_id, superclass_table_id, is_updatable,
+     modification_date, user_read, user_write, group_read, group_write,
+     other_read, other_write, row_user_id, row_group_id, row_project_id,
+     row_alg_invocation_id)
+SELECT nextval('core.tableinfo_sq'), 'Motif',
+       'Standard', 'MOTIF_ID',
+       d.database_id, 0, 0, NULL, NULL, 1,now(), 1, 1, 1, 1, 1, 1, 1, 1,
+       p.project_id, 0
+FROM 
+     (SELECT MAX(project_id) AS project_id FROM core.ProjectInfo) p,
+     (SELECT database_id FROM core.DatabaseInfo WHERE NAME = 'Results') d
+WHERE 'Motif' NOT IN (SELECT NAME FROM Core.TableInfo
+                                    WHERE database_id = d.database_id);
+INSERT 0 0
+-- table for variant gwas result
+DROP TABLE IF EXISTS Results.VariantCatalog;
+DROP TABLE
+DROP SEQUENCE IF EXISTS Results.VariantCatalog_SQ;
+DROP SEQUENCE
+CREATE TABLE Results.VariantCatalog (
+       VARIANT_CATALOG_ID	     SERIAL PRIMARY KEY,
+       PROTOCOL_APP_NODE_ID	     NUMERIC(12) NOT NULL,
+       VARIANT_ID		     INTEGER NOT NULL,
+       NEG_LOG10_PVALUE	     	     FLOAT NOT NULL,
+       PVALUE_DISPLAY		     CHARACTER VARYING(25) NOT NULL, -- scientific notation
+       FREQUENCY		     FLOAT,
+       ALLELE			     TEXT,
+       ONTOLOGY_TERM_ID		     NUMERIC(12) NOT NULL,
+       EVIDENCE			     JSONB,
+       -- GUS HOUSEKEEPING
+       MODIFICATION_DATE	 DATE,
+       USER_READ		 NUMERIC(1),
+       USER_WRITE		 NUMERIC(1),
+       GROUP_READ		 NUMERIC(10),
+       GROUP_WRITE 		 NUMERIC(1),
+       OTHER_READ		 NUMERIC(1),
+       OTHER_WRITE		 NUMERIC(1),
+       ROW_USER_ID		 NUMERIC(12),
+       ROW_GROUP_ID		 NUMERIC(4),
+       ROW_PROJECT_ID		 NUMERIC(4),
+       ROW_ALG_INVOCATION_ID	 NUMERIC(12)
+);
+CREATE TABLE
+-- CONSTRAINTS
+ALTER TABLE Results.VariantCatalog ADD CONSTRAINT VC_PROTOCOL_APP_NODE_ID FOREIGN KEY (protocol_app_node_id) REFERENCES Study.ProtocolAppNode (protocol_app_node_id);
+ALTER TABLE
+-- ALTER TABLE Results.VariantCatalog ADD CONSTRAINT CONST_VGWAS_VARIANT_ID FOREIGN KEY (variant_id) REFERENCES NIAGADS.Variant (variant_id);
+ALTER TABLE Results.VariantCatalog ADD CONSTRAINT CONST_VC_OT_ID FOREIGN KEY (ontology_term_id) REFERENCES SRes.OntologyTerm (ontology_term_id);
+ALTER TABLE
+-- INDEXES
+CREATE INDEX Catalog_RESULT_IND01 ON Results.VariantCatalog USING BRIN(PROTOCOL_APP_NODE_ID);
+CREATE INDEX
+CREATE INDEX Catalog_RESULT_IND02 ON Results.VariantCatalog (PROTOCOL_APP_NODE_ID, ONTOLOGY_TERM_ID, VARIANT_ID);
+CREATE INDEX
+CREATE INDEX Catalog_RESULT_IND03 ON Results.VariantCatalog (VARIANT_ID);
+CREATE INDEX
+CREATE INDEX Catalog_RESULT_IND04 ON Results.VariantCatalog (ONTOLOGY_TERM_ID, VARIANT_ID);
+CREATE INDEX
+-- GRANTS
+GRANT SELECT ON Results.VariantCatalog TO gus_r;
+GRANT
+GRANT INSERT, SELECT, UPDATE, DELETE ON Results.VariantCatalog TO gus_w;
+GRANT
+-- SEQUENCES
+CREATE SEQUENCE Results.VariantCatalog_SQ;
+CREATE SEQUENCE
+GRANT SELECT ON Results.VariantCatalog_SQ TO gus_w;
+GRANT
+GRANT SELECT ON Results.VariantCatalog_SQ TO gus_r;
+GRANT
+-- GUS CORE
+INSERT INTO Core.TableInfo
+    (table_id, name, table_type, primary_key_column, database_id, is_versioned,
+     is_view, view_on_table_id, superclass_table_id, is_updatable,
+     modification_date, user_read, user_write, group_read, group_write,
+     other_read, other_write, row_user_id, row_group_id, row_project_id,
+     row_alg_invocation_id)
+SELECT nextval('core.tableinfo_sq'), 'VariantCatalog',
+       'Standard', 'VARIANT_CATALOG_ID',
+       d.database_id, 0, 0, NULL, NULL, 1,now(), 1, 1, 1, 1, 1, 1, 1, 1,
+       p.project_id, 0
+FROM 
+     (SELECT MAX(project_id) AS project_id FROM core.ProjectInfo) p,
+     (SELECT database_id FROM core.DatabaseInfo WHERE NAME = 'Results') d
+WHERE 'VariantCatalog' NOT IN (SELECT NAME FROM Core.TableInfo
+                                    WHERE database_id = d.database_id);
+INSERT 0 0
+-- table for variant gwas result
+DROP TABLE IF EXISTS Results.VariantGWAS;
+DROP TABLE
+DROP SEQUENCE IF EXISTS Results.VariantGWAS_SQ;
+DROP SEQUENCE
+CREATE TABLE Results.VariantGWAS (
+       VARIANT_GWAS_ID	     	 BIGSERIAL PRIMARY KEY,
+       PROTOCOL_APP_NODE_ID	     NUMERIC(12) NOT NULL,
+       VARIANT_RECORD_PRIMARY_KEY	     TEXT NOT NULL,
+       BIN_INDEX		     LTREE,
+       NEG_LOG10_PVALUE	     	     FLOAT NOT NULL,
+       PVALUE_DISPLAY		     CHARACTER VARYING(25) NOT NULL, -- scientific notation
+       FREQUENCY		     FLOAT,
+       ALLELE			     TEXT,
+       RESTRICTED_STATS		     JSONB,
+       -- GUS HOUSEKEEPING
+       MODIFICATION_DATE	 DATE,
+       USER_READ		 NUMERIC(1),
+       USER_WRITE		 NUMERIC(1),
+       GROUP_READ		 NUMERIC(10),
+       GROUP_WRITE 		 NUMERIC(1),
+       OTHER_READ		 NUMERIC(1),
+       OTHER_WRITE		 NUMERIC(1),
+       ROW_USER_ID		 NUMERIC(12),
+       ROW_GROUP_ID		 NUMERIC(4),
+       ROW_PROJECT_ID		 NUMERIC(4),
+       ROW_ALG_INVOCATION_ID	 NUMERIC(12)
+);
+CREATE TABLE
+-- CONSTRAINTS
+--ALTER TABLE Results.VariantGWAS ADD CONSTRAINT CONST_VGWAS_PROTOCOL_APP_NODE_ID FOREIGN KEY (protocol_app_node_id) REFERENCES Study.ProtocolAppNode (protocol_app_node_id);
+-- INDEXES
+CREATE INDEX GWAS_RESULT_PAN_BRIN ON Results.VariantGWAS USING BRIN(PROTOCOL_APP_NODE_ID);
+CREATE INDEX
+-- GRANTS
+GRANT SELECT ON Results.VariantGWAS TO gus_r;
+GRANT
+GRANT INSERT, SELECT, UPDATE, DELETE ON Results.VariantGWAS TO gus_w;
+GRANT
+-- SEQUENCES
+CREATE SEQUENCE Results.VariantGWAS_SQ;
+CREATE SEQUENCE
+GRANT SELECT ON Results.VariantGWAS_SQ TO gus_w;
+GRANT
+GRANT SELECT ON Results.VariantGWAS_SQ TO gus_r;
+GRANT
+-- GUS CORE
+INSERT INTO Core.TableInfo
+    (table_id, name, table_type, primary_key_column, database_id, is_versioned,
+     is_view, view_on_table_id, superclass_table_id, is_updatable,
+     modification_date, user_read, user_write, group_read, group_write,
+     other_read, other_write, row_user_id, row_group_id, row_project_id,
+     row_alg_invocation_id)
+SELECT nextval('core.tableinfo_sq'), 'VariantGWAS',
+       'Standard', 'VARIANT_GWAS_ID',
+       d.database_id, 0, 0, NULL, NULL, 1,now(), 1, 1, 1, 1, 1, 1, 1, 1,
+       p.project_id, 0
+FROM 
+     (SELECT MAX(project_id) AS project_id FROM core.ProjectInfo) p,
+     (SELECT database_id FROM core.DatabaseInfo WHERE NAME = 'Results') d
+WHERE 'VariantGWAS' NOT IN (SELECT NAME FROM Core.TableInfo
+                                    WHERE database_id = d.database_id);
+INSERT 0 0
+-- table for variant ld result
+DROP TABLE IF EXISTS Results.VariantLD;
+DROP TABLE
+DROP SEQUENCE IF EXISTS Results.VariantLD_SQ;
+DROP SEQUENCE
+CREATE UNLOGGED TABLE Results.VariantLD (
+       POPULATION_PROTOCOL_APP_NODE_ID	     NUMERIC(12) NOT NULL,
+       CHROMOSOME		     CHARACTER VARYING(10) NOT NULL,
+       VARIANTS		     	     TEXT ARRAY[2] NOT NULL,
+       LOCATIONS		     BIGINT ARRAY[2] NOT NULL,
+       DISTANCE			     INTEGER,
+       MINOR_ALLELE_FREQUENCY	     FLOAT ARRAY[2],       
+       R_SQUARED		     FLOAT,
+       D_PRIME			     FLOAT,
+       BIN_INDEX		     LTREE NOT NULL,
+       -- GUS HOUSEKEEPING
+       MODIFICATION_DATE	 DATE,
+       USER_READ		 NUMERIC(1),
+       USER_WRITE		 NUMERIC(1),
+       GROUP_READ		 NUMERIC(10),
+       GROUP_WRITE 		 NUMERIC(1),
+       OTHER_READ		 NUMERIC(1),
+       OTHER_WRITE		 NUMERIC(1),
+       ROW_USER_ID		 NUMERIC(12),
+       ROW_GROUP_ID		 NUMERIC(4),
+       ROW_PROJECT_ID		 NUMERIC(4),
+       ROW_ALG_INVOCATION_ID	 NUMERIC(12)
+) PARTITION BY LIST (CHROMOSOME);
+CREATE TABLE
+-- CREATE PARTITIONS
+CREATE OR REPLACE FUNCTION "public"."create_ld_partitions" ()  RETURNS integer
+  VOLATILE
+  AS $body$
+DECLARE
+      partition TEXT;
+      chr TEXT;
+    BEGIN
+
+      FOR chr IN
+        SELECT UNNEST(string_to_array('chr1 chr2 chr3 chr4 chr5 chr6 chr7 chr8 chr9 chr10 chr11 chr12 chr13 chr14 chr15 chr16 chr17 chr18 chr19 chr20 chr21 chr22 chrX chrY chrM', ' '))
+      LOOP
+        partition := 'Results.VariantLD' || '_' || chr::text;
+        IF NOT EXISTS(SELECT relname FROM pg_class WHERE relname=partition) THEN
+           EXECUTE 'CREATE TABLE ' || partition || ' PARTITION OF Results.VariantLD FOR VALUES IN (''' || chr || ''')';
+           RAISE NOTICE 'A partition has been created %',partition;
+         END IF;
+      END LOOP;
+      RETURN NULL;
+    END;
+$body$ LANGUAGE plpgsql;
+CREATE FUNCTION
+SELECT create_ld_partitions();
+ create_ld_partitions 
+----------------------
+                     
+(1 row)
+
+-- INDEXES
+/* CREATE INDEX LD_RESULT_POPULATION ON Results.VariantLD USING BRIN(POPULATION_PROTOCOL_APP_NODE_ID);
+CREATE INDEX LD_RESULT_REFSNP ON Results.VariantLD USING GIN(VARIANTS array_ops);
+CREATE INDEX LD_RESULT_MAF ON Results.VariantLD USING GIN(MINOR_ALLELE_FREQUENCY);
+CREATE INDEX LD_RESULT_BIN_INDEX ON Variant USING GIST(BIN_INDEX);
+*/
+-- GRANTS
+GRANT SELECT ON Results.VariantLD TO gus_r;
+GRANT
+GRANT INSERT, SELECT, UPDATE, DELETE ON Results.VariantLD TO gus_w;
+GRANT
+-- SEQUENCES
+CREATE SEQUENCE Results.VariantLD_SQ;
+CREATE SEQUENCE
+GRANT SELECT ON Results.VariantLD_SQ TO gus_w;
+GRANT
+GRANT SELECT ON Results.VariantLD_SQ TO gus_r;
+GRANT
+-- GUS CORE
+INSERT INTO Core.TableInfo
+    (table_id, name, table_type, primary_key_column, database_id, is_versioned,
+     is_view, view_on_table_id, superclass_table_id, is_updatable,
+     modification_date, user_read, user_write, group_read, group_write,
+     other_read, other_write, row_user_id, row_group_id, row_project_id,
+     row_alg_invocation_id)
+SELECT nextval('core.tableinfo_sq'), 'VariantLD',
+       'Standard', 'VARIANT_LD_ID',
+       d.database_id, 0, 0, NULL, NULL, 1,now(), 1, 1, 1, 1, 1, 1, 1, 1,
+       p.project_id, 0
+FROM 
+     (SELECT MAX(project_id) AS project_id FROM core.ProjectInfo) p,
+     (SELECT database_id FROM core.DatabaseInfo WHERE NAME = 'Results') d
+WHERE 'VariantLD' NOT IN (SELECT NAME FROM Core.TableInfo
+                                    WHERE database_id = d.database_id);
+INSERT 0 0
+-- table for variant gwas result
+DROP TABLE IF EXISTS Results.VariantPhenotype;
+DROP TABLE
+DROP SEQUENCE IF EXISTS Results.VariantPhenotype_SQ;
+DROP SEQUENCE
+CREATE TABLE Results.VariantPhenotype (
+       VARIANT_PHENOTYPE_ID	     SERIAL PRIMARY KEY,
+       PROTOCOL_APP_NODE_ID	     NUMERIC(12) NOT NULL,
+       VARIANT_RECORD_PRIMARY_KEY    TEXT NOT NULL,
+       BIN_INDEX		     LTREE,
+       NEG_LOG10_PVALUE	     	     FLOAT,
+       PVALUE_DISPLAY		     CHARACTER VARYING(25), -- scientific notation
+       FREQUENCY		     FLOAT,
+       ALLELE			     TEXT,
+       ONTOLOGY_TERMS		     JSONB,
+       PHENOTYPE		     CHARACTER VARYING(250),
+       EVIDENCE			     JSONB,
+       -- GUS HOUSEKEEPING
+       MODIFICATION_DATE	 DATE,
+       USER_READ		 NUMERIC(1),
+       USER_WRITE		 NUMERIC(1),
+       GROUP_READ		 NUMERIC(10),
+       GROUP_WRITE 		 NUMERIC(1),
+       OTHER_READ		 NUMERIC(1),
+       OTHER_WRITE		 NUMERIC(1),
+       ROW_USER_ID		 NUMERIC(12),
+       ROW_GROUP_ID		 NUMERIC(4),
+       ROW_PROJECT_ID		 NUMERIC(4),
+       ROW_ALG_INVOCATION_ID	 NUMERIC(12)
+);
+CREATE TABLE
+-- CONSTRAINTS
+ALTER TABLE Results.VariantPhenotype ADD CONSTRAINT VP_PROTOCOL_APP_NODE_ID FOREIGN KEY (protocol_app_node_id) REFERENCES Study.ProtocolAppNode (protocol_app_node_id);
+ALTER TABLE
+-- INDEXES
+CREATE INDEX Phenotype_RESULT_IND01 ON Results.VariantPhenotype USING BRIN(PROTOCOL_APP_NODE_ID);
+CREATE INDEX
+CREATE INDEX Phenotype_RESULT_IND02 ON Results.VariantPhenotype (PROTOCOL_APP_NODE_ID, PHENOTYPE, VARIANT_RECORD_PRIMARY_KEY);
+CREATE INDEX
+CREATE INDEX Phenotype_RESULT_IND03 ON Results.VariantPhenotype (VARIANT_RECORD_PRIMARY_KEY);
+CREATE INDEX
+CREATE INDEX Phenotype_RESULT_IND04 ON Results.VariantPhenotype (PHENOTYPE, VARIANT_RECORD_PRIMARY_KEY);
+CREATE INDEX
+CREATE INDEX Phenotype_RESULT_IND05 ON Results.VariantPhenotype USING GIST(BIN_INDEX);
+CREATE INDEX
+-- GRANTS
+GRANT SELECT ON Results.VariantPhenotype TO gus_r;
+GRANT
+GRANT INSERT, SELECT, UPDATE, DELETE ON Results.VariantPhenotype TO gus_w;
+GRANT
+-- SEQUENCES
+CREATE SEQUENCE Results.VariantPhenotype_SQ;
+CREATE SEQUENCE
+GRANT SELECT ON Results.VariantPhenotype_SQ TO gus_w;
+GRANT
+GRANT SELECT ON Results.VariantPhenotype_SQ TO gus_r;
+GRANT
+-- GUS CORE
+INSERT INTO Core.TableInfo
+    (table_id, name, table_type, primary_key_column, database_id, is_versioned,
+     is_view, view_on_table_id, superclass_table_id, is_updatable,
+     modification_date, user_read, user_write, group_read, group_write,
+     other_read, other_write, row_user_id, row_group_id, row_project_id,
+     row_alg_invocation_id)
+SELECT nextval('core.tableinfo_sq'), 'VariantPhenotype',
+       'Standard', 'VARIANT_PHENOTYPE_ID',
+       d.database_id, 0, 0, NULL, NULL, 1,now(), 1, 1, 1, 1, 1, 1, 1, 1,
+       p.project_id, 0
+FROM 
+     (SELECT MAX(project_id) AS project_id FROM core.ProjectInfo) p,
+     (SELECT database_id FROM core.DatabaseInfo WHERE NAME = 'Results') d
+WHERE 'VariantPhenotype' NOT IN (SELECT NAME FROM Core.TableInfo
+                                    WHERE database_id = d.database_id);
+INSERT 0 0
+-- table for variant score (e.g., CADD/CATO) result
+-- partitioned on the protocol app node
+DROP TABLE IF EXISTS Results.VariantScore;
+DROP TABLE
+DROP SEQUENCE IF EXISTS Results.VariantScore_SQ;
+DROP SEQUENCE
+CREATE UNLOGGED TABLE Results.VariantScore  (
+       --VARIANT_SCORE_ID	     BIGSERIAL NOT NULL,
+       PROTOCOL_APP_NODE_ID	     NUMERIC(12) NOT NULL,
+       PROTOCOL_APP_NODE_SOURCE_ID	     CHARACTER VARYING(25) NOT NULL,
+       VARIANT_ID		     INTEGER NOT NULL,
+       BIN_INDEX		     LTREE,
+       VARIANT_RECORD_PK	     CHARACTER VARYING(800) NOT NULL, -- chr:pos:ref:alt id,
+       SCORE1 			     FLOAT NOT NULL,
+       SCORE2 			     FLOAT,
+       ANNOTATION	JSONB,
+       
+       -- GUS HOUSEKEEPING
+       MODIFICATION_DATE	 DATE,
+       USER_READ		 NUMERIC(1),
+       USER_WRITE		 NUMERIC(1),
+       GROUP_READ		 NUMERIC(10),
+       GROUP_WRITE 		 NUMERIC(1),
+       OTHER_READ		 NUMERIC(1),
+       OTHER_WRITE		 NUMERIC(1),
+       ROW_USER_ID		 NUMERIC(12),
+       ROW_GROUP_ID		 NUMERIC(4),
+       ROW_PROJECT_ID		 NUMERIC(4),
+       ROW_ALG_INVOCATION_ID	 NUMERIC(12)
+) PARTITION BY LIST (PROTOCOL_APP_NODE_SOURCE_ID);
+CREATE TABLE
+CREATE TABLE Results.VariantScore_CADD PARTITION OF Results.VariantScore FOR VALUES IN ('CADD');
+CREATE TABLE
+CREATE TABLE Results.VariantScore_CATO PARTITION OF Results.VariantScore FOR VALUES IN ('CATO');
+CREATE TABLE
+-- CONSTRAINTS
+--ALTER TABLE Results.VariantScore ADD CONSTRAINT CONST_VScore_PROTOCOL_APP_NODE_ID FOREIGN KEY (protocol_app_node_id) REFERENCES Study.ProtocolAppNode (protocol_app_node_id);
+--ALTER TABLE Results.VariantScore ADD CONSTRAINT CONST_VScore_VARIANT_ID FOREIGN KEY (variant_id) REFERENCES NIAGADS.Variant (variant_id);
+-- INDEXES
+--CREATE INDEX Score_RESULT_IND01 ON Results.VariantScore USING BRIN(PROTOCOL_APP_NODE_ID);
+--CREATE INDEX Score_RESULT_IND02 ON Results.VariantScore (variant_record_pk);
+--CREATE INDEX Score_RESULT_IND03 ON Results.VariantScore (score1,variant_record_pk);
+--CREATE INDEX Score_RESULT_IND04 ON Results.VariantScore (score2,variant_record_pk);
+--CREATE INDEX Score_RESULT_IND05 ON Results.VariantScore USING GIST(BIN_INDEX);
+-- GRANTS
+GRANT SELECT ON Results.VariantScore TO gus_r;
+GRANT
+GRANT INSERT, SELECT, UPDATE, DELETE ON Results.VariantScore TO gus_w;
+GRANT
+-- SEQUENCES
+CREATE SEQUENCE Results.VariantScore_SQ;
+CREATE SEQUENCE
+GRANT SELECT ON Results.VariantScore_SQ TO gus_w;
+GRANT
+GRANT SELECT ON Results.VariantScore_SQ TO gus_r;
+GRANT
+-- GUS CORE
+INSERT INTO Core.TableInfo
+    (table_id, name, table_type, primary_key_column, database_id, is_versioned,
+     is_view, view_on_table_id, superclass_table_id, is_updatable,
+     modification_date, user_read, user_write, group_read, group_write,
+     other_read, other_write, row_user_id, row_group_id, row_project_id,
+     row_alg_invocation_id)
+SELECT nextval('core.tableinfo_sq'), 'VariantScore',
+       'Standard', 'VARIANT_SCORE_ID',
+       d.database_id, 0, 0, NULL, NULL, 1,now(), 1, 1, 1, 1, 1, 1, 1, 1,
+       p.project_id, 0
+FROM 
+     (SELECT MAX(project_id) AS project_id FROM core.ProjectInfo) p,
+     (SELECT database_id FROM core.DatabaseInfo WHERE NAME = 'Results') d
+WHERE 'VariantScore' NOT IN (SELECT NAME FROM Core.TableInfo
+                                    WHERE database_id = d.database_id);
+INSERT 0 0
+ALTER TABLE SRes.PathwayNode ADD COLUMN evidence_code CHARACTER VARYING(10);
