@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+#pylint: disable=invalid-name
+#pylint: disable=multiple-statements
+
+from __future__ import print_function
+import argparse
+from GenomicsDBData.Util.postgres_dbi import Database
+from GenomicsDBData.Util.utils import xstr
+
+def get_chr_map():
+
+    sql = '''SELECT source_id, CASE WHEN chromosome IS NULL THEN source_id ELSE chromosome END AS chromosome, 
+CASE WHEN chromosome_order_num IS NULL THEN 26 ELSE chromosome_order_num END AS chromosome_order_num, length 
+FROM DoTS.ExternalNASequence ORDER BY chromosome_order_num, source_id''';
+    
+    with database.cursor() as cursor, open(args.outputFile, 'w') as ofh:
+        print('\t'.join(("source_id", "chromosome", "chromosome_order_num", "length")), file=ofh)
+        cursor.execute(sql)
+        for record in cursor:
+            print('\t'.join([xstr(v) for v in record]), file=ofh)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="generate chr map file")
+    parser.add_argument('--gusConfigFile', help="full path to gusConfig File; if not specified uses $GUS_HOME/config/gus.config")
+    parser.add_argument('-o', '--outputFile', help="full path to output file", required=True)
+    args = parser.parse_args()
+
+    database = Database(args.gusConfigFile)
+    database.connect()
+
+    get_chr_map()
+    
+    database.close()
+
