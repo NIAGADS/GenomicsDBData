@@ -1,0 +1,56 @@
+#!/usr/bin/perl
+
+### usage:  addProteinSeq3GffFile.pl genome.gff protein.fasta > addProt_genome.gff
+### from ApiCommonData/Load -- check for modifications
+
+use strict;
+
+my ($gffFile, $protFile, $outputFile) = @ARGV;
+
+my (%proteins, $seqId);
+open (IN, $protFile) || die "can not open protFile file to read.\n";
+while (<IN>) {
+  chomp;
+  next if ($_ =~ /^\s*$/);
+  if ($_ =~ /^\>(\S+)/) {
+    $seqId = getId($_);
+    # die $seqId . ' : ' . $_;
+  }
+  else {
+    $proteins{$seqId} .= $_;
+    # die "$seqId - " . $proteins{$seqId};
+  }
+}
+close IN;
+
+open (INN, $gffFile) || die "can not open gffFile to read\n";
+open (OUT, '>', $outputFile) || die "cannot create output file";
+
+while (<INN>) {
+  chomp;
+  my @items = split (/\t/, $_);
+  if ($items[2] eq 'transcript') {
+    if ($items[8] =~ /protein_id=(\S+?);/) {
+      #print STDERR $items[8] ."\n";
+      #print STDERR "ID:" . $1 . "\n";
+      #die $proteins{$1} . "\n";
+      $items[8] .= ";translation=" . $proteins{$1} . ";"
+        if defined $proteins{$1} and $proteins{$1} ne "";
+    }
+  }
+
+  foreach my $i (0..8) {
+    ($i == 8) ? print OUT "$items[$i]\n" : print OUT "$items[$i]\t";
+  }
+}
+close INN;
+
+
+sub getId {
+  my ($line) = @_;
+
+  my @fields = split(/\|/, $line);
+  $fields[0] =~ /\>(\S+)\s*/;
+  my $id = $1
+}
+

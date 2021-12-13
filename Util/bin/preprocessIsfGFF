@@ -30,7 +30,7 @@ my  %features = (gene => 1,
 
 foreach my $line (<IN>) {
   $line =~ s/\cM//g;
-
+  
   if (!($line =~ /^\#/) && !($line =~ /^\s+$/)) {
     chomp($line);
     my (@cols) = split(/\t/,$line);
