@@ -84,7 +84,8 @@
 		    "bioperlTreeOutput": "@file.path/bioperlTree.log",
 		    "seqIdColumn": "source_id",
 		    "naSequenceSubClass": "ExternalNASequence",
-		    "chromosomeMapFile": "@file.chr_map"
+		    "chromosomeMapFile": "@file.chr_map",
+		    "seqIdColumn": "chromosome"
 		    
 		}
 	    }

@@ -336,7 +336,7 @@ sub doRelationships {
     my $subjectTermId = $self->getTermIdFromSourceId($terms, $subject);
     my $objectTermId = $self->getTermIdFromSourceId($terms, $object);
 
-    $type = "is a" if ($type eq "subClassOf"); # EGA for NDD
+    # $type = "is a" if ($type eq "subClassOf"); # EGA for NDD
 
     my $relationshipTypeId = $relationshipTypes->{$type};
 

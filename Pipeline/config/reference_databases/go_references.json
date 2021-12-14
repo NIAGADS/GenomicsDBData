@@ -1,17 +1,30 @@
 {
     "file": {
-	"path": "$SHARED_DATA_DIR/gene_ontology",
-	"file": "GO.references"
+	"path": "$DATA_DIR/gene_ontology",
+	"go_archive_file": "go-release-archive.tgz",
+	"go_archive_path": "./data/metadata",
+	"file": "go-refs.json"
     },
     "external_database": {
 	"name": "Gene Ontology Reference Collection",
 	"description": "The GO reference collection is a set of abstracts that can be cited in the GO ontologies (e.g. as dbxrefs for term definitions) and annotation files (in the Reference column). The collection houses two main kinds of references; one type are descriptions of methods that groups use for ISS, IEA, and ND evidence codes; the other type are abstract-style descriptions of 'GO content' meetings at which substantial changes in the ontologies are discussed and made.",
-	"version": "2019-03-18",
-	"id_url": "http://www.geneontology.org/doc/GO.references",
-	"download_url": "http://www.geneontology.org/doc/GO.references",
+	"version": "2021-11-16",
+	"release_date": "2021-11-16",
+	"download_url": "https://doi.org/10.5281/zenodo.5725227",
+	"id_url": "http://current.geneontology.org/metadata/",
 	"accession": "GO_REF",
 	"type": "Data identity and mapping"
     },
+      "preprocess": [
+	{
+	    "script": {
+		"name": "tar",
+		"parameters": {
+		    "none": "zxvf @file.go_archive_file @file.go_archive_path/@file.file --strip-components 3"
+		}
+	    }
+	}
+    ],
     "load": [
 	{
 	    "plugin": {

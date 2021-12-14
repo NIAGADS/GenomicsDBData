@@ -19,7 +19,7 @@
     <qualifier name="protein_version" ignore="true"/>
     <qualifier name="tag" ignore="true"/>
     <qualifier name="transcript_id" ignore="true"/>
-    <qualifier name="transcript_name" ignore="standard_name"/>
+    <qualifier name="transcript_name" column="standard_name"/>
     <qualifier name="transcript_source" ignore="true"/>
     <qualifier name="transcript_type" column="function"/>
     <qualifier name="transcript_status" ignore="true"/>
@@ -30,6 +30,7 @@
     <qualifier name="havana_gene" ignore="true"/>
     <qualifier name="ont" ignore="true"/>
     <qualifier name="level" ignore="true"/>
+    <qualifier name="hgnc_id" ignore="true"/>
   </feature>
 
   <feature name="Selenocysteine" ignore="true">
@@ -53,6 +54,7 @@
     <qualifier name="havana_gene" ignore="true"/>
     <qualifier name="ont" ignore="true"/>
     <qualifier name="level" ignore="true"/>
+    <qualifier name="hgnc_id" ignore="true"/>
   </feature>
 
   <feature name="five_prime_UTR" table="DoTS::UTRFeature" so="five_prime_UTR">
@@ -80,6 +82,7 @@
     <qualifier name="exon_id" column="source_id"/>
     <qualifier name="exon_number" ignore="true"/>
     <qualifier name="protein_id" ignore="true"/>
+    <qualifier name="hgnc_id" ignore="true"/>
   </feature>
 
 
@@ -108,6 +111,7 @@
     <qualifier name="exon_id" column="source_id"/>
     <qualifier name="exon_number" ignore="true"/>
     <qualifier name="protein_id" ignore="true"/>
+    <qualifier name="hgnc_id" ignore="true"/>
   </feature>
 
   <feature name="exon" table="DoTS::ExonFeature" so="exon">
@@ -138,12 +142,14 @@
     <qualifier name="exon_id" column="source_id"/>
     <qualifier name="exon_number" column="order_number"/>
     <qualifier name="protein_id" ignore="true"/>
+    <qualifier name="hgnc_id" ignore="true"/>
   </feature>
 
   <feature name="gene" table="DoTS::GeneFeature" so="gene">
     <qualifier name="ID" column="source_id"/>
     <qualifier name="gene_id" ignore="true"/>
     <qualifier name="gene_name" column="name"/>
+    <qualifier name="hgnc_id" column="standard_name"/>
     <qualifier name="gene_source" ignore="true"/>
     <qualifier name="gene_type" column="gene_type"/>
     <qualifier name="gene_status" ignore="true"/>
@@ -158,6 +164,7 @@
     <qualifier name="ont" ignore="true"/>
     <qualifier name="level" ignore="true"/>
     <qualifier name="tag" ignore="true"/>
+    <qualifier name="hgnc_id" ignore="true"/>
   </feature>
 
   <feature name="start_codon" table="" so="" ignore="true">
@@ -183,6 +190,7 @@
     <qualifier name="havana_gene" ignore="true"/>
     <qualifier name="ont" ignore="true"/>
     <qualifier name="level" ignore="true"/>
+    <qualifier name="hgnc_id" ignore="true"/>
   </feature>
 
   <feature name="stop_codon" table="" so="" ignore="true">
@@ -208,6 +216,7 @@
     <qualifier name="havana_gene" ignore="true"/>
     <qualifier name="ont" ignore="true"/>
     <qualifier name="level" ignore="true"/>
+    <qualifier name="hgnc_id" ignore="true"/>
   </feature>
 
   <feature name="transcript" table="DoTS::Transcript" so="transcript">
@@ -235,6 +244,7 @@
     <qualifier name="level" ignore="true"/>
     <qualifier name="protein_id" column="protein_id"/>
     <qualifier name="protein_version" ignore="true"/>
+    <qualifier name="hgnc_id" ignore="true"/>
   </feature>
 
 </mapping>

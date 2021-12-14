@@ -1,23 +1,36 @@
 {
     "file": {
-	"path": "$SHARED_DATA_DIR/gene_ontology"
+	"path": "$DATA_DIR/gene_ontology",
+	"go_archive_path": "./data/ontology",
+	"go_archive_file": "go-release-archive.tgz",
+	"file": "go.obo"
     },
     "external_database": {
 	"name": "Gene Ontology Data Archive: Ontology",
 	"description": "Three structured ontologies that describe gene products in terms of their associated biological processes, cellular components and molecular functions in a species-independent manner.",
-	"version": "2019-03-18",
-	"release_date": "2019-03-18",
+	"version": "2021-11-16",
+	"release_date": "2021-11-16",
 	"id_url": "http://www.geneontology.org",
-	"download_url": "http://doi.org/10.5281/zenodo.2598351",
+	"download_url": "https://doi.org/10.5281/zenodo.5725227",
 	"accession": "GO",
 	"type": "Ontology and terminology"
     },
+    "preprocess": [
+	{
+	    "script": {
+		"name": "tar",
+		"parameters": {
+		    "none": "zxvf @file.go_archive_file @file.go_archive_path/@file.file --strip-components 3"
+		}
+	    }
+	}
+    ],
     "load": [
 	{
 	    "plugin": {
 		"name": "GUS::Supported::Plugin::InsertGeneOntology",
 		"parameters": {
-		    "oboFile": "@file.path/@external_database.release_date/data/ontology/go.obo",
+		    "oboFile": "@file.path/@file.file",
 		    "extDbRlsName": "@external_database.name",
 		    "extDbRlsVer": "@external_database.version",
 		    "skipOboRelationships": true

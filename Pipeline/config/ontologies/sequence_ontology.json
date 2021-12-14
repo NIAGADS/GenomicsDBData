@@ -1,6 +1,6 @@
 {
     "file": {
-	"path": "$SHARED_DATA_DIR/ontologies/sequence_ontology/",
+	"path": "$DATA_DIR/ontologies/sequence_ontology/",
 	"file": "so.obo"
     },
     "external_database": {

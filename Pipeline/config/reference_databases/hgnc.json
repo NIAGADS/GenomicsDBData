@@ -1,13 +1,13 @@
 { 
     "file": {
-	"path": "$SHARED_DATA_DIR/hgnc",
-	"file": "hgnc_complete_set.txt"
+	"path": "$DATA_DIR/hgnc",
+	"file": "hgnc_complete_set_2021-12-01.txt"
     },
     "external_database": {
 	"name": "HGNC Gene Nomenclature",
-	"version": "2019-02-01",
-	"release_date": "2019-02-01",
-	"download_url": "ftp://ftp.ebi.ac.uk/pub/databases/genenames/new/tsv/",
+	"version": "2021-12-01",
+	"release_date": "2021-12-01",
+	"download_url": "http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/",
 	"id_url": "https://www.genenames.org/",
 	"description": "approved gene names and symbols, gene types, and mappings to standard resources",
 	"accession": "HGNC",

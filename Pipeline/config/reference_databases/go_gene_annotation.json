@@ -1,27 +1,48 @@
 {
     "file": {
-	"path": "$SHARED_DATA_DIR/gene_ontology",
-	"annotation": "goa_human.gpad.gz",
-	"entity_map": "$SHARED_DATA_DIR/gene_ontology/UniProtKB/goa_human.gpi.gz"
+	"path": "$DATA_DIR/gene_ontology",
+	"go_archive_file": "go-release-archive.tgz",
+	"go_archive_path": "./data/annotations",
+	"annotation_file": "goa_human.gpad.gz",
+	"entity_map": "goa_human.gpi.gz"
     },
     "external_database": {
-	"name": "Gene Ontology Data Archive: Gene Product Associations",
+	"name": "Gene Ontology Data Archive: Gene Ontology Annotation (GOA) Database",
 	"description": "The GO annotation program aims to provide high-quality Gene Ontology (GO) annotations to gene products. Association files contain a mixture of manual annotation supplied by members of the Gene Onotology Consortium and computationally assigned GO terms describing gene products. Annotation type is clearly indicated by associated evidence codes and links to the source publication are provided when available.",
-	"version": "2019-03-18",
-	"release_date": "2019-03-18",
+	"version": "2021-11-16",
+	"release_date": "2021-11-16",
 	"id_url": "http://www.geneontology.org",
-	"download_url": "http://doi.org/10.5281/zenodo.2598351",
-	"accession": "GO_GPA",
+	"download_url": "https://doi.org/10.5281/zenodo.5725227",
+	"accession": "GO_GOA",
 	"type": "Protein function prediction",
-	"gene_ontology_version": "Gene Ontology Data Archive: Ontology|2019-03-18"
+	"gene_ontology_version": "Gene Ontology Data Archive: Ontology|2021-11-16"
     },
+    
+     "preprocess": [
+	{
+	    "script": {
+		"name": "tar",
+		"parameters": {
+		    "none": "zxvf @file.go_archive_file @file.go_archive_path/@file.annotation_file  --strip-components 3"
+		}
+	    }
+	},
+	 	{
+	    "script": {
+		"name": "tar",
+		"parameters": {
+		    "none": "zxvf @file.go_archive_file @file.go_archive_path/@file.entity_map -C @file.path/@file.entity_map"
+		}
+	    }
+	}
+    ],
     "load": [
 	{
 	    "plugin": {
 		"name": "GenomicsDBData::Load::Plugin::InsertCBILGoAssociation",
 		"parameters": {
-		    "annotationFile": "@file.path/@external_database.release_date/data/annotations/@file.annotation",
-		    "entityMetadataFile": "@file.entity_map",
+		    "annotationFile": "@file.path/@file.annotation",
+		    "entityMetadataFile": "@file.path/@file.entity_map",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version",
 		    "goExtDbRlsSpec": "@external_database.gene_ontology_version"
 		}

@@ -47,6 +47,7 @@ results/createVariantScoreResults.sql
 sres/alterPathwayNode.sql
 sres/createDisease.sql
 sres/createMotif.sql
+sres/alterDbRef.sql
 sres/createPathwayDisease.sql
 study/alterProtocolAppNode.sql
 study/alterStudy.sql
