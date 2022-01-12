@@ -79,12 +79,9 @@ END AS association_qualifier,
             END                                                   AS ontology,
             string_agg(DISTINCT e.json->>'go_evidence_code', ',') AS go_evidence_code,
             jsonb_build_object('type', 'link', 'url', '+AMIGO_URL+' || REPLACE(ot.source_id, '_',':') || '#display-lineage-tab', 'value', REPLACE(ot.source_id, '_', ':')) AS go_accession,
-            jsonb_build_object('type', 'text', 'tooltip',
-            CASE
-                WHEN LENGTH(ot.definition) > 297
-                THEN LEFT(ot.definition, 297) || '...'
-                ELSE ot.definition
-            END , 'value', ot.name) AS term,
+            jsonb_build_object('type', 'text'
+	    , 'tooltip', ot.definition,
+            , 'value', ot.name) AS term,
             jsonb_build_object('type', 'table', 'value', ga.gene_symbol || ' ' || string_agg(DISTINCT fej.json->>'association_qualifier', '|'), 'data', jsonb_agg(DISTINCT fej.json),
             'downloadable', false, 'attributes', jsonb_build_array(jsonb_build_object('name', 'association_qualifier', 'displayName', 'Association Qualifier',  'type', 'string',
             'help', 'explicit relationship between the gene and the GO term or a flag that modifies the interpretation of an association'),
