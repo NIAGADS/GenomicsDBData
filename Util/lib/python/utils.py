@@ -5,8 +5,15 @@ import sys
 import os
 import gzip
 import datetime
+import json
 
 from subprocess import check_output, CalledProcessError
+
+
+
+def pretty_print_dict(dictObj):
+    ''' pretty print a dict / JSON object '''
+    return json.dumps(dictObj, indent=4, sort_keys=True)
 
 
 def get_opener(fileName=None, compressed=True):
@@ -90,6 +97,12 @@ def gzip_file(filename, removeOriginal):
         os.remove(filename)
 
 
+def reverse(s):
+    ''' reverse a string 
+    see https://www.w3schools.com/python/python_howto_reverse_string.asp '''
+    return s[::-1]
+        
+
 def truncate(s, length):
     '''
     if string s is > length, return truncated string
@@ -139,18 +152,6 @@ def warning(*objs, **kwargs):
         fh.flush()
 
 
-def qw(s, returnTuple=False):
-    '''
-    mimics perl's qw function
-    usage: qw('a b c') will yield ['a','b','c']
-    returnTuple: return a tuple if true, otherwise return list
-    '''
-    if returnTuple:
-        return tuple(s.split())
-    else:
-        return s.split()
-
-
 def create_dir(dirName):
     '''
     check if directory exists in the path, if not create
@@ -182,3 +183,12 @@ def die(message):
     warning(message)
     sys.exit(1)
 
+
+def int_to_alpha(value, lower=False):
+    ''' Convert an input integer to alphabetic representation, 
+    starting with 1=A. or 1=a if lower=True'''
+
+    if lower:
+        return chr(96 + value)
+    else:
+        return chr(64 + value)
