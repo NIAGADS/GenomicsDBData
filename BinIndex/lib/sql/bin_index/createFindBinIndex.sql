@@ -6,9 +6,9 @@
 
 
 CREATE OR REPLACE FUNCTION get_chr_size(chr VARCHAR)
-       RETURNS BIGINT AS $$
+       RETURNS INTEGER AS $$
 DECLARE 
-	chrSize BIGINT;
+	chrSize INTEGER;
 BEGIN
 	SELECT UPPER(location) INTO chrSize
 	FROM BinIndexRef
@@ -21,11 +21,11 @@ $$
 LANGUAGE plpgsql;
 
 
-CREATE OR REPLACE FUNCTION find_bin_index(chr VARCHAR, loc_start BIGINT, loc_end BIGINT) 
+CREATE OR REPLACE FUNCTION find_bin_index(chr VARCHAR, loc_start INTEGER, loc_end INTEGER) 
         RETURNS LTREE AS $$
 DECLARE 
         bin LTREE;
-	chrSize BIGINT;
+	chrSize INTEGER;
 BEGIN
 	SELECT  get_chr_size(chr) INTO chrSize;
 
