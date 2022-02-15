@@ -25,6 +25,10 @@ def get_opener(fileName=None, compressed=True):
     return opener
 
 
+def is_number(value):
+    return is_integer(value) or is_float(value)
+
+
 def is_integer(value):
     if isinstance(value, (float, bool)):
         return False
