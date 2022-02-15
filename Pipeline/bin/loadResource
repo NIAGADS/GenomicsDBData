@@ -14,7 +14,8 @@ import json
 import csv
 
 from os import path, listdir, environ
-from GenomicsDBData.Util.utils import warning, die, create_dir, xstr, qw, execute_cmd, ascii_safe_str
+from GenomicsDBData.Util.utils import warning, die, create_dir, xstr, execute_cmd, ascii_safe_str, is_number
+from GenomicsDBData.Util.list_utils import qw
 
 ENVIRONMENTAL_VARS = ['GUS_HOME', 'PROJECT_HOME', 'DATA_DIR', 'GENOME_BUILD', 'SHARED_DATA_DIR', 'CONFIG_DIR']
 
@@ -41,7 +42,7 @@ def run_script(sConfig, foreach=None):
             warning("SKIPPING: " + ascii_safe_str(' '.join(cmd)))
         else:
             execute_cmd(cmd, cwd=None, printCmdOnly=args.printCmd, verbose=args.verbose)                  
-    except KeyError, e:
+    except KeyError as e:
         die('Missing required value in script config: "%s"' % str(e))
 
 
@@ -54,7 +55,7 @@ def run_plugin(pConfig, foreach=None):
             warning("SKIPPING: " + ascii_safe_str(' '.join(cmd)))
         else:
             execute_cmd(cmd, cwd=None, printCmdOnly=args.printCmd, verbose=args.verbose)                  
-    except KeyError, e:
+    except KeyError as e:
         die('Missing required value in plugin config: "%s"' % str(e))
 
 
@@ -109,7 +110,7 @@ def get_cmd_options(cmd, cmdConfig, isPlugin=False, foreach=None):
 
     if 'parameters' in cmdConfig:
         try:
-            for option, value in cmdConfig['parameters'].iteritems():
+            for option, value in cmdConfig['parameters'].items():
                 if foreach is not None:
                     if value == 'foreach': # lookup value from foreach config
                         value = foreach[option]
@@ -125,9 +126,11 @@ def get_cmd_options(cmd, cmdConfig, isPlugin=False, foreach=None):
                     continue
 
 
-                if isinstance(value, (int, long)): # integer value
+                if is_number(value): # numeric value
                     cmd.extend(['--' + option, xstr(value)])
+
                     continue
+                
 
                 if isinstance(value, (list, tuple)): 
                     # same option repeated with each value in the list (e.g., vep's --plugin)
@@ -163,7 +166,7 @@ def get_cmd_options(cmd, cmdConfig, isPlugin=False, foreach=None):
                     cmd.extend(['--' + option, value])
                 else:
                     cmd.extend(value.split(" "))
-        except KeyError, e:
+        except KeyError as e:
             die('Missing referenced value in option value: "%s"' % str(e))
 
     else:
@@ -179,11 +182,11 @@ def get_cmd_options(cmd, cmdConfig, isPlugin=False, foreach=None):
 
 
     if additionalParams:
-        for option, value in additionalParams.iteritems():
+        for option, value in additionalParams.items():
             if value == 'true':
                 cmd.append('--' + option)
             else:
-                cmd.extend(['--' + option, value])
+                cmd.extend(['--' + option, xstr(value)])
 
     return cmd
 

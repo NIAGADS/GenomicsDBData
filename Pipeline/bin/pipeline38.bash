@@ -131,3 +131,7 @@ loadResource --config $CONFIG_DIR/reference_databases/reactome_tc.json --load da
 # =================================================
 # REFERENCE BUILD - dbSNP Variants
 # =================================================
+
+loadResource --config $CONFIG_DIR/reference_databases/dbsnp.json --load xdbr --verbose --commit > $DATA_DIR/logs/xdbr/load_dbsnp_xdbr.log 2>&1
+loadResource --config $CONFIG_DIR/reference_databases/dbsnp.json --load data --verbose --commit > $DATA_DIR/logs/reference/load_dbsnp.log 2>&1 
+
