@@ -5,6 +5,7 @@ management
 
 import psycopg2
 import psycopg2.extras
+from psycopg2 import OperationalError, errorcodes, errors
 import os
 import sys
 
@@ -36,6 +37,19 @@ class Database(object):
         self.load_database_config()
 
 
+    def log_exception(self, err):
+        ''' log postgres exception '''
+        
+        # get details about the exception
+        err_type, err_obj, traceback = sys.exc_info()
+        # get the line number when exception occured
+        line_num = traceback.tb_lineno
+
+        # print the connect() error
+        warning("DATABASE Error:", err, "on line number:", line_num)
+      
+
+        
     def cursor(self, cursorFactory=None):
         '''
         create and return database cursor
