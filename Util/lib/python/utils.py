@@ -11,9 +11,9 @@ from subprocess import check_output, CalledProcessError
 
 
 
-def pretty_print_dict(dictObj):
+def print_dict(dictObj, pretty=True):
     ''' pretty print a dict / JSON object '''
-    return json.dumps(dictObj, indent=4, sort_keys=True)
+    return json.dumps(dictObj, indent=4, sort_keys=True) if pretty else json.dumps(dictObj)
 
 
 def get_opener(fileName=None, compressed=True):

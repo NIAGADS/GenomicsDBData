@@ -174,12 +174,16 @@ def get_cmd_options(cmd, cmdConfig, isPlugin=False, foreach=None):
 
     if isPlugin:
         cmd.extend(["--comment", ' '.join(cmd)])
-        if args.commit:
-            cmd.append('--commit')
-    
-        if args.veryVerbose:
-            cmd.append('--verbose')
 
+    if args.commit:
+        cmd.append('--commit')
+    
+    if args.veryVerbose:
+        cmd.append('--verbose')
+
+    if args.debug:
+        cmd.append('--debug')
+        warning("--debug flag specified / not all scripts/plugins have a debug mode")
 
     if additionalParams:
         for option, value in additionalParams.items():
@@ -426,6 +430,7 @@ if __name__ == "__main__":
     parser.add_argument('--load', help="specify type of load: External Database (xdbr), Data (data), Patch (patch)",
                         choices=['xdbr', 'data', 'patch'])
     parser.add_argument('--verbose', help="run in verbose mode", action='store_true')
+    parser.add_argument('--debug', help="run in debug mode", action='store_true')
     parser.add_argument('--tuning', help="run tuning SQL (indexes, mvs)", action='store_true')
     parser.add_argument('--foreach', help="if config has a foreach block, provide a comma-separated list of keys to run on single condition, otherwise specify 'all' or  or leave off to run on all conditions", default="all")
     parser.add_argument('--veryVerbose', help="run in very verbose mode (runs plugins in verbose mode)", action='store_true')
