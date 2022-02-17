@@ -18,7 +18,7 @@ else:
     from configparser import SafeConfigParser
 
 
-def raise_pg_exception(err):
+def raise_pg_exception(err, returnError=False):
     """ raise postgres exception """
 
     # get details about the exception
@@ -26,7 +26,11 @@ def raise_pg_exception(err):
     # get the line number when exception occured
     line_num = traceback.tb_lineno
 
-    raise DatabaseError(' '.join((err, "on line number:", line_num)))
+    err = DatabaseError(' '.join((err, "on line number:", line_num)))
+    if returnError:
+        return err
+    else:
+        raise err
 
 
 class Database(object):

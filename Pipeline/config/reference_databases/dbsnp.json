@@ -18,7 +18,7 @@
     "load": [
 	{
 	    "script" : {
-		"name": "parallel_load_dbsnp_vep_result.py",
+		"name": "parallel_load_vep_result.py",
 		"parameters": {
 		    "dir": "@file.path",
 		    "genomeBuild": "GRCh38",

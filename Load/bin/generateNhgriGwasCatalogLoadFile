@@ -25,7 +25,7 @@ def row2value_tuple(fields, row):
     row = {key : value.replace('"', '') if value is not None else value for key, value in row.iteritems()}
     row = {key : value.replace('|', '-') if value is not None else value for key, value in row.iteritems()}
     row = {key : value.replace('\\x3b', ';') if value is not None else value for key, value in row.iteritems()}
-    values = [xstrN(row[f]) for f in fields] # get rid of quotes in json
+    values = [xstr(row[f], nullValue='NULL') for f in fields] # get rid of quotes in json
     return tuple(values)
 
 
@@ -104,7 +104,7 @@ def generate_load_file():
                         if '?' in alleles:
                             alleles = ['?'] # if list of alleles includes a ? then the result will be mapped to all alleles anyway, so others do not matter
                         for a in alleles:
-                            print('\t'.join((xstr(row["CHR_ID"]), xstr(marker.rstrip()), xstrN(a), xstrN(frequency), xstrN(pvalue)) +  valuesTuple), file=of)
+                            print('\t'.join((xstr(row["CHR_ID"]), xstr(marker.rstrip()), xstr(a, nullValue='NULL'), xstr(frequency, nullValue='NULL'), xstr(pvalue, nullValue='NULL')) +  valuesTuple), file=of)
                 except:
                     warning(row)
                     raise
