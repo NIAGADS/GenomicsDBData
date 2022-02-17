@@ -7,8 +7,30 @@ import gzip
 import datetime
 import json
 
+from collections import abc
 from subprocess import check_output, CalledProcessError
 
+def deep_update(d, u):
+    """! deep update a dict
+    based on https://stackoverflow.com/questions/3232943/update-value-of-a-nested-dictionary-of-varying-depth/60321833
+    answer: https://stackoverflow.com/a/3233356 
+    but may not handle all variations
+
+        @param d             source dict to be updated
+        @param u             overrides
+        @returns             the deep updated source dict
+    """
+    for k, v in u.items():
+        if isinstance(v, abc.Mapping):
+            d[k] = deep_update(d.get(k, {}), v)
+        else:
+            d[k] = v
+    return d
+
+
+def print_args(args, pretty=True):
+    ''' print argparser args '''
+    return print_dict(vars(args), pretty)
 
 
 def print_dict(dictObj, pretty=True):
@@ -115,23 +137,22 @@ def truncate(s, length):
     return (s[:(length - 3)] + '...') if len(s) > length else s
 
 
-def xstrN(s):
-    '''
-    wrapper for str() that handles Nones -> 'NULL'
-    '''
-    if s is None:
-        return 'NULL'
-    else:
-        return str(s)
-
-def xstr(s):
+def xstr(value, nullStr="", falseAsNull=False):
     '''
     wrapper for str() that handles Nones
     '''
-    if s is None:
-        return ""
+    if value is None:
+        return nullStr
+    elif falseAsNull and isinstance(value, bool):
+        if value is False:
+            return nullStr
+    elif isinstance(value, dict):
+        if len(dict) == 0:
+            return nullStr
+        else:
+            return print_dict(value)
     else:
-        return str(s)
+        return str(value)
 
 
 def ascii_safe_str(obj):
