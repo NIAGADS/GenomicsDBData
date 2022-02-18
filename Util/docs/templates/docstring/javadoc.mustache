@@ -1,0 +1,22 @@
+{{! Javadoc (doxygen) Docstring Template }}
+! {{summaryPlaceholder}}
+
+{{extendedSummaryPlaceholder}}
+
+{{#parametersExist}}
+{{#args}}
+    @param {{var}}             {{descriptionPlaceholder}}
+{{/args}}
+{{/parametersExist}}
+{{#exceptionsExist}}
+{{#exceptions}}
+    @raise {{type}}          {{descriptionPlaceholder}}
+{{/exceptions}}
+{{/exceptionsExist}}
+{{#returnsExist}}
+{{#returns}}
+    @returns                 {{descriptionPlaceholder}}
+{{/returns}}
+{{/returnsExist}}
+
+
