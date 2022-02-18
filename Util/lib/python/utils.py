@@ -7,6 +7,7 @@ import gzip
 import datetime
 import json
 
+from types import SimpleNamespace
 from collections import abc
 from subprocess import check_output, CalledProcessError
 
@@ -35,6 +36,8 @@ def print_args(args, pretty=True):
 
 def print_dict(dictObj, pretty=True):
     ''' pretty print a dict / JSON object '''
+    if isinstance(dictObj, SimpleNamespace):
+        return dictObj.__repr__()
     return json.dumps(dictObj, indent=4, sort_keys=True) if pretty else json.dumps(dictObj)
 
 
@@ -146,11 +149,13 @@ def xstr(value, nullStr="", falseAsNull=False):
     elif falseAsNull and isinstance(value, bool):
         if value is False:
             return nullStr
-    elif isinstance(value, dict):
-        if len(dict) == 0:
-            return nullStr
         else:
-            return print_dict(value)
+            return str(value)
+    elif isinstance(value, dict):
+        if bool(value):
+            return print_dict(value, pretty=False)
+        else:
+            return nullStr
     else:
         return str(value)
 

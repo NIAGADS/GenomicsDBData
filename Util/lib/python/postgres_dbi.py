@@ -25,8 +25,7 @@ def raise_pg_exception(err, returnError=False):
     err_type, err_obj, traceback = sys.exc_info()
     # get the line number when exception occured
     line_num = traceback.tb_lineno
-
-    err = DatabaseError(' '.join((err, "on line number:", line_num)))
+    err = DatabaseError(' '.join((str(err), "on line number:", str(line_num))))
     if returnError:
         return err
     else:
