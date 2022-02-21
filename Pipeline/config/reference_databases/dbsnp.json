@@ -18,7 +18,7 @@
     "load": [
 	{
 	    "script" : {
-		"name": "parallel_load_vep_result.py",
+		"name": "load_vep_result_by_chromosome.py",
 		"parameters": {
 		    "dir": "@file.path",
 		    "genomeBuild": "GRCh38",
