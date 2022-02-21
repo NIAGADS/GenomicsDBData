@@ -14,7 +14,7 @@ import json
 import csv
 
 from os import path, listdir, environ
-from GenomicsDBData.Util.utils import warning, die, create_dir, xstr, execute_cmd, ascii_safe_str, is_number
+from GenomicsDBData.Util.utils import warning, die, create_dir, xstr, execute_cmd, ascii_safe_str, is_number, xstr
 from GenomicsDBData.Util.list_utils import qw
 
 ENVIRONMENTAL_VARS = ['GUS_HOME', 'PROJECT_HOME', 'DATA_DIR', 'GENOME_BUILD', 'SHARED_DATA_DIR', 'CONFIG_DIR']
@@ -443,7 +443,7 @@ if __name__ == "__main__":
 
     additionalParams = None
     if args.params:
-        warning(args.params)
+        warning(xstr(args.params))
         additionalParams = json.loads(args.params)
 
     foreachKeys = None
