@@ -21,15 +21,6 @@
 		    "none": "-d @file.path/@file.file+.bz2"
 		}
 	    }
-	},
-	{
-	    "script": 
-	    { 
-		"name": "dos2unix",
-		"parameters": {
-		    "none": "@file.path/@file.file"
-		}
-	    }
 	}
     ],
     "load": [
