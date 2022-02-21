@@ -103,7 +103,7 @@ def execute_cmd(cmd, cwd=None, printCmdOnly=False, verbose=True, shell=False):
     '''
     if verbose or printCmdOnly:
         asciiSafeCmd = [ascii_safe_str(c) for c in cmd]
-        warning("EXECUTING: ", ' '.join(asciiSafeCmd))
+        warning("EXECUTING: ", ' '.join(asciiSafeCmd), flush=True)
         if printCmdOnly: return
     try:
         if shell:
