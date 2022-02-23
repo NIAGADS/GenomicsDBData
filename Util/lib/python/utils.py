@@ -82,13 +82,18 @@ def to_numeric(value):
 
 
 
-def convert_str2numeric_values(cdict):
-    '''
-    converts numeric values in dictionary stored as strings 
+def convert_str2numeric_values(cdict, nanAsStr=True):
+    """!  converts numeric values in dictionary stored as strings 
     to numeric
-    '''
 
+        @param cdict             dictionary to conver
+        @param nanAsStr          treat NaN/nan/NAN as string?
+        @returns                 the converted dictionary
+    """
     for key, value in cdict.items():
+        if value.upper() == 'NAN' and nanAsStr:
+            # is_float test will be true for NaN/NAN/nan/Nan etc
+            continue
         if is_float(value): # must check float first b/c integers are a subset
             cdict[key] = float(value)
         if is_integer(value):
