@@ -41,13 +41,15 @@ def print_dict(dictObj, pretty=True):
     return json.dumps(dictObj, indent=4, sort_keys=True) if pretty else json.dumps(dictObj)
 
 
-def get_opener(fileName=None, compressed=True):
+def get_opener(fileName=None, compressed=True, binary=True):
     ''' check if compressed files are expected and return
     appropriate opener '''
-    opener = open
+
     if compressed or (fileName is not None and '.gz' in fileName):
-        opener = gzip.open
-    return opener
+        if binary:
+            return gzip.GzipFile
+        return gzip.open
+    return open
 
 
 def is_number(value):
@@ -91,7 +93,7 @@ def convert_str2numeric_values(cdict, nanAsStr=True):
         @returns                 the converted dictionary
     """
     for key, value in cdict.items():
-        if value.upper() == 'NAN' and nanAsStr:
+        if str(value).upper() == 'NAN' and nanAsStr:
             # is_float test will be true for NaN/NAN/nan/Nan etc
             continue
         if is_float(value): # must check float first b/c integers are a subset
