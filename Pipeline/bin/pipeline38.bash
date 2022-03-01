@@ -134,7 +134,15 @@ loadResource --config $CONFIG_DIR/reference_databases/reactome_tc.json --load da
 
 # Variants from VEP Results
 loadResource --config $CONFIG_DIR/reference_databases/dbsnp.json --load xdbr --verbose --commit > $DATA_DIR/logs/xdbr/load_dbsnp_xdbr.log 2>&1
+
+# skip load vcf & cadd
 loadResource --config $CONFIG_DIR/reference_databases/dbsnp.json --load data --verbose --commit > $DATA_DIR/logs/reference/load_dbsnp.log 2>&1
+
+# skip load vep & cadd 
+loadResource --config $CONFIG_DIR/reference_databases/dbsnp.json --load data --verbose --commit > $DATA_DIR/logs/reference/load_dbsnp_vcf.log 2>&1
+
+# skip load vcf & vep
+loadResource --config $CONFIG_DIR/reference_databases/dbsnp.json --load data --verbose --commit > $DATA_DIR/logs/reference/load_dbsnp_cadd.log 2>&1
 
 # Variants not annotated from VEP
 
