@@ -40,6 +40,7 @@ def generate_load_file():
             for row in reader:
                 gene = row['ensembl_gene_id']
                 if gene == '' or not gene:
+                    warning("NO GENE FOUND:", row)
                     continue
 
                 evidence = build_evidence_json(row)

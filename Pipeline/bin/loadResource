@@ -14,7 +14,8 @@ import json
 import csv
 
 from os import path, listdir, environ
-from GenomicsDBData.Util.utils import warning, die, create_dir, xstr, qw, execute_cmd, ascii_safe_str
+from GenomicsDBData.Util.utils import warning, die, create_dir, xstr, execute_cmd, ascii_safe_str, is_number, xstr
+from GenomicsDBData.Util.list_utils import qw
 
 ENVIRONMENTAL_VARS = ['GUS_HOME', 'PROJECT_HOME', 'DATA_DIR', 'GENOME_BUILD', 'SHARED_DATA_DIR', 'CONFIG_DIR']
 
@@ -41,7 +42,7 @@ def run_script(sConfig, foreach=None):
             warning("SKIPPING: " + ascii_safe_str(' '.join(cmd)))
         else:
             execute_cmd(cmd, cwd=None, printCmdOnly=args.printCmd, verbose=args.verbose)                  
-    except KeyError, e:
+    except KeyError as e:
         die('Missing required value in script config: "%s"' % str(e))
 
 
@@ -54,7 +55,7 @@ def run_plugin(pConfig, foreach=None):
             warning("SKIPPING: " + ascii_safe_str(' '.join(cmd)))
         else:
             execute_cmd(cmd, cwd=None, printCmdOnly=args.printCmd, verbose=args.verbose)                  
-    except KeyError, e:
+    except KeyError as e:
         die('Missing required value in plugin config: "%s"' % str(e))
 
 
@@ -85,12 +86,12 @@ def preprocess():
                 else:
                     die("Unrecognized preprocessing step: " + json.dumps(step))
         else:
-              if 'script' in step:
-                    run_script(step['script'], None)
-              elif 'plugin' in step:
-                    run_plugin(step['plugin'], None)
-              else:
-                    die("Unrecognized preprocessing step: " + json.dumps(step))
+            if 'script' in step:
+                run_script(step['script'], None)
+            elif 'plugin' in step:
+                run_plugin(step['plugin'], None)
+            else:
+                die("Unrecognized preprocessing step: " + json.dumps(step))
             
 
 
@@ -104,12 +105,22 @@ def use_foreach(stepConfig):
             return True
     return False
 
+
 def get_cmd_options(cmd, cmdConfig, isPlugin=False, foreach=None):
     ''' iterates over parameter config and extracts option/value pairs '''
-
-    if 'parameters' in cmdConfig:
+    
+    params = cmdConfig['parameters'] if 'parameters' in cmdConfig else {}
+    
+    if additionalParams: # hopefull this will overwrite common params from config with what is passed from the command line
+        for option, value in additionalParams.items():
+            if value == 'true':
+                params.update({option: True})    
+            else:
+                params.update({option: xstr(value)})
+                
+    if len(params) > 0:
         try:
-            for option, value in cmdConfig['parameters'].iteritems():
+            for option, value in params.items():
                 if foreach is not None:
                     if value == 'foreach': # lookup value from foreach config
                         value = foreach[option]
@@ -119,16 +130,14 @@ def get_cmd_options(cmd, cmdConfig, isPlugin=False, foreach=None):
                             value = extract_value_from_config(value)
                         value = replace_environmental_variables(value)
 
-              
                 if value is True: # option is a flag w/no value
                     cmd.append('--' + option) 
                     continue
 
-
-                if isinstance(value, (int, long)): # integer value
+                if is_number(value): # numeric value
                     cmd.extend(['--' + option, xstr(value)])
                     continue
-
+                
                 if isinstance(value, (list, tuple)): 
                     # same option repeated with each value in the list (e.g., vep's --plugin)
                     for val in value:
@@ -163,7 +172,8 @@ def get_cmd_options(cmd, cmdConfig, isPlugin=False, foreach=None):
                     cmd.extend(['--' + option, value])
                 else:
                     cmd.extend(value.split(" "))
-        except KeyError, e:
+                    
+        except KeyError as e:
             die('Missing referenced value in option value: "%s"' % str(e))
 
     else:
@@ -171,19 +181,16 @@ def get_cmd_options(cmd, cmdConfig, isPlugin=False, foreach=None):
 
     if isPlugin:
         cmd.extend(["--comment", ' '.join(cmd)])
-        if args.commit:
-            cmd.append('--commit')
+
+    if args.commit:
+        cmd.append('--commit')
     
-        if args.veryVerbose:
-            cmd.append('--verbose')
+    if args.veryVerbose:
+        cmd.append('--verbose')
 
-
-    if additionalParams:
-        for option, value in additionalParams.iteritems():
-            if value == 'true':
-                cmd.append('--' + option)
-            else:
-                cmd.extend(['--' + option, value])
+    if args.debug:
+        cmd.append('--debug')
+        warning("--debug flag specified / not all scripts/plugins have a debug mode")
 
     return cmd
 
@@ -250,8 +257,6 @@ def extract_value_from_config(value):
     if len(keys) > 2: # so we can deal with this case if it arises
         # probably take this approach: https://stackoverflow.com/questions/16279212/how-to-use-dot-notation-for-dict-in-python
         die("found a config-ref parameter value with more than one level of nesting: " + value)
-
-
 
     return config[keys[0]][keys[1]] + suffix
 
@@ -423,6 +428,7 @@ if __name__ == "__main__":
     parser.add_argument('--load', help="specify type of load: External Database (xdbr), Data (data), Patch (patch)",
                         choices=['xdbr', 'data', 'patch'])
     parser.add_argument('--verbose', help="run in verbose mode", action='store_true')
+    parser.add_argument('--debug', help="run in debug mode", action='store_true')
     parser.add_argument('--tuning', help="run tuning SQL (indexes, mvs)", action='store_true')
     parser.add_argument('--foreach', help="if config has a foreach block, provide a comma-separated list of keys to run on single condition, otherwise specify 'all' or  or leave off to run on all conditions", default="all")
     parser.add_argument('--veryVerbose', help="run in very verbose mode (runs plugins in verbose mode)", action='store_true')
@@ -435,7 +441,7 @@ if __name__ == "__main__":
 
     additionalParams = None
     if args.params:
-        warning(args.params)
+        warning(xstr(args.params))
         additionalParams = json.loads(args.params)
 
     foreachKeys = None

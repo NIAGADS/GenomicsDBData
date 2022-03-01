@@ -11,6 +11,7 @@ CREATE UNLOGGED TABLE Results.VariantLD (
        MINOR_ALLELE_FREQUENCY	     FLOAT ARRAY[2],       
        R_SQUARED		     FLOAT,
        D_PRIME			     FLOAT,
+       BIN_INDEX		     LTREE NOT NULL,
 
        -- GUS HOUSEKEEPING
 

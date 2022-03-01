@@ -1,17 +1,17 @@
 {
     "file": {
 	"path": "$DATA_DIR/GENCODE",
-	"gene_gff": "gencode.v27.annotation.gff3",
-	"protein_fasta": "gencode.v27.pc_translations.fa",
-	"chr_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode27_grch38_p10.txt" 
+	"gene_gff": "gencode.v36.annotation.gff3",
+	"protein_fasta": "gencode.v36.pc_translations.fa",
+	"chr_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt" 
     },
     "external_database": {
 	"name": "GENCODE",
-	"version": "27/GRCh38.p10-Gene",
-	"release_date": "2013-12-01",
-	"download_url": "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/",
-	"id_url": "https://www.gencodegenes.org/human/release_27.html",
-	"description": "comprehensive gene annotation and translated protein sequences for GRCh38.p10 assembly",
+	"version": "36/GRCh38.p13-Gene",
+	"release_date": "2020-10-01",
+	"download_url": "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_36/",
+	"id_url": "https://www.gencodegenes.org/human/release_36.html",
+	"description": "comprehensive gene annotation and translated protein sequences for GRCh38.p13 assembly",
 	"accession": "GENCODE_GRCH38_GENE",
 	"type": "Gene structure"
     },
@@ -36,7 +36,7 @@
 	    "script": {
 		"name": "addProteinSeqs2GffFile",
 		"parameters": {
-		    "none": "@file.path/@file.gene_gff @file.path/@file.protein_fasta @file.path/pseqs_gene_annnotation.gff3"
+		    "none": "@file.path/@file.gene_gff @file.path/@file.protein_fasta @file.path/pseqs_gene_annotation.gff3"
 		}
 	    }
 	},
@@ -72,19 +72,20 @@
 		"name": "GUS::Supported::Plugin::InsertSequenceFeatures",
 		"parameters": {
 		    "extDbName": "@external_database.name",
-		    "extDbRlsVer": "27/GRCh38.p10",
+		    "extDbRlsVer": "36/GRCh38.p13",
 		    "organism": "Homo sapiens",
 		    "mapFile": "$GUS_HOME/lib/xml/isf/gencodeGFF3Features2Gus.xml",
 		    "inputFileExtension": "gff3",
 		    "inputFileOrDir" : "@file.path/patched_gene_annotation.gff3",
 		    "fileFormat": "gff3",
-		    "soExtDbSpec": "Sequence Ontology|3.1",
+		    "soExtDbSpec": "Sequence Ontology|2021-11-22",
 		    "seqSoTerm": "chromosome",
 		    "validationLog": "@file.path/validation.log",
 		    "bioperlTreeOutput": "@file.path/bioperlTree.log",
 		    "seqIdColumn": "source_id",
 		    "naSequenceSubClass": "ExternalNASequence",
-		    "chromosomeMapFile": "@file.chr_map"
+		    "chromosomeMapFile": "@file.chr_map",
+		    "seqIdColumn": "chromosome"
 		    
 		}
 	    }

@@ -5,6 +5,7 @@ management
 
 import psycopg2
 import psycopg2.extras
+from psycopg2 import OperationalError, errorcodes, errors, DatabaseError
 import os
 import sys
 
@@ -16,11 +17,26 @@ if sys.version_info.major < 3:
 else:
     from configparser import SafeConfigParser
 
+
+def raise_pg_exception(err, returnError=False):
+    """ raise postgres exception """
+
+    # get details about the exception
+    err_type, err_obj, traceback = sys.exc_info()
+    # get the line number when exception occured
+    line_num = traceback.tb_lineno
+    err = DatabaseError(' '.join((str(err), "on line number:", str(line_num))))
+    if returnError:
+        return err
+    else:
+        raise err
+
+
 class Database(object):
-    '''
+    """
     accessor for database connection info
     + database handler
-    '''
+    """
     def __init__(self, gusConfigFile):
         self.dbh = None # database handler (connection)
         self.dsn = None
@@ -34,13 +50,12 @@ class Database(object):
           if gusConfigFile is None else gusConfigFile
 
         self.load_database_config()
-
-
+        
     def cursor(self, cursorFactory=None):
-        '''
+        """
         create and return database cursor
         if dictCursor is True, return DictCursor
-        '''
+        """
         if cursorFactory == 'DictCursor':
             return self.dbh.cursor(cursor_factory=psycopg2.extras.DictCursor)
         if cursorFactory == 'RealDictCursor':
@@ -50,10 +65,10 @@ class Database(object):
 
 
     def named_cursor(self, name, cursorFactory=None, withhold=True):
-        '''
+        """
         create and return database cursor
         if dictCursor is True, return DictCursor
-        '''
+        """
         if cursorFactory == 'DictCursor':
             return self.dbh.cursor(name=name,cursor_factory=psycopg2.extras.DictCursor, withhold=withhold)
         if cursorFactory == 'RealDictCursor':
@@ -63,39 +78,39 @@ class Database(object):
 
 
     def set_session(self, readonly=None, autocommit=None):
-        '''
+        """
         wrapper for setting  one or more parameters for
         the next transactions or statements in the current session.
         pass 'DEFAULT' as the value to reset parameter to server default
         a value of None leaves the setting unchanged
-        '''
+        """
         self.dbh.set_session(readonly=readonly, autocommit=autocommit)
 
 
     def autocommit(self, status=True):
-        '''
+        """
         sets isolation level (auto-commit mode)
         autocommit must be on for transactions such as create database or vacuum
         default is FALSE
-        '''
+        """
         self.dbh.autocommit = status
 
 
     def set_pgpassword(self):
-        '''
+        """
         set PGPASSWORD environmental variable 
         b/c postgres does not allow passwords through the command
         line to psql
-        '''
+        """
         if os.environ.get('PGPASSWORD'):
             self.__pgpassword = os.environ['PGPASSWORD']
         os.environ['PGPASSWORD'] = self.__password
 
         
     def reset_pgpassword(self):
-        '''
+        """
         set PGPASSWORD back to original value
-        '''
+        """
         if self.__pgpassword is not None:
             os.environ['PGPASSWORD'] = self.__pgpassword
         else: # unset pgpassword environmental var
@@ -103,34 +118,34 @@ class Database(object):
             
 
     def name(self):
-        '''
+        """
         return database name
-        '''
+        """
         return self.dsnConfig['dbname']
 
     
     def port(self):
-        '''
+        """
         return port
-        '''
+        """
         if 'port' in self.dsnConfig:
             return self.dsnConfig['port']
         else:
             return None
 
     def host(self):
-        '''
+        """
         return database server
-        '''
+        """
         if 'host' in self.dsnConfig:
             return self.dsnConfig['host']
         else:
             return None
 
     def load_database_config(self):
-        '''
+        """
         parse gus config file for DB connection info
-        '''
+        """
         config_parser = SafeConfigParser()
         if sys.version_info.major < 3: # python 2.7 solution
             config_parser.readfp(FakeSecHead(open(self.gusConfigFile)))
@@ -149,9 +164,9 @@ class Database(object):
 
 
     def connect(self):
-        '''
+        """
         create database connection
-        '''
+        """
         self.connectionString = "user='" + self.user + "'";
         self.connectionString = self.connectionString + " password='" + self.__password + "'"
         self.connectionString = self.connectionString + " dbname='" + self.dsnConfig['dbname'] + "'"
@@ -164,28 +179,28 @@ class Database(object):
 
 
     def connected(self):
-        ''' test the connection; returns true if handle is connected '''
+        """ test the connection; returns true if handle is connected """
         return not bool(self.dbh.closed)
 
 
     def close(self):
-        '''
+        """
         close the database connection
-        '''
+        """
         self.dbh.close()
 
 
     def rollback(self):
-        '''
+        """
         rollback any changes
-        '''
+        """
         self.dbh.rollback()
 
 
     def commit(self):
-        '''
+        """
         commit any changes
-        '''
+        """
         self.dbh.commit()
 
 

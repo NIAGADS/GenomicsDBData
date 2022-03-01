@@ -10,7 +10,7 @@ use GUS::PluginMgr::Plugin;
 use POSIX qw(strftime);
 
 use Data::Dumper;
-use JSON;
+use JSON::XS;
 
 use GUS::Model::NIAGADS::Variant;
 use GUS::Model::NIAGADS::MergedVariant;
@@ -35,7 +35,6 @@ my $COPY_SQL=<<SQL;
 COPY NIAGADS.MergedVariant (
 ref_snp_id,
 merge_ref_snp_id,
-merge_variant_id,
 merge_build,
 merge_date,
 $HOUSEKEEPING_FIELDS
@@ -52,11 +51,13 @@ SQL
 sub getArgumentsDeclaration {
   my $argumentDeclaration  =
     [
-     stringArg({name => 'file',
-		descr => 'full path to file; expects output from generateMergedVariantLoadFile',
-		constraintFunc=> undef,
-		reqd  => 1,
-		isList => 0
+     fileArg({name => 'file',
+	      descr => 'full path to decompressed merge JSON file',
+	      constraintFunc=> undef,
+	      reqd  => 1,
+	      isList => 0,
+	      mustExist => 1,
+	      format => 'json'
 	       }),
 
     ];
@@ -70,9 +71,9 @@ sub getArgumentsDeclaration {
 sub getDocumentation {
   my $purposeBrief = 'Loads dbSNP merged ref SNP ids from a JSON file';
 
-  my $purpose = 'This plugin reads merged refSNPs from a JSON file, and inserts them into NIAGADS.MergedVariant & NIAGADS.Variant';
+  my $purpose = 'This plugin reads merged refSNPs from a JSON file, and inserts them into NIAGADS.MergedVariant';
 
-  my $tablesAffected = [['NIAGADS::Variant', 'Enters a row for each variant feature'], ['NIAGADS::MergedVariant', 'Enters one row for each merge relationship']];
+  my $tablesAffected = [['NIAGADS::MergedVariant', 'Enters one row for each merge relationship']];
 
   my $tablesDependedOn = [];
 
@@ -83,7 +84,7 @@ sub getDocumentation {
   my $notes = <<NOTES;
 
 Written by Emily Greenfest-Allen
-Copyright Trustees of University of Pennsylvania 2019. 
+Copyright Trustees of University of Pennsylvania 2022. 
 NOTES
 
   my $documentation = {purpose=>$purpose, purposeBrief=>$purposeBrief, tablesAffected=>$tablesAffected, tablesDependedOn=>$tablesDependedOn, howToRestart=>$howToRestart, failureCases=>$failureCases, notes=>$notes};
@@ -104,7 +105,7 @@ sub new {
   my $argumentDeclaration = &getArgumentsDeclaration();
 
   $self->initialize({requiredDbVersion => 4.0,
-		     cvsRevision => '$Revision: 12 $',
+		     cvsRevision => '$Revision$',
 		     name => ref($self),
 		     revisionNotes => '',
 		     argsDeclaration => $argumentDeclaration,
@@ -135,11 +136,7 @@ sub run {
 
 sub copy {
   my ($self) = @_;
-  my $file = $self->getArg('file');
-  open(my $fh, $file ) || $self->error("Unable to read $file");
 
-  my $dbh = $self->getDbHandle();
-  $dbh->do($COPY_SQL); # puts database in copy mode; no other trans until finished
   my $algInvId = $self->getAlgInvocation()->getId();
   my $count = 0;
 
@@ -149,18 +146,47 @@ sub copy {
   my $housekeeping = join('|', 	  getCurrentTime(),
 		  1, 1, 1, 1, 1, 0,
 		  $rowUserId, $rowGroupId,
-		  $rowProjectId, $algInvId);
+			  $rowProjectId, $algInvId);
 
-  while (my $fieldValues = <$fh>) {
-    chomp($fieldValues);
-    $dbh->pg_putcopydata($fieldValues . "|" . $housekeeping . "\n");
-    unless (++$count % 500000) {
-      $dbh->pg_putcopyend();   # end copy trans can no do other things
-      $self->getDbHandle()->commit() if $self->getArg('commit'); # commit
-      $self->log("Inserted $count records.");
-      $dbh->do($COPY_SQL); # puts database in copy mode; no other trans until finished
+  my $json = JSON::XS->new();
+
+  my $dbh = $self->getDbHandle();
+  $dbh->do($COPY_SQL); # puts database in copy mode; no other trans until finished
+
+  my $file = $self->getArg('file');
+  open(my $fh, $file ) || $self->error("Unable to read $file");
+  while (my  $line = <$fh>) {
+    chomp($line);
+
+    my $lineJson = $json->decode($line) || $self->error("Error decoding line JSON: " . $line);
+    my $refSnpId = 'rs' . $lineJson->{refsnp_id};
+    my @merges = @{$lineJson->{dbsnp1_merges}};
+
+    foreach my $merge (@merges) {
+      eval {
+	my $mergeRefSnpId = 'rs' . $merge->{merged_rsid};
+	my $mergeBuild = $merge->{revision};
+	my $mergeDate = $merge->{merge_date};
+	my $fieldValues = join('|', $refSnpId, $mergeRefSnpId, $mergeBuild, $mergeDate);
+	
+	$dbh->pg_putcopydata($fieldValues . "|" . $housekeeping . "\n");
+	unless (++$count % 50000) {
+	  $dbh->pg_putcopyend();   # end copy trans can now do other things
+	  $self->getDbHandle()->commit() || die $self->error($DBI::errstr)
+	    if $self->getArg('commit'); # commit
+	  $self->log("Inserted $count records.");
+	  $dbh->do($COPY_SQL); # puts database in copy mode; no other trans until finished
+	}
+      } or do {
+	# try/catch exception b/c have to pg_putcopyend before
+	# printing error b/c plugin includes a DESTROY sent to the DB
+	$dbh->pg_putcopyend();   # end copy trans can now do other things
+	my $eval_error= $@ || "unknown error / unable to execute COPY";
+	$self->error($eval_error);
+      }
     }
-  }
+  } # end for each merge
+  
   $dbh->pg_putcopyend();       # end copy trans can no do other things
   $self->getDbHandle()->commit() if $self->getArg('commit'); # commit
   $self->log("Inserted $count records.");
