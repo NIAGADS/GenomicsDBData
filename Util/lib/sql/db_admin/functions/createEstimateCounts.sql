@@ -13,4 +13,17 @@ BEGIN
 	RETURN rCount;
 END;
 $$
-LANGUAGE plpgsql
+LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION estimate_result_size(query TEXT) 
+RETURNS BIGINT AS $$
+DECLARE
+   plan JSONB;
+BEGIN
+   EXECUTE 'EXPLAIN (FORMAT JSON) ' || query INTO plan;
+ 
+   RETURN (plan->0->'Plan'->>'Plan Rows')::BIGINT;
+END;
+$$
+LANGUAGE plpgsql;
