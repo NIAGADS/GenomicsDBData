@@ -17,7 +17,7 @@ from os import path, listdir, environ
 from GenomicsDBData.Util.utils import warning, die, create_dir, xstr, execute_cmd, ascii_safe_str, is_number, xstr
 from GenomicsDBData.Util.list_utils import qw
 
-ENVIRONMENTAL_VARS = ['GUS_HOME', 'PROJECT_HOME', 'DATA_DIR', 'GENOME_BUILD', 'SHARED_DATA_DIR', 'CONFIG_DIR']
+ENVIRONMENTAL_VARS = ['NIAGADS_GWAS_DIR', 'GUS_HOME', 'PROJECT_HOME', 'DATA_DIR', 'GENOME_BUILD', 'SHARED_DATA_DIR', 'CONFIG_DIR']
 
 
 def tune():
@@ -74,7 +74,7 @@ def preprocess():
             warning("Multiple conditions found")
             fConfig = config['foreach']
             for condition in fConfig:
-                (key, value) = condition.items()[0]
+                (key, value) = list(condition.items())[0]
                 if foreachKeys is not None and key not in foreachKeys:
                     warning("Skipping: ", key)
                     continue
@@ -209,7 +209,7 @@ def load_data():
             warning("Multiple Conditions Found")
             fConfig = config['foreach']
             for condition in fConfig:
-                (key, value) = condition.items()[0]
+                (key, value) = list(condition.items())[0]
                 if foreachKeys is not None and key not in foreachKeys:
                     warning("Skipping: ", key)
                     continue

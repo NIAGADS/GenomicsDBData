@@ -42,7 +42,6 @@ createNDDCategories.sql
 createPopulation.sql
 createRecordGWASCounts.sql
 createStudyRelease.sql
-createVariantGWASResult.sql
 createVariantLDResult.sql
 createVariant.sql
 '''

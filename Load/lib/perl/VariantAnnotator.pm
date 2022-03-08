@@ -602,7 +602,6 @@ sub loadCaddScores {
   $self->{plugin}->log("Loading CADD scores for variants in $file");
   my @cmd = ('load_cadd_scores.py', 
 	     '--databaseDir', $self->{plugin}->getArg('caddDatabaseDir'),
-	     '--gusConfigFile', $self->{plugin}->getArg('annotatedVdbGusConfigFile'),
 	     '--logFile', $file . '-cadd.log',
 	     '--vcfFile', $file);
   push(@cmd, '--commit') if $self->{plugin}->getArg('commit');
@@ -621,8 +620,7 @@ sub loadVepAnnotatedVariants {
   my @cmd = ('load_vep_result.py', 
 	     '--inputFile', $file . '.json',
 	     '--logFile', $file . '.log',
-	     '--rankingFile', $self->{plugin}->getArg('adspConsequenceRankingFile'),
-	     '--gusConfigFile', $self->{plugin}->getArg('annotatedVdbGusConfigFile'));
+	     '--rankingFile', $self->{plugin}->getArg('adspConsequenceRankingFile'));
   push(@cmd, '--commit') if $self->{plugin}->getArg('commit');
 
   $self->{plugin}->log("Running load_vep_result.py to load annotation of novel variants: " . join(' ', @cmd));
@@ -641,8 +639,7 @@ sub loadNonVepAnnotatedVariants {
 
   my @cmd = ('load_non_vep_annotated_variants_from_vcf.py',
 	     '--vcfFile', $file,
-	     '--logFileName', $file . '-missing-from-vep.log',
-	     '--gusConfigFile', $self->{plugin}->getArg('annotatedVdbGusConfigFile'));
+	     '--logFileName', $file . '-missing-from-vep.log');
   push(@cmd, '--commit') if $self->{plugin}->getArg('commit');
 
   my $algInvocationId = qx(@cmd);
@@ -710,7 +707,7 @@ sub runVep {
 
 sub connect2AnnotatedVDB {
   my ($self) = @_;
-  my $gusConfig = GUS::Supported::GusConfig->new($self->{plugin}->getArg('annotatedVdbGusConfigFile'));
+  my $gusConfig = GUS::Supported::GusConfig->new(); 
 
   my $dbh  = DBI->connect($gusConfig->getDbiDsn(),
 			 $gusConfig->getDatabaseLogin(),

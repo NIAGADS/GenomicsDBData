@@ -162,3 +162,37 @@ loadResource --config $CONFIG_DIR/adsp/17K_annotation.json --load data --verbose
 loadResource --config $CONFIG_DIR/adsp/17K_annotation.json --load data --verbose --commit > $DATA_DIR/logs/data/load_adsp_17K_cadd.log 2>&1 # skip vep
 
 # QC
+
+# =================================================
+# EBI-EMBL GWAS Catalog
+# =================================================
+
+
+# =================================================
+# Summary Statistics
+# =================================================
+
+# external db before first load
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load xdbr --verbose --commit > $DATA_DIR/logs/xdbr/load_NIAGADS_DATASET_xdbr.log 2>&1
+# should be the same in all the config files for NIAGADS accessions, so don't need to run again
+
+
+# NG00027
+
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00027.json --preprocess  --commit > $DATA_DIR/logs/datasets/load_NG00027_placeholders.log 2>&1 
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load data --params '{"liftOver":"true"}' --verbose > $DATA_DIR/logs/datasets/load_NG00027_lift_over.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load data --params '{"findNovelVariants":"true"}' --verbose > $DATA_DIR/logs/datasets/load_NG00027_find_novel_variants.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00027_annotate_novel_variants.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00027_preprocess_novel_variants.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00027_load_variants.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00027_load_result.log 2>&1
+
+# NG00075
+
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00075.json --preprocess  --commit > $DATA_DIR/logs/datasets/load_NG00075_placeholders.log 2>&1 
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00075.json --load data --params '{"liftOver":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00075_lift_over.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00075.json --load data --params '{"findNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00075_find_novel_variants.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00075.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00075_annotate_novel_variants.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00075.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose  > $DATA_DIR/logs/datasets/load_NG00075_preprocess_novel_variants.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00075.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00075_load_variants.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00075.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00075_load_result.log 2>&1

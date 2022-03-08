@@ -1,11 +1,13 @@
 {    
     "file": {
-	"path": "$DATA_DIR/NIAGADS_GWAS",
+	"path": "$NIAGADS_GWAS_DIR",
 	"accession": "NG00027",
-	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
-	"cadd_database_directory": "$DATA_DIR/CADD/v16",
-	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
-	"vep_cache_directory": "$DATA_DIR/VEP_CACHE"
+	"cadd_path": "$DATA_DIR/CADD",
+	"vep_result_dir": "vep_results",
+	"seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
+	"consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
+	"chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
+	"chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz"
     },
     "external_database": {
 	"name": "NIAGADS",
@@ -21,9 +23,9 @@
 	{
 	    "ADJ_STAGE1": {
 		"file": "adj_age_sex_apoe4num_stage1_hm2geno1.20100831.plotted.dat",
-		"sourceId": "@file.accession+_ADJ_STAGE1",
-		"name": "ADGC LOAD: Adjusted Stage 1",
-		"description": "late-onset Alzheimer's disease; ADGC discovery stage 1 dataset; adjusted for age, sex, and APOE4 number",
+		"sourceId": "@file.accession+_GRCh38_ADJ_STAGE1",
+		"name": "ADGC LOAD: Adjusted Stage 1 (GRCh38)",
+		"description": "late-onset Alzheimer's disease; ADGC discovery stage 1 dataset; adjusted for age, sex, and APOE4 number (Lifted Over from GRCh37 to GRCh38)",
 		"characteristics": {
 		    "diagnosis": "late onset Alzheimer's disease",
 		    "covariate specification": "value:age, sex, and APOE4 number"
@@ -40,9 +42,9 @@
 	{
 	    "ADJ_STAGE12": {
 		"file": "adj_age_sex_apoe4num_stage12_hm2geno1.20100903.plotted.dat",
-		"sourceId": "@file.accession+_ADJ_STAGE12",
-		"name": "ADGC LOAD: Adjusted Stages 1 and 2",
-		"description": "late-onset Alzheimer's disease; ADGC discovery and replication stages (1 and 2, respectively); adjusted for age, sex, and APOE4 number",
+		"sourceId": "@file.accession+_GRCh38_ADJ_STAGE12",
+		"name": "ADGC LOAD: Adjusted Stages 1 and 2 (GRCh38)",
+		"description": "late-onset Alzheimer's disease; ADGC discovery and replication stages (1 and 2, respectively); adjusted for age, sex, and APOE4 number (Lifted Over from GRCh37 to GRCh38)",
 		"characteristics": {
 		    "diagnosis": "late onset Alzheimer's disease",
 		    "covariate specification": "value:age, sex, and APOE4 number"
@@ -58,9 +60,9 @@
 	{
 	    "ADJ_STAGE2": {
 		"file": "adj_age_sex_apoe4num_stage2_hm2geno2.20100903.plotted.dat",
-		"sourceId": "@file.accession+_ADJ_STAGE2",
-		"name": "ADGC LOAD: Adjusted Stage 2",
-		"description": "late-onset Alzheimer's disease; ADGC replication stage 2; adjusted for age, sex, and APOE4 number",
+		"sourceId": "@file.accession+_GRCh38_ADJ_STAGE2",
+		"name": "ADGC LOAD: Adjusted Stage 2 (GRCh38)",
+		"description": "late-onset Alzheimer's disease; ADGC replication stage 2; adjusted for age, sex, and APOE4 number (Lifted Over from GRCh37 to GRCh38)",
 		"characteristics": {
 		    "diagnosis": "late onset Alzheimer's disease",
 		    "covariate specification": "value:age, sex, and APOE4 number"
@@ -79,9 +81,9 @@
 	{
 	    "STAGE12": {
 		"file": "unadj_stage12_hm2geno1.20100903.plotted.dat",
-		"sourceId": "@file.accession+_STAGE12",
-		"name": "ADGC LOAD: Stages 1 and 2",
-		"description": "late-onset Alzheimer's disease; ADGC discovery and replication stages (1 and 2, respectively)",
+		"sourceId": "@file.accession+_GRCh38_STAGE12",
+		"name": "ADGC LOAD: Stages 1 and 2 (GRCh38)",
+		"description": "late-onset Alzheimer's disease; ADGC discovery and replication stages (1 and 2, respectively) (Lifted Over from GRCh37 to GRCh38)",
 		"characteristics": {
 		    "diagnosis": "late onset Alzheimer's disease"
 		},
@@ -96,9 +98,9 @@
 	{
 	    "STAGE1": {
 		"file": "unadj_stage1_hm2geno2.20100917.plotted.dat",
-		"sourceId": "@file.accession+_STAGE1",
-		"name": "ADGC LOAD: Stage 1",
-		"description": "late-onset Alzheimer's disease; ADGC discovery stage 1",
+		"sourceId": "@file.accession+_GRCh38_STAGE1",
+		"name": "ADGC LOAD: Stage 1 (GRCh38)",
+		"description": "late-onset Alzheimer's disease; ADGC discovery stage 1 (Lifted Over from GRCh37 to GRCh38)",
 		"characteristics": {
 		    "diagnosis": "late onset Alzheimer's disease"
 		},
@@ -116,9 +118,9 @@
 	{
 	    "STAGE2": {
 		"file": "unadj_stage2_hm2geno2.20100903.plotted.dat",
-		"sourceId": "@file.accession+_STAGE2",
-		"name": "ADGC LOAD: Stage 2",
-		"description": "late-onset Alzheimer's disease;  ADGC replication stage 2",
+		"sourceId": "@file.accession+_GRCh38_STAGE2",
+		"name": "ADGC LOAD: Stage 2 (GRCh38)",
+		"description": "late-onset Alzheimer's disease;  ADGC replication stage 2 (Lifted Over from GRCh37 to GRCh38)",
 		"characteristics": {
 		    "diagnosis": "late onset Alzheimer's disease"
 		},
@@ -135,26 +137,26 @@
 	}
     ],
     
-    "load": [
+    "preprocess": [
 	{
 	    "plugin": {
 		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
 		"skip": true,
 		"parameters": {
-		    "name": "ADGC LOAD",
+		    "name": "ADGC LOAD (GRCh38)",
 		    "attribution": "Naj et al. 2011",
-		    "description": "Summary statistics from a multi-stage Alzheimer's Disease Genetics Consortium (ADGC) GWAS study of late-onset Alzheimer's disease (LOAD).",
+		    "description": "Summary statistics from a multi-stage Alzheimer's Disease Genetics Consortium (ADGC) GWAS study of late-onset Alzheimer's disease (LOAD).  Lifted Over from GRCh37 to GRCh38.",
 		    "sourceId": "@file.accession",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version"
 		}
 		
 	    }
 	},
+    
 	{
 	    "foreach" : true,
 	    "plugin": {
 		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
-		"skip": true,
 		"parameters" : {
 		    "attribution": "Naj et al. 2011",
 		    "type": "Genetic variation",
@@ -167,7 +169,9 @@
 		    "studyId": "@file.accession"
 		}
 	    }
-	}, 
+	}
+    ],
+    "load":[
 	{
 	    "foreach": true,
 	    "plugin": {
@@ -176,10 +180,10 @@
 		    "file": "foreach",
 		    "sourceId": "foreach",
 		    "fileDir" : "@file.path/@file.accession",
-		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
-		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
-		    "caddDatabaseDir": "@file.cadd_database_directory",
-		    "vepCacheDir": "@file.vep_cache_directory",
+		    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
+		    "liftOverChainFile": "@file.chain_file",
+		    "remapAssemblies": "GCF_000001405.25|GCF_000001405.39",
+		    "caddDatabaseDir": "@file.cadd_path",
 		    "testAllele": "Allele1",
 		    "frequency": "Freq1",
 		    "refAllele": "Allele2",
@@ -188,11 +192,12 @@
 		    "pvalue": "P.value",
 		    "zeroBased": true,
 		    "skipUnmappableMarkers": true,
-		    "genomeBuild": "GRCh37.p13",
+		    "genomeBuild": "GRCh37",
 		    "marker": "MarkerName",
 		    "genomeWideSignificanceThreshold": "5e-8",
-		    "checkAltVariants":"true",
-		    "restrictedStats": "foreach"
+		    "checkAltIndels":"true",
+		    "restrictedStats": "foreach",
+		    "vepWebhook": "coming_soon"
 		}
 	    }
 	}

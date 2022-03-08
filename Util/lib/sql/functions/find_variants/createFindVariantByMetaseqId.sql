@@ -1,5 +1,6 @@
 -- finds variant by chr:pos:ref:alt id
 
+
 CREATE OR REPLACE FUNCTION generate_alt_metaseq_id(metaseqId TEXT)
             RETURNS TEXT AS $$
 DECLARE
