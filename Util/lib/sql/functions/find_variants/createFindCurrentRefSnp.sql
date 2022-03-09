@@ -6,64 +6,26 @@ DECLARE
 	variantId TEXT;
 	build integer;
 BEGIN
-	WITH merges AS (
-	SELECT ref_snp_id AS variant 
-	FROM NIAGADS.MergedVariant 
-	WHERE merge_ref_snp_id = refSnpId
 
-	UNION
-	
-	SELECT merge_ref_snp_id variant 
-	FROM NIAGADS.MergedVariant 
-	WHERE ref_snp_id = refSnpId
-	UNION SELECT refSnpId AS variant)
-
-	SELECT ref_snp_id INTO variantId FROM (
-	SELECT v.merge_ref_snp_id AS ref_snp_id, v.merge_build 
-	FROM merges r, NIAGADS.MergedVariant v
-	WHERE (v.ref_snp_id = r.variant OR v.merge_ref_snp_id = r.variant)
-
-	UNION ALL
-
-	SELECT ref_snp_id, dbnsp_build AS merge_build FROM --should be dbsnp_build, will be corrected next time AnnotatedVDB.RefSnpLookup is refreshed
-	AnnotatedVDB.RefSnpLookup WHERE ref_snp_id = refSnpId
-
-	ORDER BY merge_build DESC LIMIT 1) a;
+	WITH RECURSIVE merges AS (	
+	     SELECT ref_snp_id, merge_ref_snp_id, merge_build
+	     FROM NIAGADS.MergedVariant WHERE ref_snp_id = refSnpId
+	     UNION 
+	     SELECT v.ref_snp_id, v.merge_ref_snp_id, v.merge_build
+	     FROM NIAGADS.MergedVariant  v
+	     INNER JOIN merges M ON v.ref_snp_id = m.merge_ref_snp_id 
+	     ),
+	     
+	 Variants AS (
+	     SELECT merge_ref_snp_id, merge_build FROM merges 
+	     UNION ALL 
+	     SELECT refSnpId AS merge_ref_snp_id, -1 AS merge_build 
+	     ORDER BY merge_build DESC
+	 )
+	 SELECT ref_snp_id INTO variantId FROM AnnotatedVDB.RefSnpLookup 
+	 WHERE ref_snp_id IN (SELECT merge_ref_snp_id FROM variants) LIMIT 1;
 
 	RETURN variantId;
 END;
-
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION find_current_ref_snp(refSnpId TEXT, chrom TEXT) 
-       RETURNS TEXT AS $$
-DECLARE 
-	variantId TEXT;
-	build integer;
-BEGIN
-	WITH merges AS (
-	SELECT ref_snp_id AS variant 
-	FROM NIAGADS.MergedVariant 
-	WHERE merge_ref_snp_id = refSnpId
-	UNION	
-	SELECT merge_ref_snp_id variant 
-	FROM NIAGADS.MergedVariant 
-	WHERE ref_snp_id = refSnpId
-	UNION SELECT refSnpId AS variant)
-	SELECT ref_snp_id INTO variantId FROM (
-	SELECT v.merge_ref_snp_id AS ref_snp_id, v.merge_build 
-	FROM merges r, NIAGADS.MergedVariant v
-	WHERE (v.ref_snp_id = r.variant OR v.merge_ref_snp_id = r.variant)
-	UNION ALL
-	SELECT ref_snp_id, (vep_output->'input'->'info'->'dbSNPBuildID')::integer AS merge_build FROM 
-	AnnotatedVDB.Variant WHERE ref_snp_id = refSnpId AND chromosome = chrom
-	ORDER BY merge_build DESC LIMIT 1) a;
-
-	RETURN variantId;
-END;
-
-
-
-
 
 $$ LANGUAGE plpgsql;
