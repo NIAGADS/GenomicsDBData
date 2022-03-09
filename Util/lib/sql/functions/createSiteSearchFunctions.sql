@@ -56,7 +56,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-
 CREATE OR REPLACE FUNCTION variant_text_search(searchTerm TEXT) 
 RETURNS TABLE ( primary_key TEXT,
 	      	display TEXT,
