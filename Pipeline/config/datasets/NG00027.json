@@ -197,6 +197,7 @@
 		    "genomeWideSignificanceThreshold": "5e-8",
 		    "checkAltIndels":"true",
 		    "restrictedStats": "foreach",
+		    "variantLookupServiceUrl": "https://beta.niagads.org/genomics/service/variant",
 		    "vepWebhook": "coming_soon"
 		}
 	    }

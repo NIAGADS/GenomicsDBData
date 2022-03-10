@@ -1,5 +1,4 @@
-
-## $Id: LoadVariantGWASResult.pm.pm $
+## $Id: LoadVariantGWASResult.pm $
 ##
 
 package GenomicsDBData::Load::Plugin::LoadVariantGWASResult;
@@ -7,8 +6,7 @@ package GenomicsDBData::Load::Plugin::LoadVariantGWASResult;
 
 use strict;
 use GUS::PluginMgr::Plugin;
-use POSIX qw(strftime);
-use Parallel::Loops;
+
 
 use Package::Alias VariantAnnotator => 'GenomicsDBData::Load::VariantAnnotator';
 use Package::Alias Utils => 'GenomicsDBData::Load::Utils';
@@ -18,8 +16,14 @@ use Package::Alias VariantLoadUtils => 'GenomicsDBData::Load::VariantLoadUtils';
 use JSON::XS;
 use Data::Dumper;
 use File::Slurp qw(read_file);
-
+use POSIX qw(strftime);
+use Parallel::Loops;
 use Scalar::Util qw(looks_like_number);
+
+use LWP::UserAgent;
+use LWP::Parallel::UserAgent;
+use HTTP::Request::Common qw(GET);
+use HTTP::Request;
 
 use GUS::Model::Results::VariantGWAS;
 use GUS::Model::NIAGADS::Variant;
@@ -64,6 +68,14 @@ sub getArgumentsDeclaration {
 		isList => 0
 	       }),
 
+     stringArg({name => 'variantLookupServiceUrl',
+		descr => 'lookup service url and endpoint',
+		constraintFunc=> undef,
+		reqd  => 0,
+		isList => 0,
+		default => "https://www.niagads.org/genomics/service/variant"
+	       }),
+
      stringArg({name => 'caddDatabaseDir',
 		descr => 'full path to CADD database directory',
 		constraintFunc=> undef,
@@ -94,7 +106,6 @@ sub getArgumentsDeclaration {
 		 isList => 0,
 		}),
 
-
      integerArg({ name  => 'numRemapVariants',
 		  descr => 'number of variants to submit to remap',
 		  constraintFunc => undef,
@@ -102,8 +113,6 @@ sub getArgumentsDeclaration {
 		  default => 10000,
 		  reqd => 0
 		}),
-
-
 
      stringArg({name => 'remapAssemblies',
 		descr => 'from|dest assembly accessions: e.g., GCF_000001405.25|GCF_000001405.39 (GRCh37.p13|GRCh38.p13)",',
@@ -433,7 +442,7 @@ sub new {
   my $argumentDeclaration = &getArgumentsDeclaration();
 
   $self->initialize({requiredDbVersion => 4.0,
-		     cvsRevision       => '$Revision: 2$',
+		     cvsRevision       => '$Revision: 4$',
 		     name => ref($self),
 		     revisionNotes => '',
 		     argsDeclaration => $argumentDeclaration,
@@ -493,6 +502,16 @@ sub run {
 # ----------------------------------------------------------------------
 # methods called by run
 # ----------------------------------------------------------------------
+
+sub initializeLookupUserAgent {
+  my ($self) = @_;
+  my $userAgent = LWP::UserAgent->new(keep_alive=>100, ssl_opts => { verify_hostname => 0 });
+  $userAgent->timeout(10000);
+  $userAgent->env_proxy;
+  $userAgent->ssl_opts(SSL_cipher_list => 'DEFAULT');
+
+  $self->{user_agent} = $userAgent;
+}
 
 
 sub verifyArgs {
@@ -943,42 +962,113 @@ sub writeRemapFiles {
 }
 
 
-
 sub liftOver {
   # lift over --> 1) translate 1-based to 0-based / output as bed file
   # lift over / handle errors
   # read back in and translate back to 1-based / output updated input file
-  
+
   my ($self, $file) = @_;
 
+  $self->initializeLookupUserAgent();
   $self->log("INFO: Processing $file (" . $self->getArg('sourceId') . ")");
 
   # do liftOver
-  my ($bedFileName, $markerOnlyFileName) = $self->writeBedFile($file);
+  my ($bedFileName, $markerOnlyFileName) = $self->input2bed($file);
   my $liftedBedFileName = $self->runLiftOver($bedFileName);
 
   # handle unmapped & add in
   #   run against NCBI Remap
   #   look up against GRCh37 dbSNP (using NCBI API?)
   my ($remapBedFileName, $unmappedRemapFileName) = $self->remapUnmapped($bedFileName . ".unmapped");
-  my ($validRefSnpsFileName, $unmappedVariantsFileName) = $self->lookupValidGRCh37Variants($unmappedRemapFileName);
-  
+  # my ($validRefSnpsFileName, $unmappedVariantsFileName) = $self->lookupGRCh37Variants($unmappedRemapFileName, 'bed', 'NCBI Remap (Unmapped)');
+
   my @bedFiles = ($liftedBedFileName, $remapBedFileName);
-  my @markerOnlyFiles = ($markerOnlyFileName, $validRefSnpsFileName);
+  # my @markerOnlyFiles = ($markerOnlyFileName, $validRefSnpsFileName);
   # translate back to input file format
   $self->bed2input($liftedBedFileName, $markerOnlyFileName);
 }
 
 
-sub lookupValidGRCh37Variants {
-  my ($self, $inputFileName) = @_;
+sub lookupGRCh37Variant {
+  my ($self, $variantId, $returnFullResult) = @_;
 
-  open(my $ofh, $inputFileName ) || $self->error("Unable to open NCBI Remap unmapped file: $inputFileName for reading");
+  my $requestUrl = $self->getArg('variantLookupServiceUrl') . "?mscOnly&id=$variantId";
+  my $response = $self->{user_agent}->get($requestUrl);
 
-  $ofh->close();
+  if ($response->is_success) {
+    my $json = JSON::XS->new;
+    my $result = $json->decode($response->content);
+
+    return $result if ($returnFullResult);
+    return undef if (defined $result->{unmapped_variants});
+    return $result->{result}->{$variantId};
+  }
+  else {
+    $self->error("Problem looking up variant $variantId; ". $response->status_line);
+  }
+}
 
 
-  return (1, 2);
+sub bulkLookupGRCh37Variants {
+  my ($self, $lookupHash) = @_;
+
+  my $pua = LWP::Parallel::UserAgent->new();
+  $pua->in_order  (1);  # handle requests in order of registration
+  $pua->duplicates(0);  # ignore duplicates
+  $pua->timeout   (10);  # in seconds
+  $pua->redirect  (1);  # follow redirects
+
+  my @variants = keys %$lookupHash;
+  $self->log("INFO: Beginning bulk lookup against GRCh37 AnnotatedVDB / n = " . scalar(@variants));
+
+  my @lookups;
+  my @requests;
+  while (my ($index, $variantId) = each @variants) {
+    if ($index == 0 || $index % 200 != 0) {
+      push(@lookups, $variantId);
+    } else {
+      my $requestUrl = $self->getArg('variantLookupServiceUrl') . "?mscOnly&id=" . join(",", @lookups);
+      push(@requests, HTTP::Request->new('GET', $requestUrl));
+      @lookups = ($variantId);
+    }
+  }
+
+  # residuals
+  my $requestUrl = $self->getArg('variantLookupServiceUrl') . "?mscOnly&id=" . join(",", @lookups);
+  push(@requests, HTTP::Request->new('GET', $requestUrl));
+
+  foreach my $req (@requests) {
+    if (my $res = $pua->register($req)) {
+      print STDERR $res->error_as_HTML;
+    }
+  }
+
+  my $entries = $pua->wait();
+
+  foreach (keys %$entries) {
+    my $response = $entries->{$_}->response;
+    if ($response->is_success) {
+      my $json = JSON::XS->new;
+      my $result = $json->decode($response->content);
+
+      $self->error("Submitted too many variants; response paged")
+	if ($result->{paging}->{total_pages} > 1);
+
+      foreach my $key (keys %{$result->{result}}) {
+	$lookupHash->{$key}->{mapping} = $result->{result}->{$key};
+      }
+      if (defined $result->{unmapped_variants}) {
+	foreach my $value (@{$result->{unmapped_variants}}) {
+	  $lookupHash->{$value}->{mapping} = undef;
+	}
+      }
+    }
+    else {
+      $self->error("Problem looking up variants ($_): ". $response->status_line);
+    }
+  }
+
+  return $lookupHash;
 }
 
 
@@ -988,7 +1078,6 @@ sub remapBedFile {
   my $filePrefix =  $self->{adj_source_id};
   my $remapRootDir = PluginUtils::createDirectory($self, $self->{working_dir}, "remap");
 
-  
   if (-e $inputFileName) {
     my $lineCount = `wc -l < $inputFileName`;
     $self->log("WARNING: Remapping $inputFileName ($lineCount lines)");
@@ -1309,7 +1398,7 @@ sub runLiftOver {
 }
 
 
-sub writeBedFile {
+sub input2bed {
   my ($self, $file) = @_;
 
   my $filePrefix =  $self->{adj_source_id};
@@ -1345,16 +1434,19 @@ sub writeBedFile {
   open(my $fh, $inputFileName ) || $self->error("Unable to open $inputFileName for reading");
   $self->log("INFO: Creating bed file: $bedFileName");
   my $header = <$fh>;
+  print $moFh $header;
   chomp($header);
   my @fields = split /\t/, $header;
 
+  my $lookupCount = 0;
   my $json = JSON::XS->new();
   # INPUT fields: chr bp allele1 allele2 metaseq_id marker freq1 pvalue neg_log10_p display_p gwas_flags test_allele restricted_stats_json
   # OUTPUT: chrom start end name {everything else in JSON} / no header
+  my $lookups;
   while (my $line = <$fh>) {
     chomp $line;
     my @values = split /\t/, $line;
-    
+
     my %row;
     @row{@fields} = @values;
 
@@ -1368,15 +1460,44 @@ sub writeBedFile {
     $row{restricted_stats_json} = $json->decode($row{restricted_stats_json});
     my $infoStr = Utils::to_json(\%row);
     if ($chr eq "chrNA" || !($row{metaseq_id})) {
-      print $moFh $line . "\n";
+      my $marker = $row{marker};
+      $lookups->{$marker}->{input} = \%row;
+      $lookups->{$marker}->{line} = $line;
+      ++$lookupCount;
     } else {
       print $bedFh join(" ", $chr, $start, $end, "$name|$infoStr") . "\n";
     }
   }
+  $fh->close();
+  
+  $lookups = $self->bulkLookupGRCh37Variants($lookups);
+  foreach my $marker (keys %$lookups) {
+    if ($marker =~ m/^rs/) {
+      my $mapping = $lookups->{$marker}->{mapping};
+      my $input = $lookups->{$marker}->{input};
+      if (defined $mapping) {
+	my $matchedMarker = $mapping->{matched_variant}->{ref_snp_id};
+
+	if ($matchedMarker ne $marker) {
+	  # marker is deprecated, replace with new one
+	  $input->{marker} = $matchedMarker;
+	}
+	my $end = $mapping->{location};
+	my $start = $end - 1;
+	my $infoStr = Utils::to_json($input);
+	print $bedFh join(" ", $mapping->{chromosome}, $start, $end, join((':', "lookup", $marker, $matchedMarker)) . "|$infoStr") . "\n";
+      }
+      else {
+	$self->log("INFO: Variant $marker not found in GRCh37 AnnotatedVDB.");
+	print $moFh $lookups->{$marker}->{line} . "\n";
+      }
+    }
+  }
+    
   $bedFh->close();
   $moFh->close();
-  $fh->close();
 
+  $self->log("INFO: Looked up $lookupCount refSNPs.");
   return ($bedFileName, $markerOnlyFileName);
 }
 
