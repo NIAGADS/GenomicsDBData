@@ -24,9 +24,13 @@ END;
 
 $$ LANGUAGE plpgsql;
 
+DROP FUNCTION find_variant_by_metaseq_id_variations;
+DROP FUNCTION find_variant_by_metaseq_id(metaseqId TEXT, chrm TEXT, firstHitOnly BOOLEAN);
+DROP FUNCTION find_variant_by_metaseq_id(metaseqId TEXT, firstHitOnly BOOLEAN);
+
 CREATE OR REPLACE FUNCTION find_variant_by_metaseq_id_variations(metaseqId TEXT, firstHitOnly BOOLEAN DEFAULT FALSE)
        RETURNS TABLE(record_primary_key TEXT, ref_snp_id CHARACTER VARYING, metaseq_id TEXT,
-       	             has_genomicsdb_annotation BOOLEAN, is_adsp_variant BOOLEAN, bin_index LTREE, match_rank INTEGER, match_type TEXT) AS $$
+       	             is_adsp_variant BOOLEAN, bin_index LTREE, annotation JSONB, match_rank INTEGER, match_type TEXT) AS $$
 
 BEGIN
 	RETURN QUERY
@@ -58,11 +62,13 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION find_variant_by_metaseq_id(metaseqId TEXT, firstHitOnly BOOLEAN DEFAULT FALSE)
        RETURNS TABLE(record_primary_key TEXT, ref_snp_id CHARACTER VARYING, metaseq_id TEXT,
-       	             has_genomicsdb_annotation BOOLEAN, is_adsp_variant BOOLEAN, bin_index LTREE) AS $$
+       	             is_adsp_variant BOOLEAN, bin_index LTREE, annotation JSONB) AS $$
 BEGIN
 	RETURN QUERY
-	SELECT v.record_primary_key, v.ref_snp_id, v.metaseq_id, v.has_genomicsdb_annotation, v.is_adsp_variant,
-	v.bin_index
+	SELECT v.record_primary_key, v.ref_snp_id, v.metaseq_id, v.is_adsp_variant, v.bin_index,
+	jsonb_build_object(
+	 'GenomicsDB', v.other_annotation->'GenomicsDB',
+	 'mapped_coordinates', COALESCE(v.other_annotation->'GRCh37', v.other_annotation->'GRCh38')) AS annotation
 	FROM AnnotatedVDB.Variant v
 	WHERE v.metaseq_id = metaseqId
 	AND LEFT(v.metaseq_id, 50) = LEFT(metaseqId, 50)
@@ -74,12 +80,14 @@ $$ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION find_variant_by_metaseq_id(metaseqId TEXT, chrm TEXT, firstHitOnly BOOLEAN DEFAULT FALSE)
-       RETURNS TABLE(record_primary_key TEXT, ref_snp_id CHARACTER VARYING, metaseq_id TEXT,
-       	             has_genomicsdb_annotation BOOLEAN, is_adsp_variant BOOLEAN, bin_index LTREE) AS $$
+        RETURNS TABLE(record_primary_key TEXT, ref_snp_id CHARACTER VARYING, metaseq_id TEXT,
+       	             is_adsp_variant BOOLEAN, bin_index LTREE, annotation JSONB) AS $$
 BEGIN
 	RETURN QUERY
-	SELECT v.record_primary_key, v.ref_snp_id, v.metaseq_id, v.has_genomicsdb_annotation, v.is_adsp_variant,
-	v.bin_index
+	SELECT v.record_primary_key, v.ref_snp_id, v.metaseq_id, v.is_adsp_variant, v.bin_index,
+	jsonb_build_object(
+	 'GenomicsDB', v.other_annotation->'GenomicsDB',
+	 'mapped_coordinates', COALESCE(v.other_annotation->'GRCh37', v.other_annotation->'GRCh38')) AS annotation
 	FROM AnnotatedVDB.Variant v
 	WHERE v.metaseq_id = metaseqId
 	AND chromosome = chrm
