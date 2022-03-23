@@ -80,9 +80,9 @@ sub createDirectory {
   }
   else {
     mkdir $fullPath or $plugin->error("Error creating directory: $fullPath");
+    $plugin->log("Created directory: $fullPath");
   }
 
-  $plugin->log("Created directory: $fullPath");
   return $fullPath;
 }
 

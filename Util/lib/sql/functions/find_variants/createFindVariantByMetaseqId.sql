@@ -31,18 +31,27 @@ CREATE OR REPLACE FUNCTION find_variant_by_metaseq_id_variations(metaseqId TEXT,
 BEGIN
 	RETURN QUERY
     	SELECT *, 1 AS match_rank, 'exact' AS match_type
-	FROM find_variant_by_metaseq_id(metaseqId, firstHitOnly)
-        UNION ALL
-        SELECT *, 2 AS match_rank, 'switch' AS match_type
-	FROM find_variant_by_metaseq_id(generate_alt_metaseq_id(metaseqId), firstHitOnly)
-	UNION ALL
-	SELECT *, 3 AS match_rank, 'reverse comp' AS match_type
-	FROM find_variant_by_metaseq_id(generate_rc_metaseq_id(metaseqId), firstHitOnly)
-	UNION ALL
-	SELECT *, 4 AS match_rank, 'reverse_comp//switch' AS match_type
-	FROM find_variant_by_metaseq_id(generate_alt_metaseq_id(generate_rc_metaseq_id(metaseqId)), firstHitOnly)	
-	ORDER BY match_rank ASC
-        LIMIT CASE WHEN firstHitOnly THEN 1 END;
+	FROM find_variant_by_metaseq_id(metaseqId, firstHitOnly);
+        --UNION ALL
+	IF NOT FOUND THEN
+	   RETURN QUERY
+               SELECT *, 2 AS match_rank, 'switch' AS match_type
+	       FROM find_variant_by_metaseq_id(generate_alt_metaseq_id(metaseqId), firstHitOnly);
+	END IF;
+	--UNION ALL
+	IF NOT FOUND THEN
+	   RETURN QUERY
+	   	  SELECT *, 3 AS match_rank, 'reverse comp' AS match_type
+	   	  FROM find_variant_by_metaseq_id(generate_rc_metaseq_id(metaseqId), firstHitOnly);
+	END IF;
+	    -- UNION ALL
+	IF NOT FOUND THEN
+	   RETURN QUERY
+	   	  SELECT *, 4 AS match_rank, 'reverse_comp//switch' AS match_type
+		  FROM find_variant_by_metaseq_id(generate_alt_metaseq_id(generate_rc_metaseq_id(metaseqId)), firstHitOnly);
+        END IF;
+	--ORDER BY match_rank ASC
+        --LIMIT CASE WHEN firstHitOnly THEN 1 END;
 END;
 
 $$ LANGUAGE plpgsql;

@@ -7,7 +7,8 @@
 	"seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
 	"consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
 	"chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
-	"chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz"
+	"chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz",
+	"GRCh37_gus_config": "$GUS_HOME/config/grch37-gus.config"
     },
     "external_database": {
 	"name": "NIAGADS",
@@ -197,6 +198,7 @@
 		    "genomeWideSignificanceThreshold": "5e-8",
 		    "checkAltIndels":"true",
 		    "restrictedStats": "foreach",
+		    "sourceGenomeBuildGusConfig": "@file.GRCh37_gus_config",
 		    "variantLookupServiceUrl": "https://beta.niagads.org/genomics/service/variant",
 		    "vepWebhook": "coming_soon"
 		}

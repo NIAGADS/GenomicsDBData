@@ -4,6 +4,11 @@ use JSON::XS;
 use POSIX qw(strftime);
 use Time::HiRes;
 
+sub fileLineCount {
+  my ($file) = @_;
+  my $lineCount = `wc -l < $file`;
+  return $lineCount;
+}
 
 
 sub to_json {

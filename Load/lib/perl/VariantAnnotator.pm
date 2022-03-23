@@ -399,8 +399,8 @@ sub checkAltVariants {
 
   my @altVariants = ("$chr:$pos:$alt:$ref");
   if (!$isIndel) { # don't check reverse complement for indels
-    my $rRef = reverseComp($ref);
-    my $rAlt = reverseComp($alt);
+    my $rRef = reverse complement($ref);
+    my $rAlt = reverse complement($alt);
     push(@altVariants, "$chr:$pos:$rRef:$rAlt");
     push(@altVariants, "$chr:$pos:$rAlt:$rRef");
   }
@@ -508,10 +508,10 @@ sub getVariantIdByRefSnp {
 
 
 # ----------------------------------------------------------------------
-# get the reverse complement of a dna string
+# get the complement of a dna string
 # ----------------------------------------------------------------------
 
-sub reverseComp {
+sub complement {
   my ($allele) = @_;
   $allele =~ tr/ACGTacgt/TGCAtgca/;
   return $allele;
