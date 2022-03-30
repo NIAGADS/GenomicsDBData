@@ -1108,10 +1108,17 @@ sub DBLookup {	# check against DB
   while (my ($index, $line) = each @lines) {
     next if ($index == 0);
 
+    # I know, should be at end, but this way can count correctly & skip loop
+    # processing where necessary
+    $self->log("INFO: Processed $lineCount lines") if (++$lineCount % 100000 == 0);
+
     # chomp $line;
     my @values = split /\t/, $line;
     my %row;
     @row{@fields} = @values;
+
+    # DBLookup may be called several times, if the lookup has already been done, don't do it again
+    next if ($row{$genomeBuild} ne 'NULL');
 
     my $variantId = $row{metaseq_id};
 
@@ -1150,7 +1157,6 @@ sub DBLookup {	# check against DB
       push(@threads, $thread);
     } # end do lookup
 
-    $self->log("INFO: Queried $lineCount variants") if (++$lineCount % 100000 == 0);
   }				# end iterate over file
 
   # residuals
@@ -1235,9 +1241,9 @@ sub liftOver {
     $self->liftOverFromDBMappedFile($file, $resultFileName);
     $self->liftOverFromDBMappedFile($residualDBMappedFile, $resultFileName, $APPEND);
     $self->liftOverFromDBMappedFile($markerOnlyDBMappedFile, $resultFileName, $APPEND);
-    $self->bed2input($cleanedLiftOverFileName,  $resultFileName, $DROP_MARKERS, $APPEND);
     $self->bed2input($cleanedRemapFileName, $resultFileName, $DROP_MARKERS, $APPEND); # append
-    
+    $self->bed2input($cleanedLiftOverFileName,  $resultFileName, $DROP_MARKERS, $APPEND);
+
     # summarize counts
     my $inputCount = Utils::fileLineCount($file) - 1;
     my $unmappedCount = Utils::countOccurrenceInFile($residualDBMappedFile, 'genomicsdb_id', 1) +
@@ -1269,6 +1275,8 @@ sub liftOver {
     }
     $self->log("DONE: Done with liftOver / $mappedCount variants mapped via DB query / markerOnly = $fromMarker");
   }
+
+  $self->sortCleanedInput($workingDir, $resultFileName);
 
   return $resultFileName;
 }
@@ -1314,10 +1322,10 @@ sub liftOverFromDBMappedFile {
     return $outputFileName;
   } else {
     if (-e $outputFileName && ($append)) {
-      $self->log("INFO: bed2input - Appending DB mappings to input file: $outputFileName");
+      $self->log("INFO: DB Mapping liftOver - Appending DB mappings to input file: $outputFileName");
     }
     else {
-      $self->log("INFO: bed2input - Creating input file: $outputFileName from bed file $inputFileName");
+      $self->log("INFO: DB Mapping liftOver - Creating input file: $outputFileName from bed file $inputFileName");
     }
 
     my $ofh;
@@ -1326,7 +1334,7 @@ sub liftOverFromDBMappedFile {
     }
     else {
       open($ofh, '>', $outputFileName) || $self->error("Unable to create $outputFileName for writing");
-      print $ofh join("\t", @INPUT_FIELDS);
+      print $ofh join("\t", @INPUT_FIELDS) . "\n";
     }
     open(my $fh, '<', $inputFileName) || $self->error("Unable to create $outputFileName for writing");
     my $header = <$fh>;
@@ -1343,12 +1351,13 @@ sub liftOverFromDBMappedFile {
       next if ($mappingStr eq 'NULL');
 
       my $mapping = $json->decode($mappingStr);
-      my $chromosome = $$mapping[0]->{chromosome};
-      $chromosome = s/chr//g;
+      my $chromosome = $mapping->{chromosome};
+      $chromosome =~ s/chr//g;
       $row{chr} = $chromosome;
-      $row{bp} = int($$mapping[0]->{location});
-      $row{metaseq_id} = $$mapping[0]->{metaseq_id};
-      $row{marker} = (exists $$mapping[0]->{ref_snp_id}) ? $$mapping[0]->{ref_snp_id} : 'NULL';
+      $row{bp} = int($mapping->{location});
+      $row{metaseq_id} = $mapping->{metaseq_id};
+      my $newMarker= ${$mapping->{matched_variants}}[0]->{ref_snp_id};
+      $row{marker} = ($newMarker) ? $newMarker : 'NULL';
 
       if ($row{GRCh37} eq 'NULL') {
 	my $currentCoordinates = { chromosome => $row{chr},
@@ -1867,7 +1876,7 @@ sub input2bed {
 
   $self->log("INFO: input2bed - Creating bed file $bedFileName from input file $inputFileName");
   if (-e $bedFileName && (!$self->getArg('overwrite'))) {
-    $self->log("INFO: Using existing info2bed file $bedFileName");
+    $self->log("INFO: Using existing input2bed file $bedFileName");
     my $lineCount = Utils::fileLineCount($bedFileName); 
     return $lineCount, $bedFileName;
   }
