@@ -4,7 +4,7 @@ CREATE OR REPLACE FUNCTION find_current_ref_snp(refSnpId TEXT)
        RETURNS TEXT AS $$
 DECLARE 
 	variantId TEXT;
-	build integer;
+
 BEGIN
 
 	WITH RECURSIVE merges AS (	
@@ -22,7 +22,7 @@ BEGIN
 	     SELECT refSnpId AS merge_ref_snp_id, -1 AS merge_build 
 	     ORDER BY merge_build DESC
 	 )
-	 SELECT ref_snp_id INTO variantId FROM AnnotatedVDB.RefSnpLookup 
+	 SELECT ref_snp_id INTO variantId FROM AnnotatedVDB.Variant
 	 WHERE ref_snp_id IN (SELECT merge_ref_snp_id FROM variants) LIMIT 1;
 
 	RETURN variantId;

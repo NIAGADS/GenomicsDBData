@@ -11,7 +11,7 @@ use DBD::Pg;
 use GenomicsDBData::Load::Utils qw(truncateStr);
 use GenomicsDBData::Load::VariantAnnotator qw(isNull);
 
-my $LOOKUP_SQL="SELECT * from get_variant_primary_keys_and_annotations(?)";
+my $LOOKUP_SQL="SELECT * from get_variant_primary_keys_and_annotations(?, ?)";
 
 # metaseq_id, ref_snp_id, genomicsdbannotation, grch37, grch38
 
@@ -28,7 +28,7 @@ sub new {
   bless $self, $class;
   $self->connect();
   $self->{lookup_qh} = $self->{dbh}->prepare($LOOKUP_SQL) || $self->{plugin}->error(DBI::errstr);
-
+  $self->{first_value_only} = 0;
   return $self;
 }
 
@@ -41,6 +41,11 @@ sub DESTROY {
 sub disconnect {
   my ($self) = @_;
   $self->{dbh}->disconnect();
+}
+
+sub setFirstValueOnly {
+  my ($self, $fvOnly) = @_;
+  $self->{first_value_only} = $fvOnly;
 }
 
 sub connect {
@@ -68,7 +73,7 @@ sub connect {
 sub lookup {
   my ($self, @variants) = @_;
   # $self->{plugin}->log(join(',', @variants));
-  $self->{lookup_qh}->execute(join(',', @variants)) || $self->{plugin}->error(DBI::errstr);
+  $self->{lookup_qh}->execute(join(',', @variants), $self->{first_value_only}) || $self->{plugin}->error(DBI::errstr);
   my ($result) = $self->{lookup_qh}->fetchrow_array();
   my $json = JSON::XS->new();
   return $json->decode($result);

@@ -160,12 +160,30 @@ sub copy {
 
     my $lineJson = $json->decode($line) || $self->error("Error decoding line JSON: " . $line);
     my $refSnpId = 'rs' . $lineJson->{refsnp_id};
-    my @merges = @{$lineJson->{dbsnp1_merges}};
+    my @rawMerges = @{$lineJson->{dbsnp1_merges}};
 
+    my @merges;
+    foreach my $m (@rawMerges) {
+      my $merge = { merge_ref_snp_id => 'rs' . $m->{merged_rsid},
+		    merge_build => $m->{revision},
+		    merge_date => $m->{merge_date}};
+      push(@merges, $merge);
+    }
+
+    @rawMerges = @{$lineJson->{merged_snapshot_data}->{merged_into}};
+    my $mergeBuild = $lineJson->{merged_snapshot_data}->{proxy_build_id};
+    my $mergeDate = $lineJson->{merged_snapshot_data}->{proxy_time};
+    foreach my $m (@rawMerges) {
+      my $merge = { merge_ref_snp_id => 'rs' . $m,
+		    merge_build => $mergeBuild,
+		    merge_date => $mergeDate};
+      push(@merges, $merge);
+    }
+    
     foreach my $merge (@merges) {
       eval {
-	my $mergeRefSnpId = 'rs' . $merge->{merged_rsid};
-	my $mergeBuild = $merge->{revision};
+	my $mergeRefSnpId = $merge->{merge_ref_snp_id};
+	my $mergeBuild = $merge->{merge_build};
 	my $mergeDate = $merge->{merge_date};
 	my $fieldValues = join('|', $refSnpId, $mergeRefSnpId, $mergeBuild, $mergeDate);
 	

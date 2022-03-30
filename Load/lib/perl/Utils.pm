@@ -3,10 +3,26 @@ package GenomicsDBData::Load::Utils;
 use JSON::XS;
 use POSIX qw(strftime);
 use Time::HiRes;
+use Scalar::Util qw(looks_like_number);
+
+sub toNumber {
+  my ($value) = @_;
+  return $value if ($value =~ m/nan/i);
+  return $value if ($value =~ m/inf/i);
+  return (looks_like_number($value)) ? $value * 1.0 : $value;
+}
 
 sub fileLineCount {
   my ($file) = @_;
   my $lineCount = `wc -l < $file`;
+  return $lineCount;
+}
+
+sub countOccurrenceInFile {
+  my ($file, $pattern, $missing) = @_;
+  
+  my  $lineCount = ($missing) ? `grep -v -P $pattern $file | wc -l`
+    : `grep -P $pattern $file | wc -l`;
   return $lineCount;
 }
 

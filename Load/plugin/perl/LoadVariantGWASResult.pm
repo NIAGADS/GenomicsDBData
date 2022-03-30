@@ -4,6 +4,8 @@
 package GenomicsDBData::Load::Plugin::LoadVariantGWASResult;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
+use Scalar::Util qw/reftype/;
+
 use strict;
 use GUS::PluginMgr::Plugin;
 
@@ -21,7 +23,7 @@ use Data::Dumper;
 use File::Slurp qw(read_file);
 use POSIX qw(strftime);
 use Parallel::Loops;
-use Scalar::Util qw(looks_like_number);
+
 
 use LWP::UserAgent;
 use LWP::Parallel::UserAgent;
@@ -31,6 +33,12 @@ use HTTP::Request;
 use GUS::Model::Results::VariantGWAS;
 use GUS::Model::NIAGADS::Variant;
 use GUS::Model::Study::ProtocolAppNode;
+
+my $APPEND = 1;
+my $USE_MARKER = 1;
+my $INCLUDE_MARKERS = 1;
+my $DROP_MARKERS = 0;
+my $NEW_FILE = 0;
 
 my $RESTRICTED_STATS_FIELD_MAP = undef;
 
@@ -464,10 +472,10 @@ sub run {
   $self->initializePlugin();
   my $file = $self->{root_file_path} . $self->getArg('file');
 
-  $self->cleanAndSortInput($file) if ($self->getArg('cleanAndSortInput'));
-
-
-  $self->liftOver($file) if ($self->getArg('liftOver'));
+  my $inputFileName = $self->cleanAndSortInput($file);
+  my $dbmappedFileName = $self->DBLookup($inputFileName);
+  $self->liftOver($dbmappedFileName) if ($self->getArg('liftOver'));
+  
   $self->findNovelVariants($file, 0) if ($self->getArg('findNovelVariants')); # 0 => create new preprocess file
   $self->findNovelVariants($file, 1)
     if ($self->getArg('preprocessAnnotatedNovelVariants')); # needs to be done in a separate call b/c of FDW lag
@@ -490,6 +498,14 @@ sub initializePlugin {
   $self->getAlgInvocation()->setMaximumNumberOfObjects(100000);
 
   $self->verifyArgs();
+
+  if ($self->getArg('liftOver')) {
+    $self->{gus_config} = {GRCh37 => $self->getArg('sourceGenomeBuildGusConfig'),
+			   GRCh38 => undef}; # will use plugin default
+  }
+  else {
+    $self->{gus_config}->{$self->getArg('genomeBuild')} = undef;
+  }
 
   $self->{protocol_app_node_id} = $self->getProtocolAppNodeId(); # verify protocol app node
 
@@ -733,6 +749,9 @@ sub formatPvalue {
   if ($pvalue =~ m/NA/i) {
     return ("NaN", "NaN", "NaN")
   }
+
+  return ($pvalue, "NaN", $pvalue) if ($pvalue == 0);
+
   if (!$pvalue) {
     return ("NaN", "NaN", "NaN")
   }
@@ -742,7 +761,8 @@ sub formatPvalue {
     return ($pvalue, $exponent, $pvalue) if ($exponent > 300);
   }
 
-  return (0, $pvalue) if ($pvalue == 1);
+  return (1, 0, $pvalue) if ($pvalue == 1);
+
 
   eval {
     $negLog10p = -1.0 * (log($pvalue) / log(10));
@@ -784,7 +804,7 @@ sub buildRestrictedStatsJson {
     if ($tValue eq "infinity" or $tValue =~ m/^inf$/) {
       $stats->{$stat} = "Infinity";
     } else { # otherwise replaces Infinity w/inf which will cause problems w/load b/c inf s not a number in postgres
-      $stats->{$stat} = (looks_like_number($values[$index])) ? $values[$index] * 1.0 : $values[$index];
+      $stats->{$stat} = Utils::toNumber($values[$index]);
     }
   }
   return Utils::to_json($stats);
@@ -793,7 +813,7 @@ sub buildRestrictedStatsJson {
 
 sub buildGWASFlags {
   my ($self, $pvalue, $displayP) = @_;
-  my $flags = {$self->getArg('sourceId') => {p_value => $displayP,
+  my $flags = {$self->getArg('sourceId') => {p_value => Utils::toNumber($displayP),
 					     is_gws => $pvalue <= $self->getArg('genomeWideSignificanceThreshold') ? 1: 0}};
 
   return Utils::to_json($flags);
@@ -812,11 +832,10 @@ sub cleanAndSortInput {
 
   my $filePrefix = $self->{adj_source_id};
   my $inputFileName = $self->{working_dir} . "/" . $filePrefix . '-input.txt';
-  $self->{files}->{input} = $inputFileName;
 
   if (-e $inputFileName && !$self->getArg('overwrite')) {
     $self->log("INFO: Using existing cleaned input file: $inputFileName");
-    return;
+    return $inputFileName;
   }
 
   my $pfh = undef;
@@ -955,6 +974,7 @@ sub cleanAndSortInput {
 
   $self->log("INFO: Cleaned $lineCount lines");
   $self->sortCleanedInput($self->{working_dir}, $inputFileName);
+  return $inputFileName;
 }				# end cleanAndSortInput
 
 # ----------------------------------------------------------------------
@@ -981,43 +1001,67 @@ sub cleanAndSortInput {
 #   "record_primary_key": "1:2071765:A:G_rs364677"
 # },
 
+# if firstValueOnly == false, then {"1:2071765:G:A": [{},{}]}
+
 sub updateDBMappedInput {
-  my ($self, $lookup, $mapping) = @_;
-  my ($chromosome, $location, @alleles) = split /:/, $mapping->{metaseq_id};
-  my $grch37 = { chromosome => $chromosome,
-		 location => $location,
-		 metaseq_id => $mapping->{metaseq_id},
-		 ref_snp_id => $mapping->{ref_snp_id},
-		 genomicsdb_id => $mapping->{record_primary_key}};
+  my ($self, $lookup, $mapping, $genomeBuild) = @_;
 
-  my $loc37 = Utils::to_json($grch37);
-  
-  my $mappedCoordinates = $mapping->{mapped_coordinates};
-  my $loc38 = (defined $mappedCoordinates && exists $mappedCoordinates->{GRCh38}) ? Utils::to_json($mapping->{GRCh38}) : 'NULL';
+  $genomeBuild //= $self->getArg('genomeBuild');
+  my $mappedBuild = ($genomeBuild eq 'GRCh37') ? 'GRCh38' : 'GRCh37';
 
-  my $updateStr = join("\t", $loc37, $loc38);
-  my $line = $lookup->{line};
-  $line =~ s/NULL\tNULL$/$updateStr/g;
-  return $line;
+
+  my ($chromosome, $position, @alleles) = split /:/, $$mapping[0]->{metaseq_id};
+  my @matchedVariants;
+  foreach my $variant (@$mapping) {
+    my $ids = {ref_snp_id => $variant->{ref_snp_id},
+	       genomicsdb_id => $variant->{record_primary_key}};
+    push(@matchedVariants, $ids);
+  }
+
+  my $currentCoordinates = { chromosome => $chromosome,
+			     location => int($position),
+			     metaseq_id => $$mapping[0]->{metaseq_id},
+			     matched_variants => \@matchedVariants};
+
+  my $row = $lookup->{row};
+  $row->{$genomeBuild} = Utils::to_json($currentCoordinates);
+
+  my $mappedCoordinates = $$mapping[0]->{mapped_coordinates}; # should be the same even if multiple rsIds for the metaseq
+
+  $row->{$mappedBuild} = (defined $mappedCoordinates && exists $mappedCoordinates->{$mappedBuild})
+    ? Utils::to_json($mapping->{$mappedBuild})
+    : $row->{$mappedBuild} ne 'NULL' ? $row->{$mappedBuild} : 'NULL';
+
+  # handle marker only mappings
+  if ($row->{chr} =~ /NA/ || $row->{metaseq_id} eq 'NULL') {
+    $row->{chr} = $chromosome;
+    $row->{bp} = int($position);
+    $row->{metaseq_id} = $$mapping[0]->{metaseq_id};
+  }
+
+  return join("\t", @$row{@INPUT_FIELDS});
 }
 
 
-sub submitDBliftOverQuery {
-  my ($self, $lookups, $file) = @_;
+sub submitDBLookupQuery {
+  my ($self, $genomeBuild, $lookups, $file) = @_;
 
   # only scalars can be passed to threads, so need to rebless plugin
   bless $self, 'GenomicsDBData::Load::Plugin::LoadVariantGWASResult';
 
   eval {
-    my $recordHandler = VariantRecord->new({gus_config_file => $self->getArg('sourceGenomeBuildGusConfig'),
-					    genome_build => 'GRCh37',
+    my $recordHandler = VariantRecord->new({gus_config_file => $self->{gus_config}->{$genomeBuild},
+					    genome_build => $genomeBuild,
 					    plugin => $self});
 
+    $recordHandler->setFirstValueOnly(0);
+
     my $mappings = $recordHandler->lookup(keys %$lookups);
+
     $SHARED_VARIABLE_SEMAPHORE->up;
     foreach my $vid (keys %$mappings) {
       next if (!defined $mappings->{$vid}); # "null" returned
-      $$file[$lookups->{$vid}->{index}] = $self->updateDBMappedInput($lookups->{$vid}, $mappings->{$vid});
+      $$file[$lookups->{$vid}->{index}] = $self->updateDBMappedInput($lookups->{$vid}, $mappings->{$vid}, $genomeBuild);
     }
     $SHARED_VARIABLE_SEMAPHORE->up;
     $PROCESS_COUNT_SEMAPHORE->up;
@@ -1029,23 +1073,22 @@ sub submitDBliftOverQuery {
 }
 
 
-sub DBliftOver {	# check against GRCh37 DB
+sub DBLookup {	# check against DB
   # note: this is a simplistic approach / does not handle outlying cases such as chr:pos:test_allele
   # these will have to be handled by liftOver & findNovelVariant combined / too many checks
-  my ($self, $file) = @_;
+  my ($self, $inputFileName, $genomeBuild, $useMarker) = @_;
 
-  $self->log("INFO: Querying existing DB mappings / refsnp and metaseq id matches only");
-  my $inputFileName = $self->{files}->{input};
-  if (!$inputFileName) {
-    $self->error("{files}->{input} not set before querying DB");
-  }
+  $genomeBuild //= $self->getArg('genomeBuild');
 
+  $self->log("INFO: Querying existing DB mappings / refsnp:alleleStr and metaseq id matches only");
+  my $gusConfig = ($self->{gus_config}->{$genomeBuild}) ? $self->{gus_config}->{$genomeBuild} : "default";
+  $self->log("INFO: Source Genome Build: $genomeBuild / GUS Config File: $gusConfig");
+  
   my $outputFileName = "$inputFileName.dbmapped";
 
   if (-e $outputFileName && !$self->getArg('overwrite')) {
-    $self->log("INFO: Using existing DBliftOver mapping file$ $outputFileName");
-    $self->{files}->{GRCh37_input} = $outputFileName;
-    return;
+    $self->log("INFO: Using existing DBLookup file $outputFileName");
+    return $outputFileName;
   }
 
   open(my $fh, $inputFileName) || $self->error("Unable to open input file $inputFileName for reading");
@@ -1064,15 +1107,23 @@ sub DBliftOver {	# check against GRCh37 DB
   my @threads;
   while (my ($index, $line) = each @lines) {
     next if ($index == 0);
+
     # chomp $line;
     my @values = split /\t/, $line;
     my %row;
     @row{@fields} = @values;
 
-    my $variantId = ($self->getArg('mapThruMarker') && !$self->getArg('markerIsMetaseqId')) ? $row{marker} : $row{metaseq_id};
-    $variantId = $row{marker} if ($row{chr} =~ /NA/ || $row{metaseq_id} eq 'NULL');
+    my $variantId = $row{metaseq_id};
+
+    if (($self->getArg('mapThruMarker') && !$self->getArg('markerIsMetaseqId'))
+	|| $useMarker
+	|| ($row{chr} =~ /NA/ || $row{metaseq_id} eq 'NULL')) {
+      $variantId = join(":", $row{marker}, $row{allele1}, $row{allele2});
+    }
+
     $lookups->{$variantId}->{index} = $index;
     $lookups->{$variantId}->{line} = $line;
+    $lookups->{$variantId}->{row} = \%row;
 
     # LOOKUP Result
     # "1:2071765:G:A": {
@@ -1094,7 +1145,7 @@ sub DBliftOver {	# check against GRCh37 DB
 
     if (++$lookupCount % 10000 == 0) {
       $PROCESS_COUNT_SEMAPHORE->down;
-      my $thread = threads->create(\&submitDBliftOverQuery, $self, $lookups, \@lines);
+      my $thread = threads->create(\&submitDBLookupQuery, $self, $genomeBuild, $lookups, \@lines);
       undef $lookups;
       push(@threads, $thread);
     } # end do lookup
@@ -1105,7 +1156,7 @@ sub DBliftOver {	# check against GRCh37 DB
   # residuals
   if ($lookups) {
     $PROCESS_COUNT_SEMAPHORE->down;
-    my $thread = threads->create(\&submitParallelVariantDBMappingQuery, $self, $lookups,\@lines);
+    my $thread = threads->create(\&submitDBLookupQuery, $self, $genomeBuild, $lookups,\@lines);
     push(@threads, $thread);
   }
 
@@ -1133,7 +1184,9 @@ sub DBliftOver {	# check against GRCh37 DB
   $ofh->close();
 
   $self->log("DONE: Wrote $lineCount lines");
-  $self->{files}->{GRCh37_input} = $outputFileName;
+
+  $self->sortCleanedInput($self->{working_dir}, $outputFileName);
+  return $outputFileName;
 }
 
 
@@ -1153,76 +1206,168 @@ sub liftOver {
 
   $self->log("INFO: Beginning LiftOver process on $file");
 
-
-  # find variants in db
-  $self->DBliftOver();
+  my $rootFilePath =   PluginUtils::createDirectory($self, $self->getArg('fileDir'), "GRCh38");
+  my $workingDir =   PluginUtils::createDirectory($self, $rootFilePath, $self->getArg('sourceId'));
+  my $resultFileName = $workingDir . "/" . $self->getArg('sourceId') . "-input.txt";
 
   # do liftOver
-  my $nUnliftedVariants = $self->input2bed($self->{files}->{GRCh37_input});
-  $self->error("Number of unlifted variants");
+  my ($nUnliftedVariants, $sourceBedFileName) = $self->input2bed($file);
+  $self->log("Number of unlifted variants found = $nUnliftedVariants");
   if ($nUnliftedVariants > 0) {
-
-    $self->runUCSCLiftOver($self->{files}->{GRCh37_bed});
+    my $mappedBedFileName = $self->runUCSCLiftOver($sourceBedFileName);
     # find issues
     my ($cleanedLiftOverFileName, $unmappedLiftOverFileName) =
-      $self->cleanMappedBedFile($self->{files}->{GRCh38_liftOver_bed}, $self->{files}->{GRCh37_bed}, "liftOver");
+      $self->cleanMappedBedFile($mappedBedFileName, $sourceBedFileName, "liftOver");
 
     # handle unmapped & add in
     #   run against NCBI Remap
-    $self->remapUnmapped($self->{files}->{GRCh37_liftOver_unmapped});
+    my $remapFileName = $self->remapBedFile($unmappedLiftOverFileName);
+    my ($cleanedRemapFileName, $unmappedRemapFileName) =
+      $self->cleanMappedBedFile($remapFileName, $unmappedLiftOverFileName, "remap");
+
+    # lookup remap-unmapped in GRCh38 database
+    # lookup marker only in GRCh38 database
+    my $residualUnmappedFileName = $self->bed2input($unmappedRemapFileName, undef, $INCLUDE_MARKERS, $NEW_FILE);
+    my $residualDBMappedFile = $self->DBLookup($residualUnmappedFileName, 'GRCh38', $USE_MARKER);
+    my $markerOnlyDBMappedFile = $self->DBLookup("$file.unmapped.markerOnly", 'GRCh38', $USE_MARKER);
+
+    # dbmapping input, ucsc lift over, remap, remap-unmapped
+    $self->liftOverFromDBMappedFile($file, $resultFileName);
+    $self->liftOverFromDBMappedFile($residualDBMappedFile, $resultFileName, $APPEND);
+    $self->liftOverFromDBMappedFile($markerOnlyDBMappedFile, $resultFileName, $APPEND);
+    $self->bed2input($cleanedLiftOverFileName,  $resultFileName, $DROP_MARKERS, $APPEND);
+    $self->bed2input($cleanedRemapFileName, $resultFileName, $DROP_MARKERS, $APPEND); # append
+    
+    # summarize counts
+    my $inputCount = Utils::fileLineCount($file) - 1;
+    my $unmappedCount = Utils::countOccurrenceInFile($residualDBMappedFile, 'genomicsdb_id', 1) +
+      Utils::countOccurrenceInFile($markerOnlyDBMappedFile, 'genomicsdb_id', 1); # find lines missing the pattern
+    my $mappedCount = Utils::fileLineCount($resultFileName) - 1;
+    my $fromDBLookup = Utils::countOccurrenceInFile($file, 'genomicsdb_id');
+    my $fromUSCliftOver = Utils::fileLineCount($cleanedLiftOverFileName);
+    my $fromRemap = Utils::fileLineCount($cleanedRemapFileName);
+    my $fromMarker = Utils::countOccurrenceInFile($residualDBMappedFile, 'genomicsdb_id') - 1  +
+      Utils::countOccurrenceInFile($markerOnlyDBMappedFile, 'genomicsdb_id') - 1;
+    
+    my $counts = {mapped => $mappedCount, unmapped => $unmappedCount, GRCh38_marker_AnnotatedVDB => $fromMarker,
+		  GRCh37_AnnotatedVDB => $fromDBLookup, liftOver => $fromUSCliftOver, Remap => $fromRemap,
+		  original_input => $inputCount, percent_mapped => $mappedCount / $inputCount,
+		  percent_unmapped => $unmappedCount / $inputCount };
+    
+    $self->log("INFO: DONE with liftOver " . Dumper($counts));
   }
   else {
-    $self->log("DONE: Done with liftOver / all variants mapped via DB query");
+    my $fromMarker = Utils::countOccurrenceInFile("$file.unmapped.markerOnly", 'genomicsdb_id') - 1;
+    my $mappedCount = Utils::countOccurrenceInFile("$file", 'genomicsdb_id') - 1 - $fromMarker;
+    $self->liftOverFromDBMappedFile($file, $resultFileName);
+    
+    if ($fromMarker > 0) {
+      my $markerOnlyDBMappedFile = $self->DBLookup("$file.unmapped.markerOnly", 'GRCh38');
+      $self->liftOverFromDBMappedFile($markerOnlyDBMappedFile, $resultFileName);
+      my $unmappedCount = Utils::countOccurrenceInFile($markerOnlyDBMappedFile, 'genomicsdb_id', 1); # find lines missing the pattern
+      $self->log("Marker-only Unmapped: $unmappedCount");
+    }
+    $self->log("DONE: Done with liftOver / $mappedCount variants mapped via DB query / markerOnly = $fromMarker");
   }
 
-  $self->bed2input();
-  $self->appendDBMappedVariants();
-
-  # summarize counts / mapped / unmapped / markerOnly
-  my $mappedCount = Utils::fileLineCount($self->{files}->{GRCh38_input}) - 1; # "input" format file has header
-  my $unmappedCount = Utils::fileLineCount($self->{files}->{GRCh37_remap_unmapped});
-  my $markerOnlyCount = Utils::fileLineCount($self->{files}->{marker_only_input}) - 1;
-  my $inputCount = Utils::fileLineCount($self->{files}->{input}) - 1;
-  my $totalCount = $mappedCount + $unmappedCount + $markerOnlyCount;
-  my $counts = {mapped => $mappedCount, unmapped => $unmappedCount, marker_only => $markerOnlyCount,
-		total_liftOver => $totalCount,
-		original_input => $inputCount, input_v_liftOver => $inputCount - $totalCount};
-
-  $self->log("INFO: DONE with liftOver " . Dumper($counts));
+  return $resultFileName;
 }
 
 
 sub runUCSCLiftOver {
-  my ($self, $bedFile) = @_;
+  my ($self, $sourceBedFile) = @_;
   my $chainFile = $self->getArg('liftOverChainFile');
-  $self->log("INFO: Performing liftOver on $bedFile using chain: $chainFile");
+  $self->log("INFO: Performing UCSC liftOver on $sourceBedFile using chain: $chainFile");
 
   # USAGE: liftOver oldFile map.chain newFile unMapped
   my $filePath = $self->{working_dir} . "/liftOver/";
   my $filePrefix = $self->{adj_source_id};
-  my $errorFile = $bedFile . ".unmapped";
-  my $liftedBedFileName = $filePath . $filePrefix . "-GRCh38.bed";
-  $self->{files}->{GRCh38_liftOver_bed} = $liftedBedFileName;
-  $self->{files}->{GRCh37_liftOver_unmapped} = $errorFile;
-
-  if (-e $liftedBedFileName && !$self->getArg('overwrite')) {
-    $self->log("INFO: Using existing liftOver file: $liftedBedFileName");
-    return 1;
+  my $errorFile = $sourceBedFile . ".unmapped";
+  my $mappedBedFileName = $filePath . $filePrefix . "-GRCh38.bed";
+  
+  if (-e $mappedBedFileName && !$self->getArg('overwrite')) {
+    $self->log("INFO: Using existing liftOver file: $mappedBedFileName");
+    return $mappedBedFileName;
   }
 
   my @cmd = ('liftOver',
-	     $bedFile,
+	     $sourceBedFile,
 	     $chainFile,
-	     $liftedBedFileName,
+	     $mappedBedFileName,
 	     $errorFile);
 
   $self->log("INFO: Running liftOver: " . join(' ', @cmd));
   my $status = qx(@cmd);
 
-  $self->log("INFO: Done with liftOver");
+  $self->log("INFO: Done with UCSC liftOver");
   my $nUnmapped = Utils::fileLineCount($errorFile);
   $self->log("WARNING: Not all variants mapped, see: $errorFile (n = $nUnmapped") if ($nUnmapped > 0);
+  return $mappedBedFileName;
 }
+
+sub liftOverFromDBMappedFile {
+  my ($self, $inputFileName, $outputFileName, $append) = @_;
+  $append //= 0;
+
+  if (-e $outputFileName && !$self->getArg('overwrite') && !$append) {
+    $self->log("INFO: Using existing DB-based liftOver file: $outputFileName");
+    return $outputFileName;
+  } else {
+    if (-e $outputFileName && ($append)) {
+      $self->log("INFO: bed2input - Appending DB mappings to input file: $outputFileName");
+    }
+    else {
+      $self->log("INFO: bed2input - Creating input file: $outputFileName from bed file $inputFileName");
+    }
+
+    my $ofh;
+    if ($append) {
+      open($ofh, '>>', $outputFileName) || $self->error("Unable to create $outputFileName for writing");
+    }
+    else {
+      open($ofh, '>', $outputFileName) || $self->error("Unable to create $outputFileName for writing");
+      print $ofh join("\t", @INPUT_FIELDS);
+    }
+    open(my $fh, '<', $inputFileName) || $self->error("Unable to create $outputFileName for writing");
+    my $header = <$fh>;
+    my $lineCount = 0;
+    my $json = JSON::XS->new();
+    
+    while (my $line = <$fh>) {
+      chomp $line;
+      my @values = split /\t/, $line;
+      my %row;
+      @row{@INPUT_FIELDS} = @values;
+
+      my $mappingStr = $row{GRCh38};
+      next if ($mappingStr eq 'NULL');
+
+      my $mapping = $json->decode($mappingStr);
+      my $chromosome = $$mapping[0]->{chromosome};
+      $chromosome = s/chr//g;
+      $row{chr} = $chromosome;
+      $row{bp} = int($$mapping[0]->{location});
+      $row{metaseq_id} = $$mapping[0]->{metaseq_id};
+      $row{marker} = (exists $$mapping[0]->{ref_snp_id}) ? $$mapping[0]->{ref_snp_id} : 'NULL';
+
+      if ($row{GRCh37} eq 'NULL') {
+	my $currentCoordinates = { chromosome => $row{chr},
+				   location => int($row{bp}),
+				   metaseq_id => $row{metaseq_id}};
+	$row{GRCh37} = Utils::to_json($currentCoordinates);
+      }
+
+      print $ofh join("\t", @row{@INPUT_FIELDS}) . "\n";
+      $self->log("INFO: Wrote $lineCount lines") if (++$lineCount % 500000 == 0);
+    }
+    $ofh->close();
+    $fh->close();
+    $self->log("INFO: Wrote $lineCount lines");
+    $self->log("DONE: Adding $inputFileName to liftOver final output: $outputFileName");
+  }
+  return $outputFileName;
+}
+
 
 
 # ----------------------------------------------------------------------
@@ -1349,12 +1494,6 @@ sub annotateNovelVariants {
 }
 
 
-
-
-
-
-
-
 sub queryGenomicsDBVariantLookupService {
   my ($self, $lookupHash) = @_;
 
@@ -1427,14 +1566,12 @@ sub remapBedFile {
     my $lineCount = Utils::fileLineCount($inputFileName);
     $self->log("WARNING: Remapping $inputFileName ($lineCount lines)");
     $self->error("Too many unmapped variants in $inputFileName - $lineCount") if ($lineCount > 50000);
-    
+
     #output file - remap instead of liftOver dir, GRCh38 instead of GRCh37, remapped instead of unmapped
     (my $outputFileName = $inputFileName) =~ s/-GRCh37/-GRCh38/g;
     $outputFileName =~ s/liftOver/remap/g;
     $outputFileName =~ s/unmapped/remapped/g;
 
-    $self->{files}->{GRCh38_remap_bed} = $outputFileName;
-    
     if (-e $outputFileName && !$self->getArg('overwrite')) {
       $self->log("INFO: Remapped file $outputFileName already exists");
       return $outputFileName;
@@ -1457,49 +1594,34 @@ sub remapBedFile {
     my $status = qx(@cmd);
     $self->log("INFO: Remap status: $status");
     if ($status =~ m/Saving.+report/) {
-      $self->log("INFO: Done with remap");
+      $self->log("INFO: Done with NCBI Remap");
       return $outputFileName;
     } else {
-      $self->error("Remap of $inputFileName failed");
+      $self->error("NCBI Remap of $inputFileName failed");
     }
   } else {
     $self->error("Error running NCBI Remap: input file $inputFileName does not exist");
   }
-
 }
 
-
-sub remapUnmapped {
-  my ($self, $bedFile) = @_;
-  $self->log("INFO: Running remap on variants not mapped by UCSC liftOver");
-
-  # remove error codes from the bed file
-  # e.g., perl -n -i.bak -e 'print unless m/abc1[234567]/' filename
-  my @cmd = ('perl', '-n', '-i.bak', '-e',
-	     "'print unless m/^#/'",
-	     $bedFile
-	    );
-
-  $self->log("INFO: Removing error codes from $bedFile - " . join(' ', @cmd));
-  my $status = qx(@cmd);
-
-  # run remap on unmapped files
-  $self->remapBedFile($bedFile);
-
-  # compare the two files and identify problems in the remapped result
-  my ($cleanedRemapFileName, $unmappedRemapFileName) = $self->cleanMappedBedFile($self->{files}->{GRCh38_remap_bed}, $bedFile);
-
-  $self->{files}->{GRCh38_remap_bed} = $cleanedRemapFileName;
-  $self->{files}->{GRCh37_remap_unmapped} = $unmappedRemapFileName;
-}
 
 
 sub cleanMappedBedFile {
-  my ($self, $mappedFile, $inputFile, $targetDir) = @_;
+  my ($self, $mappedBedFileName, $sourceBedFileName, $targetDir) = @_;
   my $workingDir = PluginUtils::createDirectory($self, $self->{working_dir}, $targetDir);
 
   $self->log("INFO: Cleaning mapped files");
-  $self->log("INFO: Comparing $targetDir input $inputFile to mapped file $mappedFile");
+  $self->log("INFO: Comparing $targetDir input $sourceBedFileName to mapped file $mappedBedFileName");
+
+  # generate two files - 1) .cleaned 2) .unmapped
+  my $unmappedFileName = $mappedBedFileName. ".unmapped";
+  $unmappedFileName =~ s/-GRCh38/-GRCh37/g;
+  my $cleanedMappedFileName = $mappedBedFileName . ".cleaned";
+
+  if (-e $cleanedMappedFileName && !($self->getArg('overwrite'))) {
+    $self->log("INFO: Using existing cleaned mapping file: $cleanedMappedFileName");
+    return $cleanedMappedFileName, $unmappedFileName;
+  }
 
   # basically, want to identify the following problems:
   # 1) still unmapped
@@ -1509,7 +1631,7 @@ sub cleanMappedBedFile {
   
   # load $ofh into hash
   my $variants;
-  open(my $ofh, $inputFile ) || $self->error("Unable to open liftOver unmapped file: $inputFile for reading");
+  open(my $ofh, $sourceBedFileName ) || $self->error("Unable to open source bed file: $sourceBedFileName for reading");
   while (my $line = <$ofh>) {
     chomp($line);
     my @values = ($targetDir eq 'liftOver') ? split / /, $line : split /\t/, $line;
@@ -1524,7 +1646,7 @@ sub cleanMappedBedFile {
   my $mappedCount = 0;
   my $duplicateCount = 0;
   my $parsedLineCount = 0;
-  my @mappedLines = read_file($mappedFile, chomp => 1);
+  my @mappedLines = read_file($mappedBedFileName, chomp => 1);
   while (my ($lineCount, $line) = each @mappedLines) {
     $parsedLineCount = $lineCount;
     my @values = split /\t/, $line;
@@ -1543,7 +1665,6 @@ sub cleanMappedBedFile {
     if ($isWrongChrm) {
       $wrongCount++;
       $self->log("INFO: Location $loc mapped to wrong chromosome - " . $values[0]) if $self->getArg('veryVerbose');
-      $self->log("DEBUG: wrong chrm $origChrm // $values[0] - $line");
     }
 
     my $status = (exists $variants->{$key})
@@ -1610,18 +1731,21 @@ sub cleanMappedBedFile {
   my $debugDiff = $totalCount - $parsedLineCount;
   $self->log("DEBUG: Total = $totalCount (Mapped = $mappedCount | Duplicate = $duplicateCount | Contigs = $altCount | Wrong = $wrongCount)");
 
-  # generate two files - 1) remapped.cleaned 2) remapped.unmapped
-  my $cleanedMappedFileName = $mappedFile . ".cleaned";
-  my $unmappedFileName = $mappedFile. ".unmapped";
-  $unmappedFileName =~ s/-GRCh38/-GRCh37/g;
-
   my $ufh;
   if (-e $unmappedFileName) { # file already exists append; e.g. add to liftOver unmapped
-    open(my $ufh, '>>', $unmappedFileName ) || $self->error("Unable to create $unmappedFileName for writing"); 
+    # remove # lines in umapped file
+    my @cmd = ('perl', '-n', '-i.bak', '-e',
+	       "'print unless m/^#/'",
+	       $unmappedFileName);
+    qx(@cmd);
+
+    #my $cmd = `grep -v "^#" $unmappedFileName > $unmappedFileName.tmp`;
+    # $cmd = `mv $unmappedFileName.tmp $unmappedFileName`;
+    open($ufh, '>>', $unmappedFileName ) || $self->error("Unable to open $unmappedFileName for appending");
   } else {
-    open(my $ufh, '>', $unmappedFileName ) || $self->error("Unable to create $unmappedFileName for writing");
+    open($ufh, '>', $unmappedFileName ) || $self->error("Unable to create $unmappedFileName for writing");
   }
-  
+
   open(my $cfh, '>', $cleanedMappedFileName ) || $self->error("Unable to create $cleanedMappedFileName for writing");
   foreach my $key (keys %$variants) {
     my $statusStr = $variants->{$key}->{status};
@@ -1630,9 +1754,11 @@ sub cleanMappedBedFile {
     if ($status eq 'mapped') {
       print $cfh $mappedLines[$lineNum] . "\n";
     } else {		      # includes 'none's not in the remap file
+      next if ($status eq 'none'); # already in unmapped file
       my $oLine = $variants->{$key}->{original_line};
-      $self->error($oLine);
+      # $self->error($oLine);
       $oLine =~ s/ /\t/g;	# b/c original bed file is space delim
+      $oLine =~ s/\|/:$status\|/;
       print $ufh $oLine . "\n";
     }
   }
@@ -1642,161 +1768,87 @@ sub cleanMappedBedFile {
 
   $self->log("INFO: Done checking $targetDir output");
 
-  return ($cleanedMappedFileName, $unmappedFileName);
+  return $cleanedMappedFileName, $unmappedFileName;
 }
-
-# sub appendDBMappedVariants {
-#   my ($self) = @_;
-
-#   my $liftedOverFileName = $self->{files}->{GRCh38_input};
-#   my $inputFileName = $self->{files}->{GRCh37_input};
-#   open(my $fh, $inputFileName) || $self->error("Unable to open input file $inputFileName for reading");
-#   my $header = <$fh>;
-#   chomp($header);
-#   my @fields = split /\t/, $header;
-  
-#   open(my $ofh, '>>', $liftedOverFileName) || $self->error("Unable to open output file $liftedOverFileName for appending");
-
-#   my $json = JSON::XS->new;
-#   my $lineCount = 0;
-#   while (my $line = <$fh>) {
-#     chomp $line;
-#     my @values = split /\t/, $line;
-#     my %row;
-#     @row{@fields} = @values;
-
-#     next if ($row{GRCh38} eq 'NULL');
-
-#     my $grch38 = $json->decode($row->{GRCh38});
-    
-#     my $newChrm = $values[0];
-    
-#     my ($name, $statStr) = split /\|/, $values[3];
-#     my $stats = $json->decode($statStr);
-    
-#       my @printValues;
-#       foreach my $field (@INPUT_FIELDS) {
-# 	if ($field eq 'bp') {
-# 	  push(@printValues, $values[1])
-# 	}
-# 	elsif ($field eq 'metaseq_id') {
-# 	  my ($oldChrm, $oldPos, $ref, $alt) = split /:/, $stats->{metaseq_id};
-# 	  $self->error("Chromosome mismatch for $newChrm (new) != $oldChrm (old): $line")
-# 	    if ('chr' . $oldChrm ne $newChrm);
-# 	  my $metaseqId = join(":", $oldChrm, $values[1], $ref, $alt);
-# 	  push(@printValues, $metaseqId);
-# 	}
-# 	elsif ($field eq 'marker') { # rs ids are no longer valid
-# 	  push(@printValues, undef);
-# 	}
-# 	elsif ($field eq 'gwas_flags' || $field eq 'restricted_stats_json') {
-# 	  push(@printValues, Utils::to_json($stats->{$field}));
-# 	}
-# 	else {
-# 	  push(@printValues, $stats->{$field});
-# 	}
-#       }
-
-#       print $ofh join("\t", @printValues) . "\n";
-
-#       if (++$lineCount % 500000 == 0) {
-# 	$self->log("INFO: Appended $lineCount lines from $bedFileName");
-#       }
-#     }
-#   $fh->close();
-#   $self->log("INFO: Appended $lineCount lines from $bedFileName");
-
-#   $fh->close();
-#   $ofh->close();
-  
-# }
 
 
 sub bed2input {
-  my ($self) = @_;
+  my ($self, $bedFileName, $targetFileName, $inclMarkers, $append) = @_;
+  $append //= 0;
+  if (!$targetFileName) {
+    $targetFileName = "$bedFileName";
+    $targetFileName =~ s/\.bed/-input\.txt/g;
+  }
 
-  my $liftOverBedFileName = $self->{files}->{GRCh38_liftOver_bed};
-  my $remapBedFileName = $self->{files}->{GRCh38_remap_bed};
-  my $unmappedBedFileName = $self->{files}->{GRCh37_remap_unmapped};
-  my $markerOnlyFileName = $self->{files}->{marker_only_input};
-
-  my $rootFilePath =   PluginUtils::createDirectory($self, $self->getArg('fileDir'), "GRCh38");
-  my $workingDir =   PluginUtils::createDirectory($self, $rootFilePath, $self->getArg('sourceId'));
-  my $inputFileName = $workingDir . "/" . $self->getArg('sourceId') . "-input.txt";
-  $self->{files}->{GRCh38_input} = $inputFileName;
-
-  if (-e $inputFileName && !$self->getArg('overwrite')) {
-    $self->log("INFO: Using existing bed2input file: $inputFileName");
-    return 1;
+  if (-e $targetFileName && !$self->getArg('overwrite') && !$append) {
+    $self->log("INFO: Using existing bed2input file: $targetFileName");
+    return $targetFileName;
   } else {
-    $self->log("INFO: bed2input - Creating GRCh38 input file: $inputFileName");
-    $self->log("INFO: Generating from " . Dumper($liftOverBedFileName, $remapBedFileName, $unmappedBedFileName, $markerOnlyFileName));
+    if (-e $targetFileName && ($append)) {
+      $self->log("INFO: bed2input - Appending bed file $bedFileName to input file: $targetFileName");
+    }
+    else {
+      $self->log("INFO: bed2input - Creating input file: $targetFileName from bed file $bedFileName");
+    }
+    
+    my $ofh;
+    if ($append) {
+      open($ofh, '>>', $targetFileName) || $self->error("Unable to open $targetFileName for appending");
+    }
+    else {
+      open($ofh, '>', $targetFileName) || $self->error("Unable to create $targetFileName for writing");
+      print $ofh join("\t", @INPUT_FIELDS) . "\n";
+    }
+    
+    my $json = JSON::XS->new;
+    open(my $fh, $bedFileName) || $self->error("Unable to open $bedFileName for reading");
+    my $lineCount = 0;
+    while (my $line = <$fh>) {
+      chomp $line;
+      my @values = split /\t/, $line;
+      my $newChrm = $values[0];
 
-    # INPUT fields: chr bp allele1 allele2 metaseq_id marker freq1 pvalue neg_log10_p display_p gwas_flags test_allele restricted_stats_json
-    # OUTPUT: chrom start end name|{everything else in JSON} / no header
+      my ($name, $statStr) = split /\|/, $values[3];
+      my $stats = $json->decode($statStr);
 
-    open(my $ofh, '>', $inputFileName) || $self->error("Unable to create $inputFileName for writing");
-    print $ofh join("\t", @INPUT_FIELDS) . "\n";
+      my @printValues;
+      foreach my $field (@INPUT_FIELDS) {
+	if ($field eq 'bp') {
+	  push(@printValues, $values[2])
+	} elsif ($field eq 'metaseq_id') {
+	  my ($oldChrm, $oldPos, $ref, $alt) = split /:/, $stats->{metaseq_id};
+	  $self->error("Chromosome mismatch for $newChrm (new) != $oldChrm (old): $line")
+	    if ('chr' . $oldChrm ne $newChrm);
+	  my $metaseqId = join(":", $oldChrm, $values[2], $ref, $alt);
+	  push(@printValues, $metaseqId);
+	} elsif ($field eq 'marker') { # rs ids are no longer valid
+	  if ($inclMarkers) {
+	    push(@printValues, $stats->{$field});
+	  }
+	  else {
+	    push(@printValues, 'NULL');
+	  }
+	}
+	elsif (($field eq 'gwas_flags'
+		|| $field eq 'restricted_stats_json'
+		|| $field eq 'GRCh37'
+		|| $field eq 'GRCh38') && $stats->{$field} ne 'NULL') {
+	  push(@printValues, Utils::to_json($stats->{$field}));
+	} else {
+	  push(@printValues, $stats->{$field});
+	}
+      }
 
-    # liftOver bed file
-    $self->appendBed2Input($ofh, $liftOverBedFileName);
-    $self->appendBed2Input($ofh, $remapBedFileName);
+      print $ofh join("\t", @printValues) . "\n";
 
-    # append markerOnly file
-    open(my $fh, $markerOnlyFileName) || $self->error("Unable to open marker only file $markerOnlyFileName for reading");
-    my $header = <$fh>;
-    while (<$fh>) {
-      print $ofh $_;
+      $self->log("INFO: Wrote $lineCount lines from $bedFileName")
+	if (++$lineCount % 500000 == 0);
     }
     $fh->close();
     $ofh->close();
+    $self->log("INFO: Wrote $lineCount lines from $bedFileName");
+    return $targetFileName;
   }
-
-  $self->sortCleanedInput($workingDir, $inputFileName);
-}
-
-
-sub appendBed2Input {
-  my ($self, $ofh, $bedFileName) = @_;
-
-  my $json = JSON::XS->new;
-  open(my $fh, $bedFileName) || $self->error("Unable to open $bedFileName for reading");
-  my $lineCount = 0;
-  while (my $line = <$fh>) {
-    chomp $line;
-    my @values = split /\t/, $line;
-    my $newChrm = $values[0];
-
-    my ($name, $statStr) = split /\|/, $values[3];
-    my $stats = $json->decode($statStr);
-
-    my @printValues;
-    foreach my $field (@INPUT_FIELDS) {
-      if ($field eq 'bp') {
-	push(@printValues, $values[1])
-      } elsif ($field eq 'metaseq_id') {
-	my ($oldChrm, $oldPos, $ref, $alt) = split /:/, $stats->{metaseq_id};
-	$self->error("Chromosome mismatch for $newChrm (new) != $oldChrm (old): $line")
-	  if ('chr' . $oldChrm ne $newChrm);
-	my $metaseqId = join(":", $oldChrm, $values[1], $ref, $alt);
-	push(@printValues, $metaseqId);
-      } elsif ($field eq 'marker') { # rs ids are no longer valid
-	push(@printValues, undef);
-      } elsif ($field eq 'gwas_flags' || $field eq 'restricted_stats_json') {
-	push(@printValues, Utils::to_json($stats->{$field}));
-      } else {
-	push(@printValues, $stats->{$field});
-      }
-    }
-
-    print $ofh join("\t", @printValues) . "\n";
-
-    if (++$lineCount % 500000 == 0) {
-      $self->log("INFO: Appended $lineCount lines from $bedFileName");
-    }
-  }
-  $fh->close();
-  $self->log("INFO: Appended $lineCount lines from $bedFileName");
 }
 
 
@@ -1812,10 +1864,13 @@ sub input2bed {
   my $filePath = PluginUtils::createDirectory($self, $self->{working_dir}, "liftOver");
   my $bedFileName = $filePath . "/". $filePrefix . "-GRCh37.bed";
   my $markerOnlyFileName = $inputFileName . ".unmapped.markerOnly"; # b/c db look up
-  $self->{files}->{GRCh37_bed} = $bedFileName;
-  $self->{files}->{GRCh37_marker_only_input} = $markerOnlyFileName;
 
   $self->log("INFO: input2bed - Creating bed file $bedFileName from input file $inputFileName");
+  if (-e $bedFileName && (!$self->getArg('overwrite'))) {
+    $self->log("INFO: Using existing info2bed file $bedFileName");
+    my $lineCount = Utils::fileLineCount($bedFileName); 
+    return $lineCount, $bedFileName;
+  }
 
   open(my $bedFh, '>', $bedFileName ) || $self->error("Unable to create $bedFileName for writing");
   $bedFh->autoflush(1);
@@ -1830,11 +1885,9 @@ sub input2bed {
   chomp($header);
   my @fields = split /\t/, $header;
 
-  my $lookupCount = 0;
   my $json = JSON::XS->new();
   # INPUT fields: chr bp allele1 allele2 metaseq_id marker freq1 pvalue neg_log10_p display_p gwas_flags test_allele restricted_stats_json
   # OUTPUT: chrom start end name {everything else in JSON} / no header
-  my $lookups;
   my $lineCount = 0;
   my $bedFileLineCount = 0;
   my $markerOnlyLineCount = 0;
@@ -1856,9 +1909,12 @@ sub input2bed {
     $row{gwas_flags} = $json->decode($row{gwas_flags});
     $row{restricted_stats_json} = $json->decode($row{restricted_stats_json});
     $row{GRCh37} = $json->decode($row{GRCh37}) if ($row{GRCh37} ne 'NULL');
+    foreach my $f (qw(freq1 pvalue neg_log10_p display_p)) {
+      $row{$f} = Utils::toNumber($row{$f});
+    }
 
     my $infoStr = Utils::to_json(\%row);
-    if ($chr =~ m/NA/g || !($row{metaseq_id})) {
+    if ($chr =~ m/NA/g || ($row{metaseq_id} eq "NULL")) {
       print $moFh "$line\n";
       $markerOnlyLineCount++;
     } else {
@@ -1877,9 +1933,8 @@ sub input2bed {
 
   my $tc = $markerOnlyLineCount + $bedFileLineCount;
   $self->log("INFO: Found $tc unmapped variants / marker only = $markerOnlyLineCount");
-  return $bedFileLineCount;
+  return $bedFileLineCount, $bedFileName;
 }
-
 
 
 sub findNovelVariants {
@@ -1957,7 +2012,7 @@ sub findNovelVariants {
     # my ($elapsedTime, $tmessage) = ::elapsed_time($startTime);
     # $self->log($tmessage) if $self->getArg('veryVerbose');
     if (!@dbVariantIds) { # if variant not in AnnotatedVDB.Variant, write to file 
-
+      
       if ($self->getArg('skipUnmappableMarkers') and ($marker) and ($chromosome eq "NA")) {
 	$self->log("WARNING: Unable to map $marker");
 	++$unmappedVariantCount;
@@ -2102,7 +2157,7 @@ sub loadVariants {
     # update AnnotatedVDB variant
     my $gwsFlag = ($row{gwas_flags} ne "NULL") ? $self->getArg('sourceId') : undef;
     if ($gwsFlag) {
-      push(@updateAvDbBuffer, 
+      push(@updateAvDbBuffer,
 	   VariantLoadUtils::annotatedVariantUpdateGwsValueStr($self, $recordPK, $gwsFlag, $selectAvQh));
       ++$updatedRecordCount;
     }
