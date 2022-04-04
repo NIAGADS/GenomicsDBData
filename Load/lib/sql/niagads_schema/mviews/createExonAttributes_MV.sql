@@ -11,7 +11,7 @@ t.transcript_source_id,
 s.source_id AS chromosome,
 loc.start_min::int AS location_start,
 loc.end_max::int AS location_end,
-find_bin_index(s.source_id, loc.start_min::bigint, loc.start_max::bigint) AS bin_index
+find_bin_index(s.chromosome, loc.start_min::bigint, loc.start_max::bigint) AS bin_index
 FROM DoTS.ExonFeature e,
 DoTS.ExternalNASequence s,
 DoTS.NALocation loc,
