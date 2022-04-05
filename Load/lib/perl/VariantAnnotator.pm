@@ -14,15 +14,6 @@ use Vcf;
 
 use GenomicsDBData::Load::Utils qw(truncateStr);
 
-my $METASEQ_SQL = "SELECT * FROM find_variant_by_metaseq_id(?::text, FALSE)";
-my $SINGLE_METASEQ_SQL = "SELECT * FROM find_earliest_variant_by_metaseq_id(?::text, TRUE)";
-my $REFSNP_SQL = "SELECT * FROM find_variant_by_refsnp(?)";
-my $REFSNP_ALLELE_SQL = "SELECT * FROM find_variant_by_refsnp_and_alleles(?, ?, ?)";
-my $POSITION_SQL = "SELECT * FROM find_variant_by_position(?,?)";
-my $BIN_INDEX_SQL = "SELECT find_bin_index(?,?,?) AS global_bin_path";
-
-my $VERIFY_VARIANT_SQL = "SELECT record_primary_key FROM NIAGADS.Variant WHERE record_primary_key = ?";
-
 sub new {
   my ($class, $args) = @_;
   my $plugin = $args->{plugin};
@@ -35,11 +26,6 @@ sub new {
 
 sub DESTROY {
     my ($self) = @_;
-    $self->{metaseqQh}->finish();
-    $self->{singleMetaseqQh}->finish();
-    $self->{verifyQh}->finish();
-    $self->{refsnpQh}->finish();
-    $self->{refsnpAlleleQh}->finish();
 }
 
 
@@ -55,19 +41,6 @@ sub getSnvDeletion {
 }
 
 
-sub validateMetaseqIds {
-  my ($self, $validateFlag) = @_;
-  $self->{validate_metaseq_ids} = $validateFlag;
-}
-
-sub createQueryHandles {
-  my ($self) = @_;
-  $self->{metaseqQh} = $self->connect2AnnotatedVDB()->prepare($METASEQ_SQL);
-  $self->{singleMetaseqQh} = $self->connect2AnnotatedVDB()->prepare($SINGLE_METASEQ_SQL);
-  $self->{verifyQh} = $self->{plugin}->getQueryHandle()->prepare($VERIFY_VARIANT_SQL);
-  $self->{refsnpQh} = $self->{plugin}->getQueryHandle()->prepare($REFSNP_SQL); # actually just as fast via fdw b/c can't use partitions
-  $self->{refsnpAlleleQh} = $self->{plugin}->getQueryHandle()->prepare($REFSNP_ALLELE_SQL); # actually just as fast via fdw b/c can't use partitions
-}
 
 
 # ----------------------------------------------------------------------
@@ -167,108 +140,6 @@ sub inRange {
 
 
 # ----------------------------------------------------------------------
-# determine variant location & display alleles
-# ----------------------------------------------------------------------
-sub inferVariantLocationDisplay {
-  # infer MNV/DIV variant class and location from position and alleles
-  my ($self, $ref, $alt, $position, $rsPosition) = @_;
-
-  my $refLength = length($ref);
-  my $altLength = length($alt);
-
-  my $props = {};
-
-  my ($normRef, $normAlt) = normalize_alleles($self->{plugin}, $ref, $alt);
-  if ($refLength == 1 and $altLength == 1) {
-    $props = { variantClass => "SNV",
-	       variantClassAbbrev => "SNV",
-	       locationStart => $position,
-	       locationEnd => $position,
-	       displayAllele => "$ref>$alt",
-	       sequenceAllele => "$ref/$alt"};
-    return $props;
-  }
-  if ($refLength == $altLength) { # MNV
-    # inversion
-    if ($ref eq reverse $alt) {
-      $props = { variantClass => "inversion",
-		 variantClassAbbrev => "MNV",
-		 locationStart => $position,
-		 locationEnd => $position + $refLength - 1,
-		 displayAllele => "inv$ref",
-		 sequenceAllele => truncateStr($ref) . "/" . truncateStr($alt)};
-    }
-    else {
-      $props = { variantClass => "substitution",
-		 variantClassAbbrev => "MNV",
-		 locationStart => $rsPosition,
-		 locationEnd => $rsPosition + length($normRef) - 1,
-		 displayAllele => "$normRef>$normAlt",
-		 sequenceAllele => truncateStr($normRef) . "/" . truncateStr($normAlt)};
-    }
-  } # end MNV
-
-  if ($refLength > $altLength) { # deletions
-    $props = { locationStart => $rsPosition };
-
-    if (length($normAlt) > 1) { # INDEL
-      $props->{variantClass} = "indel";
-      $props->{variantClassAbbrev} = "INDEL";
-      if (length($normRef) == 0) {
-	$ref =~ s/^.//s; # strip first character
-	$props->{locationEnd} = $rsPosition + length($ref) - 1;
-	$props->{displayAllele} = "del$ref" . "ins$normAlt";
-	$props->{sequenceAllele} = truncateStr($ref) . "/" . truncateStr($normAlt);
-      }
-      else {
-	$props->{locationEnd} = $rsPosition + length($normRef) - 1;
-	$props->{displayAllele} = "del$normRef" . "ins$normAlt";
-	$props->{sequenceAllele} = truncateStr($normRef) . "/" . truncateStr($normAlt);
-      }
-    }
-    else { # deletion
-      $props->{locationEnd} = $rsPosition + length($normRef) - 1;
-      $props->{variantClass} = "deletion";
-      $props->{variantClassAbbrev} = "DEL";
-      $props->{displayAllele} = "del$normRef";
-      $props->{sequenceAllele} = truncateStr($normRef) . "/-";
-    }
-  }
-
-  if ($refLength < $altLength) { # insertion
-    $props = {locationStart => $rsPosition};
-
-    if (length($ref) > 1) { # INDEL
-      $props->{variantClass} = "indel";
-      $props->{variantClassAbbrev} = "INDEL";
-
-      if (length($normRef) == 0) {
-	$ref =~ s/^.//s; # strip first character
-	$props->{locationEnd} = $rsPosition + length($ref) - 1;
-	$props->{displayAllele} = "del$ref" . "ins$normAlt";
-	$props->{sequenceAllele} = truncateStr($ref) . "/" . truncateStr($normAlt);
-      }
-      else {
-	$props->{locationEnd} = $rsPosition + length($normRef) - 1;
-	$props->{displayAllele} = "del$normRef" . "ins$normAlt";
-	$props->{sequenceAllele} = truncateStr($normRef) . "/" . truncateStr($normAlt);
-      }
-
-    }
-    else { # insertion
-      $props->{locationEnd} = $rsPosition + 1;
-      $props->{variantClass} = "insertion";
-      $props->{variantClassAbbrev} = "INS";
-      $props->{displayAllele} = "ins$normAlt";
-      $props->{sequenceAllele} = "-/" . truncateStr($normAlt);
-    }
-  }
-
-  return $props;
-}
-
-
-# ----------------------------------------------------------------------
 #  normalize alleles (remove left most that are similar between ref & alt)
 # ----------------------------------------------------------------------
 sub normalize_alleles {
@@ -310,202 +181,6 @@ sub truncateStr {
 }
 
 
-# ----------------------------------------------------------------------
-#  verify that variant is in GenomicsDB (NIAGADS.Variant)
-# ----------------------------------------------------------------------
-
-sub verifyVariant {
-  my ($self, $recordPK) = @_;
-  # my $sql = "SELECT record_primary_key FROM NIAGADS.Variant WHERE record_primary_key = ?";
-  # my $dbh = $self->{plugin}->getQueryHandle();
-  # my $qh = $dbh->prepare($sql);
-
-  # $qh->execute($recordPK) || $self->{plugin}->error($dbh->errstr);
-  $self->{verifyQh}->execute($recordPK);
-  my ($result) = $self->{verifyQh}->fetchrow_array();
-  # $qh->finish();
-  return $result;
-}
-
-# ----------------------------------------------------------------------
-#  get variant primary keys from database of annotated variants
-# ----------------------------------------------------------------------
-
-sub getAnnotatedVariants {
-  my ($self, $metaseqId, $marker, $alleles, $firstHitOnly) = @_;
-
-  if ($self->{plugin}->getArg('mapThruMarker')) { # bypasses metaseq check
-    return $self->getVariantIdByRefSnp($marker, $alleles) if ($marker and $marker =~ /rs/);
-    # otherwise marker is likely a metaseqid, so proceed w/metaseq check
-  }
-
-  my @variants = ();
-  if ($metaseqId) {
-    if ($self->metaseqIdIsValid($metaseqId)) {
-      @variants = $self->getVariantIdByMetaseqId($metaseqId, $firstHitOnly);
-      
-      if (!@variants) {
-	$self->{plugin}->log("No match for $metaseqId, checking alt variants.")
-	  if $self->{plugin}->getArg('veryVerbose');
-	@variants = $self->checkAltVariants($metaseqId, $firstHitOnly);
-      }
-      else {
-	$self->{plugin}->log("Matched $metaseqId.")
-	    if $self->{plugin}->getArg('veryVerbose');
-      }
-    }
-    else {
-      $self->{plugin}->log("Unable to map invalid metaseq_id: $metaseqId.")
-	    if $self->{plugin}->getArg('veryVerbose');
-    }
-  }
-
-  if (!@variants) {
-    if ($marker) { # if marker present and checking metaseq id failed, give it a go
-      $self->{plugin}->log("Unable to map $metaseqId, checking $marker")
-	    if $self->{plugin}->getArg('veryVerbose');
-      @variants = $self->getVariantIdByRefSnp($marker, $alleles) if ($marker =~ /rs/);
-      # @variants = $self->getVariantIdByMetaseqId($marker, $firstHitOnly) if ($marker =~ /:/);
-    }
-  }
-
-  if (!@variants) {
-    if ($self->{plugin}->getArg('mapPosition')) {
-      my ($chr, $pos, $ref, $alt) = split /:/, $metaseqId;
-      $self->{plugin}->log("Unable to map $metaseqId, mapping to all variants at position.")
-	    if $self->{plugin}->getArg('veryVerbose');
-      @variants = $self->getVariantIdByPosition($chr, $pos);
-    }
-  }
-
-  return @variants;
-}
-
-
-# ----------------------------------------------------------------------
-# get variant_id from db based on alt variant ids (e.g., switch 
-# ref/alt, reverse strand
-# ----------------------------------------------------------------------
-
-sub checkAltVariants {
-  my ($self, $metaseqId, $firstHitOnly) = @_;
-  my ($chr, $pos, $ref, $alt) = split /:/, $metaseqId;
-  
-  my $isIndel = (length $ref > 1 || length $alt > 1); 
-
-  if ($isIndel && !$self->{plugin}->getArg('checkAltIndels')) {
-    return ();
-  }
-
-  my @altVariants = ("$chr:$pos:$alt:$ref");
-  if (!$isIndel) { # don't check reverse complement for indels
-    my $rRef = reverse complement($ref);
-    my $rAlt = reverse complement($alt);
-    push(@altVariants, "$chr:$pos:$rRef:$rAlt");
-    push(@altVariants, "$chr:$pos:$rAlt:$rRef");
-  }
-
-  foreach my $v (@altVariants) {
-    my @variants = $self->getVariantIdByMetaseqId($v, $firstHitOnly);
-    return @variants if (@variants); # return first match
-  }
-
-  # $self->{plugin}->log("returning empty list");
-  return ();
-}
-
-# ----------------------------------------------------------------------
-# get variant_id from db based on metaseq id: chr:pos:ref:alt
-# ----------------------------------------------------------------------
-
-sub getVariantIdByMetaseqId {
-  my ($self, $metaseqId, $firstHitOnly) = @_;
-
-  $self->{metaseqQh}->execute($metaseqId);
-  my $result = ($firstHitOnly) ? $self->{metaseqQh}->fetchall_arrayref({}, 2) : $self->{metaseqQh}->fetchall_arrayref({});
-  # 2 is max_rows, limit the mem
-  
-  if ($firstHitOnly and scalar @$result > 1) { # these are so rare; it is faster to do two lookups than do the slower lookup on everything
-    # $self->{plugin}->log(Dumper(\$result));
-    $self->{plugin}->log("Multiple matches to $metaseqId; finding oldest refSNP") if $self->{plugin}->getArg('veryVerbose');
-    $self->{singleMetaseqQh}->execute($metaseqId);
-    $result = $self->{singleMetaseqQh}->fetchall_arrayref({}, 1); # 1 is max rows
-  }
-  
-  return @$result if ($result);
-  return ();
-}
-
-
-sub metaseqIdIsValid {
-  my ($self, $metaseqId) = @_;
-
-  return 1 if ($self->{validate_metaseq_ids} == 0);
-
-  my ($chr, $pos, $ref, $alt) = split /:/, $metaseqId;
-
-  return 0 if (($metaseqId =~ m/\?/) or !$ref or !$alt or (!($ref =~ m/A|T|C|G/)) or (!($alt =~ m/A|T|C|G/)));
-  return 1;
-}
-
-
-# ----------------------------------------------------------------------
-# get variant_id from db by position (chr:pos)
-# ----------------------------------------------------------------------
-
-sub getVariantIdByPosition {
-  my ($self, $chr, $pos) = @_;
-
-  $chr = 'chr' + $chr if (!($chr =~ 'chr'));
-  
-  my $qh = $self->{plugin}->getQueryHandle()->prepare($POSITION_SQL);
-  $qh->execute($chr, $pos);
-  my $result = $qh->fetchall_arrayref({record_primary_key => 1, has_genomicsdb_annotation => 2}); # ref({'record_primary_key'});
-  $qh->finish();
-  return @$result if ($result);
-  return ();
-
-}
-
-
-# ----------------------------------------------------------------------
-# get variant_id from db refsnp identifier (rsId)
-# ----------------------------------------------------------------------
-
-sub getVariantIdByRefSnp {
-  my ($self, $marker, $alleles) = @_;
-  my $result = undef;
-  if (lc($marker) =~ m/rs/) {
-    if ($alleles and $alleles !~ m/\?/g) { # if allele string contains a ?, then just match the rsId
-      $self->{plugin}->log("Lookup by marker: $marker - $alleles") if $self->{plugin}->getArg('veryVerbose');
-      if ($alleles =~ /:/) {
-	my ($ref, $alt) = split /:/, $alleles;
-	$self->{refsnpAlleleQh}->execute($marker, $ref, $alt);
-	$result = $self->{refsnpAlleleQh}->fetchall_arrayref({});
-      }
-      else {
-	$self->{refsnpAlleleQh}->execute($marker, undef, $alleles);
-	$result = $self->{refsnpAlleleQh}->fetchall_arrayref({});
-      }
-      if (!@$result and $self->{plugin}->getArg('allowAlleleMismatches')) {
-	$self->{plugin}->log("Marker & allele ($marker - $alleles) not matched, looking up marker");
-	$self->{refsnpQh}->execute($marker); # lookup on just marker as fall back
-	$result = $self->{refsnpQh}->fetchall_arrayref({});
-      }
-    }
-    else {
-      $self->{refsnpQh}->execute($marker);
-      $result = $self->{refsnpQh}->fetchall_arrayref({});
-    }
-  
-    return @$result if ($result);
-  }
-  else {
-    $self->{plugin}->log("Cannot map variant by marker name $marker.  Not a refSNP id");
-  }
-  return ();
-}
-
 
 # ----------------------------------------------------------------------
 # get the complement of a dna string
@@ -517,15 +192,13 @@ sub complement {
   return $allele;
 }
 
-
-# ----------------------------------------------------------------------
-# # check whether result from sql function is null
-# ----------------------------------------------------------------------
-sub isNull {
-  my ($response) = @_;
-  return 1 if (!$response or $response eq '');
-  return 0;
+sub reverseComplement {
+  my  ($allele) = @_;
+  my  $comp = complement($allele);
+  $comp = reverse $comp;
+  return $comp;
 }
+
 
 # ----------------------------------------------------------------------
 # # update variant annotation ($variant is a NIAGADS::Variant object)
@@ -663,45 +336,22 @@ sub sortVcf {
 
 sub runVep {
   my ($self, $inputFile) = @_;
-  # "input_file": "foreach",
-#		    "output_file": "foreach",
-  my @cmd = ('vep',
-	     '--input_file', $inputFile,
-	     '--output_file', $inputFile . '.json',
-	     '--format', 'vcf',
-	     '--dir_cache', $self->{plugin}->getArg('vepCacheDir'),
-	     '--offline', 
-	     '--no_stats',
-	     '--json',
-	     '--fork', 10,
-	     '--sift', 'b',
-	     '--fork', 10,
-	     '--sift', 'b',
-	     '--polyphen', 'b',
-	     '--ccds',
-	     '--symbol',
-	     '--numbers',
-	     '--domains',
-	     '--regulatory',
-	     '--canonical',
-	     '--protein',
-	     '--biotype',
-	     '--tsl',
-	     '--pubmed',
-	     '--uniprot',
-	     '--variant_class',
-	     '--af',
-	     '--af_1kg',
-	     '--af_esp',
-	     '--af_gnomad',
-	     '--clin_sig_allele', 1,
-	     '--nearest', 'gene',
-	     '--gene_phenotype',
-	     '--force_overwrite');
 
+  # e.g. file name NG00027/GRCh38/NG00027_GRCh38_STAGE12/preprocess/NG00027_GRCh38_STAGE12-novel.vcf
+  # need to trim /project/wang4/GenomicsDB/NIAGADS_GWAS/
+
+  my $webhook = $self->{plugin}->getArg('vepWebhook');
+  my (@cmd) = ('curl', '-d',
+	       '"' . "file=-f$inputFile" . '"',
+	       '"' . $webhook . '"'
+	      );
+  
   $self->{plugin}->log("Running VEP: " . join(' ', @cmd));
-  system(@cmd);
-  $self->{plugin}->log("Done Running VEP.");
+  my $message = qx(@cmd);
+  $self->{plugin}->log("CURL output: $message");
+  $self->{plugin}->error("Running VEP on novel variants from $inputFile failed: $message")
+    if ($message = ~/FAIL/);
+  $self->{plugin}->log("Done running VEP on novel variants");
 }
 
 

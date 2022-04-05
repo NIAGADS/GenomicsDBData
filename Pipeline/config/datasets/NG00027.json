@@ -199,8 +199,7 @@
 		    "checkAltIndels":"true",
 		    "restrictedStats": "foreach",
 		    "sourceGenomeBuildGusConfig": "@file.GRCh37_gus_config",
-		    "variantLookupServiceUrl": "https://beta.niagads.org/genomics/service/variant",
-		    "vepWebhook": "coming_soon"
+		    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep"
 		}
 	    }
 	}

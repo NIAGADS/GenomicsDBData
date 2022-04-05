@@ -24,6 +24,7 @@ use File::Slurp qw(read_file);
 use POSIX qw(strftime);
 use Parallel::Loops;
 
+use File::Basename;
 
 use LWP::UserAgent;
 use LWP::Parallel::UserAgent;
@@ -92,14 +93,6 @@ sub getArgumentsDeclaration {
 	       }),
 
 
-     stringArg({name => 'variantLookupServiceUrl',
-		descr => 'lookup service url and endpoint',
-		constraintFunc=> undef,
-		reqd  => 0,
-		isList => 0,
-		default => "https://www.niagads.org/genomics/service/variant"
-	       }),
-
      stringArg({name => 'caddDatabaseDir',
 		descr => 'full path to CADD database directory',
 		constraintFunc=> undef,
@@ -140,9 +133,8 @@ sub getArgumentsDeclaration {
 	     }),
 
 
-     
      stringArg({ name  => 'vepWebhook',
-                 descr => "vep webhook / TODO",
+                 descr => "base url for vep webhook",
                  constraintFunc => undef,
                  isList         => 0,
 		 reqd => 1
@@ -352,19 +344,6 @@ sub getArgumentsDeclaration {
 		}),
 
   
-     booleanArg({ name  => 'findNovelVariants',
-		  descr => 'find novel variants, no inserts/updates',
-		  constraintFunc => undef,
-		  isList         => 0,
-		  reqd => 0
-		}),
-
-     booleanArg({ name  => 'preprocessAnnotatedNovelVariants',
-		  descr => 'append annotated novel variants to preprocess file',
-		  constraintFunc => undef,
-		  isList         => 0,
-		  reqd => 0
-		}),
 
      booleanArg({ name  => 'annotateNovelVariants',
 		  descr => 'annotate novel variants found after load',
@@ -461,7 +440,7 @@ sub new {
   my $argumentDeclaration = &getArgumentsDeclaration();
 
   $self->initialize({requiredDbVersion => 4.0,
-		     cvsRevision       => '$Revision: 9$',
+		     cvsRevision       => '$Revision: 10$',
 		     name => ref($self),
 		     revisionNotes => '',
 		     argsDeclaration => $argumentDeclaration,
@@ -482,9 +461,6 @@ sub run {
   $self->liftOver() if ($self->getArg('liftOver'));
   $self->preprocess() if ($self->getArg('preprocess'));
 
-  # $self->findNovelVariants($file, 0) if ($self->getArg('findNovelVariants')); # 0 => create new preprocess file
-  #$self->findNovelVariants($file, 1)
-  #  if ($self->getArg('preprocessAnnotatedNovelVariants')); # needs to be done in a separate call b/c of FDW lag
   $self->annotateNovelVariants()  if ($self->getArg('annotateNovelVariants'));
   $self->loadVariants() if ($self->getArg('loadVariants'));
   $self->loadStandardizedResult() # so that we only have to iterate over the file once; do this simulatenously
@@ -516,7 +492,6 @@ sub initializePlugin {
   $self->{protocol_app_node_id} = $self->getProtocolAppNodeId(); # verify protocol app node
 
   $self->{annotator} = VariantAnnotator->new({plugin => $self});
-  $self->{annotator}->createQueryHandles();
   $self->{housekeeping} = PluginUtils::buildHouseKeepingString($self);
   $self->{files} = {};
 
@@ -536,7 +511,7 @@ sub initializePlugin {
 sub verifyArgs {
   my ($self) = @_;
 
-  if ($self->getArg('findNovelVariants')) {
+  if ($self->getArg('preprocess')) {
     $self->error("must specify testAllele") if (!$self->getArg('testAllele') and !$self->getArg('marker') and !$self->getArg('markerIsMetaseqId'));
     $self->error("must specify refAllele") if (!$self->getArg('refAllele') and !$self->getArg('marker'));
     $self->error("must specify pvalue") if (!$self->getArg('pvalue'));
@@ -1516,86 +1491,6 @@ sub loadStandardizedResult {
 }
 
 
-sub annotateNovelVariants {
-  my ($self) = @_;
-
-  my $fileName = $self->getArg('fileDir') . "/" . $self->getArg('sourceId') . "-novel.vcf";
-  my $lineCount = `wc -l < $fileName`;
-  if ($lineCount > 1) {
-    $self->log("INFO: Annotating variants in: $fileName");
-    $fileName = $self->{annotator}->sortVcf($fileName);
-    $self->{annotator}->runVep($fileName) if (!$self->getArg('skipVep'));
-    $self->{annotator}->loadVepAnnotatedVariants($fileName);
-    $self->{annotator}->loadNonVepAnnotatedVariants($fileName);
-    $self->{annotator}->loadCaddScores($fileName);
-  } else {
-    $self->log("INFO: No novel variants found in: $fileName");
-  }
-}
-
-
-sub queryGenomicsDBVariantLookupService {
-  my ($self, $lookupHash) = @_;
-
-  my $pua = LWP::Parallel::UserAgent->new();
-  $pua->in_order  (1);	    # handle requests in order of registration
-  $pua->duplicates(0);	    # ignore duplicates
-  $pua->timeout   (10);	    # in seconds
-  $pua->redirect  (1);	    # follow redirects
-
-  my @variants = keys %$lookupHash;
-  $self->log("INFO: Beginning bulk lookup against GRCh37 AnnotatedVDB / n = " . scalar(@variants));
-
-  my @lookups;
-  my @requests;
-  while (my ($index, $variantId) = each @variants) {
-    if ($index == 0 || $index % 200 != 0) {
-      push(@lookups, $variantId);
-    } else {
-      my $requestUrl = $self->getArg('variantLookupServiceUrl') . "?mscOnly&id=" . join(",", @lookups);
-      push(@requests, HTTP::Request->new('GET', $requestUrl));
-      @lookups = ($variantId);
-    }
-  }
-
-  # residuals
-  my $requestUrl = $self->getArg('variantLookupServiceUrl') . "?mscOnly&id=" . join(",", @lookups);
-  push(@requests, HTTP::Request->new('GET', $requestUrl));
-
-  foreach my $req (@requests) {
-    if (my $res = $pua->register($req)) {
-      print STDERR $res->error_as_HTML;
-    }
-  }
-
-  my $entries = $pua->wait();
-
-  foreach (keys %$entries) {
-    my $response = $entries->{$_}->response;
-    if ($response->is_success) {
-      my $json = JSON::XS->new;
-      my $result = $json->decode($response->content);
-
-      $self->error("Submitted too many variants; response paged")
-	if ($result->{paging}->{total_pages} > 1);
-
-      foreach my $key (keys %{$result->{result}}) {
-	$lookupHash->{$key}->{mapping} = $result->{result}->{$key};
-      }
-      if (defined $result->{unmapped_variants}) {
-	foreach my $value (@{$result->{unmapped_variants}}) {
-	  $lookupHash->{$value}->{mapping} = undef;
-	}
-      }
-    } else {
-      $self->error("Problem looking up variants ($_): ". $response->status_line);
-    }
-  }
-
-  return $lookupHash;
-}
-
-
 sub remapBedFile {
   my ($self, $inputFileName) = @_;
 
@@ -1981,10 +1876,32 @@ sub preprocess {
   my $file = $self->{root_file_path} . $self->getArg('file');
   my $inputFileName = $self->cleanAndSortInput($file);
 
-  my $filePrefix =  $self->{source_id};
+  my $filePrefix = $self->{adj_source_id};
   my $filePath = PluginUtils::createDirectory($self, $self->{working_dir}, "preprocess");
   my $novelVariantVcfFile = $self->extractNovelVariants($inputFileName, "$filePath/$filePrefix");
-  # $self->annotateNovelVariants($novelVariantVCF); 
+  $self->annotateNovelVariants($novelVariantVcfFile);
+}
+
+sub annotateNovelVariants {
+  my ($self, $fileName) = @_;
+
+  my $lineCount = `wc -l < $fileName`;
+  if ($lineCount > 1) {
+    $self->log("INFO: Annotating variants in: $fileName");
+    my ($accession, @other) = split /_/, $self->{adj_source_id};
+
+    my $sortedVcfFile= $self->{annotator}->sortVcf($fileName);
+    my $shortPath = "$accession/" . $self->getArg('genomeBuild') . "/" . $self->{adj_source_id}
+      . "/preprocess/";
+    my $vepInputFileName = $shortPath . basename($sortedVcfFile);
+    $self->{annotator}->runVep($vepInputFileName)
+      if (!$self->getArg('skipVep'));
+    # $self->{annotator}->loadVepAnnotatedVariants($fileName);
+    # $self->{annotator}->loadNonVepAnnotatedVariants($fileName);
+    # $self->{annotator}->loadCaddScores($fileName);
+  } else {
+    $self->log("INFO: No novel variants found in: $fileName");
+  }
 }
 
 
@@ -1999,7 +1916,8 @@ sub extractNovelVariants {
   open(my $fh, $dbmappedFileName) || $self->error("Unable to open DB Mapped file $dbmappedFileName for reading");
   my $header = <$fh>;
 
-  my $novelVariantVCF = $filePrefix . "-novel.vcf";
+  my $novelVariantVCF = "$filePrefix-novel.vcf";
+  $self->log("INFO: Writing novel variants to $novelVariantVCF");
   open(my $vfh, '>', $novelVariantVCF) || $self->error("Unable to open create  novel variant VCF file: $novelVariantVCF");
   $vfh->autoflush(1);
 

@@ -70,6 +70,17 @@ sub connect {
 
 
 
+sub isValidMetaseqId {
+  my ($self, $metaseqId) = @_;
+
+  my ($chr, $pos, $ref, $alt) = split /:/, $metaseqId;
+
+  return 0 if (($metaseqId =~ m/\?/) or !$ref or !$alt or (!($ref =~ m/A|T|C|G/)) or (!($alt =~ m/A|T|C|G/)));
+  return 1;
+}
+
+
+
 sub lookup {
   my ($self, @variants) = @_;
   # $self->{plugin}->log(join(',', @variants));

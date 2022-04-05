@@ -114,5 +114,13 @@ sub getStudyId {
 }
 
 
+# ----------------------------------------------------------------------
+# # check whether result from sql function is null
+# ----------------------------------------------------------------------
+sub isNull {
+  my ($response) = @_;
+  return 1 if (!$response or $response eq '');
+  return 0;
+}
 
 1;
