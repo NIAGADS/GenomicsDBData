@@ -314,6 +314,13 @@ sub getArgumentsDeclaration {
                  isList         => 0 
 	       }),
 
+     stringArg({ name  => 'seqrepoProxyPath',
+                 descr => 'for loading novel variants/ generating PKs',
+                 constraintFunc => undef,
+                 reqd           => 1,
+                 isList         => 0 
+	       }),
+
      booleanArg({ name  => 'loadResult',
 		  descr => 'load GWAS results, to be run after loading variants, & annotating and loading novel variants',
 		  constraintFunc => undef,
@@ -440,7 +447,7 @@ sub new {
   my $argumentDeclaration = &getArgumentsDeclaration();
 
   $self->initialize({requiredDbVersion => 4.0,
-		     cvsRevision       => '$Revision: 10$',
+		     cvsRevision       => '$Revision: 11$',
 		     name => ref($self),
 		     revisionNotes => '',
 		     argsDeclaration => $argumentDeclaration,
@@ -1894,10 +1901,14 @@ sub annotateNovelVariants {
     my $shortPath = "$accession/" . $self->getArg('genomeBuild') . "/" . $self->{adj_source_id}
       . "/preprocess/";
     my $vepInputFileName = $shortPath . basename($sortedVcfFile);
-    $self->{annotator}->runVep($vepInputFileName)
-      if (!$self->getArg('skipVep'));
-    # $self->{annotator}->loadVepAnnotatedVariants($fileName);
-    # $self->{annotator}->loadNonVepAnnotatedVariants($fileName);
+    if ($self->getArg('skipVep')) {
+      $self->log("INFO: --skipVep flag provided, skipping VEP annotation");
+    }
+    else {
+      $self->{annotator}->runVep($vepInputFileName);
+    }
+    $self->{annotator}->loadVepAnnotatedVariants("$vepInputFileName.vep.json.gz");
+    $self->{annotator}->loadVariantsFromVCF($vepInputFileName);
     # $self->{annotator}->loadCaddScores($fileName);
   } else {
     $self->log("INFO: No novel variants found in: $fileName");
@@ -1917,6 +1928,11 @@ sub extractNovelVariants {
   my $header = <$fh>;
 
   my $novelVariantVCF = "$filePrefix-novel.vcf";
+  if (-e $novelVariantVCF && !($self->getArg('overwrite'))) {
+    $self->log("INFO: Using existing novel variant VCF: $novelVariantVCF");
+    return $novelVariantVCF;
+  }
+
   $self->log("INFO: Writing novel variants to $novelVariantVCF");
   open(my $vfh, '>', $novelVariantVCF) || $self->error("Unable to open create  novel variant VCF file: $novelVariantVCF");
   $vfh->autoflush(1);

@@ -199,7 +199,8 @@
 		    "checkAltIndels":"true",
 		    "restrictedStats": "foreach",
 		    "sourceGenomeBuildGusConfig": "@file.GRCh37_gus_config",
-		    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep"
+		    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
+		    "seqrepoProxyPath": "@file.seqrepo_proxy_path"
 		}
 	    }
 	}

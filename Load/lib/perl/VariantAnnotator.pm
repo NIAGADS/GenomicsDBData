@@ -286,40 +286,48 @@ sub loadCaddScores {
 }
 
 
+
 sub loadVepAnnotatedVariants {
   my ($self, $file) = @_;
-  $self->{plugin}->log("Loading Variants into AnnotatedVDB from $file");
+  $self->{plugin}->log("INFO: Loading Variants into AnnotatedVDB from $file");
 
   my @cmd = ('load_vep_result.py', 
-	     '--inputFile', $file . '.json',
-	     '--logFile', $file . '.log',
-	     '--rankingFile', $self->{plugin}->getArg('adspConsequenceRankingFile'));
+	     '--fileName', $file,
+	     '--rankingFile', $self->{plugin}->getArg('adspConsequenceRankingFile'),
+	     '--genomeBuild', $self->{plugin}->getArg('genomeBuild'),
+	     '--seqrepoProxyPath', $self->{plugin}->getArg('seqrepoProxyPath'),
+	     '--datasource', $self->{plugin}->getArg('isAdsp') ? 'ADSP' : 'NIAGADS',
+	     '--skipExisting'
+	    );
   push(@cmd, '--commit') if $self->{plugin}->getArg('commit');
 
-  $self->{plugin}->log("Running load_vep_result.py to load annotation of novel variants: " . join(' ', @cmd));
-
-  my  $algInvocationId = qx(@cmd); # qx(join(' ', @cmd)); 
-  $self->{plugin}->log("DONE: " . $algInvocationId);
-  $self->{plugin}->error("Loading novel variants failed; see $file.log") 
+  $self->{plugin}->log("INFO: Executing command: " . join(' ', @cmd));
+  my  $algInvocationId = qx(@cmd);
+  $self->{plugin}->error("Loading variants from VEP result failed. See $file.log") 
     if ($algInvocationId eq 'FAIL' || !(looks_like_number($algInvocationId)));
-  $self->{plugin}->log("DONE Loading novel variants: AnnotatedVDB Algorithm Invocation ID = $algInvocationId");
+  $self->{plugin}->log("DONE: Loading variants from VEP result: AnnotatedVDB Algorithm Invocation ID = $algInvocationId");
 
 }
 
-sub loadNonVepAnnotatedVariants {
+sub loadVariantsFromVCF {
   my ($self, $file) = @_;
-  $self->{plugin}->log("Loading placeholders in AnnotatedVDB for novel variants from $file not annotated by VEP");
+  $self->{plugin}->log("INFO: Loading variants in AnnotatedVDB from VCF $file");
 
-  my @cmd = ('load_non_vep_annotated_variants_from_vcf.py',
-	     '--vcfFile', $file,
-	     '--logFileName', $file . '-missing-from-vep.log');
+  my @cmd = ('load_vcf_file.py',
+	      '--fileName', $file,
+	     '--rankingFile', $self->{plugin}->getArg('adspConsequenceRankingFile'),
+	     '--genomeBuild', $self->{plugin}->getArg('genomeBuild'),
+	     '--seqrepoProxyPath', $self->{plugin}->getArg('seqrepoProxyPath'),
+	     '--datasource', $self->{plugin}->getArg('isAdsp') ? 'ADSP' : 'NIAGADS',
+	     '--skipExisting'
+	   );
   push(@cmd, '--commit') if $self->{plugin}->getArg('commit');
 
+  $self->{plugin}->log("INFO: Executing command: " . join(' ', @cmd));
   my $algInvocationId = qx(@cmd);
-
-  $self->{plugin}->error("Loading unannotated novel variants failed; see $file-missing-from-vep.log") 
+  $self->{plugin}->error("Loading variants from VCF failed; see $file.log")
     if ($algInvocationId eq 'FAIL' || !(looks_like_number($algInvocationId)));
-  $self->{plugin}->log("Done loading placeholders for non-VEP annotated novel variants: AnnotatedVDB Algorithm Invocation ID = $algInvocationId");
+  $self->{plugin}->log("DONE: loading variants from VCF: AnnotatedVDB Algorithm Invocation ID = $algInvocationId");
 }
 
 
@@ -339,19 +347,19 @@ sub runVep {
 
   # e.g. file name NG00027/GRCh38/NG00027_GRCh38_STAGE12/preprocess/NG00027_GRCh38_STAGE12-novel.vcf
   # need to trim /project/wang4/GenomicsDB/NIAGADS_GWAS/
-
+  $self->{plugin}->log("Info: Running VEP on $inputFile");
   my $webhook = $self->{plugin}->getArg('vepWebhook');
   my (@cmd) = ('curl', '-d',
 	       '"' . "file=-f$inputFile" . '"',
 	       '"' . $webhook . '"'
 	      );
   
-  $self->{plugin}->log("Running VEP: " . join(' ', @cmd));
+  $self->{plugin}->log("INFO: Executing command: " . join(' ', @cmd));
   my $message = qx(@cmd);
-  $self->{plugin}->log("CURL output: $message");
-  $self->{plugin}->error("Running VEP on novel variants from $inputFile failed: $message")
-    if ($message = ~/FAIL/);
-  $self->{plugin}->log("Done running VEP on novel variants");
+
+  $self->{plugin}->error("Running VEP on variants from $inputFile failed: $message")
+    if ($message !~ /SUCCESS/);
+  $self->{plugin}->log("DONE: Running VEP on $inputFile");
 }
 
 
