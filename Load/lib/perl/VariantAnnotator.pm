@@ -346,7 +346,6 @@ sub runVep {
   my ($self, $inputFile) = @_;
 
   # e.g. file name NG00027/GRCh38/NG00027_GRCh38_STAGE12/preprocess/NG00027_GRCh38_STAGE12-novel.vcf
-  # need to trim /project/wang4/GenomicsDB/NIAGADS_GWAS/
   $self->{plugin}->log("Info: Running VEP on $inputFile");
   my $webhook = $self->{plugin}->getArg('vepWebhook');
   my (@cmd) = ('curl', '-d',
