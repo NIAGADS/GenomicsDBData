@@ -14,6 +14,7 @@ use Vcf;
 
 use GenomicsDBData::Load::Utils qw(truncateStr);
 
+
 sub new {
   my ($class, $args) = @_;
   my $plugin = $args->{plugin};
@@ -41,7 +42,36 @@ sub getSnvDeletion {
 }
 
 
+sub initializeUpdateBuffer {
+  my ($self) =@_;
+  $self->{update_buffer_size} = 0;
+  $self->{update_buffer} = "";
+}
 
+
+sub bufferVariantUpdate {
+  my ($self, $gwasFlags, $recordPK, $chromosome, $isAdspVariant) = @_;
+
+  my $chr = ($chromosome =~ m/chr/g) ? $chromosome : "chr$chromosome";
+  my $sql = "UPDATE AnnotatedVDB. Variant v SET"
+    . " gwas_flags = gwas_flags || " . Utils::to_json($gwasFlags)
+    . ($isAdspVariant) ? ", is_adsp_variant = True" : ""
+    . " WHERE v.record_primary_key = $recordPK"
+    . " AND v.chromosome = $chromosome;";
+
+  $self->{update_buffer} .= $sql;
+  $self->{update_buffer_size} += 1; 
+}
+
+
+sub bulkUpdateVariants {
+  my ($self) = @_;
+  my $qh = $self->{plugin}->getQueryHandle()->prepare($self->{update_buffer})
+    or $self->{plugin}->error(DBI::errstr);
+  $qh->execute();
+  $qh->finish();
+  $self->initializeUpdateBuffer();
+}
 
 # ----------------------------------------------------------------------
 # get flanking sequence for a variant
@@ -271,17 +301,18 @@ sub extractVariantsFromVcfRecord {
 }
 
 sub loadCaddScores {
-  my ($self, $file) = @_;
+  my ($self, $file, $logFilePath) = @_;
   $self->{plugin}->log("Loading CADD scores for variants in $file");
   my @cmd = ('load_cadd_scores.py', 
 	     '--databaseDir', $self->{plugin}->getArg('caddDatabaseDir'),
-	     '--logFile', $file . '-cadd.log',
+	     '--logFilePath', $logFilePath,
+	     '--seqrepoProxyPath', $self->{plugin}->getArg('seqrepoProxyPath'),
 	     '--vcfFile', $file);
   push(@cmd, '--commit') if $self->{plugin}->getArg('commit');
   $self->{plugin}->log("Running load_cadd_scores.py to add in CADD scores for novel variants: " . join(' ', @cmd));
   my $status = qx(@cmd);
 
-  $self->{plugin}->error("Loading CADD scores failed -- see $file-cadd.log") if ($status !~ /SUCCESS/);
+  $self->{plugin}->error("Loading CADD scores failed -- see logs in $logFilePath") if ($status !~ /SUCCESS/);
   $self->{plugin}->log("DONE loading CADD scores for novel variants.");
 }
 
@@ -297,7 +328,8 @@ sub loadVepAnnotatedVariants {
 	     '--genomeBuild', $self->{plugin}->getArg('genomeBuild'),
 	     '--seqrepoProxyPath', $self->{plugin}->getArg('seqrepoProxyPath'),
 	     '--datasource', $self->{plugin}->getArg('isAdsp') ? 'ADSP' : 'NIAGADS',
-	     '--skipExisting'
+	     '--skipExisting',
+	     '--logSkips'
 	    );
   push(@cmd, '--commit') if $self->{plugin}->getArg('commit');
 
@@ -314,8 +346,7 @@ sub loadVariantsFromVCF {
   $self->{plugin}->log("INFO: Loading variants in AnnotatedVDB from VCF $file");
 
   my @cmd = ('load_vcf_file.py',
-	      '--fileName', $file,
-	     '--rankingFile', $self->{plugin}->getArg('adspConsequenceRankingFile'),
+	     '--fileName', $file,
 	     '--genomeBuild', $self->{plugin}->getArg('genomeBuild'),
 	     '--seqrepoProxyPath', $self->{plugin}->getArg('seqrepoProxyPath'),
 	     '--datasource', $self->{plugin}->getArg('isAdsp') ? 'ADSP' : 'NIAGADS',
