@@ -12,6 +12,7 @@ use threads;
 use Thread::Semaphore;
 use threads::shared;
 
+BEGIN { $Package::Alias::BRAVE = 1 }
 use Package::Alias VariantAnnotator => 'GenomicsDBData::Load::VariantAnnotator';
 use Package::Alias Utils => 'GenomicsDBData::Load::Utils';
 use Package::Alias PluginUtils => 'GenomicsDBData::Load::PluginUtils';
@@ -469,7 +470,7 @@ sub run {
   $self->preprocess() if ($self->getArg('preprocess'));
 
   $self->annotateNovelVariants()  if ($self->getArg('annotateNovelVariants'));
-  $self->loadVariants() if ($self->getArg('loadVariants'));
+  #$self->updateVariantFlags() if ($self->getArg('updateVariantFlags'));
   $self->loadStandardizedResult() # so that we only have to iterate over the file once; do this simulatenously
     if ($self->getArg('loadResult') or $self->getArg('standardizeResult'));
 }
@@ -997,7 +998,6 @@ sub updateDBMappedInput {
   $genomeBuild //= $self->getArg('genomeBuild');
   my $mappedBuild = ($genomeBuild eq 'GRCh37') ? 'GRCh38' : 'GRCh37';
 
-
   my ($chromosome, $position, @alleles) = split /:/, $$mapping[0]->{metaseq_id};
   my @matchedVariants;
   foreach my $variant (@$mapping) {
@@ -1043,13 +1043,17 @@ sub submitDBLookupQuery {
 					    plugin => $self});
 
     $recordHandler->setFirstValueOnly(0);
-
     my $mappings = $recordHandler->lookup(keys %$lookups);
 
     $SHARED_VARIABLE_SEMAPHORE->up;
     foreach my $vid (keys %$mappings) {
       next if (!defined $mappings->{$vid}); # "null" returned
-      $$file[$lookups->{$vid}->{index}] = $self->updateDBMappedInput($lookups->{$vid}, $mappings->{$vid}, $genomeBuild);
+
+      foreach my $lvalue (@{$lookups->{$vid}}) {
+	my $index = $lvalue->{index};
+	$$file[$index] =
+	  $self->updateDBMappedInput($lvalue, $mappings->{$vid}, $genomeBuild);
+      }
     }
     undef $mappings; # b/c threads don't free memory until exit
     undef $lookups;
@@ -1144,9 +1148,13 @@ sub DBLookup {	# check against DB
       $variantId = join(":", $row{marker}, $row{allele1}, $row{allele2});
     }
 
-    $lookups->{$variantId}->{index} = $index;
-    $lookups->{$variantId}->{line} = $line;
-    $lookups->{$variantId}->{row} = \%row;
+    my @lvalue = (exists $lookups->{$variantId}) ? @{$lookups->{$variantId}} : ();
+    my $nlvalue = {index => $index, line => $line, row => \%row};
+    push(@lvalue, $nlvalue);
+    #$self->error(Dumper(\@lvalue)) if (exists $lookups->{$variantId});
+    $lookups->{$variantId} = \@lvalue;
+
+    # $self->error(Dumper($lookups->{$variantId}));
 
     # LOOKUP Result
     # "1:2071765:G:A": {
@@ -1171,7 +1179,7 @@ sub DBLookup {	# check against DB
       my $thread = threads->create(\&submitDBLookupQuery, $self, $genomeBuild, $lookups, $linePtr);
       undef $lookups;
       push(@threads, $thread);
-      $self->monitorThreads($fail, \@errors, @threads);
+      ($fail, @errors) = $self->monitorThreads($fail, \@errors, @threads);
     } # end do lookup
   }				# end iterate over file
 
@@ -1184,9 +1192,9 @@ sub DBLookup {	# check against DB
   }
 
   while (my @running = threads->list(threads::running)) {
-    $self->monitorThreads($fail, \@errors, @threads);
+    ($fail, @errors) = $self->monitorThreads($fail, \@errors, @threads);
   }
-  $self->monitorThreads($fail, \@errors, @threads); # residuals after no more are running
+  ($fail, @errors) = $self->monitorThreads($fail, \@errors, @threads); # residuals after no more are running
 
   $self->error("Parallel DB Query failed: " . Dumper(\@errors)) if ($fail);
   $self->log("DONE: Queried $lineCount variants");
@@ -1887,6 +1895,7 @@ sub preprocess {
   my $filePath = PluginUtils::createDirectory($self, $self->{working_dir}, "preprocess");
   my $novelVariantVcfFile = $self->extractNovelVariants($inputFileName, "$filePath/$filePrefix");
   $self->annotateNovelVariants($novelVariantVcfFile);
+  # $self->getNovelVariantsFromDB();
 }
 
 sub annotateNovelVariants {
@@ -1896,20 +1905,20 @@ sub annotateNovelVariants {
   if ($lineCount > 1) {
     $self->log("INFO: Annotating variants in: $fileName");
     my ($accession, @other) = split /_/, $self->{adj_source_id};
+    my $preprocessDir = "$accession/" . $self->getArg('genomeBuild') . "/"
+	. $self->{adj_source_id} . "/preprocess/";
 
-    my $sortedVcfFile= $self->{annotator}->sortVcf($fileName);
-    my $shortPath = "$accession/" . $self->getArg('genomeBuild') . "/" . $self->{adj_source_id}
-      . "/preprocess/";
-    my $vepInputFileName = $shortPath . basename($sortedVcfFile);
     if ($self->getArg('skipVep')) {
       $self->log("INFO: --skipVep flag provided, skipping VEP annotation");
     }
     else {
-      $self->{annotator}->runVep($vepInputFileName);
+      # strip local path, make relative to accession folder
+      my $vepInputFileName = $preprocessDir . basename($fileName);
+      $self->{annotator}->runVep("$vepInputFileName");
     }
-    $self->{annotator}->loadVepAnnotatedVariants("$vepInputFileName.vep.json.gz");
-    $self->{annotator}->loadVariantsFromVCF($vepInputFileName);
-    # $self->{annotator}->loadCaddScores($fileName);
+    $self->{annotator}->loadVepAnnotatedVariants("$fileName.vep.json.gz");
+    $self->{annotator}->loadVariantsFromVCF("$fileName");
+    $self->{annotator}->loadCaddScores($fileName, $preprocessDir);
   } else {
     $self->log("INFO: No novel variants found in: $fileName");
   }
@@ -1917,7 +1926,7 @@ sub annotateNovelVariants {
 
 
 sub extractNovelVariants {
-  my ($self, $file, $filePrefix) = @_;
+  my ($self, $file, $filePrefix, $novelVariantVCF) = @_;
   $self->log("INFO: Extracting novel variants from DB Mapped file: $file");
   my $genomeBuild = $self->getArg('genomeBuild');
   my $useMarker = ($self->getArg('mapThruMarker') && !$self->getArg('markerIsMetaseqId'));
@@ -1927,7 +1936,7 @@ sub extractNovelVariants {
   open(my $fh, $dbmappedFileName) || $self->error("Unable to open DB Mapped file $dbmappedFileName for reading");
   my $header = <$fh>;
 
-  my $novelVariantVCF = "$filePrefix-novel.vcf";
+  $novelVariantVCF = ($novelVariantVCF) ? $novelVariantVCF : "$filePrefix-novel.vcf";
   if (-e $novelVariantVCF && !($self->getArg('overwrite'))) {
     $self->log("INFO: Using existing novel variant VCF: $novelVariantVCF");
     return $novelVariantVCF;
@@ -1950,7 +1959,7 @@ sub extractNovelVariants {
 
     my ($chromosome, $position, $ref, $alt) = split /:/, $row{metaseq_id};
     if ($row{$genomeBuild} eq 'NULL') { # not in DB
-      print $vfh join("\t", $chromosome, $position, '.', $ref, $alt, '.', '.', '.') . "\n";
+      print $vfh join("\t", $chromosome, $position, $row{metaseq_id}, $ref, $alt, '.', '.', '.') . "\n";
       ++$novelVariantCount;
     }
 
@@ -1963,6 +1972,28 @@ sub extractNovelVariants {
   $self->log("INFO: Found $novelVariantCount novel variants");
 
   return $novelVariantVCF;
+}
+
+
+sub updateVariantFlags {
+  my ($self, $inputFileName) = @_;
+  $self->log("INFO: Updating variant flags (is_adsp_variant, gwas_flags) base on $inputFileName");
+  # iterate over inputFile, building update buffer
+  # update gwas flags & is_adsp status
+  my $annotator = $self->{annotator};
+  $annotator->initializeUpdateBuffer();
+
+  open(my $fh, $inputFileName) || $self->error("Unable to open $inputFileName for reading");
+  my $header = <$fh>;
+  while (my $line = <$fh>) {
+    chomp($line);
+    my @values = split /\t/, $line;
+    my %row;
+    @row{@INPUT_FIELDS} = @values;
+
+    my $record = $row{$self->getArg('genomeBuild')};
+    # JSON parse
+  }
 }
 
 
