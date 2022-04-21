@@ -51,7 +51,6 @@ installAnnotatedVDBSchema --verbose --createSchema > $DATA_DIR/logs/install_anno
 installAnnotatedVDBSchema --verbose --createTables > $DATA_DIR/logs/install_annotatedvdb_schema_create_tables.sql 2>&1
 
 
-
 # =================================================
 # REFERENCE BUILD - Genes / Gene Annotation
 # =================================================
@@ -126,7 +125,9 @@ loadResource --config $CONFIG_DIR/reference_databases/reactome_tc.json --load da
 # REFERENCE BUILD - Ontologies
 # =================================================
 
-
+# EFO -- needed before loading datasets
+loadResource --config $CONFIG_DIR/ontologies/efo.json --load xdbr --commit --verbose > $DATA_DIR/logs/xdbr/load_efo_xdbr.log 2>&1
+loadResource --config $CONFIG_DIR/ontologies/efo.json --load data --commit --verbose > $DATA_DIR/logs/ontologies/load_efo.log 2>&1
 
 # =================================================
 # REFERENCE BUILD - dbSNP Variants
@@ -180,11 +181,11 @@ loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00027.js
 # NG00027
 
 loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00027.json --preprocess  --commit > $DATA_DIR/logs/datasets/load_NG00027_placeholders.log 2>&1 
-loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load data --params '{"liftOver":"true"}' --verbose > $DATA_DIR/logs/datasets/load_NG00027_lift_over.log 2>&1
-loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load data --params '{"findNovelVariants":"true"}' --verbose > $DATA_DIR/logs/datasets/load_NG00027_find_novel_variants.log 2>&1
-loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load data --params '{"annotateNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00027_annotate_novel_variants.log 2>&1
-loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load data --params '{"preprocessAnnotatedNovelVariants":"true"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00027_preprocess_novel_variants.log 2>&1
-loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load data --params '{"loadVariants":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00027_load_variants.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load data --params '{"liftOver":"true", "genomeBuild":"GRCh37"}' --verbose > $DATA_DIR/logs/datasets/load_NG00027_lift_over.log 2>&1
+# update GRCh37 needs to be added
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load data --params '{"preprocess":"true", "genomeBuild":"GRCh38"}' --commit --verbose > $DATA_DIR/logs/datasets/load_NG00027_preprocess.log 2>&1
+
+
 loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00027.json --load data --params '{"loadResult":"true", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/load_NG00027_load_result.log 2>&1
 
 # NG00075

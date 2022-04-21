@@ -27,15 +27,23 @@
 		"sourceId": "@file.accession+_GRCh38_ADJ_STAGE1",
 		"name": "ADGC LOAD: Adjusted Stage 1 (GRCh38)",
 		"description": "late-onset Alzheimer's disease; ADGC discovery stage 1 dataset; adjusted for age, sex, and APOE4 number (Lifted Over from GRCh37 to GRCh38)",
-		"characteristics": {
+		"biomaterialCharacteristics": {
 		    "diagnosis": "late onset Alzheimer's disease",
-		    "covariate specification": "value:age, sex, and APOE4 number"
+		    "covariate specification": "value:age, sex, and APOE4 number",
+		    "population": "European"
 		},
 		"restrictedStats": {
 		    "frequency_se": "FreqSE",
 		    "effect": "Effect",
 		    "std_err": "StdErr",
 		    "direction": "Direction"
+		},
+		"trackSummary": {
+		    "ncase": 8309,
+		    "ncontrol": 7366 ,
+		    "cohorts": "ACT,ADC1,ADC2,GenADA,UM/VU/MSSM,MIRAGE,NIA-LOAD,OHSU,TGEN2",
+		    "sex": "Male and Female",
+		    "consortium": "ADGC"
 		}
 	    }
 	},
@@ -46,15 +54,23 @@
 		"sourceId": "@file.accession+_GRCh38_ADJ_STAGE12",
 		"name": "ADGC LOAD: Adjusted Stages 1 and 2 (GRCh38)",
 		"description": "late-onset Alzheimer's disease; ADGC discovery and replication stages (1 and 2, respectively); adjusted for age, sex, and APOE4 number (Lifted Over from GRCh37 to GRCh38)",
-		"characteristics": {
+		"biomaterialCharacteristics": {
 		    "diagnosis": "late onset Alzheimer's disease",
-		    "covariate specification": "value:age, sex, and APOE4 number"
+		    "covariate specification": "value:age, sex, and APOE4 number",
+		    "population": "European"
 		},
 		"restrictedStats": {
 		    "frequency_se": "FreqSE",
 		    "effect": "Effect",
 		    "std_err": "StdErr",
 		    "direction": "Direction"
+		},
+		"trackSummary": {
+		    "ncase": 11840,
+		    "ncontrol": 10931,
+		    "cohorts": "ACT,ADC1,ADC2,GenADA,UM/VU/MSSM,MIRAGE,NIA-LOAD,OHSU,TGEN2, ADC3,MAYO,ROSMAP,UP,WU",
+		    "sex": "Male and Female",
+		    "consortium": "ADGC"
 		}
 	    }
 	},
@@ -64,9 +80,10 @@
 		"sourceId": "@file.accession+_GRCh38_ADJ_STAGE2",
 		"name": "ADGC LOAD: Adjusted Stage 2 (GRCh38)",
 		"description": "late-onset Alzheimer's disease; ADGC replication stage 2; adjusted for age, sex, and APOE4 number (Lifted Over from GRCh37 to GRCh38)",
-		"characteristics": {
+		"biomaterialCharacteristics": {
 		    "diagnosis": "late onset Alzheimer's disease",
-		    "covariate specification": "value:age, sex, and APOE4 number"
+		    "covariate specification": "value:age, sex, and APOE4 number",
+		    "population": "European"
 		},
 		"restrictedStats": {
 		    "frequency_se": "FreqSE",
@@ -76,6 +93,13 @@
 		    "het_chi_sq": "HetChiSq",
 		    "het_df": "HetDf",
 		    "het_pvalue": "HetPVal"
+		},
+		"trackSummary": {
+		    "ncase": 3531,
+		    "ncontrol": 3565,
+		    "cohorts": "ADC3,MAYO,ROSMAP,UP,WU",
+		    "sex": "Male and Female",
+		    "consortium": "ADGC"
 		}
 	    }
 	},
@@ -85,14 +109,22 @@
 		"sourceId": "@file.accession+_GRCh38_STAGE12",
 		"name": "ADGC LOAD: Stages 1 and 2 (GRCh38)",
 		"description": "late-onset Alzheimer's disease; ADGC discovery and replication stages (1 and 2, respectively) (Lifted Over from GRCh37 to GRCh38)",
-		"characteristics": {
-		    "diagnosis": "late onset Alzheimer's disease"
+		"biomaterialCharacteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": "European"
 		},
 		"restrictedStats": {
 		    "frequency_se": "FreqSE",
 		    "effect": "Effect",
 		    "std_err": "StdErr",
 		    "direction": "Direction"
+		},
+		"trackSummary": {
+		    "ncase": 11840,
+		    "ncontrol": 10931,
+		    "cohorts": "ACT,ADC1,ADC2,GenADA,UM/VU/MSSM,MIRAGE,NIA-LOAD,OHSU,TGEN2, ADC3,MAYO,ROSMAP,UP,WU",
+		    "sex": "Male and Female",
+		    "consortium": "ADGC"
 		}
 	    }
 	},
@@ -102,8 +134,9 @@
 		"sourceId": "@file.accession+_GRCh38_STAGE1",
 		"name": "ADGC LOAD: Stage 1 (GRCh38)",
 		"description": "late-onset Alzheimer's disease; ADGC discovery stage 1 (Lifted Over from GRCh37 to GRCh38)",
-		"characteristics": {
-		    "diagnosis": "late onset Alzheimer's disease"
+		"biomaterialCharacteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": "European"
 		},
 		"restrictedStats": {
 		    "frequency_se": "FreqSE",
@@ -113,6 +146,13 @@
 		    "het_chi_sq": "HetChiSq",
 		    "het_df": "HetDf",
 		    "het_pvalue": "HetPVal"
+		},
+		"trackSummary": {
+		    "ncase": 8309,
+		    "ncontrol": 7366 ,
+		    "cohorts": "ACT,ADC1,ADC2,GenADA,UM/VU/MSSM,MIRAGE,NIA-LOAD,OHSU,TGEN2",
+		    "sex": "Male and Female",
+		    "consortium": "ADGC"
 		}
 	    }
 	},
@@ -122,8 +162,9 @@
 		"sourceId": "@file.accession+_GRCh38_STAGE2",
 		"name": "ADGC LOAD: Stage 2 (GRCh38)",
 		"description": "late-onset Alzheimer's disease;  ADGC replication stage 2 (Lifted Over from GRCh37 to GRCh38)",
-		"characteristics": {
-		    "diagnosis": "late onset Alzheimer's disease"
+		"biomaterialCharacteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": "European"
 		},
 	    	"restrictedStats": {
 		    "frequency_se": "FreqSE",
@@ -133,6 +174,13 @@
 		    "het_chi_sq": "HetChiSq",
 		    "het_df": "HetDf",
 		    "het_pvalue": "HetPVal"
+		},
+		"trackSummary": {
+		    "ncase": 3531,
+		    "ncontrol": 3565,
+		    "cohorts": "ADC3,MAYO,ROSMAP,UP,WU",
+		    "sex": "Male and Female",
+		    "consortium": "ADGC"
 		}
 	    }
 	}
@@ -145,7 +193,7 @@
 		"skip": true,
 		"parameters": {
 		    "name": "ADGC LOAD (GRCh38)",
-		    "attribution": "Naj et al. 2011",
+		    "attribution": "Naj et al. 2011|PMID:21460841",
 		    "description": "Summary statistics from a multi-stage Alzheimer's Disease Genetics Consortium (ADGC) GWAS study of late-onset Alzheimer's disease (LOAD).  Lifted Over from GRCh37 to GRCh38.",
 		    "sourceId": "@file.accession",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version"
@@ -164,10 +212,11 @@
 		    "subtype": "GWAS summary statistics",
 		    "description": "foreach",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version",
-		    "characteristics": "foreach",
+		    "biomaterialCharacteristics": "foreach",
 		    "sourceId" : "foreach",
 		    "name": "foreach",
-		    "studyId": "@file.accession"
+		    "studyId": "@file.accession",
+		    "trackSummary": "foreach"
 		}
 	    }
 	}

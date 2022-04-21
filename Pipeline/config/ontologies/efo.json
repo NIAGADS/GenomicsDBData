@@ -1,13 +1,13 @@
 {
     "file": {
-	"path": "$SHARED_DATA_DIR/ontologies/efo",
+	"path": "$DATA_DIR/ontologies/efo",
 	"file": "efo.owl"
     },
     "external_database": {
 	"name": "Experimental Factor Ontology",
 	"description": "The Experimental Factor Ontology (EFO) provides a systematic description of many experimental variables by combining parts of several biological ontologies, such as anatomy, disease and chemical compounds.",
-	"version": "3.3",
-	"release_date": "2019-01-15",
+	"version": "3.41.0",
+	"release_date": "2022-04-19",
 	"download_url": "http://www.ebi.ac.uk/efo/efo.owl",
 	"id_url": "https://www.ebi.ac.uk/efo/",
 	"accession": "EFO",
@@ -16,7 +16,7 @@
     "load": [
 	{
 	    "plugin": {
-		"name": "GUS::Supported::Plugin::InsertOntologyTermsAndRelationships",
+		"name": "GenomicsDBData::Load::Plugin::InsertOntologyTermsAndRelationships",
 		"parameters": {
 		    "inFile": "@file.path/@file.file",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version",

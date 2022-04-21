@@ -25,8 +25,15 @@ use GUS::Model::SRes::OntologyTerm;
 sub getArgumentsDeclaration {
   my $argumentDeclaration  =
     [
-     stringArg({ name  => 'characteristics',
+     stringArg({ name  => 'biomaterialCharacteristics',
                  descr => "json string specifing characterists as qualifier:value pairs",
+                 constraintFunc => undef,
+                 reqd           => 0,
+                 isList         => 0 
+	       }),
+
+     stringArg({ name  => 'trackSummary',
+                 descr => "json string specifing JSON for track_summary field",
                  constraintFunc => undef,
                  reqd           => 0,
                  isList         => 0 
@@ -144,7 +151,7 @@ sub new {
   my $argumentDeclaration    = &getArgumentsDeclaration();
 
   $self->initialize({requiredDbVersion => 4.0,
-		     cvsRevision => '$Revision: 26 $',
+		     cvsRevision => '$Revision: 27 $',
 		     name => ref($self),
 		     revisionNotes => '',
 		     argsDeclaration => $argumentDeclaration,
@@ -205,6 +212,9 @@ sub loadProtocolAppNode {
     $protocolAppNode->setUri($self->getArg('uri'))
       if ($self->getArg('uri'));
 
+    $protocolAppNode->setTrackSummary($self->getArg('trackSummary'))
+      if ($self->getArg('trackSummary'));
+
     $protocolAppNode->submit() unless ($protocolAppNode->retrieveFromDB());
 
     $self->loadStudyLink($protocolAppNode->getProtocolAppNodeId())
@@ -212,7 +222,7 @@ sub loadProtocolAppNode {
   }
 
   $self->loadCharacteristics($protocolAppNode->getProtocolAppNodeId())
-    if ($self->getArg('characteristics'));
+    if ($self->getArg('biomaterialCharacteristics'));
     
 
 }
@@ -237,7 +247,7 @@ sub loadStudyLink {
 sub loadCharacteristics {
   my ($self, $protocolAppNodeId) = @_;
   my $json = JSON->new;
-  my $chars = $json->decode($self->getArg('characteristics')) || $self->error("Error parsing characteristic JSON");
+  my $chars = $json->decode($self->getArg('biomaterialCharacteristics')) || $self->error("Error parsing characteristic JSON");
   my @terms = undef;
   while (my ($qualifier, $term) = each %$chars) {
     # $term may be an array
