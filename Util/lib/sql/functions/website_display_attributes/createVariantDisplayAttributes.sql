@@ -201,7 +201,6 @@ END;
 
 $$ LANGUAGE plpgsql;
 
-
 CREATE OR REPLACE FUNCTION msc_impacted_transcript(transcriptId TEXT, genomeBuild TEXT)
 RETURNS TEXT AS $$
 DECLARE mit TEXT;
