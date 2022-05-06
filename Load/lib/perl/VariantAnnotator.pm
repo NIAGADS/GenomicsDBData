@@ -292,8 +292,6 @@ sub extractVariantsFromVcfRecord {
 		    $metaseqId, 
 		    $props->{sequenceAllele},
 		    $primaryKey, $annotation);
-
-      
       push(@recordVariants, join('|', @variant));
 
     }
@@ -314,6 +312,28 @@ sub loadCaddScores {
 
   $self->{plugin}->error("Loading CADD scores failed -- see logs in $logFilePath") if ($status !~ /SUCCESS/);
   $self->{plugin}->log("DONE loading CADD scores for novel variants.");
+}
+
+
+sub updateVariantRecords {
+  my ($self, $fileName, $gusConfigFile, $legacyDB) = @_;
+
+  $self->{plugin}->log("Updating variants from $fileName");
+  my @cmd = ('update_variant_annotation.py',
+	     '--variantIdType', 'PRIMARY_KEY',
+	     '--commitAfter', 5000,
+	     '--fileName', $fileName
+	    );
+
+  push(@cmd, '--gusConfigFile', $gusConfigFile) if ($gusConfigFile);
+  push(@cmd, '--useDynamicPkSql') if ($legacyDB);
+  push(@cmd, '--commit') if( $self->{plugin}->getArg('commit'));
+
+  $self->{plugin}->log("Running variant annotation update: " . join(' ', @cmd));
+  my $status = qx(@cmd);
+
+  $self->{plugin}->error("Updating Variants failed -- see logs in $fileName.log") if ($status !~ /SUCCESS/);
+  $self->{plugin}->log("DONE updating variants.");
 }
 
 

@@ -7,24 +7,24 @@ SET max_parallel_maintenance_workers TO 8;
 
 CREATE MATERIALIZED VIEW NIAGADS.VariantGWASTopHits AS (
 SELECT r.protocol_app_node_id,
-pan.source_id AS dataset_id,
+pan.source_id AS track,
 r.variant_record_primary_key,
 v.metaseq_id, v.ref_snp_id,
 v.chromosome, v.position,
-v.location_start, v.location_end,
-v.ref_allele, v.alt_allele,
-v.display_allele,
-v.sequence_allele,
-v.variant_class_abbrev,
+v.display_attributes,
 v.is_adsp_variant,
-v.annotation,
+
+jsonb_build_object('CADD_SCORES', v.cadd_scores, 'ADSP_MOST_SEVERE_CONSEQUENCE', 
+v.adsp_most_severe_consequence, 'ALLELE_FREQUENCIES', 
+allele_frequencies, 'ADSP_QC_STATUS', adsp_qc->'STATUS') AS annotation,
+
 r.bin_index,
 r.neg_log10_pvalue,
 r.pvalue_display,
 r.frequency,
 r.allele AS test_allele
 FROM Results.VariantGWAS r, Study.ProtocolAppNode pan,
-NIAGADS.Variant v
+AnnotatedVDB.Variant v
 WHERE r.protocol_app_node_id = pan.protocol_app_node_id
 AND r.neg_log10_pvalue >= 3
 AND r.neg_log10_pvalue != 'NaN'
@@ -39,7 +39,7 @@ GRANT SELECT ON NIAGADS.VariantGWASTopHits TO gus_r, gus_w, comm_wdk_w;
 
 -- cluster
 CREATE INDEX TOP_GWAS_VIEW_ORDER ON NIAGADS.VariantGWASTopHits(DATASET_ID, CHROMOSOME, NEG_LOG10_PVALUE DESC);
-ALTER MATERIALIZED VIEW NIAGADS.VariantGWASTopHits CLUSTER ON TOPGWAS_VIEW_ORDER;
+ALTER MATERIALIZED VIEW NIAGADS.VariantGWASTopHits CLUSTER ON TOP_GWAS_VIEW_ORDER;
 
 -- INDEXES
 CREATE INDEX TOP_GWAS_VIEW_VRPK ON NIAGADS.VariantGWASTopHits (VARIANT_RECORD_PRIMARY_KEY);
