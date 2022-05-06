@@ -6,6 +6,7 @@ import os
 import gzip
 import datetime
 import json
+import re
 
 from types import SimpleNamespace
 from collections import abc
@@ -38,14 +39,25 @@ def print_dict(dictObj, pretty=True):
     ''' pretty print a dict / JSON object '''
     if isinstance(dictObj, SimpleNamespace):
         return dictObj.__repr__()
-    return json.dumps(dictObj, indent=4, sort_keys=True) if pretty else json.dumps(dictObj)
+    return json.dumps(dictObj, indent=4, sort_keys=True) if pretty else disallowed2str(json.dumps(dictObj))
 
 
-def get_opener(fileName=None, compressed=True, binary=True):
+def disallowed2str(jsonStr):
+    ''' NaN and Infinity and -Infinity values are not allowed in postgres json numerics'''
+    pattern = re.compile("-Infinity", re.IGNORECASE)
+    pattern.sub(jsonStr, '"-Infinity"')
+    pattern = re.compile("Infinity", re.IGNORECASE)
+    pattern.sub(jsonStr, '"Infinity"')
+    re.sub(r"\bNaN\b",'"NaN"',jsonStr)
+    
+    return jsonStr
+
+
+def get_opener(fileName=None, compressed=False, binary=True):
     ''' check if compressed files are expected and return
     appropriate opener '''
 
-    if compressed or (fileName is not None and '.gz' in fileName):
+    if compressed or (fileName is not None and fileName.endswith('.gz')):
         if binary:
             return gzip.GzipFile
         return gzip.open
