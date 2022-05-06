@@ -1,10 +1,11 @@
 {
-  "file": {
-      "path": "$DATA_DIR/ADSP/17K",
-      "cadd_path": "$DATA_DIR/CADD",
-      "vep_result_dir": "case_vep_json",
-      "seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
-      "consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt"
+    "file": {
+	"path": "$DATA_DIR/ADSP/17K",
+	"qc_result_dir": "QC/17k-pVCF/preview/compact/",
+	"cadd_path": "$DATA_DIR/CADD",
+	"vep_result_dir": "case_vep_json",
+	"seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
+	"consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt"
     },
     "external_database": {
 	"name": "NIAGADS",
@@ -16,8 +17,9 @@
 	"type": "Genetic variation"
     },
     "load": [
-		{
+	{
 	    "script" : {
+		"skip": true,
 		"name": "load_vep_result.py",
 		"parameters": {
 		    "dir": "@file.path/@file.vep_result_dir",
@@ -46,6 +48,21 @@
 		    "chr": "all",
 		    "maxWorkers": 25,
 		    "query": "X"
+		}
+	    }
+	},
+	{
+	    "script": {
+		"name": "update_from_qc_pvcf_file.py",
+		"parameters": {
+		    "dir": "@file.path/@file.qc_result_dir",
+		    "genomeBuild": "GRCh38",
+		    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
+		    "extension": ".ALL.vcf.gz",
+		    "commitAfter": 500,
+		    "chr": "all",
+		    "maxWorkers": 10,
+		    "version": "17K"
 		}
 	    }
 	}
