@@ -79,5 +79,84 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+CREATE OR REPLACE FUNCTION adsp_qc_status(variantPK TEXT)
+       RETURNS JSONB AS $$
 
+DECLARE status JSONB;
+DECLARE chrm TEXT;
+BEGIN
+	
+	SELECT 'chr' || split_part(variantPK, ':', 1)::text INTO chrm;
+
+	WITH id AS (SELECT variantPK AS record_primary_key),
+	qcStatus AS (
+	SELECT v.record_primary_key, 
+	jsonb_object_agg(j.key,
+	j.value->>'filter') AS flag
+	FROM AnnotatedVDB.Variant v, jsonb_each(v.adsp_qc) j
+	WHERE v.record_primary_key = variantPK
+	AND v.chromosome = chrm
+	GROUP BY v.record_primary_key, v.chromosome)
+	SELECT qcStatus.flag INTO status
+	FROM id LEFT OUTER JOIN qcStatus ON
+	id.record_primary_key = qcStatus.record_primary_key;
+	
+RETURN status;
+END;
+
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION adsp_qc_call(variantPK TEXT)
+       RETURNS JSONB AS $$
+
+DECLARE status JSONB;
+
+BEGIN
+	SELECT jsonb_object_agg(key,
+	CASE WHEN value::text = '"PASS"'
+	THEN TRUE ELSE FALSE END) INTO status
+	FROM jsonb_each(adsp_qc_status(variantPK));
+	
+RETURN status;
+END;
+
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION allele_frequencies(variantPK TEXT)
+       RETURNS JSONB AS $$
+
+DECLARE status JSONB;
+
+BEGIN
+	SELECT jsonb_object_agg(key,
+	CASE WHEN value::text = '"PASS"'
+	THEN TRUE ELSE FALSE END) INTO status
+	FROM jsonb_each(adsp_qc_status(variantPK));
+	
+RETURN status;
+END;
+
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION msc_impacted_transcript(transcriptId TEXT, genomeBuild TEXT)
+RETURNS TEXT AS $$
+DECLARE mit TEXT;
+BEGIN
+	SELECT build_link_attribute(transcriptID,
+	CASE
+		WHEN genomeBuild LIKE 'GRCh37%'
+		THEN '+ENSEMBL_TRANSCRIPT_URL_GRCh37+'
+		ELSE '+ENSEMBL_TRANSCRIPT_URL_GRCh38+'
+		END, NULL, 'view transript details from Ensembl' ||
+	CASE
+		WHEN genomeBuild LIKE 'GRCh37%'
+		THEN ' GRCh37 Archive'
+		ELSE ''
+	END)::text INTO mit;
+	RETURN mit;
+END;
+$$ LANGUAGE plpgsql;
 
