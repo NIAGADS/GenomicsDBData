@@ -66,6 +66,7 @@ BEGIN
 	SELECT v.record_primary_key::TEXT, v.ref_snp_id, v.metaseq_id, v.is_adsp_variant, v.bin_index,
 	jsonb_build_object(
 	 'GenomicsDB', v.other_annotation->'GenomicsDB',
+	 'ADSP_QC', v.adsp_qc #- '{17k,info,AF}' #- '{17k,info,AC}' #- '{17k,info,AN}',
 	 'mapped_coordinates', COALESCE(v.other_annotation->'GRCh37', v.other_annotation->'GRCh38')) AS annotation
 	FROM AnnotatedVDB.Variant v
 	WHERE v.metaseq_id = metaseqId
@@ -85,6 +86,7 @@ BEGIN
 	SELECT v.record_primary_key::TEXT, v.ref_snp_id, v.metaseq_id, v.is_adsp_variant, v.bin_index,
 	jsonb_build_object(
 	 'GenomicsDB', v.other_annotation->'GenomicsDB',
+	 'ADSP_QC', v.adsp_qc #- '{17k,info,AF}' #- '{17k,info,AC}' #- '{17k,info,AN}',
 	 'mapped_coordinates', COALESCE(v.other_annotation->'GRCh37', v.other_annotation->'GRCh38')) AS annotation
 	FROM AnnotatedVDB.Variant v
 	WHERE v.metaseq_id = metaseqId
