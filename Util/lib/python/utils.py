@@ -12,6 +12,22 @@ from types import SimpleNamespace
 from collections import abc
 from subprocess import check_output, CalledProcessError
 
+
+def chunker(seq, size):
+    """ for a given sequence, splits into even + residual chunks.  returns an iterator 
+    see: https://stackoverflow.com/a/434328
+    
+animals = ['cat', 'dog', 'rabbit', 'duck', 'bird', 'cow', 'gnu', 'fish']
+
+for group in chunker(animals, 3):
+    print(group)
+# ['cat', 'dog', 'rabbit']
+# ['duck', 'bird', 'cow']
+# ['gnu', 'fish']
+    """
+    return (seq[pos:pos + size] for pos in range(0, len(seq), size))
+
+
 def deep_update(d, u):
     """! deep update a dict
     based on https://stackoverflow.com/questions/3232943/update-value-of-a-nested-dictionary-of-varying-depth/60321833
