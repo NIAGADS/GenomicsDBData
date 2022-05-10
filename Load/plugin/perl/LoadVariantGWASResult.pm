@@ -500,12 +500,17 @@ sub initializePlugin {
   if ($self->getArg('liftOver')) {
     $sourceId =~ s/_GRCh38//g;
   }
+  if ($self->getArg('genomeBuild') eq 'GRCh37') {
+    # for postprocessing GRCh37 files that were lifted over
+    if ($sourceId =~ /GRCh38/) {
+      $sourceId =~ s/_GRCh38//g;
+    }
+  }
 
   $self->{adj_source_id} = $sourceId;
   $self->{root_file_path} = $self->getArg('fileDir') . "/" . $self->getArg('genomeBuild') . "/";
   my $workingDir =   PluginUtils::createDirectory($self, $self->{root_file_path}, $self->{adj_source_id});
   $self->{working_dir} = $workingDir;
-  
 }
 
 
@@ -2041,105 +2046,116 @@ sub updateVariantFlags {
 }
 
 
+sub extractRefSnpFromDBMap {
+  my ($self, $mapping) = @_;
+  # {"bin_index":"chr1.L1.B1.L2.B1.L3.B1.L4.B1.L5.B1.L6.B1.L7.B2.L8.B1.L9.B1.L10.B1.L11.B2.L12.B1.L13.B2","location":1086035,"chromosome":"1","matched_variants":[{"metaseq_id":"1:1086035:A:G","ref_snp_id":"rs3737728","genomicsdb_id":"1:1086035:A:G:rs3737728"}]}
 
-sub loadStandardizedResult {
+  my @mvs = @{$mapping->{matched_variants}};
+  foreach my $mv (@mvs) {
+    my $refSnpId = $mv->{ref_snp_id};
+    return $refSnpId if ($refSnpId);
+  }
+  return undef;
+}
+
+
+sub standardize {
   my ($self) = @_;
-  my $totalVariantCount = 0;
-  my $insertStrBuffer = "";
-  my $commitAfter = $self->getArg('commitAfter');
-  my $hasFreqData = $self->getArg('frequency') ? 1: 0;
 
- my $file = $self->{root_file_path} . $self->getArg('file');
-  my $inputFileName = $self->cleanAndSortInput($file);
-
+  $self->log("INFO: Generating Standardize Summary Statistics Files");
   
+  my $hasFreqData = $self->getArg('frequency') ? 1: 0;
+  my $genomeBuild = $self->getArg('genomeBuild');
+
+  # /project/wang4/GenomicsDB/NIAGADS_GWAS/NG00027/GRCh37/NG00027_GRCh38_STAGE12
+  my $file = $self->{root_file_path} . $self->getArg('file');
+  my $filePrefix = $self->{adj_source_id};
+  my $inputFileName = $self->{working_dir} . "/" . $filePrefix . '-input.txt.dbmapped';
+  $self->error("DBMapped Input file $inputFileName does not exist.  Check preprocessing result.") if (!(-e $inputFileName));
+  my $oFilePath = PluginUtils::createDirectory($self, $self->{working_dir}, "standardized");
+  my $pvaluesOnlyFileName = $oFilePath . "/" . $filePrefix . '-pvalues.txt';
+  my $fullStatsFileName = $oFilePath ."/" . $filePrefix . '.txt';
+
   my @sfields = qw(chr bp allele1 allele2 pvalue);
   my @rfields = undef;
 
-  my $fileName="debug";
-  open(my $fh, $fileName ) || $self->error("Unable to open $fileName for reading");
-  <$fh>;			# throw away header
-
-  my $path = PluginUtils::createDirectory($self, $self->getArg('fileDir'), "standardized");
-  my $standardizedFileName = $path . "/" . $self->getArg('sourceId') . ".txt";
-  open(my $sfh, '>', $standardizedFileName) || $self->rror("Unable top open $standardizedFileName for writing.");
-  $sfh->autoflush(1);
-
-  my $pvalueFileName = $path . "/" . $self->getArg('sourceId') . "-pvalues-only.txt";
-  open(my $pfh, '>', $pvalueFileName) || $self->rror("Unable top open $pvalueFileName for writing.");
-  $pfh->autoflush(1);
-
+  open(my $fh, $inputFileName )
+    || $self->error("Unable to open DBMapped input file $inputFileName for reading");
+  open(my $pvFh, '>', $pvaluesOnlyFileName )
+    || $self->error("Unable to create p-value file $pvaluesOnlyFileName for writing");
+  open(my $fsFh, '>', $fullStatsFileName )
+    || $self->error("Unable to create full stats file $fullStatsFileName for writing");
+  $fsFh->autoflush(1);
+  $pvFh->autoflush(1);
   my @sheader = qw(chr bp effect_allele non_effect_allele pvalue);
-  my %row; # (chr bp allele1 allele2 freq1 pvalue neg_log10_p display_p gwas_flags test_allele restricted_stats_json db_variant_json);
-  while (<$fh>) {
-    chomp;
-    @row{@RESULT_FIELDS} = split /\t/;
+  
+  my $header = <$fh>;
+  my $json = JSON::XS->new();
+  my $lineCount = 0;
+  my %row;
+  while (my $line = <$fh>) {
+    chomp($line);
+    @row{@INPUT_FIELDS} = split /\t/, $line;
 
-    my $json = JSON::XS->new();
-    my $restrictedStats = $json->decode($row{restricted_stats_json}) || $self->error("Error parsing restricted stats json: " . $row{restricted_stats_json});
+    my $restrictedStats = $json->decode($row{restricted_stats_json})
+      || $self->error("Error parsing restricted stats json for line $lineCount: " . $row{restricted_stats_json});
 
-    if ($totalVariantCount == 0) {
-      unshift @sheader, "variant";
+    if (++$lineCount == 1) { # generate & print header
+      # unshift @sheader, "variant";
       unshift @sheader, "marker";
       push(@sheader, "probe") if ($self->getArg('probe'));
-      print $pfh join("\t", @sheader) . "\n";
+      print $pvFh join("\t", @sheader) . "\n";
 
       push(@sheader, "frequency") if ($hasFreqData);
       @rfields = $self->generateStandardizedHeader($restrictedStats);
       push(@sheader, @rfields);
-      print $sfh join("\t", @sheader) . "\n";
+      print $fsFh join("\t", @sheader) . "\n";
     }
 
-    my $dbv = $json->decode($row{db_variant_json}) || $self->error("Error parsing dbv json: " . $row{db_variant_json});
-    my $marker = ($dbv->{ref_snp_id}) ? $dbv->{ref_snp_id} : Utils::truncateStr($dbv->{metaseq_id}, 20);
+    my $metaseqId = $row{metaseq_id};
+    $self->error("DEBUG - no metaseq_id for line $lineCount") if ($metaseqId eq 'NULL');
+    my $marker = Utils::truncateStr($metaseqId, 50);
+    my $refSnpId = undef;
+
+    my $dbVariant = $row{$genomeBuild};
+    if ($dbVariant ne 'NULL') {
+      $dbVariant = $json->decode($dbVariant)
+	|| $self->error("Error parsing dbv json for line $lineCount: " . $row{$genomeBuild});
+      $refSnpId = $self->extractRefSnpFromDBMap($dbVariant);
+    }
+    $marker = $refSnpId if ($refSnpId);
 
     my @cvalues = @row{@sfields};
-    unshift @cvalues, $dbv->{metaseq_id};
+    # unshift @cvalues, $metaseqId;
     unshift @cvalues, $marker;
     push(@cvalues, $restrictedStats->{probe}) if ($self->getArg('probe'));
     my $oStr = join("\t", @cvalues);
     $oStr =~ s/NaN/NA/g;	# replace any DB nulls with NAs
     $oStr =~ s/Infinity/Inf/g;	# replace any DB Infinities with Inf
-    print $pfh "$oStr\n";
+    print $pvFh "$oStr\n";
 
     push(@cvalues, $row{freq1}) if ($hasFreqData);
     push(@cvalues, @$restrictedStats{@rfields});
     $oStr = join("\t", @cvalues);
     $oStr =~ s/NaN/NA/g;	# replace any DB nulls with NAs
     $oStr =~ s/Infinity/Inf/g;	# replace any DB Infinities with Inf
-    print $sfh "$oStr\n";
+    print $fsFh "$oStr\n";
 
-    ++$totalVariantCount;
-    if ($self->getArg('loadResult')) {
-      $insertStrBuffer .= $self->generateInsertStr($dbv, \%row);
-      unless ($totalVariantCount % $commitAfter) {
-	$self->log("INFO: Found $totalVariantCount result records; Performing Bulk Inserts");
-	PluginUtils::bulkCopy($self, $insertStrBuffer, $COPY_SQL);
-	$insertStrBuffer = "";
-      }
-    }
-    unless ($totalVariantCount % 10000) {
-      $self->log("INFO: Read $totalVariantCount lines");
+    if ($lineCount % 10000 == 0) {
+      $self->log("INFO: Processed $lineCount lines");
       $self->undefPointerCache();
     }
   }
 
-  # residuals
-  if ($self->getArg('loadResult')) {
-    $self->log("INFO: Found $totalVariantCount result records; Performing Bulk Inserts");
-    PluginUtils::bulkCopy($self, $insertStrBuffer, $COPY_SQL);
-    $insertStrBuffer = "";
-    $self->log("DONE: Inserted $totalVariantCount result records.");
-  }
+  $fh->close();
+  $pvFh->close();
+  $fsFh->close();
 
   $self->log("INFO: Checking standardized output for duplicate values (from marker-based matches)");
-  $self->removeFileDuplicates($standardizedFileName);
-  $self->removeFileDuplicates($pvalueFileName);
-  $self->log("DONE: Wrote standardized output: $standardizedFileName");
-  $self->log("DONE: Wrote standardized output pvalues only: $pvalueFileName");
-
-  $fh->close();
-  $sfh->close();
+  $self->removeFileDuplicates($fullStatsFileName);
+  $self->removeFileDuplicates($pvaluesOnlyFileName);
+  $self->log("DONE: Wrote standardized output: $fullStatsFileName");
+  $self->log("DONE: Wrote standardized output pvalues only: $pvaluesOnlyFileName");
 }
 
 
