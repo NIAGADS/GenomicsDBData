@@ -232,7 +232,7 @@
 		    "fileDir" : "@file.path/@file.accession",
 		    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
 		    "liftOverChainFile": "@file.chain_file",
-		    "remapAssemblies": "GCF_000001405.25|GCF_000001405.39",
+		    "remapAssemblies": "GCF_000001405.25|GCF_000001405.26",
 		    "caddDatabaseDir": "@file.cadd_path",
 		    "testAllele": "Allele1",
 		    "frequency": "Freq1",
