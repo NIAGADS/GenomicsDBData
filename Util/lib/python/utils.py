@@ -55,16 +55,18 @@ def print_dict(dictObj, pretty=True):
     ''' pretty print a dict / JSON object '''
     if isinstance(dictObj, SimpleNamespace):
         return dictObj.__repr__()
-    return json.dumps(dictObj, indent=4, sort_keys=True) if pretty else disallowed2str(json.dumps(dictObj))
+    return json.dumps(dictObj, indent=4, sort_keys=True) if pretty else json.dumps(dictObj)
 
 
 def disallowed2str(jsonStr):
     ''' NaN and Infinity and -Infinity values are not allowed in postgres json numerics'''
-    pattern = re.compile("-Infinity", re.IGNORECASE)
-    pattern.sub(jsonStr, '"-Infinity"')
-    pattern = re.compile("Infinity", re.IGNORECASE)
-    pattern.sub(jsonStr, '"Infinity"')
-    re.sub(r"\bNaN\b",'"NaN"',jsonStr)
+    ''' TODO: matches "inf" not just inf so need to fix'''
+    jsonStr = re.sub(r"\bNaN\b",'"NaN"',jsonStr) 
+    if '-inf' in jsonStr:
+        jsonStr = re.sub(r"\b-inf\b",'"-inf"',jsonStr) 
+    else:
+        jsonStr = re.sub(r"\binf\b",'"inf"',jsonStr)
+        
     
     return jsonStr
 
@@ -112,7 +114,7 @@ def to_numeric(value):
 
 
 
-def convert_str2numeric_values(cdict, nanAsStr=True):
+def convert_str2numeric_values(cdict, nanAsStr=True, infAsStr=True):
     """!  converts numeric values in dictionary stored as strings 
     to numeric
 
@@ -123,6 +125,9 @@ def convert_str2numeric_values(cdict, nanAsStr=True):
     for key, value in cdict.items():
         if str(value).upper() == 'NAN' and nanAsStr:
             # is_float test will be true for NaN/NAN/nan/Nan etc
+            continue
+        if 'inf' in str(value).lower() and infAsStr:
+            # is_float test will be true for Infinity / -Infinity
             continue
         if is_float(value): # must check float first b/c integers are a subset
             cdict[key] = float(value)
