@@ -1001,7 +1001,7 @@ sub submitDBLookupQuery {
     $recordHandler->setFirstValueOnly(0);
     my $mappings = $recordHandler->lookup(keys %$lookups);
 
-    $SHARED_VARIABLE_SEMAPHORE->up;
+    $SHARED_VARIABLE_SEMAPHORE->down;
     foreach my $vid (keys %$mappings) {
       next if (!defined $mappings->{$vid}); # "null" returned
 
@@ -1148,13 +1148,15 @@ sub DBLookup {	# check against DB
 
   # residuals
   if ($lookups) {
+    $self->log("INFO: Processing Residuals");
     $PROCESS_COUNT_SEMAPHORE->down;
     my $thread = threads->create(\&submitDBLookupQuery, $self, $genomeBuild, $lookups, $linePtr);
     undef $lookups;
     push(@threads, $thread);
+    ($fail, @errors) = $self->monitorThreads($fail, \@errors, @threads);
   }
 
-  while (my @running = threads->list(threads::running)) {
+  while (my @running = threads->list(threads::running)) { # catch any still running
     ($fail, @errors) = $self->monitorThreads($fail, \@errors, @threads);
   }
   ($fail, @errors) = $self->monitorThreads($fail, \@errors, @threads); # residuals after no more are running
@@ -1230,7 +1232,7 @@ sub liftOver {
     # dbmapping input, ucsc lift over, remap, remap-unmapped
     my ($r, $fromDBLookup) = $self->liftOverFromDBMappedFile($dbmappedFileName, $resultFileName);
     $self->liftOverFromDBMappedFile($residualDBMappedFile, $resultFileName, $APPEND);
-    $self->liftOverFromDBMappedFile($markerOnlyDBMappedFile, $resultFileName, $APPEND);
+    $self->liftOverFromDBMappedFile($markerOnlyDBMappedFile, $resultFileName, $APPEND, 'GRCh38');
     $self->bed2input($cleanedRemapFileName, $resultFileName, $DROP_MARKERS, $APPEND); # append
     $self->bed2input($cleanedLiftOverFileName,  $resultFileName, $DROP_MARKERS, $APPEND);
 
@@ -1258,7 +1260,7 @@ sub liftOver {
     
     if ($fromMarker > 0) {
       my $markerOnlyDBMappedFile = $self->DBLookup("$dbmappedFileName.unmapped.markerOnly", 'GRCh38');
-      $self->liftOverFromDBMappedFile($markerOnlyDBMappedFile, $resultFileName);
+      $self->liftOverFromDBMappedFile($markerOnlyDBMappedFile, $resultFileName, $APPEND, 'GRCh38');
       my $unmappedCount = Utils::countOccurrenceInFile($markerOnlyDBMappedFile, 'genomicsdb_id', 1); # find lines missing the pattern
       $self->log("Marker-only Unmapped: $unmappedCount");
     }
@@ -1303,8 +1305,10 @@ sub runUCSCLiftOver {
 }
 
 sub liftOverFromDBMappedFile {
-  my ($self, $inputFileName, $outputFileName, $append) = @_;
+  my ($self, $inputFileName, $outputFileName, $append, $inputGenomeBuild) = @_;
   $append //= 0;
+  $inputGenomeBuild //= 'GRCh37';
+  
   my $lineCount = 0;
   if (-e $outputFileName && !$self->getArg('overwrite') && !$append) {
     $self->log("INFO: Using existing DB-based liftOver file: $outputFileName");
@@ -1347,12 +1351,13 @@ sub liftOverFromDBMappedFile {
       my $newMarker= ${$mapping->{matched_variants}}[0]->{ref_snp_id}; # placeholders / not used again (fingers crossed)
       $row{marker} = ($newMarker) ? $newMarker : 'NULL';
 
-      if ($row{GRCh37} eq 'NULL') {
+      if ($row{GRCh37} eq 'NULL' and $inputGenomeBuild eq 'GRCh37') {
 	my $currentCoordinates = { chromosome => $row{chr},
 				   location => int($row{bp}),
 				   metaseq_id => $row{metaseq_id}};
 	$row{GRCh37} = Utils::to_json($currentCoordinates);
       }
+      # otherwise leave NULL
 
       print $ofh join("\t", @row{@INPUT_FIELDS}) . "\n";
       $self->log("INFO: Wrote $lineCount lines") if (++$lineCount % 500000 == 0);
@@ -2046,14 +2051,14 @@ sub updateVariantFlags {
 }
 
 
-sub extractRefSnpFromDBMap {
-  my ($self, $mapping) = @_;
+sub extractMarkerFromDBMap {
+  my ($self, $mapping, $markerField) = @_;
   # {"bin_index":"chr1.L1.B1.L2.B1.L3.B1.L4.B1.L5.B1.L6.B1.L7.B2.L8.B1.L9.B1.L10.B1.L11.B2.L12.B1.L13.B2","location":1086035,"chromosome":"1","matched_variants":[{"metaseq_id":"1:1086035:A:G","ref_snp_id":"rs3737728","genomicsdb_id":"1:1086035:A:G:rs3737728"}]}
 
   my @mvs = @{$mapping->{matched_variants}};
   foreach my $mv (@mvs) {
-    my $refSnpId = $mv->{ref_snp_id};
-    return $refSnpId if ($refSnpId);
+    my $marker = $mv->{markerField};
+    return $marker if ($marker);
   }
   return undef;
 }
@@ -2113,15 +2118,26 @@ sub standardize {
     }
 
     my $metaseqId = $row{metaseq_id};
-    $self->error("DEBUG - no metaseq_id for line $lineCount") if ($metaseqId eq 'NULL');
+    my $dbVariant = $row{$genomeBuild};
+    if ($metaseqId eq 'NULL') {
+	if ($dbVariant eq 'NULL') {
+	  $self->log("INFO: SKIPPING Unmapped variant on $lineCount: $line");
+	  next;
+	}
+	$metaseqId = $self->extractMarkerFromDBMap($dbVariant, "metaseq_id");
+	if (!$metaseqId) {
+	  $self->log("INFO: SKIPPING Unmapped variant on $lineCount: $line");
+	}
+    }
+
     my $marker = Utils::truncateStr($metaseqId, 50);
     my $refSnpId = undef;
 
-    my $dbVariant = $row{$genomeBuild};
+
     if ($dbVariant ne 'NULL') {
       $dbVariant = $json->decode($dbVariant)
 	|| $self->error("Error parsing dbv json for line $lineCount: " . $row{$genomeBuild});
-      $refSnpId = $self->extractRefSnpFromDBMap($dbVariant);
+      $refSnpId = $self->extractMarkerFromDBMap($dbVariant, "ref_snp_id");
     }
     $marker = $refSnpId if ($refSnpId);
 
