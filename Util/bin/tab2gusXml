@@ -19,23 +19,26 @@ def parse_tab_delim_file(fileName):
     one record (dict) for each row
     '''
 
-    records = {}
+    tRecords = {}
     recordCount = 0
     with open(fileName, 'r') as f:
-        header = f.next().rstrip()
-        fields = header.split('\t')
-
+        fields = None
         for line in f:
+            if fields is None:
+                header = line.rstrip()
+                fields = header.split('\t')
+                continue
+
             recordCount = recordCount + 1
-            records[recordCount] = {}
+            tRecords[recordCount] = {}
 
             values = line.rstrip('\n').split('\t')
             # warning(values)
             for i, field in enumerate(fields):
                 # warning(recordCount, i, field, values[i])
-                records[recordCount][field] = values[i]
+                tRecords[recordCount][field] = values[i]
 
-    return records
+    return tRecords
 
 
 def print_record(record, table):
@@ -64,7 +67,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     records = parse_tab_delim_file(args.inputFile)
-    
-    for rNum, r in records.iteritems():
-        print_record(r, args.table)
 
+    for r in records.values():
+        print_record(r, args.table)
