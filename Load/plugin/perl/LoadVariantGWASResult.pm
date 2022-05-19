@@ -94,6 +94,13 @@ sub getArgumentsDeclaration {
 		isList => 0,
 	       }),
 
+      stringArg({name => 'updateGusConfig',
+		descr => 'gus config for update if not default',
+		constraintFunc=> undef,
+		reqd  => 0,
+		isList => 0,
+	       }),
+
 
      stringArg({name => 'caddDatabaseDir',
 		descr => 'full path to CADD database directory',
@@ -339,6 +346,22 @@ sub getArgumentsDeclaration {
 		  reqd => 0
 		}),
 
+
+      booleanArg({ name  => 'clean',
+		  descr => 'clean working directory (remove intermediary files)',
+		  constraintFunc => undef,
+		  isList         => 0,
+		  reqd => 0
+		 }),
+
+     booleanArg({ name  => 'archive',
+		  descr => 'archive working directory',
+		  constraintFunc => undef,
+		  isList         => 0,
+		  reqd => 0
+		 }),
+     
+
      booleanArg({ name  => 'standardize',
 		  descr => 'generate standardized files for storage in the data repository; one p-values only; one complete, can be done along w/--load, but assumes preprocessing complete and will fail if dbmapped file does not exist or is incomplete',
 		  constraintFunc => undef,
@@ -442,7 +465,7 @@ sub new {
   my $argumentDeclaration = &getArgumentsDeclaration();
 
   $self->initialize({requiredDbVersion => 4.0,
-		     cvsRevision       => '$Revision: 16$',
+		     cvsRevision       => '$Revision: 18$',
 		     name => ref($self),
 		     revisionNotes => '',
 		     argsDeclaration => $argumentDeclaration,
@@ -466,6 +489,8 @@ sub run {
   $self->loadResult() if ($self->getArg('load'));
   $self->updateVariantFlags($liftedOverInputFile) if ($self->getArg('updateFlags'));
   $self->standardize() if ($self->getArg('standardize'));
+  $self->cleanWorkingDir() if ($self->getArg('clean'));
+  $self->archiveWorkingDir() if ($self->getArg('archive'));
 }
 
 # ----------------------------------------------------------------------
@@ -509,6 +534,7 @@ sub initializePlugin {
 
   $self->{adj_source_id} = $sourceId;
   $self->{root_file_path} = $self->getArg('fileDir') . "/" . $self->getArg('genomeBuild') . "/";
+  PluginUtils::createDirectory($self, $self->{root_file_path});
   my $workingDir =   PluginUtils::createDirectory($self, $self->{root_file_path}, $self->{adj_source_id});
   $self->{working_dir} = $workingDir;
 }
@@ -528,7 +554,12 @@ sub verifyArgs {
   if ($self->getArg('liftOver')) {
     $self->error("must specify liftOver chain file") if (!$self->getArg('liftOverChainFile'));
     $self->error("must specify gus.config file for source genome build") if (!$self->getArg('sourceGenomeBuildGusConfig'));
+    if ($self->getArg('updateFlags')) {
+      $self->error("must specify update gus.config file (annotatedvdb)") if (!$self->getArg('updateGusConfig'));
+    }
   }
+
+
 }
 
 
@@ -603,6 +634,70 @@ sub getColumnIndex {
 # ----------------------------------------------------------------------
 # file manipulation methods
 # ----------------------------------------------------------------------
+
+sub cleanDirectory {
+  my ($self, $workingDir, $targetDir) = @_;
+  
+   my $path = "$workingDir/$targetDir";
+  if (-e $path) {
+    $self->log("WARNING: $targetDir directory ($path) found/removing");
+    #rmdir $path;
+  }
+  else {
+    $self->log("INFO: $targetDir directory ($path) does not exist/skipping");
+  }
+}
+
+sub cleanWorkingDir { # clean working directory
+  my ($self) = @_;
+  my $genomeBuild = $self->getArg('genomeBuild');
+  my $workingDir = $self->{working_dir};
+  $self->log("INFO: Cleaning working directory for $genomeBuild: $workingDir");
+  $self->log("INFO: Removing subdirectories");
+
+  $self->cleanDirectory($workingDir, "liftOver");
+  $self->cleanDirectory($workingDir, "remap");
+  $self->cleanDirectory($workingDir, "preprocess");
+
+  my $path = "$workingDir/standardized";
+  if (-e $path) {
+    if (!$self->getArg('archive')) { # keep standardization directory for achive
+      $self->log("WARNING: standardized directory found/removing");
+      #rmdir $path;
+    }
+  }
+  else {
+    $self->log("INFO: standardized directory ($path) does not exist/skipping");
+  }
+
+
+  # delete files
+  $self->log("WARNING: Removing logs and dbmapping files");
+
+  my @patterns = map { qr/\Q$_/ } ('dbmapped');
+ FILE: foreach my $file ( glob "$workingDir/*" ) {
+    foreach my $pattern (@patterns) {
+      if ($file =~ $pattern) {
+	$self->log("INFO: Removing $file");
+	# unlink $file or $self->error("Cannot delete file $file: $!");
+	next FILE;
+      }
+    }
+  }
+}
+
+sub archiveWorkingDir {
+  my ($self) = @_;
+  my $genomeBuild = $self->getArg('genomeBuild');
+  my $workingDir = $self->{working_dir};
+  $self->log("INFO: Archiving working directory for $genomeBuild: $workingDir");
+  $self->cleanWorkingDir();
+
+  $self->log("INFO: Compressing cleaned input file");
+  $self->log("INFO: Compressing standardized output");
+  $self->log("INFO: Compressing working directory");
+}
+
 
 sub removeFileDuplicates {
   my ($self, $fileName) = @_;
@@ -971,11 +1066,12 @@ sub updateDBMappedInput {
   $row->{$genomeBuild} = Utils::to_json($currentCoordinates);
 
   my $mappedCoordinates = $$mapping[0]->{mapped_coordinates}; # should be the same even if multiple rsIds for the metaseq
-
-  $row->{$mappedBuild} = (defined $mappedCoordinates && exists $mappedCoordinates->{$mappedBuild})
-    ? Utils::to_json($mapping->{$mappedBuild})
-    : $row->{$mappedBuild} ne 'NULL' ? $row->{$mappedBuild} : 'NULL';
-
+  if ($mappedCoordinates) {
+    my $assembly = $mappedCoordinates->{assembly};
+    $row->{$mappedBuild} = ($assembly eq $mappedBuild)
+      ? Utils::to_json($mappedCoordinates)
+      : $row->{$mappedBuild} ne 'NULL' ? $row->{$mappedBuild} : 'NULL';
+  }
   # handle marker only mappings
   if ($row->{chr} =~ /NA/ || $row->{metaseq_id} eq 'NULL') {
     $row->{chr} = $chromosome;
@@ -992,7 +1088,7 @@ sub submitDBLookupQuery {
 
   # only scalars can be passed to threads, so need to rebless plugin
   bless $self, 'GenomicsDBData::Load::Plugin::LoadVariantGWASResult';
-
+  $SHARED_VARIABLE_SEMAPHORE->down;
   eval {
     my $recordHandler = VariantRecord->new({gus_config_file => $self->{gus_config}->{$genomeBuild},
 					    genome_build => $genomeBuild,
@@ -1000,8 +1096,6 @@ sub submitDBLookupQuery {
 
     $recordHandler->setFirstValueOnly(0);
     my $mappings = $recordHandler->lookup(keys %$lookups);
-
-    $SHARED_VARIABLE_SEMAPHORE->down;
     foreach my $vid (keys %$mappings) {
       next if (!defined $mappings->{$vid}); # "null" returned
 
@@ -1911,12 +2005,16 @@ sub loadResult {
 # for the GRCh38 file & need to iterate over GRCh37 file
 sub extractVariantsRequiringUpdate {
   my ($self, $fileName) = @_;
-  my $inputFileName = $fileName;
+  (my $inputFileName = $fileName) =~ s/\.dbmapped//g;
   $inputFileName =~ s/_GRCh38//g;
   $inputFileName =~ s/GRCh38/GRCh37/;
-  $self->log("INFO: LiftOver - examining original dbLookup output file $inputFileName to find variants that need to be updated in GRCh37 database");
+  # this is in case any updates were done since the dblookup was generated
+  $self->log("INFO: LiftOver - regenerating original dbLookup output file for $inputFileName to find variants that need to be updated in GRCh37 database");
+  my $useMarker = ($self->getArg('mapThruMarker') && !$self->getArg('markerIsMetaseqId'));
+  my $dbmappedFileName = $self->DBLookup($inputFileName, 'GRCh37', $useMarker, $FINAL_CHECK);
+  
   my %variants;
-  open(my $fh, $inputFileName) || $self->error("Unable to open original db lookup file $inputFileName");
+  open(my $fh, $inputFileName) || $self->error("Unable to open db lookup file $inputFileName.dbmapped");
   <$fh>; #header
   my %row;
   my $json = JSON::XS->new;
@@ -1949,10 +2047,10 @@ sub updateVariantFlags {
 
   if ($liftedCoordinatesOnly) {
     $self->log("INFO: LiftOver: updating alt build coordinates in GRCh37 database from $inputFileName");
-    if ($self->getArg('sourceGenomeBuildGusConfig')) {
-      $gusConfigFile = $self->getArg('sourceGenomeBuildGusConfig');
+    if ($self->getArg('updateGusConfig')) {
+      $gusConfigFile = $self->getArg('updateGusConfig');
       $self->log("INFO: Verifying AnnotatedVDB gus.config file: $gusConfigFile");
-      open(my $gfh, $gusConfigFile) || $self->error("Unable to open sourceGenomeBuildGusConfig $gusConfigFile");
+      open(my $gfh, $gusConfigFile) || $self->error("Unable to open updateGusConfig $gusConfigFile");
       my $valid = 0;
       while (my $line = <$gfh>) {
 	if ($line =~ /dbname=annotated_vdb/) {
@@ -1962,11 +2060,11 @@ sub updateVariantFlags {
       }
       $gfh->close();
       if (!$valid) {
-	$self->error("To update GRCh37 variants, must supply GRCh37 AnnotatedVDB gus.config file using the option --sourceGenomeBuildGusConfig. Connection must be to the annotated_vdb database, not to the genomicsdb.  Updates via the foreign data wrapper are too slow.");
+	$self->error("To update GRCh37 variants, must supply GRCh37 AnnotatedVDB gus.config file using the option --updateGusConfig. Connection must be to the annotated_vdb database, not to the genomicsdb.  Updates via the foreign data wrapper are too slow.");
       }
     }
     else {
-      $self->error("To update GRCh37 variants, must supply GRCh37 AnnotatedVDB gus.config file using the option --sourceGenomeBuildGusConfig");
+      $self->error("To update GRCh37 variants, must supply GRCh37 AnnotatedVDB gus.config file using the option --updateGusConfig");
     }
   }
   else {
@@ -2190,7 +2288,7 @@ sub standardize {
 # ----------------------------------------------------------------------
 sub undoTables {
   my ($self) = @_;
-  return ();		  # 'Results.VariantGWAS', 'NIAGADS.Variant');
+  return ('Results.VariantGWAS');		  # 'Results.VariantGWAS', 'NIAGADS.Variant');
 }
 
 
