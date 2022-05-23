@@ -208,17 +208,8 @@ sub deleteFromTable{
 
   if ($self->{commit} == 1) {
 
-    my $deleteSql = <<SQL;
-DELETE FROM $tableName WHERE  $algInvIdColumnName IN ($algoInvocIds)
-SQL
-# delete
- #     from $tableName
- #     where $algInvIdColumnName in ($algoInvocIds)
-
-  #      and rownum <= $chunkSize
-
-
-    warn "\n$deleteSql\n" if $self->getArg('verbose');
+    my $deleteSql = "DELETE FROM $tableName WHERE $algInvIdColumnName IN ($algoInvocIds)";
+    $self->log("$deleteSql") if $self->getArg('verbose');
     my $deleteStmt = $self->{dbh}->prepare($deleteSql) or die $self->{dbh}->errstr;
     my $rowsDeleted = 0;
 
@@ -232,13 +223,24 @@ SQL
   } else {
     # commit off -- query for row count and log it
     my $queryStmt = $self->{dbh}->prepare(<<SQL) or die $self->{dbh}->errstr;
-      select count(*)
-      from $tableName
-      where $algInvIdColumnName in ($algoInvocIds)
+      SELECT estimate_result_size('SELECT * FROM 
+      $tableName
+      WHERE $algInvIdColumnName in ($algoInvocIds)')
 SQL
     $queryStmt->execute() or die $self->{dbh}->errstr;
     my  ($rows) = $queryStmt->fetchrow_array();
-    $self->log("Plugin will attempt to delete $rows rows from $tableName when run in commit mode\n");
+    
+    if ($rows == 1) { # result size to small for estimate to be accurate
+      my $queryStmt = $self->{dbh}->prepare(<<SQL) or die $self->{dbh}->errstr;
+      SELECT COUNT(*) FROM 
+      $tableName
+      WHERE $algInvIdColumnName in ($algoInvocIds)
+SQL
+      $queryStmt->execute() or die $self->{dbh}->errstr;
+      ($rows) = $queryStmt->fetchrow_array();
+    }
+    
+    $self->log("Plugin will attempt to delete an estimated $rows rows from $tableName when run in commit mode\n");
   }
 }
 
