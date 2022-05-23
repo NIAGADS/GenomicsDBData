@@ -21,11 +21,11 @@ use Package::Alias VariantRecord => 'GenomicsDBData::Load::VariantRecord';
 
 use JSON::XS;
 use Data::Dumper;
-use File::Slurp qw(read_file);
 use POSIX qw(strftime);
 use Parallel::Loops;
 
 use File::Basename;
+use File::Path;
 
 use LWP::UserAgent;
 use LWP::Parallel::UserAgent;
@@ -41,7 +41,8 @@ my $USE_MARKER = 1;
 my $INCLUDE_MARKERS = 1;
 my $DROP_MARKERS = 0;
 my $NEW_FILE = 0;
-my $FINAL_CHECK = 1;
+my $FINAL_CHECK = 10;
+my $UPDATE_CHECK = 20;
 
 my $RESTRICTED_STATS_FIELD_MAP = undef;
 
@@ -69,7 +70,7 @@ WITH (DELIMITER '|',
 NULL 'NULL')
 COPYSQL
 
-my $SHARED_VARIABLE_SEMAPHORE = Thread::Semaphore->new();
+my $SHARED_VARIABLE_SEMAPHORE = Thread::Semaphore->new(1);
 my $PROCESS_COUNT_SEMAPHORE = Thread::Semaphore->new(20);
 
 
@@ -638,10 +639,10 @@ sub getColumnIndex {
 sub cleanDirectory {
   my ($self, $workingDir, $targetDir) = @_;
   
-   my $path = "$workingDir/$targetDir";
+  my $path = "$workingDir/$targetDir";
   if (-e $path) {
     $self->log("WARNING: $targetDir directory ($path) found/removing");
-    #rmdir $path;
+    rmtree($path);
   }
   else {
     $self->log("INFO: $targetDir directory ($path) does not exist/skipping");
@@ -663,7 +664,7 @@ sub cleanWorkingDir { # clean working directory
   if (-e $path) {
     if (!$self->getArg('archive')) { # keep standardization directory for achive
       $self->log("WARNING: standardized directory found/removing");
-      #rmdir $path;
+      rmtree($path);
     }
   }
   else {
@@ -679,8 +680,27 @@ sub cleanWorkingDir { # clean working directory
     foreach my $pattern (@patterns) {
       if ($file =~ $pattern) {
 	$self->log("INFO: Removing $file");
-	# unlink $file or $self->error("Cannot delete file $file: $!");
+	unlink $file or $self->error("Cannot delete file $file: $!");
 	next FILE;
+      }
+    }
+  }
+}
+
+sub compressFiles {
+  my ($self, $workingDir, $pattern, $message) = @_;
+
+  my @patterns = map { qr/\Q$_/ } ($pattern);
+ FILE: foreach my $file ( glob "$workingDir/*" ) {
+    foreach my $pattern (@patterns) {
+      if ($file =~ $pattern) {
+	if ($file !~ m/\.gz/) { # not already compressed in case of recovery/resume
+	  $self->log("INFO: Compressing $message file: $file");
+	  my $cmd =  `gzip $file`;
+	}
+	else {
+	  $self->log("WARNING: Skipping $message file $file; already compressed");
+	}
       }
     }
   }
@@ -690,12 +710,18 @@ sub archiveWorkingDir {
   my ($self) = @_;
   my $genomeBuild = $self->getArg('genomeBuild');
   my $workingDir = $self->{working_dir};
+  my $sourceId = $self->{adj_source_id};
+  my $rootPath = $self->{root_file_path};
+  
   $self->log("INFO: Archiving working directory for $genomeBuild: $workingDir");
   $self->cleanWorkingDir();
 
-  $self->log("INFO: Compressing cleaned input file");
-  $self->log("INFO: Compressing standardized output");
-  $self->log("INFO: Compressing working directory");
+  $self->compressFiles($workingDir, "input", "cleaned input");
+  $self->compressFiles($workingDir . "/standardized", "txt", "standardized output");
+  $self->log("INFO: Compressing working directory: $workingDir");
+  my $cmd = `tar -zcf $workingDir.tar.gz --directory=$rootPath $sourceId`;
+  $self->log("INFO: Removing working directory: $workingDir");
+  rmtree($workingDir);
 }
 
 
@@ -1022,28 +1048,43 @@ sub cleanAndSortInput {
 # ----------------------------------------------------------------------
 
 # LOOKUP Result
-# "1:2071765:G:A": {
-#   "bin_index": "chr1.L1.B1.L2.B1.L3.B1.L4.B1.L5.B1.L6.B2.L7.B1.L8.B1.L9.B1.L10.B1.L11.B2.L12.B1.L13.B1",
-#   "annotation": {
-#     "GenomicsDB": [
-#       "ADSP_WGS",
-#       "NG00027_STAGE1"
-#     ],
-#     "mapped_coordinates": null
-#   },
-#   "match_rank": 2,
-#   "match_type": "switch",
-#   "metaseq_id": "1:2071765:A:G",
-#   "ref_snp_id": "rs364677",
-#   "is_adsp_variant": true,
-#   "record_primary_key": "1:2071765:A:G_rs364677"
-# },
+# {
+#   "rs9442372:A:G": [
+#     {
+#       "bin_index": "chr1.L1.B1.L2.B1.L3.B1.L4.B1.L5.B1.L6.B1.L7.B2.L8.B1.L9.B1.L10.B1.L11.B1.L12.B1.L13.B2",
+#       "annotation": {
+#         "GenomicsDB": [
+#           "ADSP_WGS",
+#           "NG00027_STAGE1"
+#         ],
+#         "mapped_coordinates": {
+#           "assembly": "GRCh38",
+#           "location": 1083324,
+#           "chromosome": "1",
+#           "matched_variants": [
+#             "1:1083324:A:G:rs9442372"
+#           ]
+#         }
+#       },
+#       "metaseq_id": "1:1018704:A:G",
+#       "ref_snp_id": "rs9442372",
+#       "is_adsp_variant": true,
+#       "record_primary_key": "1:1018704:A:G_rs9442372"
+#     }
+#   ]
+# }
+
+#{"bin_index":"chr1.L1.B1.L2.B1.L3.B1.L4.B1.L5.B1.L6.B1.L7.B1.L8.B2.L9.B2.L10.B1.L11.B1.L12.B1.L13.B1","location":752566,"chromosome":"1","matched_variants":[{"metaseq_id":"1:752566:G:A","ref_snp_id":"rs3094315","genomicsdb_id":"1:752566:G:A_rs3094315"}]}
+
+# {"location":817186,"chromosome":"1","matched_variants":["1:817186:G:A:rs3094315"],"assembly":"GRCh38"}
+
 
 # if firstValueOnly == false, then {"1:2071765:G:A": [{},{}]}
 
 sub updateDBMappedInput {
-  my ($self, $lookup, $mapping, $genomeBuild) = @_;
+  my ($self, $lookup, $mapping, $genomeBuild, $updateCheck) = @_;
 
+  $updateCheck //= 0;
   $genomeBuild //= $self->getArg('genomeBuild');
   my $mappedBuild = ($genomeBuild eq 'GRCh37') ? 'GRCh38' : 'GRCh37';
 
@@ -1065,13 +1106,17 @@ sub updateDBMappedInput {
   my $row = $lookup->{row};
   $row->{$genomeBuild} = Utils::to_json($currentCoordinates);
 
-  my $mappedCoordinates = $$mapping[0]->{mapped_coordinates}; # should be the same even if multiple rsIds for the metaseq
+  my $mappedCoordinates = $$mapping[0]->{annotation}->{mapped_coordinates}; # should be the same even if multiple rsIds for the metaseq
   if ($mappedCoordinates) {
     my $assembly = $mappedCoordinates->{assembly};
-    $row->{$mappedBuild} = ($assembly eq $mappedBuild)
-      ? Utils::to_json($mappedCoordinates)
-      : $row->{$mappedBuild} ne 'NULL' ? $row->{$mappedBuild} : 'NULL';
+    if ($updateCheck) {
+      $row->{$mappedBuild} = 'NULL'; # set to NULL / updateCheck assumes not in DB so overwrite any liftOver inferred info in the file
+    }
+    if ($assembly eq $mappedBuild) {
+      $row->{$mappedBuild} = Utils::to_json($mappedCoordinates);
+    }
   }
+
   # handle marker only mappings
   if ($row->{chr} =~ /NA/ || $row->{metaseq_id} eq 'NULL') {
     $row->{chr} = $chromosome;
@@ -1084,35 +1129,36 @@ sub updateDBMappedInput {
 
 
 sub submitDBLookupQuery {
-  my ($self, $genomeBuild, $lookups, $file) = @_;
-
+  my ($self, $genomeBuild, $lookups, $file, $updateCheck) = @_;
+  $updateCheck //= 0;
   # only scalars can be passed to threads, so need to rebless plugin
   bless $self, 'GenomicsDBData::Load::Plugin::LoadVariantGWASResult';
-  $SHARED_VARIABLE_SEMAPHORE->down;
   eval {
+
     my $recordHandler = VariantRecord->new({gus_config_file => $self->{gus_config}->{$genomeBuild},
 					    genome_build => $genomeBuild,
 					    plugin => $self});
 
     $recordHandler->setFirstValueOnly(0);
     my $mappings = $recordHandler->lookup(keys %$lookups);
+    $SHARED_VARIABLE_SEMAPHORE->down; 
     foreach my $vid (keys %$mappings) {
       next if (!defined $mappings->{$vid}); # "null" returned
-
       foreach my $lvalue (@{$lookups->{$vid}}) {
 	my $index = $lvalue->{index};
 	$$file[$index] =
-	  $self->updateDBMappedInput($lvalue, $mappings->{$vid}, $genomeBuild);
+	  $self->updateDBMappedInput($lvalue, $mappings->{$vid}, $genomeBuild, $updateCheck);
       }
     }
+    $SHARED_VARIABLE_SEMAPHORE->up;
+    $PROCESS_COUNT_SEMAPHORE->up;
     undef $mappings; # b/c threads don't free memory until exit
     undef $lookups;
     undef $recordHandler;
-    $SHARED_VARIABLE_SEMAPHORE->up;
-    $PROCESS_COUNT_SEMAPHORE->up;
+
     return "SUCCESS";
   } or do {
-    $PROCESS_COUNT_SEMAPHORE->up;
+    $SHARED_VARIABLE_SEMAPHORE->up;
     return $@;
   }
 }
@@ -1137,23 +1183,25 @@ sub monitorThreads {
 sub DBLookup {	# check against DB
   # note: this is a simplistic approach / does not handle outlying cases such as chr:pos:test_allele
   # these will have to be handled by liftOver & findNovelVariant combined / too many checks
-  my ($self, $inputFileName, $genomeBuild, $useMarker, $finalCheck) = @_;
+  my ($self, $inputFileName, $genomeBuild, $useMarker, $checkType) = @_;
 
-  $finalCheck //= 0; # final check overwrites the dbmapped file even if it exists
-
+  $checkType //= 0; # FINAL_CHECK overwrites the dbmapped file even if it exists, UPDATE_CHECK creates new file with .fc extenstion
+  
   $self->error("DB Mapping to position / alternative alleles not yet implemented")
     if ($self->getArg('mapPosition') || $self->getArg('allowAlleleMismatches'));
 
   $genomeBuild //= $self->getArg('genomeBuild');
 
   $self->log("INFO: Querying existing DB mappings / refsnp:alleleStr and metaseq id matches only");
+  my $msg = ($checkType == $UPDATE_CHECK) ? 'UPDATE' : ($checkType == $FINAL_CHECK) ? 'FINAL' : 'NORMAL';
+  $self->log("INFO: Check Type: $msg");
   my $gusConfig = ($self->{gus_config}->{$genomeBuild}) ? $self->{gus_config}->{$genomeBuild} : "default";
   $self->log("INFO: Source Genome Build: $genomeBuild / GUS Config File: $gusConfig");
 
-  my $outputFileName = "$inputFileName.dbmapped";
+  my $outputFileName = ($checkType == $UPDATE_CHECK) ? "$inputFileName.dbmapped.uc" : "$inputFileName.dbmapped";
 
   if (-e $outputFileName && !$self->getArg('overwrite')) {
-    if ($finalCheck) {
+    if ($checkType == $FINAL_CHECK) {
       $self->log("INFO: Final Check -- will overwrite existing DBLookup file $outputFileName");
     }
     else {
@@ -1165,8 +1213,9 @@ sub DBLookup {	# check against DB
   my $linePtr;
   share($linePtr);
   open(my $fh, $inputFileName) || $self->error("Unable to open input file $inputFileName for reading");
-  my @lines :shared = read_file($fh, chomp => 1);
-  # my @lines = read_file($fh, chomp => 1);
+  # for some reason File::Slurp read_file was buggy with some files
+  chomp(my @lines :shared = <$fh>);
+  #my @lines :shared = read_file($fh, chomp => 1);
   $fh->close();
   $linePtr = \@lines;
 
@@ -1195,7 +1244,11 @@ sub DBLookup {	# check against DB
     @row{@fields} = @values;
 
     # DBLookup may be called several times, if the lookup has already been done, don't do it again
-    next if ($row{$genomeBuild} ne 'NULL');
+    # unless update or row{genomeBuild} does not include bin_index (info is from liftOver)
+    if ($row{$genomeBuild} ne 'NULL') {
+      my $currentCoordinates = $json->decode($row{$genomeBuild});
+      next if (exists $currentCoordinates->{bin_index});
+    }
 
     my $variantId = $row{metaseq_id};
 
@@ -1213,27 +1266,9 @@ sub DBLookup {	# check against DB
 
     # $self->error(Dumper($lookups->{$variantId}));
 
-    # LOOKUP Result
-    # "1:2071765:G:A": {
-    #   "bin_index": "chr1.L1.B1.L2.B1.L3.B1.L4.B1.L5.B1.L6.B2.L7.B1.L8.B1.L9.B1.L10.B1.L11.B2.L12.B1.L13.B1",
-    #   "annotation": {
-    #     "GenomicsDB": [
-    #       "ADSP_WGS",
-    #       "NG00027_STAGE1"
-    #     ],
-    #     "mapped_coordinates": null
-    #   },
-    #   "match_rank": 2,
-    #   "match_type": "switch",
-    #   "metaseq_id": "1:2071765:A:G",
-    #   "ref_snp_id": "rs364677",
-    #   "is_adsp_variant": true,
-    #   "record_primary_key": "1:2071765:A:G_rs364677"
-    # },
-
     if (++$lookupCount % 10000 == 0) {
       $PROCESS_COUNT_SEMAPHORE->down;
-      my $thread = threads->create(\&submitDBLookupQuery, $self, $genomeBuild, $lookups, $linePtr);
+      my $thread = threads->create(\&submitDBLookupQuery, $self, $genomeBuild, $lookups, $linePtr, ($checkType == $UPDATE_CHECK));
       undef $lookups;
       push(@threads, $thread);
       ($fail, @errors) = $self->monitorThreads($fail, \@errors, @threads);
@@ -1244,7 +1279,7 @@ sub DBLookup {	# check against DB
   if ($lookups) {
     $self->log("INFO: Processing Residuals");
     $PROCESS_COUNT_SEMAPHORE->down;
-    my $thread = threads->create(\&submitDBLookupQuery, $self, $genomeBuild, $lookups, $linePtr);
+    my $thread = threads->create(\&submitDBLookupQuery, $self, $genomeBuild, $lookups, $linePtr, ($checkType == $UPDATE_CHECK));
     undef $lookups;
     push(@threads, $thread);
     ($fail, @errors) = $self->monitorThreads($fail, \@errors, @threads);
@@ -1266,6 +1301,10 @@ sub DBLookup {	# check against DB
     $self->log("INFO: Wrote $lineCount lines") if (++$lineCount % 500000 == 0);
   }
   $ofh->close();
+
+  # just to cover bases on garbage collection
+  undef @lines; 
+  undef @threads;
 
   $self->log("DONE: Wrote $lineCount lines");
 
@@ -1317,8 +1356,7 @@ sub liftOver {
     my ($cleanedRemapFileName, $unmappedRemapFileName) =
       $self->cleanMappedBedFile($remapFileName, $unmappedLiftOverFileName, "remap");
 
-    # lookup remap-unmapped in GRCh38 database
-    # lookup marker only in GRCh38 database
+    # lookup remap-unmapped in GRCh38 database based on markers
     my $residualUnmappedFileName = $self->bed2input($unmappedRemapFileName, undef, $INCLUDE_MARKERS, $NEW_FILE);
     my $residualDBMappedFile = $self->DBLookup($residualUnmappedFileName, 'GRCh38', $USE_MARKER);
     my $markerOnlyDBMappedFile = $self->DBLookup("$dbmappedFileName.unmapped.markerOnly", 'GRCh38', $USE_MARKER);
@@ -1394,7 +1432,7 @@ sub runUCSCLiftOver {
 
   $self->log("INFO: Done with UCSC liftOver");
   my $nUnmapped = Utils::fileLineCount($errorFile);
-  $self->log("WARNING: Not all variants mapped, see: $errorFile (n = $nUnmapped") if ($nUnmapped > 0);
+  $self->log("WARNING: Not all variants mapped, see: $errorFile (n = $nUnmapped)") if ($nUnmapped > 0);
   return $mappedBedFileName;
 }
 
@@ -1402,65 +1440,84 @@ sub liftOverFromDBMappedFile {
   my ($self, $inputFileName, $outputFileName, $append, $inputGenomeBuild) = @_;
   $append //= 0;
   $inputGenomeBuild //= 'GRCh37';
+
+  $self->log("INFO: Finding DB Mapped variants in file $inputFileName");
   
   my $lineCount = 0;
-  if (-e $outputFileName && !$self->getArg('overwrite') && !$append) {
-    $self->log("INFO: Using existing DB-based liftOver file: $outputFileName");
-    return $outputFileName;
-  } else {
-    if (-e $outputFileName && ($append)) {
-      $self->log("INFO: DB Mapping liftOver - Appending DB mappings to input file: $outputFileName");
-    }
-    else {
-      $self->log("INFO: DB Mapping liftOver - Creating input file: $outputFileName from bed file $inputFileName");
-    }
-
-    my $ofh;
-    if ($append) {
-      open($ofh, '>>', $outputFileName) || $self->error("Unable to create $outputFileName for writing");
-    }
-    else {
-      open($ofh, '>', $outputFileName) || $self->error("Unable to create $outputFileName for writing");
-      print $ofh join("\t", @INPUT_FIELDS) . "\n";
-    }
-    open(my $fh, '<', $inputFileName) || $self->error("Unable to create $outputFileName for writing");
-    my $header = <$fh>;
-    
-    my $json = JSON::XS->new();
-    while (my $line = <$fh>) {
-      chomp $line;
-      my @values = split /\t/, $line;
-      my %row;
-      @row{@INPUT_FIELDS} = @values;
-
-      my $mappingStr = $row{GRCh38};
-      next if ($mappingStr eq 'NULL');
-      
-      my $mapping = $json->decode($mappingStr);
-      my $chromosome = $mapping->{chromosome};
-      $chromosome =~ s/chr//g;
-      $row{chr} = $chromosome;
-      $row{bp} = int($mapping->{location});
-      $row{metaseq_id} = ${$mapping->{matched_variants}}[0]->{metaseq_id}; # placeholders / not used again (fingers crossed)
-      my $newMarker= ${$mapping->{matched_variants}}[0]->{ref_snp_id}; # placeholders / not used again (fingers crossed)
-      $row{marker} = ($newMarker) ? $newMarker : 'NULL';
-
-      if ($row{GRCh37} eq 'NULL' and $inputGenomeBuild eq 'GRCh37') {
-	my $currentCoordinates = { chromosome => $row{chr},
-				   location => int($row{bp}),
-				   metaseq_id => $row{metaseq_id}};
-	$row{GRCh37} = Utils::to_json($currentCoordinates);
-      }
-      # otherwise leave NULL
-
-      print $ofh join("\t", @row{@INPUT_FIELDS}) . "\n";
-      $self->log("INFO: Wrote $lineCount lines") if (++$lineCount % 500000 == 0);
-    }
-    $ofh->close();
-    $fh->close();
-    $self->log("INFO: Wrote $lineCount lines");
-    $self->log("DONE: Adding $inputFileName to liftOver final output: $outputFileName");
+ 
+  if (-e $outputFileName && ($append)) {
+    $self->log("INFO: DB Mapping liftOver - Appending DB mappings to result file: $outputFileName");
   }
+  else {
+    $self->log("INFO: DB Mapping liftOver - Creating result file: $outputFileName from DB mapped file $inputFileName");
+  }
+
+  my $ofh;
+  if ($append) {
+    open($ofh, '>>', $outputFileName) || $self->error("Unable to create $outputFileName for writing");
+  }
+  else {
+    open($ofh, '>', $outputFileName) || $self->error("Unable to create $outputFileName for writing");
+    print $ofh join("\t", @INPUT_FIELDS) . "\n";
+  }
+  open(my $fh, '<', $inputFileName) || $self->error("Unable to create $outputFileName for writing");
+  my $header = <$fh>;
+  
+  my $json = JSON::XS->new();
+  while (my $line = <$fh>) {
+    chomp $line;
+    my @values = split /\t/, $line;
+    my %row;
+    @row{@INPUT_FIELDS} = @values;
+
+    if ($row{GRCh37} eq 'NULL' and $inputGenomeBuild eq 'GRCh37') {
+      my $currentCoordinates = { chromosome => $row{chr},
+				 location => int($row{bp}),
+				 metaseq_id => $row{metaseq_id}};
+      $row{GRCh37} = Utils::to_json($currentCoordinates);
+    }
+    # otherwise leave NULL
+
+    my $mappingStr = $row{GRCh38};
+    next if ($mappingStr eq 'NULL');
+    # lookup could have one of two formats
+    # from GRCh37 DB
+    # {"location":817186,"chromosome":"1","matched_variants":["1:817186:G:A:rs3094315"],"assembly":"GRCh38"}
+    # based on marker from GRCh38 DB
+    # {"bin_index":"chr6.L1.B3.L2.B2.L3.B1.L4.B2.L5.B1.L6.B2.L7.B1.L8.B1.L9.B1.L10.B2.L11.B2.L12.B1.L13.B2","location":170213663,"chromosome":"6","matched_variants":[{"metaseq_id":"6:170213663:G:C","ref_snp_id":"rs6456179","genomicsdb_id":"6:170213663:G:C:rs6456179"}]}
+
+    my $mapping = $json->decode($mappingStr);
+    my $chromosome = $mapping->{chromosome};
+    $chromosome =~ s/chr//g;
+    $row{chr} = $chromosome;
+    $row{bp} = int($mapping->{location});
+    my @matchedVariants = @{$mapping->{matched_variants}};
+    foreach my $mv (@matchedVariants) {
+      if (ref $mv eq ref {}) { # check if hash
+	$row{metaseq_id} = $mv->{metaseq_id};
+	$row{marker} = (exists $mv->{ref_snp_id}) ? $mv->{ref_snp_id} : 'NULL';
+      }
+      else {
+	# can't infer metaseq_id from PK b/c some may be encoded
+	# & don't want to do allele logic again so only regenerate
+	# if easy to infer
+	if ($row{metaseq_id} ne 'NA' and $row{metaseq_id} ne 'NULL') {
+	  my ($oC, $oP, $ref, $alt) = split /:/, $row{metaseq_id};
+	  $row{metaseq_id} = join(':', $chromosome, $row{bp}, $ref, $alt);
+	}
+	my @idElements = split /:/, $mv;
+	$row{marker} = ($idElements[-1] =~ m/rs/) ? $idElements[-1] : 'NULL';
+      }
+    }
+
+    print $ofh join("\t", @row{@INPUT_FIELDS}) . "\n";
+    $self->log("INFO: Wrote $lineCount lines") if (++$lineCount % 500000 == 0);
+  }
+  $ofh->close();
+  $fh->close();
+  $self->log("INFO: Wrote $lineCount lines");
+  $self->log("DONE: Adding $inputFileName to liftOver final output: $outputFileName");
+  
   return $outputFileName, $lineCount;
 }
 
@@ -1556,9 +1613,15 @@ sub cleanMappedBedFile {
   my $mappedCount = 0;
   my $duplicateCount = 0;
   my $parsedLineCount = 0;
-  my @mappedLines = read_file($mappedBedFileName, chomp => 1);
+
+  # for some reason File::Slurp read_file was buggy with some liftOver output
+  open(my $fh, $mappedBedFileName) || $self->error("Unable to open mapped bed file $mappedBedFileName: $!");
+  chomp(my @mappedLines = <$fh>);
+  $fh->close();
+
   while (my ($lineCount, $line) = each @mappedLines) {
     $parsedLineCount = $lineCount;
+
     my @values = split /\t/, $line;
     my $key = $values[3];
     my ($loc, $stats) = split /\|/, $key;
@@ -1639,7 +1702,7 @@ sub cleanMappedBedFile {
   $parsedLineCount++;		# started at 0
   my $totalCount = $mappedCount + $duplicateCount + $altCount + $wrongCount;
   my $debugDiff = $totalCount - $parsedLineCount;
-  $self->log("DEBUG: Total = $totalCount (Mapped = $mappedCount | Duplicate = $duplicateCount | Contigs = $altCount | Wrong = $wrongCount)");
+  $self->log("INFO: Total = $totalCount (Mapped = $mappedCount | Duplicate = $duplicateCount | Contigs = $altCount | Wrong = $wrongCount)");
 
   my $ufh;
   if (-e $unmappedFileName) { # file already exists append; e.g. add to liftOver unmapped
@@ -1656,11 +1719,11 @@ sub cleanMappedBedFile {
     open($ufh, '>', $unmappedFileName ) || $self->error("Unable to create $unmappedFileName for writing");
   }
 
+  $self->log("INFO: Writing cleaned bed file $cleanedMappedFileName");
   open(my $cfh, '>', $cleanedMappedFileName ) || $self->error("Unable to create $cleanedMappedFileName for writing");
   foreach my $key (keys %$variants) {
     my $statusStr = $variants->{$key}->{status};
     my ($status, $lineNum) = split /\|/, $statusStr;
-
     if ($status eq 'mapped') {
       print $cfh $mappedLines[$lineNum] . "\n";
     } else {		      # includes 'none's not in the remap file
@@ -1676,6 +1739,10 @@ sub cleanMappedBedFile {
   $cfh->close();
   $ufh->close();
 
+  # some garbage collection
+  undef @mappedLines;
+  undef $variants;
+  
   $self->log("INFO: Done checking $targetDir output");
 
   return $cleanedMappedFileName, $unmappedFileName;
@@ -2004,36 +2071,71 @@ sub loadResult {
 # this is just for lift over, so assuming parameter is
 # for the GRCh38 file & need to iterate over GRCh37 file
 sub extractVariantsRequiringUpdate {
-  my ($self, $fileName) = @_;
-  (my $inputFileName = $fileName) =~ s/\.dbmapped//g;
-  $inputFileName =~ s/_GRCh38//g;
-  $inputFileName =~ s/GRCh38/GRCh37/;
-  # this is in case any updates were done since the dblookup was generated
-  $self->log("INFO: LiftOver - regenerating original dbLookup output file for $inputFileName to find variants that need to be updated in GRCh37 database");
-  my $useMarker = ($self->getArg('mapThruMarker') && !$self->getArg('markerIsMetaseqId'));
-  my $dbmappedFileName = $self->DBLookup($inputFileName, 'GRCh37', $useMarker, $FINAL_CHECK);
-  
+  my ($self, $fileName, $genomeBuild, $ignoreGWASFlags) = @_;
+  my $mappedGenomeBuild = ($genomeBuild eq 'GRCh37') ? 'GRCh38' : 'GRCh37';
+
+  my $inputFileName = $fileName;
+  if ($genomeBuild eq 'GRCh37') {
+    $inputFileName =~ s/_GRCh38//g;
+    $inputFileName =~ s/GRCh38/GRCh37/;
+    # this is in case any updates were done since the dblookup was generated
+  }
+
+  # read in dbmapped file and create variant array, flagging variants w/gwas_flags and/or mapped variants
   my %variants;
-  open(my $fh, $inputFileName) || $self->error("Unable to open db lookup file $inputFileName.dbmapped");
+  open(my $fh, $inputFileName) || $self->error("Unable to open db lookup file $inputFileName");
   <$fh>; #header
   my %row;
   my $json = JSON::XS->new;
   while (my $line = <$fh>) {
     chomp($line);
     @row{@INPUT_FIELDS} = split /\t/, $line;
-    next if $row{GRCh38} ne 'NULL'; # liftOver coords already in GRCh37 DB
-    next if $row{GRCh37} eq 'NULL'; # original variant not in GRCh37 DB
+    my $update = ($row{$mappedGenomeBuild} ne 'NULL') ? 1 :0;
+    if (!$ignoreGWASFlags) {
+      $update = ($update || $row{gwas_flags} ne 'NULL') ? 1: 0;
+    }
+    if ($update) { 
+      my $variantStr = $row{$genomeBuild};
+      my $variantJson = $json->decode($variantStr);
+      foreach my $mv (@{$variantJson->{matched_variants}}) {
+	$variants{$mv->{genomicsdb_id}} = 1;
+      }
+    }
+  }
+  $fh->close();
+  my $nuVars = keys %variants;
+  $self->log("INFO: Found $nuVars potential updates");
 
-    my $variantStr = $row{GRCh37};
+  $inputFileName =~ s/\.dbmapped//g;
+  $self->log("INFO: Doing DBLookup for $inputFileName to find variants that need to be updated");
+  my $useMarker = ($self->getArg('mapThruMarker') && !$self->getArg('markerIsMetaseqId'));
+  my $dbmappedFileName = $self->DBLookup($inputFileName, $genomeBuild, $useMarker, $UPDATE_CHECK);
+
+  open($fh, $dbmappedFileName) || $self->error("Unable to open db lookup file $dbmappedFileName");
+  <$fh>; #header
+  while (my $line = <$fh>) {
+    chomp($line);
+    @row{@INPUT_FIELDS} = split /\t/, $line;
+
+    my $update = ($row{$mappedGenomeBuild} eq 'NULL') ? 1 :0; # not in DB
+    if (!$ignoreGWASFlags) {
+      $update = ($update || $row{gwas_flags} ne 'NULL') ? 1: 0; # has a gwas flag
+    }
+
+    # note not catching the possibility that variant mapping is NULL in DB and not in
+    # updateable variant hash as that may just be that there is no mapping for that variant
+   
+    my $variantStr = $row{$genomeBuild};
     my $variantJson = $json->decode($variantStr);
     foreach my $mv (@{$variantJson->{matched_variants}}) {
-      $variants{$mv->{genomicsdb_id}} = 1;
+      my $cVariant = $mv->{genomicsdb_id};
+      delete $variants{$cVariant} if (exists $variants{$cVariant} and !$update);
     }
-    
   }
   $fh->close();
   return \%variants;
 }
+
 
 sub updateVariantFlags {
   my ($self, $file) = @_;
@@ -2074,13 +2176,20 @@ sub updateVariantFlags {
   my $genomeBuild = $self->getArg('genomeBuild');
   my $altGenomeBuild = $genomeBuild eq 'GRCh38' ? 'GRCh37' : 'GRCh38';
 
-  my $outputFileName = $inputFileName . "-update-variant-flags.txt";
+  my $outputFileName = $inputFileName . ".uc-update-variant-flags.txt";
   my $uVariants = undef;
   if ($liftedCoordinatesOnly) {
     $outputFileName =~ s/_GRCh38//g;
     $outputFileName =~ s/GRCh38/GRCh37/;
-    $uVariants = $self->extractVariantsRequiringUpdate($inputFileName);
   }
+  $uVariants = $self->extractVariantsRequiringUpdate($inputFileName, $genomeBuild);
+  my $nuVars = keys %$uVariants;
+  $self->log("INFO: Found $nuVars updateable variant records");
+  if (!$nuVars) {
+    $self->log("DONE Updating variant record flags");
+    return;
+  }
+
   $self->log("INFO: Creating update file: $outputFileName");
   open(my $fh, $inputFileName) || $self->error("Unable to open $inputFileName for reading");
   open(my $ofh, '>', $outputFileName) || $self->error("Unable to create variant flag update output file $outputFileName");
@@ -2113,17 +2222,25 @@ sub updateVariantFlags {
       }
     }
 
+    # lookups (GRCh37 and GRCh38 fields) could have one of two formats
+    # mapped variant from liftOver
+    # {"location":817186,"chromosome":"1","matched_variants":["1:817186:G:A:rs3094315"],"assembly":"GRCh38"}
+    # variant in  current DB version
+    # {"bin_index":"chr6.L1.B3.L2.B2.L3.B1.L4.B2.L5.B1.L6.B2.L7.B1.L8.B1.L9.B1.L10.B2.L11.B2.L12.B1.L13.B2","location":170213663,"chromosome":"6","matched_variants":[{"metaseq_id":"6:170213663:G:C","ref_snp_id":"rs6456179","genomicsdb_id":"6:170213663:G:C:rs6456179"}]}
+
     my $liftOverRecord = $row{$altGenomeBuild};
     if ($liftOverRecord ne 'NULL') { # remove bin_index & link to correct genome build
       $liftOverRecord = $json->decode($liftOverRecord);
-      delete $liftOverRecord->{bin_index};
-      my @mvs;
-      foreach my $mv (@{$liftOverRecord->{matched_variants}}) {
-	push(@mvs, $mv->{genomicsdb_id});
+      if (exists $liftOverRecord->{bin_index}) { # extract matched variants, otherwise already in correct format, leave as is
+	delete $liftOverRecord->{bin_index};
+	my @mvs;
+	foreach my $mv (@{$liftOverRecord->{matched_variants}}) {
+	  push(@mvs, $mv->{genomicsdb_id});
+	}
+	$liftOverRecord->{matched_variants} = \@mvs;
+	$liftOverRecord = {$altGenomeBuild => $liftOverRecord};
+	$liftOverRecord = Utils::to_json($liftOverRecord);
       }
-      $liftOverRecord->{matched_variants} = \@mvs;
-      $liftOverRecord = {$altGenomeBuild => $liftOverRecord};
-      $liftOverRecord = Utils::to_json($liftOverRecord);
     }
 
     my @updateValues = ($liftOverRecord);
@@ -2136,13 +2253,18 @@ sub updateVariantFlags {
 
     $record = $json->decode($record);
     foreach my $mv (@{$record->{matched_variants}}) {
-      my $variantId = $mv->{genomicsdb_id};
-      next if ($liftedCoordinatesOnly && !(exists $uVariants->{$variantId})); # already updated
+      my $variantId = (ref $mv eq ref {}) # is hash?
+	? $mv->{genomicsdb_id}
+	: $mv; # scalar
+
+      next if (!(exists $uVariants->{$variantId})); # already updated
       print $ofh join("\t", $variantId,  @updateValues)  . "\n";
     }
   }
   $fh->close();
   $ofh->close();
+  undef $uVariants;
+  
   my $annotator = $self->{annotator};
   $annotator->updateVariantRecords($outputFileName, $gusConfigFile, $liftedCoordinatesOnly);
   $self->log("DONE Updating variant record flags");
