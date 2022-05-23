@@ -15,7 +15,7 @@ BEGIN
 	jsonb_build_object(
 	 'GenomicsDB', v.other_annotation->'GenomicsDB',
 	 'ADSP_QC', v.adsp_qc #- '{17k,info,AF}' #- '{17k,info,AC}' #- '{17k,info,AN}',
-	 'mapped_coordinates', COALESCE(v.other_annotation->'GRCh37', v.other_annotation->'GRCh38')) AS annotation
+	 'mapped_coordinates', COALESCE(v.other_annotation->'GRCh37' || '{"assembly":"GRCh37"}', v.other_annotation->'GRCh38' || '{"assembly":"GRCh38"}')) AS annotation
 	FROM AnnotatedVDB.Variant v, ValidLookup l
  	WHERE v.ref_snp_id = l.ref_snp_id
 	AND array_sort(ARRAY[split_part(v.metaseq_id, ':', 3), split_part(v.metaseq_id, ':', 4)]) @> 
@@ -36,7 +36,7 @@ BEGIN
 	jsonb_build_object(
 	 'GenomicsDB', v.other_annotation->'GenomicsDB',
 	 'ADSP_QC', v.adsp_qc #- '{17k,info,AF}' #- '{17k,info,AC}' #- '{17k,info,AN}',
-	 'mapped_coordinates', COALESCE(v.other_annotation->'GRCh37', v.other_annotation->'GRCh38')) AS annotation
+	 'mapped_coordinates', COALESCE(v.other_annotation->'GRCh37' || '{"assembly":"GRCh37"}', v.other_annotation->'GRCh38' || '{"assembly":"GRCh38"}')) AS annotation
 	FROM AnnotatedVDB.Variant v, searchTerm
  	WHERE v.ref_snp_id = searchTerm.ref_snp_id
 	LIMIT CASE WHEN firstHitOnly THEN 1 END;
@@ -57,7 +57,7 @@ BEGIN
 	jsonb_build_object(
 	 'GenomicsDB', v.other_annotation->'GenomicsDB',
 	 'ADSP_QC', v.adsp_qc #- '{17k,info,AF}' #- '{17k,info,AC}' #- '{17k,info,AN}',
-	 'mapped_coordinates', COALESCE(v.other_annotation->'GRCh37', v.other_annotation->'GRCh38')) AS annotation
+	 'mapped_coordinates', COALESCE(v.other_annotation->'GRCh37' || '{"assembly":"GRCh37"}', v.other_annotation->'GRCh38' || '{"assembly":"GRCh38"}')) AS annotation
 	FROM AnnotatedVDB.Variant v, searchTerm
  	WHERE v.ref_snp_id = searchTerm.ref_snp_id
 	AND v.chromosome = chrm

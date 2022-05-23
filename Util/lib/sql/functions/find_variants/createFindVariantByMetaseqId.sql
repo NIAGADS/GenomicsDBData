@@ -67,7 +67,7 @@ BEGIN
 	jsonb_build_object(
 	 'GenomicsDB', v.other_annotation->'GenomicsDB',
 	 'ADSP_QC', v.adsp_qc #- '{17k,info,AF}' #- '{17k,info,AC}' #- '{17k,info,AN}',
-	 'mapped_coordinates', COALESCE(v.other_annotation->'GRCh37', v.other_annotation->'GRCh38')) AS annotation
+	 'mapped_coordinates', COALESCE(v.other_annotation->'GRCh37' || '{"assembly":"GRCh37"}', v.other_annotation->'GRCh38' || '{"assembly":"GRCh38"}')) AS annotation
 	FROM AnnotatedVDB.Variant v
 	WHERE v.metaseq_id = metaseqId
 	AND LEFT(v.metaseq_id, 50) = LEFT(metaseqId, 50)
@@ -87,7 +87,7 @@ BEGIN
 	jsonb_build_object(
 	 'GenomicsDB', v.other_annotation->'GenomicsDB',
 	 'ADSP_QC', v.adsp_qc #- '{17k,info,AF}' #- '{17k,info,AC}' #- '{17k,info,AN}',
-	 'mapped_coordinates', COALESCE(v.other_annotation->'GRCh37', v.other_annotation->'GRCh38')) AS annotation
+	 'mapped_coordinates', COALESCE(v.other_annotation->'GRCh37' || '{"assembly":"GRCh37"}', v.other_annotation->'GRCh38' || '{"assembly":"GRCh38"}')) AS annotation
 	FROM AnnotatedVDB.Variant v
 	WHERE v.metaseq_id = metaseqId
 	AND chromosome = chrm
