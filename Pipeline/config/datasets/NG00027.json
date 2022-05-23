@@ -230,6 +230,9 @@
 		    "file": "foreach",
 		    "sourceId": "foreach",
 		    "fileDir" : "@file.path/@file.accession",
+		    "sourceGenomeBuildGusConfig": "@file.GRCh37_gus_config",
+		    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
+		    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
 		    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
 		    "liftOverChainFile": "@file.chain_file",
 		    "remapAssemblies": "GCF_000001405.25|GCF_000001405.26",
@@ -246,10 +249,7 @@
 		    "marker": "MarkerName",
 		    "genomeWideSignificanceThreshold": "5e-8",
 		    "checkAltIndels":"true",
-		    "restrictedStats": "foreach",
-		    "sourceGenomeBuildGusConfig": "@file.GRCh37_gus_config",
-		    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
-		    "seqrepoProxyPath": "@file.seqrepo_proxy_path"
+		    "restrictedStats": "foreach"
 		}
 	    }
 	}

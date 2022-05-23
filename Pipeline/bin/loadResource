@@ -131,14 +131,14 @@ def get_cmd_options(cmd, cmdConfig, isPlugin=False, foreach=None):
                         value = replace_environmental_variables(value)
 
                 if value is True: # option is a flag w/no value
-                    cmd.append('--' + option) 
+                    cmd.append('--' + option)
                     continue
 
-                if is_number(value): # numeric value
+                if isinstance(value, str) and is_number(value): # numeric value
                     cmd.extend(['--' + option, xstr(value)])
                     continue
                 
-                if isinstance(value, (list, tuple)): 
+                if isinstance(value, (list, tuple)):
                     # same option repeated with each value in the list (e.g., vep's --plugin)
                     for val in value:
                         if '@' in val:
