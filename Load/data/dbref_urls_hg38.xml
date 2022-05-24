@@ -1,0 +1,161 @@
+<CBIL::DBRefLink>
+	<dbref_id>ccds_id</dbref_id>
+	<resource_type>nucleotide sequences</resource_type>
+	<resource_full_name>NCBI CCDS Database</resource_full_name>
+	<resource_abbrev>CCDS</resource_abbrev>
+	<url>https://www.ncbi.nlm.nih.gov/CCDS/CcdsBrowse.cgi?REQUEST=CCDS&DATA=</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>cosmic</dbref_id>
+	<resource_type>clinical</resource_type>
+	<resource_full_name>Catalogue of Somatic Mutations in Cancer</resource_full_name>
+	<resource_abbrev>COSMIC</resource_abbrev>
+	<url>https://cancer.sanger.ac.uk/cosmic/gene/analysis?ln=</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>ena</dbref_id>
+	<resource_type>nucleotide sequences</resource_type>
+	<resource_full_name>European Nucleotide Archive</resource_full_name>
+	<resource_abbrev>ENA</resource_abbrev>
+	<url>https://www.ebi.ac.uk/ena/data/view/</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>ena</dbref_id>
+	<resource_type>nucleotide sequences</resource_type>
+	<resource_full_name>GenBank</resource_full_name>
+	<resource_abbrev>GenBank</resource_abbrev>
+	<url>https://www.ncbi.nlm.nih.gov/nuccore/</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>ensembl_gene_id</dbref_id>
+	<resource_type>gene</resource_type>
+	<resource_full_name>Ensembl</resource_full_name>
+	<resource_abbrev>Ensembl</resource_abbrev>
+	<url>https://www.ensembl.org/Homo_sapiens/Gene/Summary?g=</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>entrez_id</dbref_id>
+	<resource_type>gene</resource_type>
+	<resource_full_name>NCBI Gene Database</resource_full_name>
+	<resource_abbrev>Entrez Gene</resource_abbrev>
+	<url>https://www.ncbi.nlm.nih.gov/gene/</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>gene_family_id</dbref_id>
+	<resource_type>gene overview</resource_type>
+	<resource_full_name>HUGO Gene Nomenclature Committee</resource_full_name>
+	<resource_abbrev>HGNC Gene Family</resource_abbrev>
+	<url>https://www.genenames.org/cgi-bin/genefamilies/set/</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>hgnc_id</dbref_id>
+	<resource_type>gene</resource_type>
+	<resource_full_name>HUGO Gene Nomenclature Committee</resource_full_name>
+	<resource_abbrev>HGNC</resource_abbrev>
+	<url>https://www.genenames.org/cgi-bin/gene_symbol_report?hgnc_id=</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>mgd_id</dbref_id>
+	<resource_type>homolog</resource_type>
+	<resource_full_name>Mouse Genome Informatics</resource_full_name>
+	<resource_abbrev>MGI</resource_abbrev>
+	<url>http://www.informatics.jax.org/marker/</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>mgi_id</dbref_id>
+	<resource_type>homolog</resource_type>
+	<resource_full_name>Mouse Genome Informatics</resource_full_name>
+	<resource_abbrev>MGI</resource_abbrev>
+	<url>http://www.informatics.jax.org/marker/</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>mirbase</dbref_id>
+	<resource_type>nucleotide sequences</resource_type>
+	<resource_full_name>miRBase</resource_full_name>
+	<resource_abbrev>miRBase</resource_abbrev>
+	<url>http://www.mirbase.org/cgi-bin/mirna_entry.pl?acc=</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>omim_id</dbref_id>
+	<resource_type>clinical</resource_type>
+	<resource_full_name>OMIM Catalog of Human Genes and Genetic Disorders</resource_full_name>
+	<resource_abbrev>OMIM</resource_abbrev>
+	<url>https://www.omim.org/entry/</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>orphanet</dbref_id>
+	<resource_type>clinical</resource_type>
+	<resource_full_name>Portal for rare diseases and orphan drugs</resource_full_name>
+	<resource_abbrev>orphanet</resource_abbrev>
+	<url>http://www.orpha.net/consor/cgi-bin/OC_Exp.php?Lng=GB&Expert=</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>pubmed_id</dbref_id>
+	<resource_type>references</resource_type>
+	<resource_full_name>PubMed</resource_full_name>
+	<resource_abbrev>PubMed</resource_abbrev>
+	<url>https://www.ncbi.nlm.nih.gov/pubmed/</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>refseq_accession</dbref_id>
+	<resource_type>nucleotide sequences</resource_type>
+	<resource_full_name>NCBI RefSeq</resource_full_name>
+	<resource_abbrev>RefSeq</resource_abbrev>
+	<url>https://www.ncbi.nlm.nih.gov/nuccore/</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>rgd_id</dbref_id>
+	<resource_type>homolog</resource_type>
+	<resource_full_name>Rat Genome Database</resource_full_name>
+	<resource_abbrev>RGD</resource_abbrev>
+	<url>https://rgd.mcw.edu/rgdweb/report/gene/main.html?id=</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>rna_central_ids</dbref_id>
+	<resource_type>nucleotide sequences</resource_type>
+	<resource_full_name>RNAcentral: non-coding RNA sequence database</resource_full_name>
+	<resource_abbrev>RNAcentral</resource_abbrev>
+	<url>http://rnacentral.org/rna/</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>ucsc_id</dbref_id>
+	<resource_type>gene</resource_type>
+	<resource_full_name>UCSC </resource_full_name>
+	<resource_abbrev>UCSC </resource_abbrev>
+	<url>https://genome.cse.ucsc.edu/cgi-bin/hgGene?db=hg38&org=Human&hgg_chrom=none&hgg_type=knownGene&hgg_gene=uc004dkq.5</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>ucsc_id</dbref_id>
+	<resource_type>gene</resource_type>
+	<resource_full_name>UCSC </resource_full_name>
+	<resource_abbrev>Genome Browser</resource_abbrev>
+	<url>https://genome.ucsc.edu/cgi-bin/hgTracks?</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>uniprot_ids</dbref_id>
+	<resource_type>protein</resource_type>
+	<resource_full_name>UniProt</resource_full_name>
+	<resource_abbrev>UniProt</resource_abbrev>
+	<url>http://www.uniprot.org/uniprot/</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>uniprot_ids</dbref_id>
+	<resource_type>protein</resource_type>
+	<resource_full_name>InterPro</resource_full_name>
+	<resource_abbrev>InterPro</resource_abbrev>
+	<url>https://www.ebi.ac.uk/interpro/protein/</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>uniprot_ids</dbref_id>
+	<resource_type>protein</resource_type>
+	<resource_full_name>Protein Data Bank in Europe</resource_full_name>
+	<resource_abbrev>PDBe</resource_abbrev>
+	<url>https://www.ebi.ac.uk/pdbe/entry/search/index?uniprot_accession:</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
+	<dbref_id>vega_id</dbref_id>
+	<resource_type>gene</resource_type>
+	<resource_full_name>VEGA archive</resource_full_name>
+	<resource_abbrev>VEGA</resource_abbrev>
+	<url>https://vega.sanger.ac.uk/Homo_sapiens/Gene/Summary?db=core;g=</url>
+</CBIL::DBRefLink>
