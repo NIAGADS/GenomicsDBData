@@ -40,6 +40,11 @@ RETURNS text AS $$
 	SELECT consequence->>'gene_id';
 $$ LANGUAGE SQL stable;
 
+CREATE OR REPLACE FUNCTION msc_impacted_gene_symbol(consequence JSONB)
+RETURNS text AS $$
+	SELECT gene_symbol FROM CBIL.GeneAttributes WHERE source_id = consequence->>'gene_id';
+$$ LANGUAGE SQL stable;
+
 
 CREATE OR REPLACE FUNCTION msc_is_coding(consequence JSONB)
 RETURNS text AS $$
