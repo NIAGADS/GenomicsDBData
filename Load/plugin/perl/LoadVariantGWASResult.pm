@@ -642,7 +642,8 @@ sub cleanDirectory {
   my $path = "$workingDir/$targetDir";
   if (-e $path) {
     $self->log("WARNING: $targetDir directory ($path) found/removing");
-    rmtree($path);
+    # rmtree($path); # race condition
+    my $cmd = `rm -rf $path`;
   }
   else {
     $self->log("INFO: $targetDir directory ($path) does not exist/skipping");
@@ -664,7 +665,8 @@ sub cleanWorkingDir { # clean working directory
   if (-e $path) {
     if (!$self->getArg('archive')) { # keep standardization directory for achive
       $self->log("WARNING: standardized directory found/removing");
-      rmtree($path);
+      # rmtree($path); # race condition
+      my $cmd = `rm -rf $path`;
     }
   }
   else {
@@ -721,7 +723,8 @@ sub archiveWorkingDir {
   $self->log("INFO: Compressing working directory: $workingDir");
   my $cmd = `tar -zcf $workingDir.tar.gz --directory=$rootPath $sourceId`;
   $self->log("INFO: Removing working directory: $workingDir");
-  rmtree($workingDir);
+  # rmtree($workingDir); #race condition
+  $cmd = `rm -rf $workingDir`;
 }
 
 
@@ -2238,9 +2241,9 @@ sub updateVariantFlags {
 	  push(@mvs, $mv->{genomicsdb_id});
 	}
 	$liftOverRecord->{matched_variants} = \@mvs;
-	$liftOverRecord = {$altGenomeBuild => $liftOverRecord};
-	$liftOverRecord = Utils::to_json($liftOverRecord);
       }
+      $liftOverRecord = {$altGenomeBuild => $liftOverRecord};
+      $liftOverRecord = Utils::to_json($liftOverRecord);
     }
 
     my @updateValues = ($liftOverRecord);
