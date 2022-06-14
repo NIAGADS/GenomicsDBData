@@ -34,26 +34,40 @@ BEGIN
 	RETURN QUERY
     	SELECT *, 1 AS match_rank, 'exact' AS match_type
 	FROM find_variant_by_metaseq_id(metaseqId, firstHitOnly);
-        --UNION ALL
+
 	IF NOT FOUND THEN
 	   RETURN QUERY
                SELECT *, 2 AS match_rank, 'switch' AS match_type
 	       FROM find_variant_by_metaseq_id(generate_alt_metaseq_id(metaseqId), firstHitOnly);
 	END IF;
-	--UNION ALL
+
 	IF NOT FOUND THEN
 	   RETURN QUERY
 	   	  SELECT *, 3 AS match_rank, 'reverse comp' AS match_type
 	   	  FROM find_variant_by_metaseq_id(generate_rc_metaseq_id(metaseqId), firstHitOnly);
 	END IF;
-	    -- UNION ALL
+
 	IF NOT FOUND THEN
 	   RETURN QUERY
-	   	  SELECT *, 4 AS match_rank, 'reverse_comp//switch' AS match_type
+	   	  SELECT *, 4 AS match_rank, 'reverse comp//switch' AS match_type
 		  FROM find_variant_by_metaseq_id(generate_alt_metaseq_id(generate_rc_metaseq_id(metaseqId)), firstHitOnly);
         END IF;
-	--ORDER BY match_rank ASC
-        --LIMIT CASE WHEN firstHitOnly THEN 1 END;
+
+	IF NOT FOUND THEN
+	   IF metaseqID LIKE '%:N%' THEN -- contains an unknown allele
+	      IF metaseqID LIKE '%:N:N%' THEN -- containst 2 unknown allele
+	      	 RETURN QUERY
+	      	 	SELECT *, 6 AS match_rank, 'position' AS match_type
+		 	FROM find_variant_by_position('chr' || split_part(metaseqId, ':', 1)::text, split_part(metaseqId, ':', 2)::int, firstHitOnly);
+	      ELSE -- contains one unknown allele
+	      	 RETURN QUERY
+		 	SELECT *, 5 AS match_rank, 'position and allele' AS match_type
+		 	FROM find_variant_by_position_and_allele('chr' || split_part(metaseqId, ':', 1)::text,
+			     split_part(metaseqId, ':', 2)::int,
+			     CASE WHEN split_part(metaseqId, ':', 3) = 'N' THEN split_part(metaseqId, ':', 4) ELSE split_part(metaseqId, ':', 3) END, firstHitOnly);
+	      END IF;
+	   END IF;
+	END IF;
 END;
 
 $$ LANGUAGE plpgsql;

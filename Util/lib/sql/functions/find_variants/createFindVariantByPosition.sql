@@ -3,8 +3,8 @@
 --DROP FUNCTION find_variant_by_position;
 
 
-DROP FUNCTION IF EXISTS find_variant_by_position(chr CHARACTER VARYING, pos INTEGER, firstHitOnly BOOLEAN);
-CREATE OR REPLACE FUNCTION find_variant_by_position(chr CHARACTER VARYING, pos INTEGER, firstHitOnly BOOLEAN DEFAULT FALSE) 
+DROP FUNCTION IF EXISTS find_variant_by_position(chr TEXT, pos INTEGER, firstHitOnly BOOLEAN);
+CREATE OR REPLACE FUNCTION find_variant_by_position(chr TEXT, pos INTEGER, firstHitOnly BOOLEAN DEFAULT FALSE) 
        RETURNS TABLE(record_primary_key TEXT, ref_snp_id CHARACTER VARYING, metaseq_id TEXT, alleles TEXT, variant_class TEXT,
        	             is_adsp_variant BOOLEAN, bin_index LTREE, annotation JSONB) AS $$
 BEGIN
