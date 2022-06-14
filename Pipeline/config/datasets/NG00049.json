@@ -1,11 +1,14 @@
 {    
     "file": {
-	"path": "$DATA_DIR/NIAGADS_GWAS",
+	"path": "$NIAGADS_GWAS_DIR",
 	"accession": "NG00049",
-	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
-	"cadd_database_directory": "$DATA_DIR/CADD/v16",
-	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
-	"vep_cache_directory": "$DATA_DIR/VEP_CACHE"
+	"cadd_path": "$DATA_DIR/CADD",
+	"vep_result_dir": "vep_results",
+	"seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
+	"consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
+	"chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
+	"chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz",
+	"GRCh37_gus_config": "$GUS_HOME/config/grch37-gus.config"
     },
     "external_database": {
 	"name": "NIAGADS",
@@ -20,16 +23,22 @@
 	{
 	    "AB42": {
 		"file": "Summary_Statistics_Ab42_allSamples_add_Upenn_assoc_linear.txt",
-		"sourceId": "@file.accession+_AB42",
-		"name": "CSF: Aβ₄₂",
-		"description": "summary statistics for CSF beta-amyloid 42 (Aβ₄₂) levels in cerebrospinal fluid (CSF), adjusted for age, gender, site, and population stratification" ,
-		"characteristics": {
-		    "diagnosis": "Alzheimer's disease",
+		"sourceId": "@file.accession+_GRCh38_AB42",
+		"name": "CSF: Aβ₄₂ (GRCh38)",
+		"description": "summary statistics for CSF beta-amyloid 42 (Aβ₄₂) levels in cerebrospinal fluid (CSF), adjusted for age, gender, site, and population stratification (Lifted Over from GRCh37 to GRCh38)",
+		"biomaterialCharacteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
 		    "population": "European",
 		    "tissue": "cerebrospinal fluid",
 		    "phenotype": ["cerebrospinal fluid biomarker measurement", "beta-amyloid 1-42 measurement"],
 		    "biomarker": "value:Aβ₄₂",
 		    "covariate specification": "value:adjusted for age, sex, site, and population stratification"		    
+		},
+		"trackSummary": {
+		    "ncase": 591,
+		    "ncontrol": 678,
+		    "cohorts": "Knight-ADRC,ADNI,UW,UPenn",
+		    "consortium": "GERAD1,ADGC"
 		}
 	    }
 	},
@@ -37,16 +46,22 @@
 	{
 	    "TAU": {
 		"file": "Summary_Statistics_tau_allSamples_add_upenn_assoc_linear.txt",
-		"sourceId": "@file.accession+_TAU",
-		"name": "CSF: tau",
-		"description": "summary statistics for CSF tau levels in cerebrospinal fluid (CSF), adjusted for age, gender, site, and population stratification" ,
-		"characteristics": {
-		    "diagnosis": "Alzheimer's disease",
+		"sourceId": "@file.accession+_GRCh38_TAU",
+		"name": "CSF: tau (GRCh38)",
+		"description": "summary statistics for CSF tau levels in cerebrospinal fluid (CSF), adjusted for age, gender, site, and population stratification (Lifted Over from GRCh37 to GRCh38)",
+		"biomaterialCharacteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
 		    "population": "European",
 		    "tissue": "cerebrospinal fluid",
 		    "phenotype": ["cerebrospinal fluid biomarker measurement", "t-tau measurement"],
 		    "biomarker": "value:tau",
 		    "covariate specification": "value:adjusted for age, sex, site, and population stratification"		    
+		},
+		"trackSummary": {
+		    "ncase": 591,
+		    "ncontrol": 678,
+		    "cohorts": "Knight-ADRC,ADNI,UW,UPenn",
+		    "consortium": "GERAD1,ADGC"
 		}
 	    }
 	},
@@ -54,31 +69,36 @@
 	{
 	    "PTAU": {
 		"file": "Summary_Statistics_Ptau_allSamples_add_upenn_assoc_linear.txt",
-		"sourceId": "@file.accession+_PTAU",
-		"name": "CSF: ptau",
-		"description": "summary statistics for CSF tau phosphorylated at threonine 181 (ptau) levels in cerebrospinal fluid (CSF) from 3146 participants across nine studies, adjusted for age, gender, site, and population stratification",
-		"characteristics": {
-		    "diagnosis": "Alzheimer's disease",
+		"sourceId": "@file.accession+_GRCh38_PTAU",
+		"name": "CSF: ptau (GRCh38)",
+		"description": "summary statistics for CSF tau phosphorylated at threonine 181 (ptau) levels in cerebrospinal fluid (CSF) from 3146 participants across nine studies, adjusted for age, gender, site, and population stratification (Lifted Over from GRCh37 to GRCh38)",
+		"biomaterialCharacteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
 		    "population": "European",
 		    "tissue": "cerebrospinal fluid",
 		    "phenotype": ["cerebrospinal fluid biomarker measurement", "p-tau measurement"],
 		    "biomarker": "value:pTau181",
 		    "covariate specification": "value:adjusted for age, sex, site, and population stratification"		    
+		},
+		"trackSummary": {
+		    "ncase": 591,
+		    "ncontrol": 678,
+		    "cohorts": "Knight-ADRC,ADNI,UW,UPenn",
+		    "consortium": "GERAD1,ADGC"
 		}
 	    }
 	}
 	
     ],
 
-    "load": [
+    "preprocess": [
 	{
 	    "plugin": {
 		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
-		"skip": true,
 		"parameters": {
-		    "attribution": "Cruchaga et al. 2013",
+		    "attribution": "Cruchaga et al. 2013|PMID:23562540",
 		    "name": "CSF: Aβ₄₂, tau, and pTau181",
-		    "description": "Summary statistics of genome-wide association study for established Cerebrospinal fluid (CSF) biomarkers (tau, tau phosphorylated at threonine 181 (ptau), and Aβ₄₂ for Alzhemier's disease (n=1,269).",
+		    "description": "Summary statistics of genome-wide association study for established Cerebrospinal fluid (CSF) biomarkers (tau, tau phosphorylated at threonine 181 (ptau), and Aβ₄₂ for Alzhemier's disease (n=1,269). Lifted Over from GRCh37 to GRCh38.",
 		    "sourceId": "@file.accession",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version"
 		}		
@@ -88,20 +108,22 @@
 	    "foreach" : true,
 	    "plugin": {
 		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
-		"skip": true,
 		"parameters" : {
 		    "attribution": "Cruchaga et al. 2013",
 		    "type": "Genetic variation",
 		    "subtype": "GWAS summary statistics",
 		    "description": "foreach",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version",
-		    "characteristics": "foreach",
+		    "biomaterialCharacteristics": "foreach",
 		    "sourceId" : "foreach",
 		    "name": "foreach",
-		    "studyId": "@file.accession"
+		    "studyId": "@file.accession",
+		    "trackSummary": "foreach"
 		}
 	    }
-	}, 
+	}
+    ],
+    "load": [
 	{
 	    "foreach": true,
 	    "plugin": {
@@ -110,10 +132,13 @@
 		    "file": "foreach",
 		    "sourceId": "foreach",
 		    "fileDir" : "@file.path/@file.accession",
-		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
-		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
-		    "caddDatabaseDir": "@file.cadd_database_directory",
-		    "vepCacheDir": "@file.vep_cache_directory",
+		    "sourceGenomeBuildGusConfig": "@file.GRCh37_gus_config",
+		    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
+		    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
+		    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
+		    "liftOverChainFile": "@file.chain_file",
+		    "remapAssemblies": "GCF_000001405.25|GCF_000001405.26",
+		    "caddDatabaseDir": "@file.cadd_path",
 		    "testAllele": "A1",
 		    "refAllele": "A2",
 		    "pvalue": "P",
@@ -122,7 +147,7 @@
 		    "chromosome": "CHR",
 		    "position": "BP",
 		    "genomeWideSignificanceThreshold": "5e-8",
-		    "checkAltVariants":"true",
+		    "checkAltIndels":"true",
 		    "restrictedStats": {
 			"beta": "BETA",
 			"num_observations": "NMISS",

@@ -30,7 +30,7 @@
 		"name": "Multi-ethnic exome array: AD (GRCh38)",
 		"description" : "a multi-ethnic exome array study to identify low-frequency coding variants that affect susceptibility to Alzheimer's disease  (Lifted Over from GRCh37 to GRCh38)",
 		"biomaterialCharacteristics": {
-		    "diagnosis": "Alzheimer's disease",
+		    "diagnosis": "late onset Alzheimer's disease",
 		    "covariate specification": "value:adjusted for population stratification",
 		    "population": ["European", "African/African American", "Hispanic or Latin American", "Asian"]
 		},
@@ -104,7 +104,7 @@
 		    "subtype": "GWAS summary statistics",
 		    "description": "foreach",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version",
-		    "characteristics": "foreach",
+		    "biomaterialCharacteristics": "foreach",
 		    "sourceId" : "foreach",
 		    "name": "foreach",
 		    "studyId": "@file.accession",

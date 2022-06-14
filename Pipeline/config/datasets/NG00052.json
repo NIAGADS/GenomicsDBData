@@ -1,12 +1,15 @@
 {    
     "file": {
-	"path": "$DATA_DIR/NIAGADS_GWAS",
+	"path": "$NIAGADS_GWAS_DIR",
 	"accession": "NG00052",
-	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
-	"cadd_database_directory": "$DATA_DIR/CADD/v16",
-	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
-	"vep_cache_directory": "$DATA_DIR/VEP_CACHE",
-	"comment": "allowing map thru markers for 64 results missing allele 2 (reference) information"
+	"cadd_path": "$DATA_DIR/CADD",
+	"vep_result_dir": "vep_results",
+	"seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
+	"consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
+	"chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
+	"chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz",
+	"GRCh37_gus_config": "$GUS_HOME/config/grch37-gus.config",
+	"comment": "some markers in original file in error / do not use to map / do not pass marker column"
     },
     "external_database": {
 	"name": "NIAGADS",
@@ -20,28 +23,35 @@
     "foreach": [	
 	{
 	    "ALL": {
-		"file": "csf_clusterin_summary_p05_withA2.txt",
-		"sourceId": "@file.accession",
-		"name": "CSF: CLU",
-		"description" : "Summary statistics for the association between cerebrospinal fluid (CSF) clusterin (CLU) levels and Alzheimer's Disease",
-		"characteristics": {
-		    "diagnosis": "Alzheimer's disease",
+		"file": "Summary_statistics_csf_clusterin_dataset_neurobiolaging_cruchaga_0.txt",
+		"sourceId": "@file.accession+_GRCh38",
+		"name": "CSF: CLU (GRCh38)",
+		"description" : "Summary statistics for the association between cerebrospinal fluid (CSF) clusterin (CLU) levels and Alzheimer's Disease (Lifted Over from GRCh37 to GRCh38)",
+		"biomaterialCharacteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
 		    "tissue": "cerebrospinal fluid",
+		    "population": "European",
 		    "biomarker": "clusterin",
 		    "phenotype": ["cerebrospinal fluid biomarker measurement", "clusterin measurement"]
+		},
+		"trackSummary": {
+		    "ncase": 300,
+		    "ncontrol": 373, 
+		    "cohorts": "Knight ADRC,ADNI",
+		    "sex": "Male and Female",
+		    "percent_APOε4": 59.0
 		}
 	    }
 	}
     ],
-    "load": [
+    "preprocess": [
 	{
 	    "plugin": {
 		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
-		"skip":true,
 		"parameters": {
 		    "name": "CSF: clusterin (CLU)",
-		    "attribution": "Deming et al. 2016",
-		    "description": "Summary statistics of a genome-wide association study investigating the role of clusterin (CLU) endophenotype in Alzheimer's Disease",
+		    "attribution": "Deming et al. 2016|PMID:26545630",
+		    "description": "Summary statistics of a genome-wide association study investigating the role of clusterin (CLU) endophenotype in Alzheimer's Disease. Lifted Over from GRCh37 to GRCh38.",
 		    "sourceId": "@file.accession",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version"
 		}		
@@ -50,7 +60,6 @@
 	{
 	    "foreach" : true,
 	    "plugin": {
-		"skip": true,
 		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
 		"parameters" : {
 		    "attribution": "Deming et al. 2016",
@@ -58,13 +67,16 @@
 		    "subtype": "GWAS summary statistics",
 		    "description": "foreach",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version",
-		    "characteristics": "foreach",
+		    "biomaterialCharacteristics": "foreach",
 		    "sourceId" : "foreach",
 		    "name": "foreach",
-		    "studyId": "@file.accession"
+		    "studyId": "@file.accession",
+		    "trackSummary": "foreach"
 		}
 	    }
-	}, 
+	}
+    ],
+    "load": [
 	{
 	    "foreach": true,
 	    "plugin": {
@@ -73,19 +85,21 @@
 		    "file": "foreach",
 		    "sourceId": "foreach",
 		    "fileDir" : "@file.path/@file.accession",
-		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
-		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
-		    "caddDatabaseDir": "@file.cadd_database_directory",
-		    "vepCacheDir": "@file.vep_cache_directory",
+		    "sourceGenomeBuildGusConfig": "@file.GRCh37_gus_config",
+		    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
+		    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
+		    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
+		    "liftOverChainFile": "@file.chain_file",
+		    "remapAssemblies": "GCF_000001405.25|GCF_000001405.26",
+		    "caddDatabaseDir": "@file.cadd_path",
 		    "testAllele": "A1",
 		    "refAllele": "A2",
 		    "pvalue": "P",
 		    "genomeBuild": "GRCh37.p13",
-		    "marker": "SNP",
 		    "chromosome": "CHR",
 		    "position": "BP",
 		    "genomeWideSignificanceThreshold": "5e-8",
-		    "checkAltVariants":"true",
+		    "checkAltIndels":"true",
 		    "customChrMap": {"25": "X"},
 		    "restrictedStats": {
 			"beta": "BETA",

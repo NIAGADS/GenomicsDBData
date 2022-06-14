@@ -1,11 +1,15 @@
 {    
     "file": {
-	"path": "$DATA_DIR/NIAGADS_GWAS",
+	"path": "$NIAGADS_GWAS_DIR",
 	"accession": "NG00048",
-	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
-	"cadd_database_directory": "$DATA_DIR/CADD/v16",
-	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
-	"vep_cache_directory": "$DATA_DIR/VEP_CACHE"
+	"cadd_path": "$DATA_DIR/CADD",
+	"vep_result_dir": "vep_results",
+	"seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
+	"consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
+	"chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
+	"chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz",
+	"GRCh37_gus_config": "$GUS_HOME/config/grch37-gus.config"
+
     },
     "external_database": {
 	"name": "NIAGADS",
@@ -20,26 +24,30 @@
 	{
 	    "ALL": {
 		"file": "ADGC_METAL.IGAP.AAO.allchr.assoc.meta",
-		"sourceId": "@file.accession",
-		"name": "ADGC LOAD: Age at Onset",
-		"description" : "Summary statistics from a GWAS study of the effects of known Alzheimer's disease risk loci in modifying age-at-onset using LOAD datasets from ADGC, adjusted for sex, APOE number, and population stratification",
-		"characteristics": {
+		"sourceId": "@file.accession+_GRCh38",
+		"name": "ADGC LOAD: Age at Onset (GRCh38)",
+		"description" : "Summary statistics from a GWAS study of the effects of known Alzheimer's disease risk loci in modifying age-at-onset using LOAD datasets from ADGC, adjusted for sex, APOE number, and population stratification (Lifted Over from GRCh37 to GRCh38)",
+		"biomaterialCharacteristics": {
 		    "diagnosis": "late onset Alzheimer's disease",
 		    "population": "European",
 		    "covariate specification": "value:sex, APOE number, and population stratification"
+		},
+		"trackSummary": {
+		    "ncase": 6143,
+		    "sex": "Male and Female",
+		    "consortium": "ADGC"
 		}
 	    }
 	}
     ],
 
-    "load": [
+    "preprocess": [
 	{
 	    "plugin": {
-		"skip": true,
 		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
 		"parameters": {
 		    "name": "ADGC LOAD: Age at Onset",
-		    "attribution": "Naj et al. 2014",
+		    "attribution": "Naj et al. 2014|PMID:25199842",
 		    "description" : "Summary statistics from a GWAS study investigating the effects of known Alzheimer's disease risk loci in modifying age-at-onset and their cumulative effect on age-at-onset variation.",
 		    "sourceId": "@file.accession",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version"
@@ -49,7 +57,6 @@
 	{
 	    "foreach" : true,
 	    "plugin": {
-		"skip": true,
 		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
 		"parameters" : {
 		    "attribution": "Naj et al. 2014",
@@ -57,13 +64,16 @@
 		    "subtype": "GWAS summary statistics",
 		    "description": "foreach",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version",
-		    "characteristics": "foreach",
+		    "biomaterialCharacteristics": "foreach",
 		    "sourceId" : "foreach",
 		    "name": "foreach",
-		    "studyId": "@file.accession"
+		    "studyId": "@file.accession",
+		    "trackSummary": "foreach"
 		}
 	    }
-	}, 
+	}
+    ],
+    "load": [
 	{
 	    "foreach": true,
 	    "plugin": {
@@ -72,10 +82,13 @@
 		    "file": "foreach",
 		    "sourceId": "foreach",
 		    "fileDir" : "@file.path/@file.accession",
-		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
-		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
-		    "caddDatabaseDir": "@file.cadd_database_directory",
-		    "vepCacheDir": "@file.vep_cache_directory",
+		    "sourceGenomeBuildGusConfig": "@file.GRCh37_gus_config",
+		    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
+		    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
+		    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
+		    "liftOverChainFile": "@file.chain_file",
+		    "remapAssemblies": "GCF_000001405.25|GCF_000001405.26",
+		    "caddDatabaseDir": "@file.cadd_path",
 		    "testAllele": "Allele1",
 		    "frequency": "Freq1",
 		    "refAllele": "Allele2",
@@ -84,7 +97,7 @@
 		    "pvalue": "P-value",
 		    "genomeBuild": "GRCh37.p13",
 		    "genomeWideSignificanceThreshold": "5e-8",
-		    "checkAltVariants":"true",
+		    "checkAltIndels":"true",
 		    "restrictedStats":  {
 			"frequency_se": "FreqSE",
 			"min_frequency": "MinFreq",
