@@ -230,7 +230,7 @@ SQL
     $queryStmt->execute() or die $self->{dbh}->errstr;
     my  ($rows) = $queryStmt->fetchrow_array();
     
-    if ($rows == 1) { # result size to small for estimate to be accurate
+    if ($rows < 5000) { # result size to small for estimate to be accurate
       my $queryStmt = $self->{dbh}->prepare(<<SQL) or die $self->{dbh}->errstr;
       SELECT COUNT(*) FROM 
       $tableName

@@ -355,7 +355,7 @@ sub loadVepAnnotatedVariants {
 
   $self->{plugin}->log("INFO: Executing command: " . join(' ', @cmd));
   my  $algInvocationId = qx(@cmd);
-  $self->{plugin}->error("Loading variants from VEP result failed. See $file.log") 
+  $self->{plugin}->error("Loading variants from VEP result failed. See $file.log")
     if ($algInvocationId eq 'FAIL' || !(looks_like_number($algInvocationId)));
   $self->{plugin}->log("DONE: Loading variants from VEP result: AnnotatedVDB Algorithm Invocation ID = $algInvocationId");
 

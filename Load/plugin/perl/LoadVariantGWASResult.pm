@@ -508,6 +508,8 @@ sub initializePlugin {
 
   $self->verifyArgs();
 
+  $self->{custom_chr_map} = ($self->getArg('customChrMap')) ? $self->generateCustomChrMap() : undef;
+  
   if ($self->getArg('liftOver')) {
     $self->{gus_config} = {GRCh37 => $self->getArg('sourceGenomeBuildGusConfig'),
 			   GRCh38 => undef}; # will use plugin default
@@ -586,10 +588,10 @@ sub generateCustomChrMap {
 
 sub generateStandardizedHeader {
   my ($self, $stats) = @_;
-  # qw(min_frequency max_frequency frequency_se effect beta odds_ratio std_err direction het_chi_sq het_i_sq het_df het_pvalue);
 
   my @header = ();
   foreach my $label (@RESTRICTED_STATS_ORDER) {
+    next if ($label eq 'probe'); # already added
     push(@header, $label) if (exists $stats->{$label});
   }
 
@@ -606,6 +608,7 @@ sub generateStandardizedHeader {
 
 sub generateInsertStr {
   my ($self, $recordPK, $binIndex, $data) = @_;
+  $recordPK =~ s/\?/N/g; # substitue ? for N --> any base LEGACY
   my @values = ($self->{protocol_app_node_id},
 		$recordPK,
 		$binIndex,
@@ -765,7 +768,7 @@ sub writeCleanedInput {
 		  $resultVariant->{position},
 		  $resultVariant->{altAllele},
 		  $resultVariant->{refAllele},
-		  $resultVariant->{marker},
+		  ($resultVariant->{marker}) ? $resultVariant->{marker} : "NULL",
 		  ($resultVariant->{metaseq_id} =~ m/NA/g) ? "NULL" : $resultVariant->{metaseq_id},
 		  $frequency,
 		  $pvalue,
@@ -795,7 +798,9 @@ sub cleanAllele {
 
 sub correctChromosome {
   my ($self, $chrm) = @_;
-  my $customChrMap = ($self->getArg('customChrMap')) ? $self->generateCustomChrMap() : undef;
+  my $customChrMap = $self->{custom_chr_map};
+
+  return ($chrm) if (!$customChrMap);
 
   while (my ($oc, $rc) = each %$customChrMap) {
     $chrm = $rc if ($chrm =~ m/\Q$oc/);
@@ -946,9 +951,14 @@ sub cleanAndSortInput {
     my $alt = ($altAlleleC) ? uc($values[$altAlleleC]) : ($testAlleleC) ? uc($values[$testAlleleC]) : undef;
     my $test = ($testAlleleC) ? uc($values[$testAlleleC]) : undef;
 
-    $ref = '?' if ($ref =~ m/^0$/); # vep can still process the '?', so do the replacement here for consistency 
-    $alt = '?' if ($alt =~ m/^0$/);
-    $test = '?' if ($test =~ m/^0$/);
+    # set ref/alt to N if unknown so can still map/annotate
+    # set test to N if 0 but leave as ? if ?
+    $ref = 'N' if ($ref =~ m/^0$/); # vep can still process the 'N' if there is a single unknown, so do the replacement here for consistency
+    $ref = 'N' if ($ref =~ m/^\?$/); # vep can still process the 'N' if there is a single unknown, so do the replacement here for consistency 
+    $alt = 'N' if ($alt =~ m/^0$/);
+    $alt = 'N' if ($alt =~ m/^\?$/);
+    $test = 'N' if ($test =~ m/^0$/);
+    $test = '?' if ($test =~ m/^\?$/);
 
     my $frequencyC = ($self->getArg('frequency')) 
       ? $self->getColumnIndex(\%columns, $self->getArg('frequency')) : undef;
@@ -1004,8 +1014,13 @@ sub cleanAndSortInput {
 	  } else {		# incl merged_del (true indels)
 	    $metaseqId .= $ref . ':' . $alt;
 	  }
-	} else { # for SNVs if frequency > 0.5, then the test allele is the major allele; saves us some lookup time
-	  $metaseqId .= ($frequencyC and $frequency > 0.5) ? $alt . ':' . $ref : $ref . ':' . $alt;
+	} else { 
+	  if ($ref eq '?') { # handle unknown ref
+	    $metaseqId .= ':' . $ref . ':' . $alt;
+	  }
+	  else { # for SNVs if frequency > 0.5, then the test allele is the major allele; saves us some lookup time
+	    $metaseqId .= ($frequencyC and $frequency > 0.5) ? $alt . ':' . $ref : $ref . ':' . $alt;
+	  }
 	}
       }
     }
@@ -1184,13 +1199,11 @@ sub monitorThreads {
 
 
 sub DBLookup {	# check against DB
-  # note: this is a simplistic approach / does not handle outlying cases such as chr:pos:test_allele
-  # these will have to be handled by liftOver & findNovelVariant combined / too many checks
   my ($self, $inputFileName, $genomeBuild, $useMarker, $checkType) = @_;
 
   $checkType //= 0; # FINAL_CHECK overwrites the dbmapped file even if it exists, UPDATE_CHECK creates new file with .fc extenstion
   
-  $self->error("DB Mapping to position / alternative alleles not yet implemented")
+  $self->error("DB Mapping to position only or to allowing allele mismatches not yet implemented")
     if ($self->getArg('mapPosition') || $self->getArg('allowAlleleMismatches'));
 
   $genomeBuild //= $self->getArg('genomeBuild');
@@ -1257,8 +1270,17 @@ sub DBLookup {	# check against DB
 
     if (($self->getArg('mapThruMarker') && !$self->getArg('markerIsMetaseqId'))
 	|| $useMarker
-	|| ($row{chr} =~ /NA/ || $row{metaseq_id} eq 'NULL')) {
+	|| ($row{chr} =~ /NA/ || $row{metaseq_id} eq 'NULL')
+       ) {
       $variantId = join(":", $row{marker}, $row{allele1}, $row{allele2});
+    }
+    if ($row{metaseq_id} =~ /:N/) { # one or more alleles unknown
+      if ($row{marker} ne 'NULL') {
+	$variantId = $row{marker};
+      }
+      else { # cannot map thru marker b/c marker=NULL, so db lookup w/match position and as many alleles as possible
+	$variantId = $row{metaseq_id}; # chr:pos:?:alt probably / db lookups will work
+      }
     }
 
     my @lvalue = (exists $lookups->{$variantId}) ? @{$lookups->{$variantId}} : ();
@@ -1509,7 +1531,7 @@ sub liftOverFromDBMappedFile {
 	  $row{metaseq_id} = join(':', $chromosome, $row{bp}, $ref, $alt);
 	}
 	my @idElements = split /:/, $mv;
-	$row{marker} = ($idElements[-1] =~ m/rs/) ? $idElements[-1] : 'NULL';
+	$row{marker} = ($idElements[-1] =~ m/^rs/) ? $idElements[-1] : 'NULL';
       }
     }
 
@@ -1801,7 +1823,7 @@ sub bed2input {
 	    if ('chr' . $oldChrm ne $newChrm);
 	  my $metaseqId = join(":", $oldChrm, $values[2], $ref, $alt);
 	  push(@printValues, $metaseqId);
-	} elsif ($field eq 'marker') { # rs ids are no longer valid
+	} elsif ($field eq 'marker') { # rs ids are no longer valid unless quirky metaseq or specified by params
 	  if ($inclMarkers) {
 	    push(@printValues, $stats->{$field});
 	  }
@@ -1898,7 +1920,8 @@ sub input2bed {
     if ($chr =~ m/NA/g || ($row{metaseq_id} eq "NULL")) {
       print $moFh "$line\n";
       $markerOnlyLineCount++;
-    } else {
+    }
+    else {
       print $bedFh join(" ", $chr, $start, $end, "$name|$infoStr") . "\n";
       $bedFileLineCount++;
     }
@@ -1928,14 +1951,13 @@ sub preprocess {
 
   my $filePrefix = $self->{adj_source_id};
   my $filePath = PluginUtils::createDirectory($self, $self->{working_dir}, "preprocess");
-  my $novelVariantVcfFile = $self->extractNovelVariants($inputFileName, "$filePath/$filePrefix");
+  my ($novelVariantVcfFile, $novelVariantCount) = $self->extractNovelVariants($inputFileName, "$filePath/$filePrefix");
   my $foundNovelVariants = $self->annotateNovelVariants($novelVariantVcfFile);
   if ($foundNovelVariants) { # > 0
     $self->log("INFO: Executing final check that all novel variants were annotated and loaded");
-    $novelVariantVcfFile = $self->extractNovelVariants($inputFileName, "$filePath/$filePrefix", $FINAL_CHECK);
-    my $lineCount = `wc -l < $novelVariantVcfFile`;
-    $self->error("$lineCount Novel Variants found after annotation & load completed. See $novelVariantVcfFile")
-      if ($lineCount > 1);
+    ($novelVariantVcfFile, $novelVariantCount) = $self->extractNovelVariants($inputFileName, "$filePath/$filePrefix", $FINAL_CHECK);
+    $self->error("$novelVariantCount Novel Variants found after annotation & load completed. See $novelVariantVcfFile")
+      if ($novelVariantCount > 1);
   }
   $self->log("DONE: Preprocessing completed");
 }
@@ -1997,6 +2019,7 @@ sub extractNovelVariants {
 
   my $lineCount = 0;
   my $novelVariantCount = 0;
+  my $invalidVariantCount = 0;
   while (my $line = <$fh>) {
     chomp $line;
     my @values = split /\t/, $line;
@@ -2006,9 +2029,15 @@ sub extractNovelVariants {
 
     my ($chromosome, $position, $ref, $alt) = split /:/, $row{metaseq_id};
     if ($row{$genomeBuild} eq 'NULL') { # not in DB
-      print $vfh join("\t", $chromosome, $position, $row{metaseq_id}, $ref, $alt, '.', '.', '.') . "\n";
-      ++$novelVariantCount;
-    }
+      if ($row{metaseq_id} =~ m/:\?/ && $row{$genomeBuild} eq 'NULL') { # been dbmapped, so if invalid metaseq & marker not present in db, not much we can do
+	$invalidVariantCount++;
+	$self->log("INFO: Found invalid variant " . $row{metaseq_id} . " - SKIPPING");
+      }
+      else {
+	print $vfh join("\t", $chromosome, $position, $row{metaseq_id}, $ref, $alt, '.', '.', '.') . "\n";
+	++$novelVariantCount;
+      }
+  }
 
     $self->log("INFO: Checked $lineCount variants") if (++$lineCount % 500000 == 0);
   }
@@ -2017,8 +2046,12 @@ sub extractNovelVariants {
   $vfh->close();
   $self->log("DONE: Checked $lineCount variants") if (++$lineCount % 500000 == 0);
   $self->log("INFO: Found $novelVariantCount novel variants");
-
-  return $novelVariantVCF;
+  if ($finalCheck) {
+    $self->log("INFO: Found $invalidVariantCount invalide variants");
+    $novelVariantCount -= $invalidVariantCount;
+  }
+  
+  return $novelVariantVCF, $novelVariantCount;
 }
 
 
@@ -2043,14 +2076,23 @@ sub loadResult {
   my $insertStrBuffer = "";
   my $commitAfter = $self->getArg('commitAfter');
   my $msgPrefix = ($self->getArg('commit')) ? 'COMMITTED' : 'PROCESSED';
+  my $genomeBuild = $self->getArg('genomeBuild');
   my %row;
   while (my $line = <$fh>) {
     chomp($line);
     @row{@INPUT_FIELDS} = split /\t/, $line;
 
     # {"bin_index":"blah","metaseq_id":"1:1205055:G:T","location":1205055,"chromosome":"1","matched_variants":[{"ref_snp_id":"rs1815606","genomicsdb_id":"1:1205055:G:T:rs1815606"}]}
-    my $vrString = $row{$self->getArg('genomeBuild')};
-    $self->error("Variant " . $row{metaseq_id} . " not mapped to DB") if ($vrString eq 'NULL');
+    my $vrString = $row{$genomeBuild};
+    if ($vrString eq 'NULL') {
+      if ($row{metaseq_id} =~ m/N:N/) {
+	$self->log("WARNING: Found unmapped variant with only chr:position:" . $row{metaseq_id} . " - SKIPPING Load");
+	next;
+      }
+      else {
+	$self->error("Variant " . $row{metaseq_id} . " not mapped to DB");
+      }
+    }
     my $variantRecord = $json->decode($vrString);
     my @mappedVariants = @{$variantRecord->{matched_variants}};
     foreach my $mv (@mappedVariants) {
@@ -2078,12 +2120,7 @@ sub extractVariantsRequiringUpdate {
   my $mappedGenomeBuild = ($genomeBuild eq 'GRCh37') ? 'GRCh38' : 'GRCh37';
 
   my $inputFileName = $fileName;
-  if ($genomeBuild eq 'GRCh37') {
-    $inputFileName =~ s/_GRCh38//g;
-    $inputFileName =~ s/GRCh38/GRCh37/;
-    # this is in case any updates were done since the dblookup was generated
-  }
-
+  
   # read in dbmapped file and create variant array, flagging variants w/gwas_flags and/or mapped variants
   my %variants;
   open(my $fh, $inputFileName) || $self->error("Unable to open db lookup file $inputFileName");
@@ -2097,12 +2134,21 @@ sub extractVariantsRequiringUpdate {
     if (!$ignoreGWASFlags) {
       $update = ($update || $row{gwas_flags} ne 'NULL') ? 1: 0;
     }
-    if ($update) { 
+    if ($update) {
       my $variantStr = $row{$genomeBuild};
       my $variantJson = $json->decode($variantStr);
       foreach my $mv (@{$variantJson->{matched_variants}}) {
-	$variants{$mv->{genomicsdb_id}} = 1;
-      }
+	if (ref $mv eq ref {}) {# is hash?
+	  $variants{$mv->{genomicsdb_id}} = 1;
+	}
+	else {
+	  # otherwise, what's in the altBuild field is an existing mapping,
+	  # so no need to do update unless GWAS flags are present
+	  if (!$ignoreGWASFlags && $row{gwas_flags} ne 'NULL') {
+	    $variants{$mv} = 1;
+	  }
+	}
+      } # end foreach
     }
   }
   $fh->close();
@@ -2112,6 +2158,14 @@ sub extractVariantsRequiringUpdate {
   $inputFileName =~ s/\.dbmapped//g;
   $self->log("INFO: Doing DBLookup for $inputFileName to find variants that need to be updated");
   my $useMarker = ($self->getArg('mapThruMarker') && !$self->getArg('markerIsMetaseqId'));
+
+  # precheck was done on the GRCh38 file, but want to save new lookup file in GRCh37 directory
+  # against GRCh37 coordinates if this is a legacy update 
+  if ($genomeBuild eq 'GRCh37') {
+    $inputFileName =~ s/_GRCh38//g;
+    $inputFileName =~ s/GRCh38/GRCh37/;
+  }
+  
   my $dbmappedFileName = $self->DBLookup($inputFileName, $genomeBuild, $useMarker, $UPDATE_CHECK);
 
   open($fh, $dbmappedFileName) || $self->error("Unable to open db lookup file $dbmappedFileName");
@@ -2127,8 +2181,11 @@ sub extractVariantsRequiringUpdate {
 
     # note not catching the possibility that variant mapping is NULL in DB and not in
     # updateable variant hash as that may just be that there is no mapping for that variant
-   
     my $variantStr = $row{$genomeBuild};
+    if ($variantStr eq 'NULL') {
+      $self->log("WARNING: Found unmapped variant: " . $row{metaseq_id} . " - SKIPPING");
+      next;
+    }
     my $variantJson = $json->decode($variantStr);
     foreach my $mv (@{$variantJson->{matched_variants}}) {
       my $cVariant = $mv->{genomicsdb_id};
@@ -2221,7 +2278,9 @@ sub updateVariantFlags {
       }
       else {
 	# if it is a load based update there variant should have a record for the genome build
-	$self->error("Cannot update record b/c not mapped to DB: $line");
+	# unless no alleles and invalid marker
+	$self->log("WARNING: Cannot update record b/c not mapped to DB: $line");
+	next;
       }
     }
 
@@ -2280,7 +2339,7 @@ sub extractMarkerFromDBMap {
 
   my @mvs = @{$mapping->{matched_variants}};
   foreach my $mv (@mvs) {
-    my $marker = $mv->{markerField};
+    my $marker = $mv->{$markerField};
     return $marker if ($marker);
   }
   return undef;
@@ -2341,7 +2400,13 @@ sub standardize {
     }
 
     my $metaseqId = $row{metaseq_id};
+    $metaseqId =~ s/\?/N/g; # N for any base LEGACY
+ 
     my $dbVariant = $row{$genomeBuild};
+    if ($dbVariant ne 'NULL') {
+      $dbVariant = $json->decode($dbVariant) 
+	|| $self->error("Error parsing dbv json for line $lineCount: " . $row{$genomeBuild});
+    }
     if ($metaseqId eq 'NULL') {
 	if ($dbVariant eq 'NULL') {
 	  $self->log("INFO: SKIPPING Unmapped variant on $lineCount: $line");
@@ -2353,16 +2418,8 @@ sub standardize {
 	}
     }
 
-    my $marker = Utils::truncateStr($metaseqId, 50);
-    my $refSnpId = undef;
-
-
-    if ($dbVariant ne 'NULL') {
-      $dbVariant = $json->decode($dbVariant)
-	|| $self->error("Error parsing dbv json for line $lineCount: " . $row{$genomeBuild});
-      $refSnpId = $self->extractMarkerFromDBMap($dbVariant, "ref_snp_id");
-    }
-    $marker = $refSnpId if ($refSnpId);
+    my $refSnpId = ($dbVariant ne 'NULL') ? $self->extractMarkerFromDBMap($dbVariant, "ref_snp_id") : undef;
+    my $marker = ($refSnpId) ? $refSnpId : Utils::truncateStr($metaseqId, 50);
 
     my @cvalues = @row{@sfields};
     # unshift @cvalues, $metaseqId;
