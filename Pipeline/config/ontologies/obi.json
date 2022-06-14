@@ -1,0 +1,28 @@
+{
+    "file": {
+	"path": "$DATA_DIR/ontologies/obi",
+	"file": "obi.owl"
+    },
+    "external_database": {
+	"name": "Ontology for Biomedical Investigations",
+	"description": "The Ontology for Biomedical Investigations (OBI) project is developing an integrated ontology for the description of life-science and clinical investigations",
+	"version": "2022-01-03",
+	"release_date": "2022-01-03",
+	"download_url": "http://purl.obolibrary.org/obo/obi.owl",
+	"id_url": "http://obi-ontology.org/",
+	"accession": "OBI",
+	"type": "Ontology and terminology"
+    },
+    "load": [
+	{
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::InsertOntologyTermsAndRelationships",
+		"parameters": {
+		    "inFile": "@file.path/@file.file",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "relTypeExtDbRlsSpec": "Niagads Ontology|current"
+		}
+	    }
+	}
+    ]
+}

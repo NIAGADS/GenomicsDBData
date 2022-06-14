@@ -1,22 +1,22 @@
 {
     "file": {
-	"path": "$SHARED_DATA_DIR/ontologies/protein_ontology",
-	"file": "pro_reasoned.owl"
+	"path": "$DATA_DIR/ontologies/protein_ontology",
+	"file": "pr.owl"
     },
     "external_database": {
 	"name": "Protein Ontology",
 	"description": "The protein ontology (PRO) serves an external registry of protein identifers by providing an ontological representation of explicitly defined protein-related entities and their relationships.",
-	"version": "57.0",
-	"release_date": "2018-12-05",
-	"download_url": "ftp://ftp.pir.georgetown.edu/databases/ontology/pro_obo/",
-	"id_url": "https://pir.georgetown.edu/pro/",
+	"version": "2022-03-31",
+	"release_date": "2022-03-31",
+	"download_url": "http://purl.obolibrary.org/obo/pr.owl",
+	"id_url": "https://proconsortium.org/",
 	"accession": "PRO",
 	"type": "Ontology and terminology"
     },
     "load": [
 	{
 	    "plugin": {
-		"name": "GUS::Supported::Plugin::InsertOntologyTermsAndRelationships",
+		"name": "GenomicsDBData::Load::Plugin::InsertOntologyTermsAndRelationships",
 		"parameters": {
 		    "inFile": "@file.path/@file.file",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version",
