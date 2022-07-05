@@ -1,0 +1,7 @@
+<NIAGADS::Population>
+  <datasource>ADSP</datasource>
+  <source_id>ADSP_17K</source_id>
+  <abbreviation>17K</abbreviation>
+  <display_value>ADSP 17K R3</display_value>
+  <description>Alzheimer's Disease Sequencing Project (ADSP) 17K R3 Samples</description>
+</NIAGADS::Population>

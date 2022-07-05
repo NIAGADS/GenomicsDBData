@@ -1,4 +1,5 @@
 [
+    {"source": "ADSP", "source_id": "ADSP_17K", "abbrev": "17K", "value": "ADSP 17K R3", "description": "Alzheimer's Disease Sequencing Project (ADSP) 17K R3 Samples"},
     {"source": "GnomAD", "source_id": "gnomad_sas", "abbrev": "SAS", "ontology_term": "HANCESTRO_0006"},
     {"source": "GnomAD", "source_id": "gnomad_nfe", "abbrev": "NFE", "ontology_term": "NO_0000048"},
     {"source": "GnomAD", "source_id": "gnomad_fin", "abbrev": "FIN", "ontology_term": "NO_0000045"},

@@ -8,25 +8,41 @@ Generates load file from PLINK LD output
 from __future__ import with_statement
 from __future__ import print_function
 
+import random
 import argparse
 import os.path as path
 from os import listdir
 import gzip
-import datetime
 import csv
-import threading
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from GenomicsDBData.Util.utils import qw, xstr, warning, die, verify_path, create_dir, execute_cmd
+from AnnotatedVDB.Util.enums import HumanChromosome as Human
 
-CHROMOSOMES = qw('1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y MT');
 
-def generate_samples():
-    ''' extract samples from 1000 genomes '''
+def extract_population_samples(targetDir):
+    ''' extract population samples from sample reference '''
+    popSampleFile = path.join(targetDir, args.population + "-samples.txt")
+    warning("INFO:", "Extracting samples for population:", args.population, "to", propSampleFile)
+    lineCount = 0
+    sampleCount = 0
+    with open(args.sampleFile) as fh, open(popSampleFile, 'w') as ofh:
+        for line in fh:
+            lineCount = lineCount + 1
+            if lineCount == 1: # header
+                print(line, file=ofh)
+            values = line.rstrip().split(' ')
+            if values[-1] == args.population:
+                print(line, file=ofh)
+                sampleCount = sampleCount + 1
+    warning("INFO:", "DONE - Extracted", sampleCount, "samples.")
 
-    cmd = ['extract1000GenomesPopSamples', '--file', args.sampleFile, '-d', outputDir, '-p', args.population]
-    warning(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), "Executing:", ' '.join(cmd))
-    execute_cmd(cmd, verbose=False)
+
+
+def vcf2tped(chrm):
+    ''' convert VCF file to tped/tfam '''
+    chrm = 
+    #CMD="vcftools --gzvcf ${FILE_PATH}/${VCF_FILE} --plink-tped --out $OUTPUT_FILE_PATH/chr${c}"
 
 
 def run_ld(chrm):
@@ -38,17 +54,19 @@ def run_ld(chrm):
     outputFile = path.join(outputDir, 'chr' + xstr(chrm))
     cmd = ['plink', '--threads', xstr(1), '--memory', xstr(4500), '--tped', tped, '--tfam', tfam, '--keep', samples,
             '--r2', 'dprime', 'with-freqs', 'gz', '--ld-window', xstr(9999), '--out', outputFile]
-    warning(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), "Executing:", ' '.join(cmd))
+    warning("INFO:", "Executing:", ' '.join(cmd))
     execute_cmd(cmd, verbose=False)
     
     return 1
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="calculate LD load file")
+    parser = argparse.ArgumentParser(description="calculate LD load file", allow_abbrev=False)
     parser.add_argument('-p', '--population', help="population", required=True)
     parser.add_argument('-d', '--rootDirectory', help="root directory where pop directory should be created", required=True)
-    parser.add_argument('-c', '--chrDirectory', help="directory for chromosomes", required=True)
+    parser.add_argument('--chrDirectory', help="directory for chromosomes", required=True)
+    parser.add_argument('--chr', default='all',
+                        help="chromosome; comma separated list of one or more chromosomes or 'all'")
     parser.add_argument('-s', '--sampleFile', help="full path to sample file", required=True)
     parser.add_argument('-m', '--maxWorkers', type=int, help="full path to sample file", default=5)
     parser.add_argument('--gusConfigFile',
@@ -56,10 +74,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     outputDir = create_dir(path.join(args.rootDirectory, args.population))
+    extract_population_samples(outputDir)
 
-    generate_samples();
 
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        for c in CHROMOSOMES:
-            warning("Create and start thread for chromosome:", xstr(c))
-            executor.submit(run_ld, c)
+    chrList = args.chr.split(',') if not args.chr.startswith('all') \
+      else [c.value for c in Human]
+    random.shuffle(chrList) # so that not all large chrms are done at once if all is selected
+    with ProcessPoolExecutor(args.maxWorkers) as executor:
+        futureUpdate = {executor.submit(run_ld, chromosome=xstr(c)) : c for c in chrList}
+        for future in as_completed(futureUpdate): # this should allow catching errors
+            try:
+                future.result()
+            except Exception as err:
+                raise(err)

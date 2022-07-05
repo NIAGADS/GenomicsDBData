@@ -141,6 +141,10 @@ loadResource --config $CONFIG_DIR/ontologies/obi.json --load data --commit --ver
 loadResource --config $CONFIG_DIR/ontologies/pro.json --load xdbr --commit --verbose > $DATA_DIR/logs/xdbr/load_pro_xdbr.log 2>&1
 loadResource --config $CONFIG_DIR/ontologies/pro.json --load data --commit --verbose > $DATA_DIR/logs/ontologies/load_pro.log 2>&1
 
+# HANCESTRO
+loadResource --config $CONFIG_DIR/ontologies/hancestro.json --load xdbr --commit --verbose > $DATA_DIR/logs/xdbr/load_hancestro_xdbr.log 2>&1
+loadResource --config $CONFIG_DIR/ontologies/hancestro.json --load data --commit --verbose > $DATA_DIR/logs/ontologies/load_hancestro.log 2>&1
+
 # =================================================
 # REFERENCE BUILD - dbSNP Variants
 # =================================================
@@ -171,10 +175,20 @@ loadResource --config $CONFIG_DIR/reference_databases/dbsnp_merge.json --load da
 # variants
 
 loadResource --config $CONFIG_DIR/adsp/17K_annotation.json --load xdbr --verbose --commit > $DATA_DIR/logs/xdbr/load_adsp_17K_xdbr.log 2>&1
-loadResource --config $CONFIG_DIR/adsp/17K_annotation.json --load data --verbose --commit > $DATA_DIR/logs/data/load_adsp_17K_vep.log 2>&1 # skip cadd
-loadResource --config $CONFIG_DIR/adsp/17K_annotation.json --load data --verbose --commit > $DATA_DIR/logs/data/load_adsp_17K_cadd.log 2>&1 # skip vep
+loadResource --config $CONFIG_DIR/adsp/17K_annotation.json --load data --verbose --commit > $DATA_DIR/logs/data/load_adsp_17K_vep.log 2>&1 # skip cadd & qc
+loadResource --config $CONFIG_DIR/adsp/17K_annotation.json --load data --verbose --commit > $DATA_DIR/logs/data/load_adsp_17K_cadd.log 2>&1 # skip vep & qc
+loadResource --config $CONFIG_DIR/adsp/17K_annotation.json --load data --verbose --commit > $DATA_DIR/logs/data/load_adsp_17K_qc.log 2>&1 # skip vep & cadd
 
-# QC
+# LD
+
+loadResource --config $CONFIG_DIR/adsp/17K_LD.json --preprocess --verbose --commit > $DATA_DIR/logs/data/load_adsp_17K_ld_placeholder.log 2>&1
+loadResource --config $CONFIG_DIR/adsp/17K_LD.json --load data --params '{"onlyChr":"1,12,13"}' --verbose --commit > $DATA_DIR/logs/data/load_adsp_17K_ld_part1.log 2>&1
+loadResource --config $CONFIG_DIR/adsp/17K_LD.json --load data --params '{"onlyChr":"2,11,14"}' --verbose --commit > $DATA_DIR/logs/data/load_adsp_17K_ld_part2.log 2>&1
+loadResource --config $CONFIG_DIR/adsp/17K_LD.json --load data --params '{"onlyChr":"3,10,15"}' --verbose --commit > $DATA_DIR/logs/data/load_adsp_17K_ld_part3.log 2>&1
+loadResource --config $CONFIG_DIR/adsp/17K_LD.json --load data --params '{"onlyChr":"4,9,16,19"}' --verbose --commit > $DATA_DIR/logs/data/load_adsp_17K_ld_part4.log 2>&1
+loadResource --config $CONFIG_DIR/adsp/17K_LD.json --load data --params '{"onlyChr":"5,8,17,20"}' --verbose --commit > $DATA_DIR/logs/data/load_adsp_17K_ld_part5.log 2>&1
+loadResource --config $CONFIG_DIR/adsp/17K_LD.json --load data --params '{"onlyChr":"6,7,18,21"}' --verbose --commit > $DATA_DIR/logs/data/load_adsp_17K_ld_part6.log 2>&1
+
 
 # =================================================
 # EBI-EMBL GWAS Catalog
@@ -320,7 +334,7 @@ loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00048.js
 
 loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00048.json  --load data --params '{"genomeBuild":"GRCh37", "archive":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00048/GRCh37_archive.log 2>&1
 loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00048.json  --load data --params '{"genomeBuild":"GRCh38", "archive":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00048/GRCh38_archive.log 2>&1
-gzip $NIAGADS_GWAS_DIR/NG00048/GRCh37/*.txt
+gzip $NIAGADS_GWAS_DIR/NG00048/GRCh37/*.meta
 gzip $DATA_DIR/logs/datasets/NG00048/*.log
 
 tar -zcvf GRCh37.tar.gz --directory $NIAGADS_GWAS_DIR/NG00048 GRCh37 
@@ -386,7 +400,7 @@ loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00053.js
 
 loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00053.json  --load data --params '{"genomeBuild":"GRCh37", "archive":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00053/GRCh37_archive.log 2>&1
 loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00053.json  --load data --params '{"genomeBuild":"GRCh38", "archive":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00053/GRCh38_archive.log 2>&1
-gzip $NIAGADS_GWAS_DIR/NG00053/GRCh37/*.txt
+gzip $NIAGADS_GWAS_DIR/NG00053/GRCh37/*.TBL
 gzip $DATA_DIR/logs/datasets/NG00053/*.log
 
 tar -zcvf GRCh37.tar.gz --directory $NIAGADS_GWAS_DIR/NG00053 GRCh37 
@@ -415,3 +429,162 @@ tar -zcvf GRCh37.tar.gz --directory $NIAGADS_GWAS_DIR/NG00055 GRCh37
 tar -zcvf GRCh38.tar.gz --directory $NIAGADS_GWAS_DIR/NG00055 GRCh38
 rm -r $NIAGADS_GWAS_DIR/NG00055/GRCh37
 rm -r $NIAGADS_GWAS_DIR/NG00055/GRCh38
+
+# NG00056
+
+mkdir $DATA_DIR/logs/datasets/NG00056
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00056.json --verbose  --preprocess  --commit > $DATA_DIR/logs/datasets/NG00056/placeholders.log 2>&1 
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00056.json --load data --params '{"liftOver":"true", "genomeBuild":"GRCh37"}' --verbose > $DATA_DIR/logs/datasets/NG00056/lift_over.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00056.json --load data --params '{"preprocess":"true", "genomeBuild":"GRCh38"}' --commit --verbose > $DATA_DIR/logs/datasets/NG00056/preprocess.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00056.json --load data --params '{"load":"true", "genomeBuild":"GRCh38", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00056/load_result.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00056.json --load data --params '{"liftOver":"true", "updateFlags":"true", "genomeBuild":"GRCh37", "updateGusConfig":"$GUS_HOME/config/grch37-annotatedvdb-gus.config"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00056/GRCh37_update.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00056.json --load data --params '{"updateFlags":"true", "genomeBuild":"GRCh38"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00056/GRCh38_update.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00056.json  --load data --params '{"genomeBuild":"GRCh37", "standardize":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00056/GRCh37_standardize.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00056.json  --load data --params '{"genomeBuild":"GRCh38", "standardize":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00056/GRCh38_standardize.log 2>&1
+
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00056.json  --load data --params '{"genomeBuild":"GRCh37", "archive":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00056/GRCh37_archive.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00056.json  --load data --params '{"genomeBuild":"GRCh38", "archive":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00056/GRCh38_archive.log 2>&1
+gzip $NIAGADS_GWAS_DIR/NG00056/GRCh37/*.tbx
+gzip $DATA_DIR/logs/datasets/NG00056/*.log
+
+tar -zcvf GRCh37.tar.gz --directory $NIAGADS_GWAS_DIR/NG00056 GRCh37 
+tar -zcvf GRCh38.tar.gz --directory $NIAGADS_GWAS_DIR/NG00056 GRCh38
+rm -r $NIAGADS_GWAS_DIR/NG00056/GRCh37
+rm -r $NIAGADS_GWAS_DIR/NG00056/GRCh38
+
+# NG00058
+
+mkdir $DATA_DIR/logs/datasets/NG00058
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00058.json --verbose  --preprocess  --commit > $DATA_DIR/logs/datasets/NG00058/placeholders.log 2>&1 
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00058.json --load data --params '{"liftOver":"true", "genomeBuild":"GRCh37"}' --verbose > $DATA_DIR/logs/datasets/NG00058/lift_over.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00058.json --load data --params '{"preprocess":"true", "genomeBuild":"GRCh38"}' --commit --verbose > $DATA_DIR/logs/datasets/NG00058/preprocess.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00058.json --load data --params '{"load":"true", "genomeBuild":"GRCh38", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00058/load_result.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00058.json --load data --params '{"liftOver":"true", "updateFlags":"true", "genomeBuild":"GRCh37", "updateGusConfig":"$GUS_HOME/config/grch37-annotatedvdb-gus.config"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00058/GRCh37_update.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00058.json --load data --params '{"updateFlags":"true", "genomeBuild":"GRCh38"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00058/GRCh38_update.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00058.json  --load data --params '{"genomeBuild":"GRCh37", "standardize":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00058/GRCh37_standardize.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00058.json  --load data --params '{"genomeBuild":"GRCh38", "standardize":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00058/GRCh38_standardize.log 2>&1
+
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00058.json  --load data --params '{"genomeBuild":"GRCh37", "archive":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00058/GRCh37_archive.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00058.json  --load data --params '{"genomeBuild":"GRCh38", "archive":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00058/GRCh38_archive.log 2>&1
+gzip $NIAGADS_GWAS_DIR/NG00058/GRCh37/*.txt
+gzip $DATA_DIR/logs/datasets/NG00058/*.log
+
+tar -zcvf GRCh37.tar.gz --directory $NIAGADS_GWAS_DIR/NG00058 GRCh37 
+tar -zcvf GRCh38.tar.gz --directory $NIAGADS_GWAS_DIR/NG00058 GRCh38
+rm -r $NIAGADS_GWAS_DIR/NG00058/GRCh37
+rm -r $NIAGADS_GWAS_DIR/NG00058/GRCh38
+
+
+# NOTE: of NG00073, NG00075, NG00076 must load NG00075 first to have reference against which to check gapped INDELS
+
+# NG00075
+
+mkdir $DATA_DIR/logs/datasets/NG00075
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00075.json --verbose  --preprocess  --commit > $DATA_DIR/logs/datasets/NG00075/placeholders.log 2>&1 
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00075.json --load data --params '{"liftOver":"true", "genomeBuild":"GRCh37"}' --verbose > $DATA_DIR/logs/datasets/NG00075/lift_over.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00075.json --load data --params '{"preprocess":"true", "genomeBuild":"GRCh38"}' --commit --verbose > $DATA_DIR/logs/datasets/NG00075/preprocess.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00075.json --load data --params '{"load":"true", "genomeBuild":"GRCh38", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00075/load_result.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00075.json --load data --params '{"liftOver":"true", "updateFlags":"true", "genomeBuild":"GRCh37", "updateGusConfig":"$GUS_HOME/config/grch37-annotatedvdb-gus.config"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00075/GRCh37_update.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00075.json --load data --params '{"updateFlags":"true", "genomeBuild":"GRCh38"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00075/GRCh38_update.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00075.json  --load data --params '{"genomeBuild":"GRCh37", "standardize":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00075/GRCh37_standardize.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00075.json  --load data --params '{"genomeBuild":"GRCh38", "standardize":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00075/GRCh38_standardize.log 2>&1
+
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00075.json  --load data --params '{"genomeBuild":"GRCh37", "archive":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00075/GRCh37_archive.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00075.json  --load data --params '{"genomeBuild":"GRCh38", "archive":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00075/GRCh38_archive.log 2>&1
+gzip $NIAGADS_GWAS_DIR/NG00075/GRCh37/*.txt
+gzip $DATA_DIR/logs/datasets/NG00075/*.log
+
+tar -zcvf GRCh37.tar.gz --directory $NIAGADS_GWAS_DIR/NG00075 GRCh37 
+tar -zcvf GRCh38.tar.gz --directory $NIAGADS_GWAS_DIR/NG00075 GRCh38
+rm -r $NIAGADS_GWAS_DIR/NG00075/GRCh37
+rm -r $NIAGADS_GWAS_DIR/NG00075/GRCh38
+
+
+# NG00073
+
+mkdir $DATA_DIR/logs/datasets/NG00073
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00073.json --verbose  --preprocess  --commit > $DATA_DIR/logs/datasets/NG00073/placeholders.log 2>&1 
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00073.json --load data --params '{"liftOver":"true", "genomeBuild":"GRCh37"}' --verbose > $DATA_DIR/logs/datasets/NG00073/lift_over.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00073.json --load data --params '{"preprocess":"true", "genomeBuild":"GRCh38"}' --commit --verbose > $DATA_DIR/logs/datasets/NG00073/preprocess.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00073.json --load data --params '{"load":"true", "genomeBuild":"GRCh38", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00073/load_result.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00073.json --load data --params '{"liftOver":"true", "updateFlags":"true", "genomeBuild":"GRCh37", "updateGusConfig":"$GUS_HOME/config/grch37-annotatedvdb-gus.config"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00073/GRCh37_update.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00073.json --load data --params '{"updateFlags":"true", "genomeBuild":"GRCh38"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00073/GRCh38_update.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00073.json  --load data --params '{"genomeBuild":"GRCh37", "standardize":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00073/GRCh37_standardize.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00073.json  --load data --params '{"genomeBuild":"GRCh38", "standardize":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00073/GRCh38_standardize.log 2>&1
+
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00073.json  --load data --params '{"genomeBuild":"GRCh37", "archive":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00073/GRCh37_archive.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00073.json  --load data --params '{"genomeBuild":"GRCh38", "archive":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00073/GRCh38_archive.log 2>&1
+gzip $NIAGADS_GWAS_DIR/NG00073/GRCh37/*.txt
+gzip $DATA_DIR/logs/datasets/NG00073/*.log
+
+tar -zcvf GRCh37.tar.gz --directory $NIAGADS_GWAS_DIR/NG00073 GRCh37 
+tar -zcvf GRCh38.tar.gz --directory $NIAGADS_GWAS_DIR/NG00073 GRCh38
+rm -r $NIAGADS_GWAS_DIR/NG00073/GRCh37
+rm -r $NIAGADS_GWAS_DIR/NG00073/GRCh38
+
+
+# NG00076
+
+mkdir $DATA_DIR/logs/datasets/NG00076
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00076.json --verbose  --preprocess  --commit > $DATA_DIR/logs/datasets/NG00076/placeholders.log 2>&1 
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00076.json --load data --params '{"liftOver":"true", "genomeBuild":"GRCh37"}' --verbose > $DATA_DIR/logs/datasets/NG00076/lift_over.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00076.json --load data --params '{"preprocess":"true", "genomeBuild":"GRCh38"}' --commit --verbose > $DATA_DIR/logs/datasets/NG00076/preprocess.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00076.json --load data --params '{"load":"true", "genomeBuild":"GRCh38", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00076/load_result.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00076.json --load data --params '{"liftOver":"true", "updateFlags":"true", "genomeBuild":"GRCh37", "updateGusConfig":"$GUS_HOME/config/grch37-annotatedvdb-gus.config"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00076/GRCh37_update.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00076.json --load data --params '{"updateFlags":"true", "genomeBuild":"GRCh38"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00076/GRCh38_update.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00076.json  --load data --params '{"genomeBuild":"GRCh37", "standardize":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00076/GRCh37_standardize.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00076.json  --load data --params '{"genomeBuild":"GRCh38", "standardize":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00076/GRCh38_standardize.log 2>&1
+
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00076.json  --load data --params '{"genomeBuild":"GRCh37", "archive":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00076/GRCh37_archive.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00076.json  --load data --params '{"genomeBuild":"GRCh38", "archive":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00076/GRCh38_archive.log 2>&1
+gzip $NIAGADS_GWAS_DIR/NG00076/GRCh37/*.txt
+gzip $DATA_DIR/logs/datasets/NG00076/*.log
+
+tar -zcvf GRCh37.tar.gz --directory $NIAGADS_GWAS_DIR/NG00076 GRCh37 
+tar -zcvf GRCh38.tar.gz --directory $NIAGADS_GWAS_DIR/NG00076 GRCh38
+rm -r $NIAGADS_GWAS_DIR/NG00076/GRCh37
+rm -r $NIAGADS_GWAS_DIR/NG00076/GRCh38
+
+# NG00078
+
+mkdir $DATA_DIR/logs/datasets/NG00078
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00078.json --verbose  --preprocess  --commit > $DATA_DIR/logs/datasets/NG00078/placeholders.log 2>&1 
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00078.json --load data --params '{"liftOver":"true", "genomeBuild":"GRCh37"}' --verbose > $DATA_DIR/logs/datasets/NG00078/lift_over.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00078.json --load data --params '{"preprocess":"true", "genomeBuild":"GRCh38"}' --commit --verbose > $DATA_DIR/logs/datasets/NG00078/preprocess.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00078.json --load data --params '{"load":"true", "genomeBuild":"GRCh38", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00078/load_result.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00078.json --load data --params '{"liftOver":"true", "updateFlags":"true", "genomeBuild":"GRCh37", "updateGusConfig":"$GUS_HOME/config/grch37-annotatedvdb-gus.config"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00078/GRCh37_update.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00078.json --load data --params '{"updateFlags":"true", "genomeBuild":"GRCh38"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00078/GRCh38_update.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00078.json  --load data --params '{"genomeBuild":"GRCh37", "standardize":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00078/GRCh37_standardize.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00078.json  --load data --params '{"genomeBuild":"GRCh38", "standardize":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00078/GRCh38_standardize.log 2>&1
+
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00078.json  --load data --params '{"genomeBuild":"GRCh37", "archive":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00078/GRCh37_archive.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00078.json  --load data --params '{"genomeBuild":"GRCh38", "archive":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00078/GRCh38_archive.log 2>&1
+gzip $NIAGADS_GWAS_DIR/NG00078/GRCh37/*.txt
+gzip $DATA_DIR/logs/datasets/NG00078/*.log
+
+tar -zcvf GRCh37.tar.gz --directory $NIAGADS_GWAS_DIR/NG00078 GRCh37 
+tar -zcvf GRCh38.tar.gz --directory $NIAGADS_GWAS_DIR/NG00078 GRCh38
+rm -r $NIAGADS_GWAS_DIR/NG00078/GRCh37
+rm -r $NIAGADS_GWAS_DIR/NG00078/GRCh38
+
+# NG00115
+
+mkdir $DATA_DIR/logs/datasets/NG00115
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00115.json --verbose  --preprocess  --commit > $DATA_DIR/logs/datasets/NG00115/placeholders.log 2>&1 
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00115.json --load data --params '{"liftOver":"true", "genomeBuild":"GRCh37"}' --verbose > $DATA_DIR/logs/datasets/NG00115/lift_over.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00115.json --load data --params '{"preprocess":"true", "genomeBuild":"GRCh38"}' --commit --verbose > $DATA_DIR/logs/datasets/NG00115/preprocess.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00115.json --load data --params '{"load":"true", "genomeBuild":"GRCh38", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00115/load_result.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00115.json --load data --params '{"liftOver":"true", "updateFlags":"true", "genomeBuild":"GRCh37", "updateGusConfig":"$GUS_HOME/config/grch37-annotatedvdb-gus.config"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00115/GRCh37_update.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00115.json --load data --params '{"updateFlags":"true", "genomeBuild":"GRCh38"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00115/GRCh38_update.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00115.json  --load data --params '{"genomeBuild":"GRCh37", "standardize":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00115/GRCh37_standardize.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00115.json  --load data --params '{"genomeBuild":"GRCh38", "standardize":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00115/GRCh38_standardize.log 2>&1
+
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00115.json  --load data --params '{"genomeBuild":"GRCh37", "archive":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00115/GRCh37_archive.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00115.json  --load data --params '{"genomeBuild":"GRCh38", "archive":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00115/GRCh38_archive.log 2>&1
+gzip $NIAGADS_GWAS_DIR/NG00115/GRCh37/*.txt
+gzip $DATA_DIR/logs/datasets/NG00115/*.log
+
+tar -zcvf GRCh37.tar.gz --directory $NIAGADS_GWAS_DIR/NG00115 GRCh37 
+tar -zcvf GRCh38.tar.gz --directory $NIAGADS_GWAS_DIR/NG00115 GRCh38
+rm -r $NIAGADS_GWAS_DIR/NG00115/GRCh37
+rm -r $NIAGADS_GWAS_DIR/NG00115/GRCh38

@@ -1,0 +1,49 @@
+{
+    "file": {
+	"path": "$DATA_DIR/ADSP/17K/LD"
+    },
+
+    "external_database": {
+	"name": "NIAGADS",
+	"version": "current",
+	"release_date": "10-27-2021",
+	"id_url": "https://dss.niagads.org/datasets/ng00067",
+	"description": "Alzheimer's Disease Sequencing Project (ADSP) 17K R3 Variants",
+	"accession": "NG00067_V7_17K_R3",
+	"type": "Genetic variation"
+    },
+
+    "preprocess": [
+	{
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
+		"parameters" : {
+		    "type": "Genetic variation",
+		    "subtype": "Linkage analysis",
+		    "description": "Strength of association (linkage disequilibrium) between alleles at different loci in the selected population.  Calculated using emeraLD.",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "biomaterialCharacteristics": { "population": "value:ADSP_17K"},
+		    "sourceId" : "@external_database.accession+_LD",
+		    "name": "Linkage Disequilbrium among Alzheimer's Disease Sequencing Project (ADSP) 17K R3 Variants"
+		}
+	    }
+	}
+    ],
+    "load" : [
+	{
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::InsertVariantLDResult",
+		"comment": "fields -> #CHR POS1 POS2 R Rsq",
+		"parameters": {
+		    "dir": "@file.path",
+		    "sourceId" : "@external_database.accession+_LD",
+		    "chromosome":"#CHR",
+		    "position1": "POS1",
+		    "position2": "POS2",
+		    "r": "R",
+		    "rSquared": "Rsq"
+		}
+	    }
+	}
+    ]
+}

@@ -5,13 +5,13 @@ DROP SEQUENCE IF EXISTS Results.VariantLD_SQ;
 CREATE UNLOGGED TABLE Results.VariantLD (
        POPULATION_PROTOCOL_APP_NODE_ID	     NUMERIC(12) NOT NULL,
        CHROMOSOME		     CHARACTER VARYING(10) NOT NULL,
-       VARIANTS		     	     TEXT ARRAY[2] NOT NULL,
-       LOCATIONS		     BIGINT ARRAY[2] NOT NULL,
+       LOCATIONS		     INT ARRAY[2] NOT NULL,
        DISTANCE			     INTEGER,
-       MINOR_ALLELE_FREQUENCY	     FLOAT ARRAY[2],       
+       MINOR_ALLELE_FREQUENCY	     FLOAT ARRAY[2],
+       R			     FLOAT,
        R_SQUARED		     FLOAT,
        D_PRIME			     FLOAT,
-       BIN_INDEX		     LTREE NOT NULL,
+       BIN_INDEX		     LTREE,
 
        -- GUS HOUSEKEEPING
 
@@ -53,13 +53,34 @@ $body$ LANGUAGE plpgsql;
 
 SELECT create_ld_partitions();
 
+-- TRIGGERS
+
+CREATE OR REPLACE FUNCTION RESULTS.set_ld_bin_index() RETURNS TRIGGER
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+
+  IF NEW.bin_index IS NULL THEN
+    NEW.bin_index := find_bin_index(NEW.chromosome, least(NEW.locations[1], NEW.locations[2]), greatest(NEW.locations[1], NEW.locations[2]));
+  END IF;
+  IF NEW.bin_index IS NULL THEN
+      RAISE not_null_violation;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER results_ld_set_bin_index
+       BEFORE INSERT ON Results.VariantLD
+       FOR EACH ROW EXECUTE PROCEDURE RESULTS.set_ld_bin_index();
+
+
 -- INDEXES
 
-/* CREATE INDEX LD_RESULT_POPULATION ON Results.VariantLD USING BRIN(POPULATION_PROTOCOL_APP_NODE_ID);
-CREATE INDEX LD_RESULT_REFSNP ON Results.VariantLD USING GIN(VARIANTS array_ops);
+CREATE INDEX LD_RESULT_POPULATION ON Results.VariantLD USING BRIN(POPULATION_PROTOCOL_APP_NODE_ID);
 CREATE INDEX LD_RESULT_MAF ON Results.VariantLD USING GIN(MINOR_ALLELE_FREQUENCY);
-CREATE INDEX LD_RESULT_BIN_INDEX ON Variant USING GIST(BIN_INDEX);
-*/
+CREATE INDEX LD_RESULT_BIN_INDEX ON Results.VariantLD USING GIST(BIN_INDEX);
+
 
 -- GRANTS
 
