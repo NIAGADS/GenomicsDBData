@@ -1,11 +1,15 @@
 {    
     "file": {
-	"path": "$DATA_DIR/NIAGADS_GWAS",
+	"path": "$NIAGADS_GWAS_DIR",
 	"accession": "NG00078",
-	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
-	"cadd_database_directory": "$DATA_DIR/CADD/v16",
-	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
-	"vep_cache_directory": "$DATA_DIR/VEP_CACHE"
+	"cadd_path": "$DATA_DIR/CADD",
+	"vep_result_dir": "vep_results",
+	"seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
+	"consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
+	"chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
+	"chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz",
+	"GRCh37_gus_config": "$GUS_HOME/config/grch37-gus.config"
+
     },
     "external_database": {
 	"name": "NIAGADS",
@@ -20,68 +24,89 @@
 	{
 	    "ALL": {
 		"file": "META_IGAP.7.ADGC.15_MODEL_All.Sample.txt",
-		"sourceId": "@file.accession+_ALL",
-		"name": "IGAP APOE-Stratified Analysis: All Samples",
-		"description" : "Summary statistics from an APOE-stratified GWAS of the IGAP discovery phase dataset.",
-		"characteristics": {
-		    "diagnosis": "Alzheimer's disease",
+		"sourceId": "@file.accession+_GRCh38_ALL",
+		"name": "IGAP APOE-Stratified Analysis: All Samples (GRCh38)",
+		"description" : "Summary statistics from an APOE-stratified GWAS of the IGAP discovery phase dataset. (Lifted Over from GRCh37 to GRCh38)",
+		"biomaterialCharacteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
 		    "population": "European",
 		    "covariate specification": "value:sex, age, APOEε4 status, and population stratification"
+		},
+		"trackSummary": {
+		    "consortium": "IGAP",
+		    "cohorts": "ADGC,CHARGE,EADI,GERAD",
+		    "ncase": 17536,
+		    "ncontrol": 36715
 		}
 	    }
 	},
 	{
 	    "APOE4_CARRIERS": {
 		"file": "META_IGAP.7.ADGC.15_MODEL_APOE.e4.Carriers.txt",
-		"sourceId": "@file.accession+_APOE4_CARRIERS",
-		"name": "IGAP APOE-Stratified Analysis: APOEε4 Carriers",
-		"description" : "Summary statistics from an APOE-stratified GWAS of the APOEε4+ (10,352 cases and 9,207 controls) subgroup of the IGAP discovery phase dataset.",
-		"characteristics": {
-		    "diagnosis": "Alzheimer's disease",
+		"sourceId": "@file.accession+_GRCh38_APOE4_CARRIERS",
+		"name": "IGAP APOE-Stratified Analysis: APOEε4 Carriers (GRCh38)",
+		"description" : "Summary statistics from an APOE-stratified GWAS of the APOEε4+ subgroup of the IGAP discovery phase dataset. (Lifted Over from GRCh37 to GRCh38)",
+		"biomaterialCharacteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
 		    "population": "European",
 		    "APOE carrier status": "APOE ε4 carrier",
 		    "covariate specification": "value:sex, age, APOEε4 status, and population stratification"
+		},
+		"trackSummary": {
+		    "consortium": "IGAP",
+		    "cohorts": "ADGC,CHARGE,EADI,GERAD",
+		    "ncase": 10352,
+		    "ncontrol": 9207
 		}
 	    }
 	},
 	{
 	    "APOE4_NON_CARRIERS": {
 		"file": "META_IGAP.7.ADGC.15_MODEL_APOE.e4.Noncarriers.txt",
-		"sourceId": "@file.accession+_APOE4_NON_CARRIERS",
-		"name": "IGAP APOE-Stratified Analysis: APOEε4 Non-Carriers",
-		"description" : "Summary statistics from an APOE-stratified GWAS of the APOEε4- (7,184 cases and 26,968 controls) subgroup of the IGAP discovery phase dataset.",
-		"characteristics": {
-		    "diagnosis": "Alzheimer's disease",
+		"sourceId": "@file.accession+_GRCh38_APOE4_NON_CARRIERS",
+		"name": "IGAP APOE-Stratified Analysis: APOEε4 Non-Carriers (GRCh38)",
+		"description" : "Summary statistics from an APOE-stratified GWAS of the APOEε4- subgroup of the IGAP discovery phase dataset. (Lifted Over from GRCh37 to GRCh38)",
+		"biomaterialCharacteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
 		    "population": "European",
 		    "APOE carrier status": "APOE ε4 non-carrier",
 		    "covariate specification": "value:sex, age, APOEε4 status, and population stratification"
+		},
+		"trackSummary": {
+		    "consortium": "IGAP",
+		    "cohorts": "ADGC,CHARGE,EADI,GERAD",
+		    "ncase": 7184,
+		    "ncontrol": 26968
 		}
 	    }
 	},
 	{
 	    "INT": {
 		"file": "META_IGAP.7.ADGC.15_MODEL_INT.wt.APOE.txt",
-		"sourceId": "@file.accession+_INT",
-		"name": "IGAP APOE-Stratified Analysis: SNP - APOEε4 Status Interaction",
-		"description" : "Summary statistics from a genome-wide interaction test between SNPs and APOEε4 status in the IGAP discovery phase dataset.",
-		"characteristics": {
-		    "diagnosis": "Alzheimer's disease",
+		"sourceId": "@file.accession+_GRCh38_INT",
+		"name": "IGAP APOE-Stratified Analysis: SNP - APOEε4 Status Interaction (GRCh38)",
+		"description" : "Summary statistics from a genome-wide interaction test between SNPs and APOEε4 status in the IGAP discovery phase dataset. (Lifted Over from GRCh37 to GRCh38)",
+		"biomaterialCharacteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
 		    "population": "European",
 		    "covariate specification": "value:sex, age, and population stratification"
+		},
+		"trackSummary": {
+		    "consortium": "IGAP",
+		    "cohorts": "ADGC,CHARGE,EADI,GERAD"
 		}
 	    }
 	}
     ],
   
-    "load": [
+    "preprocess": [
 	{
 	    "plugin": {
 		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
-		"skip":"true",
 		"parameters": {
 		    "name": "IGAP APOE-Stratified Analysis",
-		    "attribution": "Jun et al. 2016",
-		    "description" : "Summary statistics from an APOE-stratified genome-wide association meta-analysis for AD status was performed using the IGAP discovery phase dataset.  Summary statistics are available for all samples, as well as subsets of just APOEε4 carriers or APOEε4 non-carriers.  Summary statistics from an interaction test with APOEε4 status are also available.",
+		    "attribution": "Jun et al. 2016|PMID:25778476",
+		    "description" : "Summary statistics from an APOE-stratified genome-wide association meta-analysis for AD status was performed using the IGAP discovery phase dataset.  Summary statistics are available for all samples, as well as subsets of just APOEε4 carriers or APOEε4 non-carriers.  Summary statistics from an interaction test with APOEε4 status are also available. Lifted Over from GRCh37 to GRCh38.",
 		    "sourceId": "@file.accession",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version"
 		}		
@@ -91,20 +116,21 @@
 	    "foreach" : true,
 	    "plugin": {
 		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
-		"skip":"true",
 		"parameters" : {
 		    "attribution": "Jun et al. 2016",
 		    "type": "Genetic variation",
 		    "subtype": "GWAS summary statistics",
 		    "description": "foreach",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version",
-		    "characteristics": "foreach",
+		    "biomaterialCharacteristics": "foreach",
 		    "sourceId" : "foreach",
 		    "name": "foreach",
 		    "studyId": "@file.accession"
 		}
 	    }
-	}, 
+	}
+    ],
+    "load": [
 	{
 	    "foreach": true,
 	    "plugin": {
@@ -113,10 +139,13 @@
 		    "file": "foreach",
 		    "sourceId": "foreach",
 		    "fileDir" : "@file.path/@file.accession",
-		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
-		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
-		    "caddDatabaseDir": "@file.cadd_database_directory",
-		    "vepCacheDir": "@file.vep_cache_directory",
+		    "sourceGenomeBuildGusConfig": "@file.GRCh37_gus_config",
+		    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
+		    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
+		    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
+		    "liftOverChainFile": "@file.chain_file",
+		    "remapAssemblies": "GCF_000001405.25|GCF_000001405.26",
+		    "caddDatabaseDir": "@file.cadd_path",
 		    "testAllele": "Allele1",
 		    "refAllele": "Allele2",
 		    "chromosome": "#CHR",
@@ -124,7 +153,7 @@
 		    "marker": "SNP",
 		    "pvalue": "P-value",
 		    "frequency": "Freq1",
-		    "genomeBuild": "GRCh37.p13",
+		    "genomeBuild": "GRCh37",
 		    "genomeWideSignificanceThreshold": "5e-8",
 		    "checkAltIndels":"true",
 		    "restrictedStats": {
@@ -140,8 +169,6 @@
 		    }
 		}
 	    }
-	}
-
-	
+	}	
     ]
 }

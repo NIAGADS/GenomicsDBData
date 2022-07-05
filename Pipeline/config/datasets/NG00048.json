@@ -95,7 +95,7 @@
 		    "chromosome": "Chr",
 		    "position": "BP",
 		    "pvalue": "P-value",
-		    "genomeBuild": "GRCh37.p13",
+		    "genomeBuild": "GRCh37",
 		    "genomeWideSignificanceThreshold": "5e-8",
 		    "checkAltIndels":"true",
 		    "restrictedStats":  {

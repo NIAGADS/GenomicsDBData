@@ -1,11 +1,14 @@
 {    
     "file": {
-	"path": "$DATA_DIR/NIAGADS_GWAS",
+	"path": "$NIAGADS_GWAS_DIR",
 	"accession": "NG00056",
-	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
-	"cadd_database_directory": "$DATA_DIR/CADD/v16",
-	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
-	"vep_cache_directory": "$DATA_DIR/VEP_CACHE"
+	"cadd_path": "$DATA_DIR/CADD",
+	"vep_result_dir": "vep_results",
+	"seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
+	"consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
+	"chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
+	"chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz",
+	"GRCh37_gus_config": "$GUS_HOME/config/grch37-gus.config"
     },
     "external_database": {
 	"name": "NIAGADS",
@@ -16,18 +19,22 @@
 	"accession": "NIAGADS",
 	"type": "Genetic variation"
     },
-    "foreach": [
-	
+    "foreach": [	
 	{
 	    "ALL": {
 		"file": "META_Transethnic_AD_GWAS_Discovery_in_ALL.sample.tbx",
-		"sourceId": "@file.accession+_ALL",
-		"name": "Transethnic LOAD: All Samples",
-		"description": "summary statistics for a transethnic GWAS study of late-onset AD, adjusted for age, sex, and population stratification (all samples)",
-		"characteristics": {
+		"sourceId": "@file.accession+_GRCh38_ALL",
+		"name": "Transethnic LOAD: All Samples (GRCh38)",
+		"description": "summary statistics for a transethnic GWAS study of late-onset AD, adjusted for age, sex, and population stratification (all samples) (Lifted Over from GRCh37 to GRCh38)",
+		"biomaterialCharacteristics": {
 		    "diagnosis": "late onset Alzheimer's disease",
 		    "covariate specification": "value:adjusted for age, sex, and population stratification",
 		    "population": ["European", "African American", "Japanese", "Israeli-Arab"]
+		},
+		"trackSummary": {
+		    "ncase": {"European":13100, "African American":1472, "Japanese":951,"Israeli-Arab":115},
+		    "ncontrol": {"European":13220, "African American":3511, "Japanese":894,"Israeli-Arab":64},
+		    "consortium": "IGAP,ADGC"
 		}
 	    }
 	},
@@ -36,14 +43,19 @@
 
 	    "APOE_E4": {
 		"file": "META_Transethnic_AD_GWAS_Discovery_in_APOE.e4.carriers.tbx",
-		"sourceId": "@file.accession+_APOE_E4",
-		"name": "Transethnic LOAD: APOE ε4 Carriers",
-		"description": "summary statistics for APOE ε4 carriers in a transethnic GWAS study of late-onset AD, adjusted for age, sex, and population stratification",
-		"characteristics": {
+		"sourceId": "@file.accession+_GRCh38_APOE_E4",
+		"name": "Transethnic LOAD: APOE ε4 Carriers (GRCh38)",
+		"description": "summary statistics for APOE ε4 carriers in a transethnic GWAS study of late-onset AD, adjusted for age, sex, and population stratification (Lifted Over from GRCh37 to GRCh38)",
+		"biomaterialCharacteristics": {
 		    "APOE carrier status": "APOE ε4 carrier",
 		    "diagnosis": "late onset Alzheimer's disease",
 		    "covariate specification": "value:adjusted for age, sex, and population stratification",
-		    "population": ["European", "African American", "Japanese", "Israeli-Arab"]
+		    "population": ["European", "African American", "Japanese"]
+		},
+		"trackSummary": {
+		    "ncase": {"European":8271, "African American":865, "Japanese":535},
+		    "ncontrol": {"European":3480, "African American":1241, "Japanese":151},
+		    "consortium": "IGAP,ADGC"
 		}
 	    }
 	},
@@ -51,14 +63,19 @@
 	{
 	    "NON_APOE_E4": {
 		"file": "META_Transethnic_AD_GWAS_Discovery_in_APOE.e4.non-carriers.tbx",
-		"sourceId": "@file.accession+_NON_APOE_E4",
-		"name": "Transethnic LOAD: APOE ε4 Non-Carriers",
-		"description": "summary statistics for APOE ε4 non-carriers in a transethnic GWAS study of late-onset AD, adjusted for age, sex, and population stratification",
-		"characteristics": {
+		"sourceId": "@file.accession+_GRCh38_NON_APOE_E4",
+		"name": "Transethnic LOAD: APOE ε4 Non-Carriers (GRCh38)",
+		"description": "summary statistics for APOE ε4 non-carriers in a transethnic GWAS study of late-onset AD, adjusted for age, sex, and population stratification (Lifted Over from GRCh37 to GRCh38)",
+		"biomaterialCharacteristics": {
 		    "APOE carrier status": "APOE ε4 non-carrier",
 		    "diagnosis": "late onset Alzheimer's disease",
 		    "covariate specification": "value:adjusted for age, sex, and population stratification",
 		    "population": ["European", "African American", "Japanese", "Israeli-Arab"]
+		},
+		"trackSummary": {
+		    "ncase": {"European":4829, "African American":607, "Japanese":416, "Israeli-Arab":51},
+		    "ncontrol": {"European":9740, "African American":2270, "Japanese":743, "Israeli-Arab":64},
+		    "consortium": "IGAP,ADGC"
 		}
 	    }
 	},
@@ -66,28 +83,33 @@
 	{
 	    "ALL_APOE_ADJ": {
 		"file": "META_Transethnic_AD_GWAS_Discovery_INT_wt_APOE.e4.status.tbx",
-		"sourceId": "@file.accession+_ALL_APOE_ADJ",
-		"name": "Transethnic LOAD: All Samples, adjusted for APOE ε4",
-		"description": "summary statistics for a transethnic GWAS study of late-onset AD, adjusted for age, sex, population stratification, and APOE ε4 status (all samples)",
-		"characteristics": {
+		"sourceId": "@file.accession+_GRCh38_ALL_APOE_ADJ",
+		"name": "Transethnic LOAD: All Samples, adjusted for APOE ε4 (GRCh38)",
+		"description": "summary statistics for a transethnic GWAS study of late-onset AD, adjusted for age, sex, population stratification, and APOE ε4 status (all samples) (Lifted Over from GRCh37 to GRCh38)",
+		"biomaterialCharacteristics": {
 		    "diagnosis": "late onset Alzheimer's disease",
 		    "covariate specification": "value:adjusted for age, sex, and population stratification, and APOE ε4 status",
 		    "population": ["European", "African American", "Japanese", "Israeli-Arab"]
+		},
+		"trackSummary": {
+		    "ncase": {"European":13100, "African American":1472, "Japanese":951,"Israeli-Arab":115},
+		    "ncontrol": {"European":13220, "African American":3511, "Japanese":894,"Israeli-Arab":64},
+		    "consortium": "IGAP,ADGC"
 		}
 	    }
 	}
     ],
 
 
-    "load": [
+    "preprocess": [
 	{
 	    "plugin": {
 		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
 		"skip": true,
 		"parameters": {
-		    "attribution": "Jun et al. 2017",
+		    "attribution": "Jun et al. 2017|PMID:28183528",
 		    "name": "Transethnic LOAD",
-		    "description": "Summary statistics from a genome-wide association study examining the effect of APOE ε4 carrier status on late-onset Alzheimer's Disease conducted among multiple populations, including whites of European Ancestry, African-Americans, Japanese, and Israeli-Arabs.",
+		    "description": "Summary statistics from a genome-wide association study examining the effect of APOE ε4 carrier status on late-onset Alzheimer's Disease conducted among multiple populations, including whites of European Ancestry, African-Americans, Japanese, and Israeli-Arabs. Lifted Over from GRCh37 to GRCh38.",
 		    "sourceId": "@file.accession",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version"
 		}
@@ -99,20 +121,22 @@
 	    "foreach" : true,
 	    "plugin": {
 		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
-		"skip": true,
 		"parameters" : {
 		    "type": "Genetic variation",
 		    "attribution": "Jun et al. 2017",
 		    "subtype": "GWAS summary statistics",
 		    "description": "foreach",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version",
-		    "characteristics": "foreach",
+		    "biomaterialCharacteristics": "foreach",
 		    "sourceId" : "foreach",
 		    "name": "foreach",
-		    "studyId": "@file.accession"
+		    "studyId": "@file.accession",
+		    "trackSummary": "foreach"
 		}
 	    }
-	}, 
+	}
+    ],
+    "load": [
 	{
 	    "foreach": true,
 	    "plugin": {
@@ -121,19 +145,22 @@
 		    "file": "foreach",
 		    "sourceId": "foreach",
 		    "fileDir" : "@file.path/@file.accession",
-		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
-		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
-		    "caddDatabaseDir": "@file.cadd_database_directory",
-		    "vepCacheDir": "@file.vep_cache_directory",
+		    "sourceGenomeBuildGusConfig": "@file.GRCh37_gus_config",
+		    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
+		    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
+		    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
+		    "liftOverChainFile": "@file.chain_file",
+		    "remapAssemblies": "GCF_000001405.25|GCF_000001405.26",
+		    "caddDatabaseDir": "@file.cadd_path",
 		    "testAllele": "Allele1",
 		    "refAllele": "Allele2",
 		    "chromosome": "#CHR",
 		    "position": "BP",
 		    "pvalue": "P-value",
 		    "frequency": "Freq1",
-		    "genomeBuild": "GRCh37.p13",
+		    "genomeBuild": "GRCh37",
 		    "genomeWideSignificanceThreshold": "5e-8",
-		    "checkAltVariants":"true",
+		    "checkAltIndels":"true",
 		    "restrictedStats": {
 			"frequency_se": "FreqSE",
 			"effect": "Effect",

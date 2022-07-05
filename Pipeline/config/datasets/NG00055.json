@@ -8,8 +8,7 @@
 	"consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
 	"chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
 	"chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz",
-	"GRCh37_gus_config": "$GUS_HOME/config/grch37-gus.config",
-	"comment": "some markers in original file in error / do not use to map / do not pass marker column"
+	"GRCh37_gus_config": "$GUS_HOME/config/grch37-gus.config"
     },
     "external_database": {
 	"name": "NIAGADS",
@@ -142,7 +141,7 @@
 		    "chromosome": "CHR",
 		    "position": "BP",
 		    "pvalue": "P",
-		    "genomeBuild": "GRCh37.p13",
+		    "genomeBuild": "GRCh37",
 		    "genomeWideSignificanceThreshold": "5e-8",
 		    "checkAltIndels":"true",
 		    "restrictedStats": {

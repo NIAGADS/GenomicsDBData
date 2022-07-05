@@ -192,7 +192,7 @@
 		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
 		"skip": true,
 		"parameters": {
-		    "name": "ADGC LOAD (GRCh38)",
+		    "name": "ADGC LOAD",
 		    "attribution": "Naj et al. 2011|PMID:21460841",
 		    "description": "Summary statistics from a multi-stage Alzheimer's Disease Genetics Consortium (ADGC) GWAS study of late-onset Alzheimer's disease (LOAD).  Lifted Over from GRCh37 to GRCh38.",
 		    "sourceId": "@file.accession",

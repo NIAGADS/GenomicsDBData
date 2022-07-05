@@ -1,6 +1,6 @@
 {    
     "file": {
-	"path": "$DATA_DIR/NIAGADS_GWAS",
+	"path": "$NIAGADS_GWAS_DIR",
 	"accession": "NG00075",
 	"cadd_path": "$DATA_DIR/CADD",
 	"vep_result_dir": "vep_results",
@@ -8,6 +8,7 @@
 	"consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
 	"chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
 	"chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz",
+	"GRCh37_gus_config": "$GUS_HOME/config/grch37-gus.config",
 	"comment": "note even though ins/del status is indicated in the marker ID, sometimes it is wrong (i.e., existing refSnp for the alt:ref version, so still checking if alt/ref variant is loaded (checkAltIndels) if no exact match is found"
     },
     "external_database": {
@@ -26,10 +27,15 @@
 		"sourceId": "@file.accession+_GRCh38_STAGE1",
 		"name": "IGAP Rare Variants: Stage 1 (GRCh38)",
 		"description": "summary statistics from meta-analysis results obtained in the stage 1 GWAS study, including genotyped and imputed data (11,480,632 variants, phase 1 integrated release 3, March 2012) of 21,982 Alzheimer's disease cases and 41,944 cognitively normal controls. The meta-analysis examined SNPs genotyped or imputed in at least 30% of the AD cases and 30% of the control samples across all datasets. (Lifted Over from GRCh37 to GRCh38)",
-		"characteristics": {
-		    "diagnosis": "Alzheimer's disease",
+		"biomaterialCharacteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
 		    "population": "European",
 		    "covariate specification": "value:age (defined as age-at-onset for cases and age-at-last exam for controls), sex, and population stratification"
+		},
+		"trackSummary": {
+		    "consortium":"IGAP",
+		    "ncase": 21982,
+		    "ncontrol":	41944	    
 		}
 	    }
 	},
@@ -39,10 +45,15 @@
 		"sourceId": "@file.accession+_GRCh38_STAGE2",
 		"name": "IGAP Rare Variants: Stage 2 (GRCh38)",
 		"description": "summary statistics from meta-analysis results of the stage 2 GWAS study (including 11,632 variants that were genotyped on the I-select chip and tested for association in an independent set of 8,362 Alzheimer's disease cases and 10,483 controls) with the combined stage1/stage2 p-values. 11,540 of the I-select chip variants were available for meta-analysis with the stage 1 dataset.  The meta-analysis examined SNPs genotyped or imputed in at least 30% of the AD cases and 30% of the control samples across all datasets. (Lifted Over from GRCh37 to GRCh38)",
-		"characteristics": {
+		"biomaterialCharacteristics": {
 		    "diagnosis": "late onset Alzheimer's disease",
 		    "population": "European",
 		    "covariate specification": "value:age (defined as age-at-onset for cases and age-at-last exam for controls), sex, and population stratification"
+		},
+		"trackSummary": {
+		    "consortium":"IGAP",
+		    "ncase": 8362,
+		    "ncontrol":	10483
 		}
 	    }
 	}
@@ -51,11 +62,10 @@
 	{
 	    "plugin": {
 		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
-		"skip": true,
 		"parameters": {
-		    "attribution": "Kunkle et al. 2019",
-		    "name": "IGAP Rare Variants (GRCh38)",
-		    "description" : "The International Genomics of Alzheimer's Project (IGAP) is a large three-stage study based upon genome-wide association studies (GWAS) on individuals of European ancestry. In stage 1, IGAP used genotyped and imputed data on 11,480,632 single nucleotide polymorphisms (SNPs) to meta-analyse GWAS datasets consisting of 21,982 Alzheimer's disease cases and 41,944 cognitively normal controls from four consortia: The Alzheimer Disease Genetics Consortium (ADGC); The European Alzheimer's disease Initiative (EADI); The Cohorts for Heart and Aging Research in Genomic Epidemiology Consortium (CHARGE); and The Genetic and Environmental Risk in AD Consortium Genetic and Environmental Risk in AD/Defining Genetic, Polygenic and Environmental Risk for Alzheimer's Disease Consortium (GERAD/PERADES). In stage 2, 11,632 SNPs were genotyped and tested for association in an independent set of 8,362 Alzheimer's disease cases and 10,483 controls. Although the individual datasets examined excluded any SNPs with call rates <95%, IGAP meta-analysis only examined SNPs either genotyped or successfully imputed in at least 30% of the AD cases and 30% of the control samples across all datasets. (Lifted Over from GRCh37 to GRCh38)",
+		    "attribution": "Kunkle et al. 2019|PMID:30820047",
+		    "name": "IGAP Rare Variants",
+		    "description" : "The International Genomics of Alzheimer's Project (IGAP) is a large three-stage study based upon genome-wide association studies (GWAS) on individuals of European ancestry. In stage 1, IGAP used genotyped and imputed data on 11,480,632 single nucleotide polymorphisms (SNPs) to meta-analyse GWAS datasets consisting of 21,982 Alzheimer's disease cases and 41,944 cognitively normal controls from four consortia: The Alzheimer Disease Genetics Consortium (ADGC); The European Alzheimer's disease Initiative (EADI); The Cohorts for Heart and Aging Research in Genomic Epidemiology Consortium (CHARGE); and The Genetic and Environmental Risk in AD Consortium Genetic and Environmental Risk in AD/Defining Genetic, Polygenic and Environmental Risk for Alzheimer's Disease Consortium (GERAD/PERADES). In stage 2, 11,632 SNPs were genotyped and tested for association in an independent set of 8,362 Alzheimer's disease cases and 10,483 controls. Although the individual datasets examined excluded any SNPs with call rates <95%, IGAP meta-analysis only examined SNPs either genotyped or successfully imputed in at least 30% of the AD cases and 30% of the control samples across all datasets. Lifted Over from GRCh37 to GRCh38.",
 		    "sourceId": "@file.accession",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version"
 		}		
@@ -66,22 +76,21 @@
 	    "foreach" : true,
 	    "plugin": {
 		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
-		"skip": true,
 		"parameters" : {
 		    "attribution": "Kunkle et al. 2019",
 		    "type": "Genetic variation",
 		    "subtype": "GWAS summary statistics",
 		    "description": "foreach",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version",
-		    "characteristics": "foreach",
+		    "biomaterialCharacteristics": "foreach",
 		    "sourceId" : "foreach",
 		    "name": "foreach",
-		    "studyId": "@file.accession"
+		    "studyId": "@file.accession",
+		    "trackSummary": "foreach"
 		}
 	    }
 	}
-    ]
-    ,
+    ],
     "load":[
 	{
 	    "foreach": true,
@@ -91,10 +100,13 @@
 		    "file": "foreach",
 		    "sourceId": "foreach",
 		    "fileDir" : "@file.path/@file.accession",
-		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
-		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
-		    "caddDatabaseDir": "@file.cadd_database_directory",
-		    "vepCacheDir": "@file.vep_cache_directory",
+		    "sourceGenomeBuildGusConfig": "@file.GRCh37_gus_config",
+		    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
+		    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
+		    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
+		    "liftOverChainFile": "@file.chain_file",
+		    "remapAssemblies": "GCF_000001405.25|GCF_000001405.26",
+		    "caddDatabaseDir": "@file.cadd_path",
 		    "testAllele": "Effect_allele",
 		    "refAllele": "Non_Effect_allele",
 		    "chromosome": "Chromosome",
@@ -102,7 +114,7 @@
 		    "marker": "MarkerName",
 		    "pvalue": "Pvalue",
 		    "frequency": "Effect_allele_freq",
-		    "genomeBuild": "GRCh37.p13",
+		    "genomeBuild": "GRCh37",
 		    "genomeWideSignificanceThreshold": "5e-8",
 		    "markerIndicatesIndel": "true",
 		    "checkAltIndels": "true",

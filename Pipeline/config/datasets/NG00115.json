@@ -1,0 +1,136 @@
+{    
+    "file": {
+	"path": "$NIAGADS_GWAS_DIR",
+	"accession": "NG00115",
+	"cadd_path": "$DATA_DIR/CADD",
+	"vep_result_dir": "vep_results",
+	"seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
+	"consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
+	"chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
+	"chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz",
+	"GRCh37_gus_config": "$GUS_HOME/config/grch37-gus.config"
+    },
+    "external_database": {
+	"name": "NIAGADS",
+	"version": "current",
+	"download_url": "https://www.niagads.org/datasets/",
+	"id_url": "https://www.niagads.org/",
+	"description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
+	"accession": "NIAGADS",
+	"type": "Genetic variation"
+    },
+    "foreach": [	
+	{
+	    "MALE": {
+		"file": "ADGC.phase12.sex1.grm.assoc.logistic",
+		"sourceId": "@file.accession+_GRCh38_MALE",
+		"name": "Genetic architecture of AD and differential effect between sexes: Males (GRCh38)",
+		"description": "summary statistics from a sex-stratified genome-wide association study of SNPS from Alzheimer's Disease Genetics Consortium (ADGC) male samples with European ancestry. Subjects with individual-pairwise genetic relationship matrix (GRM) > 0.1 were excluded from analyses to ensure sample independence.  Samples were selected from both ADGC phase 1 and phase 2 cohorts. (Lifted Over from GRCh37 to GRCh38)",
+		"biomaterialCharacteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": "European",
+		    "biological sex": "male",
+		    "covariate specification": "value:age (defined as age-at-onset for cases and age-at-first exam for controls), cohort indicators, and population stratification"
+		},
+		"trackSummary": {
+		    "consortium":"ADGC",
+		    "ncase": 4010,
+		    "ncontrol":	4672	    
+		}
+	    }
+	},
+		{
+	    "MALE": {
+		"file": "ADGC.phase12.sex2.grm.assoc.logistic",
+		"sourceId": "@file.accession+_GRCh38_FEMALE",
+		"name": "Genetic architecture of AD and differential effect between sexes: Females (GRCh38)",
+		"description": "summary statistics from a sex-stratified genome-wide association study of SNPS from Alzheimer's Disease Genetics Consortium (ADGC) female samples with European ancestry. Subjects with individual-pairwise genetic relationship matrix (GRM) > 0.1 were excluded from analyses to ensure sample independence.  Samples were selected from both ADGC phase 1 and phase 2 cohorts. (Lifted Over from GRCh37 to GRCh38)",
+		"biomaterialCharacteristics": {
+		    "diagnosis": "late onset Alzheimer's disease",
+		    "population": "European",
+		    "biological sex": "female",
+		    "covariate specification": "value:age (defined as age-at-onset for cases and age-at-first exam for controls), cohort indicators, and population stratification"
+		},
+		"trackSummary": {
+		    "consortium":"ADGC",
+		    "ncase": 5705,
+		    "ncontrol":	7067	    
+		}
+	    }
+	}
+    ],
+    "preprocess": [
+	{
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
+		"parameters": {
+		    "attribution": "Wang et al. 2021|PMID:34122051",
+		    "name": "Genetic architecture of AD and differential effect between sexes",
+		    "description": "Sex-stratified GWAS using AGDC samples with European ancestry. Subjects with individual-pairwise genetic relationship matrix (GRM) > 0.1 were excluded from analyses to ensure sample independence. GWAS of 38,043,163 SNPs were separately performed in males and females using logistic regressions.  Age at disease onset of AD (or age at the first visit for the control group), cohort indicators, and the top 10 principal components were included as covariates. A total of 8,682 males (4,010 cases and 4,672 controls) and 12,772 females (5,705 cases and 7,067 controls) were included combining cohorts of both ADGC phase 1 and 2. Lifted Over from GRCh37 to GRCh38.",
+		    "sourceId": "@file.accession",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version"
+		}		
+	    }
+	},
+
+	{
+	    "foreach" : true,
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
+		"parameters" : {
+		    "attribution": "Wang et al. 2021",
+		    "type": "Genetic variation",
+		    "subtype": "GWAS summary statistics",
+		    "description": "foreach",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "biomaterialCharacteristics": "foreach",
+		    "sourceId" : "foreach",
+		    "name": "foreach",
+		    "studyId": "@file.accession",
+		    "trackSummary": "foreach"
+		}
+	    }
+	}
+    ],
+    "load":[
+	{
+	    "foreach": true,
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::LoadVariantGWASResult",
+		"parameters": {
+		    "file": "foreach",
+		    "sourceId": "foreach",
+		    "fileDir" : "@file.path/@file.accession",
+		    "sourceGenomeBuildGusConfig": "@file.GRCh37_gus_config",
+		    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
+		    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
+		    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
+		    "liftOverChainFile": "@file.chain_file",
+		    "remapAssemblies": "GCF_000001405.25|GCF_000001405.26",
+		    "caddDatabaseDir": "@file.cadd_path",
+		    "testAllele": "A1",
+		    "refAllele": "A2",
+		    "chromosome": "CHR",
+		    "position": "BP",
+		    "marker": "SNP",
+		    "pvalue": "P",
+		    "frequency": "MAF",
+		    "genomeBuild": "GRCh37",
+		    "genomeWideSignificanceThreshold": "5e-8",
+		    "checkAltIndels": "true",
+		    "restrictedStats": {
+			"test": "TEST",
+			"odds_ratio": "OR",
+			"std_err": "SE",
+			"odds_ratio_L95": "L95",
+			"odds_ratio_U95": "U95",
+			"t_statistic": "STAT",
+			"num_observations": "NMISS"
+		    }
+		}
+	    }
+	}
+
+	
+    ]
+}

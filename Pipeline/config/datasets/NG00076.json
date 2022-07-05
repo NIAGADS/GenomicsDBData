@@ -1,11 +1,15 @@
 {    
     "file": {
-	"path": "$DATA_DIR/NIAGADS_GWAS",
+	"path": "$NIAGADS_GWAS_DIR",
 	"accession": "NG00076",
-	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
-	"cadd_database_directory": "$DATA_DIR/CADD/v16",
-	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
-	"vep_cache_directory": "$DATA_DIR/VEP_CACHE"
+	"cadd_path": "$DATA_DIR/CADD",
+	"vep_result_dir": "vep_results",
+	"seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
+	"consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
+	"chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
+	"chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz",
+	"GRCh37_gus_config": "$GUS_HOME/config/grch37-gus.config"
+
     },
     "external_database": {
 	"name": "NIAGADS",
@@ -20,26 +24,28 @@
 	{
 	    "ALL": {
 		"file": "ADGC2_ModelB_METAL_COMMON.InvVar.results.formatted.txt",
-		"sourceId": "@file.accession",
-		"name": "ADGC LOAD Subset (non-IGAP Discovery Phase)",
-		"description" : "Summary statistics from a multi-stage association study for late-onset Alzhemier's disease (LOAD) using the subset of ADGC samples that were not included in the IGAP discovery phase.",
-		"characteristics": {
+		"sourceId": "@file.accession+_GRCh38",
+		"name": "ADGC LOAD Subset: non-IGAP Discovery Phase (GRCh38)",
+		"description" : "Summary statistics from a multi-stage association study for late-onset Alzhemier's disease (LOAD) using the subset of ADGC samples (N = 7,050). that were not included in the IGAP discovery phase. (Lifted Over from GRCh37 to GRCh38)",
+		"biomaterialCharacteristics": {
 		    "diagnosis": "late onset Alzheimer's disease",
 		    "covariate specification": "value:sex, age, and population stratification"
+		},
+		"trackSummary": {
+		    "consortium": "ADGC"	  
 		}
 	    }
 	}
     ],
     
-    "load": [
+    "preprocess": [
 	{
 	    "plugin": {
 		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
-		"skip": true,
 		"parameters": {
 		    "attribution": "Zhao",
 		    "name": "ADGC LOAD Subset (non-IGAP Discovery Phase)",
-		    "description" : "Summary statistics from a multi-stage association study for late-onset Alzhemier's disease (LOAD) using the subset of ADGC samples that were not included in the IGAP discovery phase (N = 7,050).",
+		    "description" : "Summary statistics from a multi-stage association study for late-onset Alzhemier's disease (LOAD) using the subset of ADGC samples that were not included in the IGAP discovery phase (N = 7,050). Lifted Over from GRCh37 to GRCh38.",
 		    "sourceId": "@file.accession",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version"
 		}		
@@ -49,20 +55,22 @@
 	    "foreach" : true,
 	    "plugin": {
 		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
-		"skip": true,
 		"parameters" : {
 		    "attribution": "Zhao",
 		    "type": "Genetic variation",
 		    "subtype": "GWAS summary statistics",
 		    "description": "foreach",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version",
-		    "characteristics": "foreach",
+		    "biomaterialCharacteristics": "foreach",
 		    "sourceId" : "foreach",
 		    "name": "foreach",
-		    "studyId": "@file.accession"
+		    "studyId": "@file.accession",
+		    "trackSummary": "foreach"
 		}
 	    }
-	}, 
+	}
+    ],
+    "load":[
 	{
 	    "foreach": true,
 	    "plugin": {
@@ -71,17 +79,20 @@
 		    "file": "foreach",
 		    "sourceId": "foreach",
 		    "fileDir" : "@file.path/@file.accession",
-		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
-		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
-		    "caddDatabaseDir": "@file.cadd_database_directory",
-		    "vepCacheDir": "@file.vep_cache_directory",
+		    "sourceGenomeBuildGusConfig": "@file.GRCh37_gus_config",
+		    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
+		    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
+		    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
+		    "liftOverChainFile": "@file.chain_file",
+		    "remapAssemblies": "GCF_000001405.25|GCF_000001405.26",
+		    "caddDatabaseDir": "@file.cadd_path",
 		    "testAllele": "Allele1",
 		    "refAllele": "Allele2",
 		    "chromosome": "MarkerName",
 		    "position": "MarkerName",
 		    "pvalue": "P-value",
 		    "frequency": "Freq1",
-		    "genomeBuild": "GRCh37.p13",
+		    "genomeBuild": "GRCh37",
 		    "genomeWideSignificanceThreshold": "5e-8",
 		    "checkAltIndels":"true",
 		    "restrictedStats": {

@@ -158,7 +158,7 @@
 		    "altAllele": "B",
 		    "pvalue": "foreach",
 		    "skipUnmappableMarkers": true,
-		    "genomeBuild": "GRCh37.p13",
+		    "genomeBuild": "GRCh37",
 		    "chromosome": "chr",
 		    "position": "location_hg19.bp",
 		    "genomeWideSignificanceThreshold": "5e-8",

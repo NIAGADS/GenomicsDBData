@@ -95,7 +95,7 @@
 		    "testAllele": "A1",
 		    "refAllele": "A2",
 		    "pvalue": "P",
-		    "genomeBuild": "GRCh37.p13",
+		    "genomeBuild": "GRCh37",
 		    "chromosome": "CHR",
 		    "position": "BP",
 		    "genomeWideSignificanceThreshold": "5e-8",
