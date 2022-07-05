@@ -68,6 +68,19 @@ sub connect {
 }
 
 
+sub getSnvDeletion {
+  my ($self, $chromosome, $position) = @_;
+
+  my $lookupField = ($self->{genome_build} eq 'GRCh37') ? 'source_id' : 'chromosome';
+
+  my $sql = "SELECT SUBSTRING(sequence, ?, 2) FROM DOTs.ExternalNASequence WHERE $lookupField  = ?";
+  my $qh = $self->{dbh}->prepare($sql) || $self->{plugin}->error(DBI::errstr);
+  $qh->execute($position, $chromosome);
+  my ($alleleStr) = $qh->fetchrow_array();
+  $qh->finish();
+  return ($alleleStr, substr $alleleStr, -1);
+}
+
 
 
 sub isValidMetaseqId {
