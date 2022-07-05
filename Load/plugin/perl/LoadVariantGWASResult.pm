@@ -608,7 +608,6 @@ sub generateStandardizedHeader {
 
 sub generateInsertStr {
   my ($self, $recordPK, $binIndex, $data) = @_;
-  $recordPK =~ s/\?/N/g; # substitue ? for N --> any base LEGACY
   my @values = ($self->{protocol_app_node_id},
 		$recordPK,
 		$binIndex,
@@ -902,6 +901,7 @@ sub cleanAndSortInput {
 
   $self->log("INFO: Cleaning $file");
 
+  my $genomeBuild = $self->getArg('genomeBuild');
   my $filePrefix = $self->{adj_source_id};
   my $inputFileName = $self->{working_dir} . "/" . $filePrefix . '-input.txt';
 
@@ -943,6 +943,8 @@ sub cleanAndSortInput {
     @values = split /,/, $line if (scalar @values == 1);
 
     my $marker = (defined $markerC) ? $values[$markerC] : undef;
+    $marker = 'NULL' if $marker eq 'NA';
+
     my $chromosome = undef;
     my $position = undef;
     my $metaseqId = undef;
@@ -954,11 +956,14 @@ sub cleanAndSortInput {
     # set ref/alt to N if unknown so can still map/annotate
     # set test to N if 0 but leave as ? if ?
     $ref = 'N' if ($ref =~ m/^0$/); # vep can still process the 'N' if there is a single unknown, so do the replacement here for consistency
-    $ref = 'N' if ($ref =~ m/^\?$/); # vep can still process the 'N' if there is a single unknown, so do the replacement here for consistency 
+    $ref = '?' if ($ref =~ m/^\?$/); # assume ? matches unknown number of bases
+    $ref = '?' if ($ref =~ m/^-$/); # assume ? matches unknown number of bases
     $alt = 'N' if ($alt =~ m/^0$/);
     $alt = 'N' if ($alt =~ m/^\?$/);
+    $alt = '?' if ($alt =~ m/^-$/); # assume ? matches unknown number of bases
     $test = 'N' if ($test =~ m/^0$/);
     $test = '?' if ($test =~ m/^\?$/);
+    $test = '?' if ($test =~ m/^-$/);
 
     my $frequencyC = ($self->getArg('frequency')) 
       ? $self->getColumnIndex(\%columns, $self->getArg('frequency')) : undef;
@@ -981,71 +986,73 @@ sub cleanAndSortInput {
       }
 
       $chromosome = $self->correctChromosome($chromosome);
-
-      if ($alt =~ /-/) { # deletion -- note: zeros may be deletions, but unsure so treating as unknown,  see above
-	# in a VCF deletions must provide the anchor nucleotide preceeding the change, with position being 1 base before the change
-	# in files where alt is '-', the $ref allele is actually the alt (what is deleted)
-	# updates -- extract sequence from pos-1 to pos + 1 and assign to ref, set pos = pos - 1
-
-	# for now assuming that this is for SNVs only
-	# throw error to handle MNVs if occassion arises
-	$self->error("NOT YET IMPLEMENTED: MNV deletion represented as '-' for test allele: $chromosome:$position$ref:$alt")
-	  if (length $ref > 1);
-
-	$position = $position - 1;
-	$alt = $ref;
-	$ref = $self->{annotator}->getSnvDeletion('chr' . $chromosome, $position);
-	$test = ($test =~ /-/) ? $alt : ref;
-	$self->log("WARNING: improper deletion: $chromosome:" . ($position + 1) . ":$alt:-; UPDATED TO: $chromosome:$position:$ref:$alt");
-      }
-
-      if ($self->getArg('mapPosition')) {
-	$metaseqId = $chromosome . ':' . $position;
-      } else {
-	$metaseqId = $chromosome . ':' . $position . ':';
-
+      $metaseqId = $chromosome . ':' . $position;
+      unless ($self->getArg('mapPosition')) {
+	$metaseqId .= ':';
+	my $alleleStr = "$ref:$alt";
 	my $isIndel = (length($ref) > 1 || length($alt) > 1);
 
-	if ($isIndel && $self->getArg('markerIndicatesIndel')) {
-	  if ($marker =~ m/I$/) {
-	    $metaseqId .= (length($ref) > length($alt)) ? $alt . ':' . $ref : $ref . ':' . $alt;
-	  } elsif ($marker =~ m/D$/) {
-	    $metaseqId .= (length($ref) > length($alt)) ? $ref . ':' . $alt : $alt . ':' . $ref;
-	  } else {		# incl merged_del (true indels)
-	    $metaseqId .= $ref . ':' . $alt;
+	if ($alleleStr =~ /\?/) { # merged deletion or insertion
+	  if ($self->getArg('markerIndicatesIndel') && $marker ne 'NULL') {
+	    if ($marker =~ m/I$/ || $marker =~ m/ins/) {
+	      $metaseqId .= ($alt =~ /\?/) ? "$ref:$alt" : "$alt:$ref";
+	    }
+	    elsif ($marker =~ m/D$/ || $marker =~ m/del/) {
+	      $metaseqId .= ($ref =~ /\?/) ? "$ref:$alt" : "$alt:$ref";
+	    }
+	    else { # some markers may not indicate direction
+	      $metaseqId .= "$alleleStr";
+	    }
+	    $self->log("WARNING: improper deletion: $chromosome:$position:$alleleStr; UPDATED TO: $metaseqId");
 	  }
-	} else { 
-	  if ($ref eq '?') { # handle unknown ref
-	    $metaseqId .= ':' . $ref . ':' . $alt;
+	  else { # take at face value
+	    $metaseqId .= "$alleleStr";
+	    $self->log("WARNING: improper deletion: $metaseqId");
 	  }
-	  else { # for SNVs if frequency > 0.5, then the test allele is the major allele; saves us some lookup time
-	    $metaseqId .= ($frequencyC and $frequency > 0.5) ? $alt . ':' . $ref : $ref . ':' . $alt;
+
+	} # end "-"
+	elsif ($isIndel) {
+	  if ($self->getArg('markerIndicatesIndel') && $marker ne 'NULL') {
+	    if ($marker =~ m/I$/ || $marker =~ m/ins/) { # A:AAT
+	      $metaseqId .= (length($ref) < length($alt)) ? $ref . ':' . $alt : $alt . ':' . $ref;
+	    } elsif ($marker =~ m/D$/ || $marker =~ m/del/) { # AAT:A
+	      $metaseqId .= (length($ref) > length($alt)) ? $ref . ':' . $alt : $alt . ':' . $ref;
+	    }
+	    else { # some markers may not indicate deletion
+	      $metaseqId .= "$alleleStr";
+	    }
+	  }
+	  else { # take at face value
+	    $metaseqId .= "$alleleStr";
 	  }
 	}
+	else { # for SNVs if frequency > 0.5, then the test allele is the major allele; saves us some lookup times
+	  $metaseqId .= ($frequencyC and $frequency > 0.5) ? $alt . ':' . $ref : $ref . ':' . $alt;
+	}
+      } # end unless map position
+    } # end definded chrC
+
+    else { # chrC not defined / mapping thru marker
+      $marker = undef if ($chrC eq $markerC);
+      if ($chromosome eq "NA" || $self->getArg('mapThruMarker')) {
+	$metaseqId = $marker if ($self->getArg('markerIsMetaseqId')); # yes ignore all that processing just did; easy fix added later
+
+	# some weird ones are like chr:ps:ref:<weird:alt:blah:blah>
+	my ($c, $p, $r, $a) = split /\<[^><]*>(*SKIP)(*FAIL)|:/, $metaseqId; 
+	$chromosome = $self->correctChromosome($c);
+	$position = $p;
+
+	if ($self->getArg('markerIsMetaseqId')) {
+	  $alt = $self->cleanAllele($a);
+	  $ref = $self->cleanAllele($r);
+	  $test = ($test) ? $self->cleanAllele($test) : $alt; # assume testAllele is alt if not specified
+	}
+
+	$metaseqId = join(':', $chromosome, $position, $ref, $alt); # in case chromosome/alleles were corrected
       }
-    }
-
-    $marker = undef if ($chrC eq $markerC);
-
-    if ($chromosome eq "NA" || $self->getArg('mapThruMarker')) {
-      $metaseqId = $marker if ($self->getArg('markerIsMetaseqId')); # yes ignore all that processing just did; easy fix added later
-
-      # some weird ones are like chr:ps:ref:<weird:alt:blah:blah>
-      my ($c, $p, $r, $a) = split /\<[^><]*>(*SKIP)(*FAIL)|:/, $metaseqId; 
-      $chromosome = $self->correctChromosome($c);
-      $position = $p;
-
-      if ($self->getArg('markerIsMetaseqId')) {
-	$alt = $self->cleanAllele($a);
-      	$ref = $self->cleanAllele($r);
-	$test = ($test) ? $self->cleanAllele($test) : $alt; # assume testAllele is alt if not specified
-      }
-
-      $metaseqId = join(':', $chromosome, $position, $ref, $alt); # in case chromosome/alleles were corrected
-    }
-
-    $self->error("--testAllele not specified and unable to extract from marker.  Must specify 'testAllele'") if (!$test);
-
+      $self->error("--testAllele not specified and unable to extract from marker.  Must specify 'testAllele'") if (!$test);
+    } # end mapping thru marker
+    
     my $rv = {chromosome => $chromosome, position => $position, refAllele => $ref, altAllele => $alt, testAllele => $test, marker => $marker, metaseq_id => $metaseqId};
     $self->writeCleanedInput($pfh, $rv, \%columns, @values);
 
@@ -1963,6 +1970,27 @@ sub preprocess {
 }
 
 
+sub getValidVepVariants {
+  my ($self, $fileName) = @_;
+  (my $validVcfFileName = $fileName) =~ s/vcf/valid.vcf/g;
+  open(my $fh, $fileName) || $self->error("Unable to open $fileName to extract valid variants");
+  open(my $ofh, '>', $validVcfFileName) || $self->error("Unable to create valid variant VCF $validVcfFileName for writing");
+
+  # my @VCF_FIELDS = qw(#CHROM POS ID REF ALT QUAL FILTER INFO);
+
+  while (my $line = <$fh>) {
+    chomp($line);
+    next if ($line =~ m/\?/); # skip variants w/questions marks
+    my ($chrm, $pos, $id, $ref, $alt, @other) = split /\t/, $line;
+    next if (length($ref) > 50 || length($alt) > 50); # skip long INDELS/SVs
+    print $ofh "$line\n";
+  }
+  
+  $fh->close();
+  $ofh->close();
+  return $validVcfFileName;
+}
+
 sub annotateNovelVariants {
   my ($self, $fileName) = @_;
 
@@ -1973,16 +2001,26 @@ sub annotateNovelVariants {
     my $preprocessDir = "$accession/" . $self->getArg('genomeBuild') . "/"
 	. $self->{adj_source_id} . "/preprocess/";
 
-    if ($self->getArg('skipVep')) {
-      $self->log("INFO: --skipVep flag provided, skipping VEP annotation");
+    # remove invalid variants (i.e., w/?) before running thru VEP
+    # and really long INDELs
+    my $validVcfFileName = $self->getValidVepVariants($fileName);
+    $lineCount = `wc -l < $validVcfFileName`;
+    if ($lineCount > 1) {
+      if ($self->getArg('skipVep')) {
+	$self->log("INFO: --skipVep flag provided, skipping VEP annotation");
+      }
+      else {
+	# strip local path, make relative to accession folder
+	my $vepInputFileName = $preprocessDir . basename($validVcfFileName);
+	$self->{annotator}->runVep("$vepInputFileName");
+      }
+      $self->{annotator}->loadVepAnnotatedVariants("$validVcfFileName.vep.json.gz");
     }
     else {
-      # strip local path, make relative to accession folder
-      my $vepInputFileName = $preprocessDir . basename($fileName);
-      $self->{annotator}->runVep("$vepInputFileName");
+      $self->log("WARNING: No 'VEP valid' variants found; skipping VEP annotation");
     }
-    $self->{annotator}->loadVepAnnotatedVariants("$fileName.vep.json.gz");
-    $self->{annotator}->loadVariantsFromVCF("$fileName");
+
+    $self->{annotator}->loadVariantsFromVCF("$fileName"); # can just pass original VCF file as it will skip anything already loaded
     $self->{annotator}->loadCaddScores($fileName, $preprocessDir);
   } else {
     $self->log("INFO: No novel variants found in: $fileName");
@@ -2029,14 +2067,12 @@ sub extractNovelVariants {
 
     my ($chromosome, $position, $ref, $alt) = split /:/, $row{metaseq_id};
     if ($row{$genomeBuild} eq 'NULL') { # not in DB
-      if ($row{metaseq_id} =~ m/:\?/ && $row{$genomeBuild} eq 'NULL') { # been dbmapped, so if invalid metaseq & marker not present in db, not much we can do
+      if ($row{metaseq_id} =~ m/:\?/) { # can't annotate "?" b/c variable length allele str
 	$invalidVariantCount++;
-	$self->log("INFO: Found invalid variant " . $row{metaseq_id} . " - SKIPPING");
+	$self->log("INFO: Found invalid variant " . $row{metaseq_id});
       }
-      else {
-	print $vfh join("\t", $chromosome, $position, $row{metaseq_id}, $ref, $alt, '.', '.', '.') . "\n";
-	++$novelVariantCount;
-      }
+      print $vfh join("\t", $chromosome, $position, $row{metaseq_id}, $ref, $alt, '.', '.', '.') . "\n";
+      ++$novelVariantCount;
   }
 
     $self->log("INFO: Checked $lineCount variants") if (++$lineCount % 500000 == 0);
@@ -2047,10 +2083,10 @@ sub extractNovelVariants {
   $self->log("DONE: Checked $lineCount variants") if (++$lineCount % 500000 == 0);
   $self->log("INFO: Found $novelVariantCount novel variants");
   if ($finalCheck) {
-    $self->log("INFO: Found $invalidVariantCount invalide variants");
+    $self->log("INFO: Found $invalidVariantCount invalid variants");
     $novelVariantCount -= $invalidVariantCount;
   }
-  
+
   return $novelVariantVCF, $novelVariantCount;
 }
 
@@ -2400,8 +2436,6 @@ sub standardize {
     }
 
     my $metaseqId = $row{metaseq_id};
-    $metaseqId =~ s/\?/N/g; # N for any base LEGACY
- 
     my $dbVariant = $row{$genomeBuild};
     if ($dbVariant ne 'NULL') {
       $dbVariant = $json->decode($dbVariant) 
