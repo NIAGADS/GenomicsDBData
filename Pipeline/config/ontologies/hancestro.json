@@ -1,0 +1,28 @@
+{
+    "file": {
+	"path": "$DATA_DIR/ontologies/hancestro",
+	"file": "hancestro.owl"
+    },
+    "external_database": {
+	"name": "Human Ancestry Ontology",
+	"description": "The Human Ancestry Ontology (HANCESTRO) provides a systematic description of the ancestry concepts used in the NHGRI-EBI Catalog of published genome-wide association studies.",
+	"version": "2.6",
+	"release_date": "2022-05-12",
+	"download_url": "http://purl.obolibrary.org/obo/hancestro.owl",
+	"id_url": "https://github.com/EBISPOT/ancestro",
+	"accession": "HANCESTRO",
+	"type": "Ontology and terminology"
+    },
+    "load": [
+	{
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::InsertOntologyTermsAndRelationships",
+		"parameters": {
+		    "inFile": "@file.path/@file.file",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "relTypeExtDbRlsSpec": "Niagads Ontology|current"
+		}
+	    }
+	}
+    ]
+}
