@@ -20,6 +20,7 @@ sub new {
   my $plugin = $args->{plugin};
   my $self = { plugin => $args->{plugin},
 	       vcf => $args->{vcf},
+	       genome_build => $args->{genome_build},
 	       external_database_release_id => $args->{external_database_release_id}
 	     };
   return bless $self, $class;
@@ -31,14 +32,16 @@ sub DESTROY {
 
 
 sub getSnvDeletion {
-  my ($self, $chromosome, $position) = @_;
+  my ($self, $genomeBuild, $chromosome, $position) = @_;
 
-  my $sql = "SELECT SUBSTRING(sequence, ?, 2) FROM DOTs.ExternalNASequence WHERE source_id  = ?";
+  my $lookupField = ($genomeBuild eq 'GRCh37') ? 'source_id' : 'chromosome';
+
+  my $sql = "SELECT SUBSTRING(sequence, ?, 2) FROM DOTs.ExternalNASequence WHERE $lookupField  = ?";
   my $qh = $self->{plugin}->getQueryHandle()->prepare($sql);
   $qh->execute($position, $chromosome);
   my ($alleleStr) = $qh->fetchrow_array();
   $qh->finish();
-  return $alleleStr;
+  return ($alleleStr, substr $alleleStr, -1);
 }
 
 
