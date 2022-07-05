@@ -79,7 +79,7 @@ is_a: NO_0000008 ! variant annotation
 [Term]
 id: NO_0000013
 name: APOE adjusted
-def: "statistical adjustment for APOE e-4 allele status"
+def: "statistical adjustment for APOE ε4 allele status"
 
 [Term]
 id: NO_0000014
@@ -383,13 +383,13 @@ def: "a material entity that has as part some molecular antigen that is recogniz
 
 [Term]
 id: NO_0000059
-name: APOE &epsilon;4 carrier
-def: "an individual who is a carrier for the APOE &epsilon;4 allele"
+name: APOE ε4 carrier
+def: "an individual who is a carrier for the APOE ε4 allele"
 
 [Term]
 id: NO_0000060
-name: APOE &epsilon;4 non-carrier
-def: "an individual who is not a carrier for the APOE &epsilon;4 allele"
+name: APOE ε4 non-carrier
+def: "an individual who is not a carrier for the APOE ε4 allele"
 
 [Term]
 id: NO_0000061
