@@ -189,10 +189,39 @@ loadResource --config $CONFIG_DIR/adsp/17K_LD.json --load data --params '{"onlyC
 loadResource --config $CONFIG_DIR/adsp/17K_LD.json --load data --params '{"onlyChr":"5,8,17,20"}' --verbose --commit > $DATA_DIR/logs/data/load_adsp_17K_ld_part5.log 2>&1
 loadResource --config $CONFIG_DIR/adsp/17K_LD.json --load data --params '{"onlyChr":"6,7,18,21"}' --verbose --commit > $DATA_DIR/logs/data/load_adsp_17K_ld_part6.log 2>&1
 
+# =================================================
+# 1000 Genomes LD
+# =================================================
+
+loadResource --config $CONFIG_DIR/analyses/ld.json --load xdbr --verbose --commit > $DATA_DIR/logs/xdbr/load_ld.log 2>&1
+
+#skip convert & run ld
+loadResource --config $CONFIG_DIR/analyses/ld.json --preprocess --verbose > $DATA_DIR/logs/data/ld_extract_samples.log 2>&1
+#skip extract & run ld
+loadResource --config $CONFIG_DIR/analyses/ld.json --preprocess --verbose > $DATA_DIR/logs/data/ld_convert_vcf.log 2>&1
+#skip extract & convert
+loadResource --config $CONFIG_DIR/analyses/ld.json --preprocess --verbose > $DATA_DIR/logs/data/ld_run.log 2>&1
+#load - skip loading plugin
+loadResource --config $CONFIG_DIR/analyses/ld.json --load data --verbose --commit > $DATA_DIR/logs/data/load_ld_placeholders.log 2>&1
+#load - skip loading placeholders
+loadResource --config $CONFIG_DIR/analyses/ld.json --load data --verbose --commit > $DATA_DIR/logs/data/load_ld.log 2>&1
 
 # =================================================
-# EBI-EMBL GWAS Catalog
+# NHGRI EBI-EMBL GWAS Catalog
 # =================================================
+
+loadResource -c $CONFIG_DIR/reference_databases/gwas_catalog.json --load xdbr --verbose --commit > $DATA_DIR/logs/xdbr/load_nhgri_gc_xdbr.log 2>&1
+loadResource -c $CONFIG_DIR/reference_databases/gwas_catalog.json --preprocess --commit --verbose > $DATA_DIR/logs/reference/nhgri_gc_placeholders.log 2>&1 # skip generate
+loadResource -c $CONFIG_DIR/reference_databases/gwas_catalog.json --preprocess --verbose > $DATA_DIR/logs/reference/generate_load_nhgri_gc.log 2>&1 # skip skip pan
+
+# run proprocess in test mode to work out issues w/preprocessing and then manually edit/remove any variants that should not be annotated as novel
+loadResource -c $CONFIG_DIR/reference_databases/gwas_catalog.json --load data --params '{"test":"true", "preprocess":"true", "genomeBuild":"GRCh38"}' --verbose --commit > $DATA_DIR/logs/reference/preprocess_test_nhgri_gc.log 2>&1
+
+# skip loading missing / too many issues
+loadResource -c $CONFIG_DIR/reference_databases/gwas_catalog.json --load data --params '{"preprocess":"true", "genomeBuild":"GRCh38"}' --verbose --commit > $DATA_DIR/logs/reference/preprocess_nhgri_gc.log 2>&1
+
+loadResource -c $CONFIG_DIR/reference_databases/gwas_catalog.json --load data --params '{"load":"true", "genomeBuild":"GRCh38", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/reference/load_nhgri_gc.log 2>&1
+
 
 
 # =================================================

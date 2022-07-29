@@ -134,7 +134,11 @@ def get_cmd_options(cmd, cmdConfig, isPlugin=False, foreach=None):
                     cmd.append('--' + option)
                     continue
 
-                if isinstance(value, str) and is_number(value): # numeric value
+                if isinstance(value, int):  # numeric value as int
+                    cmd.extend(['--' + option, xstr(value)])
+                    continue
+
+                if isinstance(value, str) and is_number(value): # numeric value as string
                     cmd.extend(['--' + option, xstr(value)])
                     continue
                 

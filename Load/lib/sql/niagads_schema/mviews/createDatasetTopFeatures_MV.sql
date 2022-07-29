@@ -4,27 +4,27 @@ DROP MATERIALIZED VIEW IF EXISTS NIAGADS.DatasetTopFeatures;
 CREATE MATERIALIZED VIEW NIAGADS.DatasetTopFeatures AS (
 SELECT * FROM (
 WITH 
-hits AS (                     
-SELECT r.dataset_id AS track,
+hits AS (
+                    SELECT track,
 '@PROJECT_ID@'::text AS project_id,
-v.record_primary_key,
-r.neg_log10_pvalue,
-
-CASE WHEN v.annotation->'ADSP_MOST_SEVERE_CONSEQUENCE'->>'gene_id' IS NOT NULL
-THEN v.annotation->'ADSP_MOST_SEVERE_CONSEQUENCE'->>'gene_id' 
+variant_record_primary_key AS record_primary_key,
+neg_log10_pvalue,
+is_adsp_variant,
+pvalue_display,
+test_allele,
+CASE WHEN msc_impacted_gene(annotation->'ADSP_MOST_SEVERE_CONSEQUENCE') IS NOT NULL
+THEN msc_impacted_gene(annotation->'ADSP_MOST_SEVERE_CONSEQUENCE')
 ELSE 
-CASE WHEN v.ref_snp_id IS NULL 
-THEN truncate_str(v.metaseq_id, 30) 
-ELSE v.ref_snp_id END 
+CASE WHEN ref_snp_id IS NULL 
+THEN array_to_string((regexp_split_to_array(metaseq_id, ':'::text))[1:2], ':')
+ELSE ref_snp_id END 
 END AS hit,
 
-CASE WHEN v.annotation->'ADSP_MOST_SEVERE_CONSEQUENCE'->>'gene_id' IS NOT NULL
+CASE WHEN msc_impacted_gene(annotation->'ADSP_MOST_SEVERE_CONSEQUENCE')  IS NOT NULL
 THEN 'gene' ELSE 'variant' END AS hit_type
 
 FROM 
-NIAGADS.VariantGWASTopHits r,
-NIAGADS.Variant v
-WHERE v.record_primary_key = r.variant_record_primary_key),
+NIAGADS.VariantGWASTopHits),
 
 topHits AS (
 SELECT DISTINCT ON (track, hit)

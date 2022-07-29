@@ -87,6 +87,21 @@ sub getArgumentsDeclaration {
 		isList => 0
 	       }),
 
+     stringArg({name => 'variant1',
+		descr => 'column name containing first variant',
+		constraintFunc=> undef,
+		reqd  => 0,
+		isList => 0
+		}),
+
+
+     stringArg({name => 'variant2',
+		descr => 'column name containing second variant',
+		constraintFunc=> undef,
+		reqd  => 0,
+		isList => 0
+	       }),
+
       stringArg({name => 'position1',
 		descr => 'column name containing first position',
 		constraintFunc=> undef,
@@ -193,7 +208,7 @@ sub new {
   my $argumentDeclaration = &getArgumentsDeclaration();
 
   $self->initialize({requiredDbVersion => 4.0,
-		     cvsRevision => '$Revision: 20 $',
+		     cvsRevision => '$Revision: 22 $',
 		     name => ref($self),
 		     revisionNotes => '',
 		     argsDeclaration => $argumentDeclaration,
@@ -222,26 +237,31 @@ sub run {
   $self->setFilter();
 
   my @files = $self->getFiles();
+  $self->log("DEBUG: " . Dumper(\@files));
+  
   my $processFiles;
-  foreach my $f (@files) {
-    if ($self->getArg('skipChr')) {
-      $self->log(Dumper(\@skipChrms));
-      if ($self->matchChrms($f, @skipChrms)) {
-	$self->log("WARNING: Skipping $f");
-	next;
+  if ($self->getArg('skipChr') || $self->getArg('onlyChr')) {
+    foreach my $f (@files) {
+      if ($self->getArg('skipChr')) {
+	$self->log(Dumper(\@skipChrms));
+	if ($self->matchChrms($f, @skipChrms)) {
+	  $self->log("WARNING: Skipping $f");
+	  next;
+	}
+	$processFiles->{$f} = 1;
       }
-      $processFiles->{$f} = 1;
-    }
-    if ($self->getArg('onlyChr')) {
-      unless ($self->matchChrms($f, @onlyChrms)) {
-	$self->log("WARNING: Skipping $f");
-	next;
+      if ($self->getArg('onlyChr')) {
+	unless ($self->matchChrms($f, @onlyChrms)) {
+	  $self->log("WARNING: Skipping $f");
+	  next;
+	}
+	$processFiles->{$f} = 1;
       }
-      $processFiles->{$f} = 1;
     }
   }
+ 
 
-  my @pfiles = sort keys %$processFiles; 
+  my @pfiles = $processFiles ? sort keys %$processFiles: @files;
   $self->log("INFO: Processing " . scalar @pfiles . " files:");
   $self->log("INFO: " . Dumper(\@pfiles));
   foreach my $f (@pfiles) {
@@ -297,6 +317,10 @@ sub validateArgs {
   if ((!$self->getArg('maf1') && $self->getArg('maf2')) || ($self->getArg('maf1') && !$self->getArg('maf2'))) {
     $self->error("Must suppply MAF for both variants (maf1 & maf2)");
   }
+  if ((!$self->getArg('variant1') && $self->getArg('variant2')) || ($self->getArg('variant1') && !$self->getArg('variant2'))) {
+    $self->error("Must suppply both variants (variant1 & variant2)");
+  }
+  $self->error("loading variants not yet implemented") if ($self->getArg('variant1') || $self->getArg('variant2'));
 }
 
 sub getFiles {
@@ -497,10 +521,10 @@ sub getCurrentTime {
 }
 
 # ----------------------------------------------------------------------
-#sub undoTables {
-#  my ($self) = @_;
-#  return ('Results.VariantLD');
-#}
+sub undoTables {
+  my ($self) = @_;
+  return ('Results.VariantLD');
+}
 
 
 

@@ -1,17 +1,20 @@
 {
     "file": {
 	"path": "$SHARED_DATA_DIR/nhgri",
-	"file": "gwas_catalog_v1.0.2-associations_e100_r2020-11-20.tsv",
-	"annotated_vdb_gus_config": "$GUS_HOME/config/annotated_vdb_gus.config",
-	"cadd_database_directory": "$DATA_DIR/CADD/v16",
-	"adsp_consequence_ranks": "$GUS_HOME/data/AnnotatedVDB/Load/custom_consequence_ranking.txt",
-	"vep_cache_directory": "$DATA_DIR/VEP_CACHE"
+	"file": "gwas_catalog_v1.0.2-associations_e106_r2022-07-09.tsv",	
+	"cadd_path": "$DATA_DIR/CADD",
+	"vep_result_dir": "vep_results",
+	"seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
+	"consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
+	"chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
+	"chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz",
+	"GRCh37_gus_config": "$GUS_HOME/config/grch37-gus.config"
     },
     "external_database": {
 	"name": "NHGRI-EBI GWAS Catalog",
 	"description": "The NHGRI-EBI GWAS Catalog is a catalog of published genome-wide association studies, assaying at >100,000 SNPs and all SNP-trait associations with p-values &lt; 1.0 x 10<sup>-5</sup>.",
-	"version": "v1.0.2_e100_r2020-11-20",
-	"release_date": "2020-11-20",
+	"version": "v1.0.2_e106_r2022-07-09",
+	"release_date": "2022-07-09",
 	"id_url": "https://www.ebi.ac.uk/gwas/",
 	"download_url": "https://www.ebi.ac.uk/gwas/docs/file-downloads",
 	"accession": "NHGRI_GWAS_CATALOG",
@@ -20,8 +23,8 @@
     "preprocess": [
 	{
 	    "plugin": {
+		"skip":true,
 		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
-		"skip": true,
 		"parameters" : {
 		    "type": "Genetic variation",
 		    "subtype": "GWAS summary statistics",
@@ -34,11 +37,12 @@
 	}, 
 	{
 	    "script": 
-	    { 
+	    {
+
 		"name": "generateNhgriGwasCatalogLoadFile",
 		"parameters": {
 		    "fileName": "@file.file",
-		    "dir" : "@file.path",
+		    "dir" : "@file.path/GRCh38",
 		    "genomeBuild": "$GENOME_BUILD"
 		}
 	    }
@@ -53,21 +57,26 @@
 		    "file": "@file.file+-preprocess.txt",
 		    "sourceId": "@external_database.accession",
 		    "fileDir" : "@file.path",
-		    "adspConsequenceRankingFile": "@file.adsp_consequence_ranks",
-		    "annotatedVdbGusConfigFile": "@file.annotated_vdb_gus_config",
-		    "caddDatabaseDir": "@file.cadd_database_directory",
-		    "vepCacheDir": "@file.vep_cache_directory",
-		    "testAllele": "allele",
+		    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
+		    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
+		    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
+		    "liftOverChainFile": "@file.chain_file",
+		    "remapAssemblies": "GCF_000001405.25|GCF_000001405.26",
+		    "caddDatabaseDir": "@file.cadd_path",
+		    "testAllele": "test_allele",
+		    "refAllele": "ref_allele",
 		    "pvalue": "pvalue",
 		    "frequency": "frequency",
-		    "genomeBuild": "GRCh37.p13",
+		    "genomeBuild": "GRCh38",
 		    "marker": "marker",
+		    "position": "position",
+		    "chromosome": "chromosome",
 		    "mapThruMarker": true,
 		    "allowAlleleMismatches": true,
 		    "resume": true,
 		    "genomeWideSignificanceThreshold": "9e-6",
 		    "restrictedStats": {
-			"other": ["DATE ADDED TO CATALOG", "PUBMEDID", "FIRST AUTHOR", "DATE", "JOURNAL", "LINK", "STUDY", "DISEASE/TRAIT", "INITIAL SAMPLE SIZE", "REPLICATION SAMPLE SIZE", "REGION", "REPORTED GENE(S)", "MAPPED_GENE", "UPSTREAM_GENE_ID", "DOWNSTREAM_GENE_ID", "SNP_GENE_IDS", "UPSTREAM_GENE_DISTANCE", "DOWNSTREAM_GENE_DISTANCE", "STRONGEST SNP-RISK ALLELE", "SNPS", "MERGED", "SNP_ID_CURRENT", "CONTEXT", "INTERGENIC", "OR or BETA", "95% CI (TEXT)", "PLATFORM [SNPS PASSING QC]", "CNV", "MAPPED_TRAIT", "MAPPED_TRAIT_URI", "STUDY ACCESSION", "GENOTYPING TECHNOLOGY"]
+			"other": ["DATE ADDED TO CATALOG", "PUBMEDID", "FIRST AUTHOR", "DATE", "JOURNAL", "LINK", "STUDY", "DISEASE/TRAIT", "INITIAL SAMPLE SIZE", "REPLICATION SAMPLE SIZE", "REGION", "REPORTED GENE(S)", "MAPPED_GENE", "UPSTREAM_GENE_ID", "DOWNSTREAM_GENE_ID", "SNP_GENE_IDS", "UPSTREAM_GENE_DISTANCE", "DOWNSTREAM_GENE_DISTANCE", "STRONGEST SNP-RISK ALLELE", "SNPS", "MERGED", "SNP_ID_CURRENT", "CONTEXT", "INTERGENIC", "OR or BETA", "95% CI (TEXT)", "PLATFORM [SNPS PASSING QC]", "CNV", "MAPPED_TRAIT", "MAPPED_TRAIT_URI", "STUDY ACCESSION", "GENOTYPING TECHNOLOGY"]		  
 		    }
 		}
 	    }

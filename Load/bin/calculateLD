@@ -14,76 +14,123 @@ import os.path as path
 from os import listdir
 import gzip
 import csv
+from glob import glob
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
-from GenomicsDBData.Util.utils import qw, xstr, warning, die, verify_path, create_dir, execute_cmd
+from GenomicsDBData.Util.utils import xstr, warning, die, verify_path, create_dir, execute_cmd
 from AnnotatedVDB.Util.enums import HumanChromosome as Human
 
 
 def extract_population_samples(targetDir):
     ''' extract population samples from sample reference '''
-    popSampleFile = path.join(targetDir, args.population + "-samples.txt")
-    warning("INFO:", "Extracting samples for population:", args.population, "to", propSampleFile)
+    popSampleFile = path.join(targetDir, 'samples.txt')
+    warning("INFO:", "Extracting samples for population:", args.population, "from", args.sampleFile, "to", popSampleFile)
     lineCount = 0
     sampleCount = 0
     with open(args.sampleFile) as fh, open(popSampleFile, 'w') as ofh:
         for line in fh:
             lineCount = lineCount + 1
+            line = line.rstrip()
+
             if lineCount == 1: # header
                 print(line, file=ofh)
-            values = line.rstrip().split(' ')
+                continue
+
+            values = line.split(' ')
             if values[-1] == args.population:
                 print(line, file=ofh)
+                #print('\t'.join((values[1], values[1])), file=ofh)
                 sampleCount = sampleCount + 1
     warning("INFO:", "DONE - Extracted", sampleCount, "samples.")
 
 
-
-def vcf2tped(chrm):
+def vcf2tped(targetDir, chrm):
     ''' convert VCF file to tped/tfam '''
-    chrm = 
-    #CMD="vcftools --gzvcf ${FILE_PATH}/${VCF_FILE} --plink-tped --out $OUTPUT_FILE_PATH/chr${c}"
 
+    if args.skipYM and ('Y' in chrm or 'M' in chrm):
+        return
 
-def run_ld(chrm):
+    if 'M' in chrm:
+        chrm = 'MT' if args.useMT else 'M'
+    
+    chrm = 'chr' + xstr(chrm) if 'chr' in chrm else xstr(chrm)
+
+    vcfFile = glob(args.inputDirectory + '/*.chr' + chrm + '.*vcf.gz')
+    outputFile = path.join(targetDir, chrm)
+    warning("INFO:", "Converting VCF file", vcfFile, "to PLINK formats:", outputFile)
+
+    # CMD="vcftools --gzvcf ${FILE_PATH}/${VCF_FILE} --plink-tped --out $OUTPUT_FILE_PATH/chr${c}
+    cmd = ['vcftools', '--gzvcf', vcfFile[0], '--plink-tped', '--out', outputFile]
+    execute_cmd(cmd, cwd=None, verbose=True, printCmdOnly=args.test)
+    
+
+def run_ld(targetDir, chrm):
     """ run ld """
 
-    tped = path.join(args.chrDirectory, 'chr' + xstr(chrm) + '.tped')
-    tfam = path.join(args.chrDirectory, 'chr' + xstr(chrm) + '.tfam')
-    samples = path.join(outputDir, args.population + '-samples.txt')
-    outputFile = path.join(outputDir, 'chr' + xstr(chrm))
-    cmd = ['plink', '--threads', xstr(1), '--memory', xstr(4500), '--tped', tped, '--tfam', tfam, '--keep', samples,
+    if args.skipYM and ('Y' in chrm or 'M' in chrm):
+        return 1
+
+    if 'M' in chrm:
+        chrm = 'MT' if args.useMT else 'M'
+
+    chrm = 'chr' + xstr(chrm) if 'chr' in chrm else xstr(chrm)
+    
+    tped = path.join(args.inputDirectory, xstr(chrm) + '.tped')
+    tfam = path.join(args.inputDirectory, xstr(chrm) + '.tfam')
+    samples = path.join(targetDir, 'samples.txt')
+    outputFile = path.join(targetDir, 'chr' + xstr(chrm))
+    cmd = ['plink', '--threads', xstr(2), '--memory', xstr(6000), '--tped', tped, '--tfam', tfam, '--keep', samples,
             '--r2', 'dprime', 'with-freqs', 'gz', '--ld-window', xstr(9999), '--out', outputFile]
     warning("INFO:", "Executing:", ' '.join(cmd))
-    execute_cmd(cmd, verbose=False)
+    execute_cmd(cmd, verbose=True)
     
     return 1
 
 
+def validate_args():
+    if args.extractSamples and not args.sampleFile:
+        die("ERROR: must supply full path to sample file (-s, --sampleFile) with --extractSamples flag")
+    if args.convertVcf and not args.inputDirectory:
+        die("ERROR: must supply input directory containing VCF files (-i, --inputDirectory) with --convertVcf flag")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="calculate LD load file", allow_abbrev=False)
-    parser.add_argument('-p', '--population', help="population", required=True)
-    parser.add_argument('-d', '--rootDirectory', help="root directory where pop directory should be created", required=True)
-    parser.add_argument('--chrDirectory', help="directory for chromosomes", required=True)
+    parser.add_argument('-p', '--population', help="population")
+    parser.add_argument('-o', '--outputDirectory', help="target for output files/PLINK converts", required=True)
+    parser.add_argument('-i', '--inputDirectory', help="directory for input files (VCF)")
     parser.add_argument('--chr', default='all',
                         help="chromosome; comma separated list of one or more chromosomes or 'all'")
-    parser.add_argument('-s', '--sampleFile', help="full path to sample file", required=True)
+    parser.add_argument('-s', '--sampleFile', help="full path to sample file")
     parser.add_argument('-m', '--maxWorkers', type=int, help="full path to sample file", default=5)
     parser.add_argument('--gusConfigFile',
                         help="GUS config file. If not provided, assumes default: $GUS_HOME/conf/gus.config")
+    parser.add_argument('--useMT', help="use MT instead of M", action='store_true')
+    parser.add_argument('-v', '--verbose', help="verbose mode", action='store_true')
+    parser.add_argument('-t', '--test', help="verbose mode", action='store_true')
+    parser.add_argument('--extractSamples', help="extract samples", action='store_true')
+    parser.add_argument('--convertVcf', help="convert VCF -> PLINK input format", action='store_true')
+    parser.add_argument('--runLD', help="run LD", action='store_true')
+    parser.add_argument('--skipYM', help="no Y or M chromosome", action='store_true')
     args = parser.parse_args()
 
-    outputDir = create_dir(path.join(args.rootDirectory, args.population))
-    extract_population_samples(outputDir)
+    validate_args()
 
-
-    chrList = args.chr.split(',') if not args.chr.startswith('all') \
-      else [c.value for c in Human]
-    random.shuffle(chrList) # so that not all large chrms are done at once if all is selected
-    with ProcessPoolExecutor(args.maxWorkers) as executor:
-        futureUpdate = {executor.submit(run_ld, chromosome=xstr(c)) : c for c in chrList}
-        for future in as_completed(futureUpdate): # this should allow catching errors
-            try:
-                future.result()
-            except Exception as err:
-                raise(err)
+    outputDir = create_dir(path.join(args.outputDirectory, args.population)) if args.population else args.outputDirectory
+    if args.extractSamples:
+        extract_population_samples(outputDir)
+    else:
+        chrList = args.chr.split(',') if not args.chr.startswith('all') \
+          else [c.value for c in Human]
+        random.shuffle(chrList) # so that not all large chrms are done at once if all is selected
+        with ProcessPoolExecutor(args.maxWorkers) as executor:
+            futureUpdate = None
+            if args.runLD:
+                futureUpdate = {executor.submit(run_ld, outputDir, xstr(c)) : c for c in chrList} 
+            else:
+                futureUpdate = {executor.submit(vcf2tped, outputDir, xstr(c)) : c for c in chrList}
+                
+            for future in as_completed(futureUpdate): # this should allow catching errors
+                try:
+                    future.result()
+                except Exception as err:
+                    raise(err)

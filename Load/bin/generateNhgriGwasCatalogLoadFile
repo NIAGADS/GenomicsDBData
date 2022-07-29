@@ -15,17 +15,18 @@ import os.path as path
 import csv
 import json
 
-from GenomicsDBData.Util.utils import qw, warning, die, xstr, xstrN
+from GenomicsDBData.Util.utils import warning, die, xstr, is_number, is_non_numeric
+from GenomicsDBData.Util.list_utils import qw
 
 def row2value_tuple(fields, row):
     '''
     covert row values to consistently ordered tuple
     '''
     # these two things cause problems later for postgres json
-    row = {key : value.replace('"', '') if value is not None else value for key, value in row.iteritems()}
-    row = {key : value.replace('|', '-') if value is not None else value for key, value in row.iteritems()}
-    row = {key : value.replace('\\x3b', ';') if value is not None else value for key, value in row.iteritems()}
-    values = [xstr(row[f], nullValue='NULL') for f in fields] # get rid of quotes in json
+    row = {key : value.replace('"', '') if value is not None else value for key, value in row.items()}
+    row = {key : value.replace('|', '-') if value is not None else value for key, value in row.items()}
+    row = {key : value.replace('\\x3b', ';') if value is not None else value for key, value in row.items()}
+    values = [xstr(row[f], nullStr='NULL') for f in fields] # get rid of quotes in json
     return tuple(values)
 
 
@@ -40,7 +41,7 @@ def generate_load_file():
     fileName = path.join(args.dir, args.fileName)
     outputFile = path.join(args.dir, args.fileName + "-preprocess.txt")
 
-    header = qw('chromosome marker allele frequency pvalue') # position is only valid for GRCh38
+    header = qw('chromosome position marker ref_allele test_allele frequency pvalue') # position is only valid for GRCh38
 
     with open(outputFile, 'w') as of:
         with open(fileName) as f:
@@ -71,40 +72,167 @@ def generate_load_file():
                     if ', ' in sSnp:
                         variants = sSnp.split(',')
                     
-
                     for snp in variants:
-                        snp = snp.strip()
-                        if 'chr' in snp.lower() or not snp.startswith('rs'):
+                        snp = snp.strip().lower()
+
+                        if snp.startswith('che'):
+                            snp = snp.replace('che', 'chr')
+                            
+                        if 'chr' in snp or not snp.startswith('rs'):
                             if '37' in args.genomeBuild:
-                                warning("WARNING: GRCh37", "Skipping positional/malformed variant:", snp)
+                                warning("WARNING: GRCh37", "SKIPPING positional/malformed variant:", snp)
                                 continue
+                            snp = snp.replace('chr:', '') # in case this matched
+                            snp = snp.replace('chr', '')
+
+                        if 'hr' in snp: # typo should be chr
+                            snp = snp.replace('hr', '')
+
+                        if 'imm_' in snp:
+                            if '38' in args.genomeBuild:
+                                snp = snp.replace('imm_', '')
                             else:
-                                die("Not yet implemented: GRCh38 - TODO: Allow and correct positional-based variants:" + snp )
-                                
+                                warning("WARNING: GRCh7", "SKIIPPING imm variant:", snp)
+                                continue
+                        
+                        if snp.startswith('0-'):  # "STRONGEST SNP-RISK ALLELE": "0-GAAAAAA",
+                            warning("SKIPPING invalid variant identifier:", snp)
+                            continue
+
+                        if ":-?" in snp: # chr20:14460426:-?
+                            snp = snp.replace(':-', '-')
+
+                        if 'hg18_' in snp:
+                            snp = snp.replace('hg18_', '')
+
+                        if ':ind' in snp:
+                            snp = snp.replace(':ind', '')
+
+                        if ':i' in snp:
+                            snp = snp.replace(':i', '')
+
+                        if ':d' in snp:
+                            snp = snp.replace(':d', '')
+                            
+                        if  any(x in snp for x in qw('im position POSITION Position > affx snp 1kg d10 y del kgp exm hla')):
+                            warning("SKIPPING invalid variant identifier:", snp)
+                            continue
+
+                        if is_number(snp): # lost rs
+                            warning("WARNING: skipping malformed variant", snp)
+                            continue
+                        
                         if ' x ' in snp:
                             continue # SNP X SNP interaction
+
+                        if '*' in snp:
+                            continue # no clue -- e.g., HLA:DPB1*17 (region?)
+
+                        if '_' in snp: # 2:157753693_AATCCCATTTT_A 
+                            snp = snp.replace('_', ':')
+                            if snp.count(':') == 3:
+                                snp = snp.replace('-?', '') # 2:43420238_ACACT_A-?
+
+                            if snp.startswith('23:'):
+                                snp = snp.replace('23:', 'X:')
+
+                        if '"' in snp: # chr11:102751102"-?
+                            snp = snp.replace('"', '')
                         
                         if '--' in snp:
                             snp = snp.replace('--', '-')
 
+                        if '-d' in snp:
+                            snp = snp.replace('-d', '') # chr10:103214974_AT_A-D
+
+                        if '-i' in snp:
+                            snp = snp.replace('-i', '')
+
                         if '-' in snp:
-                            alleles = snp.split('-')
-                            marker = alleles.pop(0)
+                            numDashes = snp.count('-')
+                            if numDashes == 1:
+                                alleles = snp.split('-')
+                                marker = alleles.pop(0)
+                                if is_number(marker): # lost rs
+                                    warning("WARNING: skipping malformed variant", marker)
+                                    continue
+                            else: #2-534435-G, instead of 2_534435-G
+                                snpInfo = snp.split('-')
+                                alleles = snpInfo.pop()
+                                marker = ':'.join(snpInfo)
                         else:
                             marker = snp
-                            alleles = ['?']
+                            if marker.count(':') == 3:
+                                alleles = [marker.split(':')[3]]
+                            else:
+                                alleles = ['N']
 
-                        alleles = ['?' if a == '' else a for a in alleles]
+                        if is_non_numeric(marker): # e.g. gene name
+                            warning("SKIPPING invalid variant identifier:", marker)
+                            continue
+
+                        if marker.isalnum() and not marker.isdigit() and 'rs' not in marker:
+                            warning("SKIPPING invalid variant identifier:", marker)
+                            continue
+
+                        if ':' in marker:
+                            snpInfo = marker.split(':')
+                            if not snpInfo[1].isdigit(): #POU4F1:AS1
+                                warning("SKIPPING invalid variant identifier:", marker)
+                                continue
+                            if not len(snpInfo[0]) <= 2:
+                                warning("SKIPPING invalid variant identifier:", marker)
+                                continue
+
+                        # sometimes get weird things like ?T or '' but not NULL
+                        alleles = ['N' if (a == '' or '?' in a) else a.upper() for a in alleles] 
                         alleles = list(dict.fromkeys(alleles)) # remove duplicates
 
                         # some rsIds have a random alpha-char after them
-                        m = re.search('(rs\d+)', marker) 
-                        marker = m.group(1)
-
+                        if 'rs' in marker:
+                            m = re.search('(rs\d+)', marker)
+                            marker = m.group(1)
+                        else:
+                            marker = marker.upper()
+                            
                         if '?' in alleles:
-                            alleles = ['?'] # if list of alleles includes a ? then the result will be mapped to all alleles anyway, so others do not matter
+                            alleles = ['N'] # if list of alleles includes a N then the result will be mapped to all alleles anyway, so others do not matter
+                        chrm = row["CHR_ID"]
+                        if not chrm and ':' in marker:
+                            chrm = marker.split(':')[0]
+                        if xstr(chrm) == '23':
+                            chrm = 'X'
+
+                        pos = row["CHR_POS"]
+                        if not pos and ':' in marker:
+                            pos = marker.split(':')[1]
+
+                        refAllele = 'N'
+                        if ':' in marker:
+                            variantInfo = marker.split(':')
+                            if len(variantInfo) == 4:
+                                alt = variantInfo[3].upper()
+                                refAllele = variantInfo[2].upper()
+                           #     if (alleles is not None and len(alleles) == 1 and alleles[0] == 'N') or alleles is None:
+                           #         alleles = [alt]
+                           #     elif alt not in alleles:
+                           #         alleles.append(alt)
+                           # if len(variantInfo) == 3:
+                           #     alt = variantInfo[2].upper()
+                           #     if (alleles is not None and len(alleles) == 1 and alleles[0] == 'N') or alleles is None:
+                           #         alleles = [alt]
+                            #    elif alt not in alleles:
+                           #         alleles.append(alt)
+                               
+
+                        variantTuple = (xstr(chrm), pos, xstr(marker.rstrip()), refAllele)
+                            
                         for a in alleles:
-                            print('\t'.join((xstr(row["CHR_ID"]), xstr(marker.rstrip()), xstr(a, nullValue='NULL'), xstr(frequency, nullValue='NULL'), xstr(pvalue, nullValue='NULL')) +  valuesTuple), file=of)
+                            if is_number(a):
+                                warning("WARNING Invalid allele", a, "skipping", snp, ' : ', a)
+                                continue
+                           
+                            print('\t'.join(variantTuple + (xstr(a, nullStr='N'), xstr(frequency, nullStr='NULL'), xstr(pvalue, nullStr='NULL')) +  valuesTuple), file=of)
                 except:
                     warning(row)
                     raise

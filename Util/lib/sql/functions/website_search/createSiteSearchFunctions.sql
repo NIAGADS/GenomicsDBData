@@ -352,7 +352,7 @@ WHERE ta.description ILIKE '%' || st.term || '%'
 
 SELECT DISTINCT ta.track AS primary_key,
 ta.dataset_accession || ': ' || COALESCE(ta.name || ' (' || ta.attribution ||  ')', NAME) AS display,
-'gwas_summary' AS record_type,
+'track' AS record_type,
 first_value(tm.match_ranking) OVER (PARTITION BY tm.track ORDER BY tm.match_ranking ASC) AS match_ranking,
 first_value(tm.matched_term) OVER (PARTITION BY tm.track ORDER BY tm.match_ranking ASC)::text AS matched_term,
 'Track // ' || substr(ta.description, 1, 130)
@@ -426,7 +426,7 @@ AND int8range(b.location_start, b.location_end, '[]') @> int8range(ga.location_s
 track_matches AS (
 SELECT ta.track AS primary_key, 
 ta.dataset_accession || ': ' || COALESCE(ta.name || ' (' || ta.attribution ||  ')', NAME) AS display,
-'gwas_summary' AS record_type,
+'track' AS record_type,
 1 AS match_rank,
 b.chromosome || ':' || b.location_start || '-' || b.location_end AS matched_term,
 'Track // ' || truncate_str(ta.description, 100) || ' // N Hits = ' || COUNT(DISTINCT variant_record_primary_key)::text AS description

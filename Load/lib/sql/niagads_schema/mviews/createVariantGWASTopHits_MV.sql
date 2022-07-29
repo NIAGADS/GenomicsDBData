@@ -1,9 +1,9 @@
+SET maintenance_work_mem="100GB";
+SET max_parallel_maintenance_workers TO 8;
+
 DROP MATERIALIZED VIEW IF EXISTS NIAGADS.VariantGWASTopHits CASCADE;
 
 -- note: NIAGADS.DatasetTopHits depends on this view
-
-SET maintenance_work_mem="100GB";
-SET max_parallel_maintenance_workers TO 8;
 
 CREATE MATERIALIZED VIEW NIAGADS.VariantGWASTopHits AS (
 SELECT r.protocol_app_node_id,
@@ -29,7 +29,7 @@ AnnotatedVDB.Variant v
 WHERE r.protocol_app_node_id = pan.protocol_app_node_id
 AND r.neg_log10_pvalue >= 3
 AND r.neg_log10_pvalue != 'NaN'
-AND pan.source_id NOT ILIKE '%Catalog%'
+--AND pan.source_id NOT ILIKE '%Catalog%'
 AND v.record_primary_key = r.variant_record_primary_key
 );
 

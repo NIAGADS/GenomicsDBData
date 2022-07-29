@@ -2,6 +2,26 @@
 
 --DROP FUNCTION find_variant_by_position;
 
+CREATE OR REPLACE FUNCTION get_variant_pk_by_position(lookup TEXT, firstHitOnly BOOLEAN DEFAULT FALSE) 
+       RETURNS TABLE(lookup_value TEXT, record_primary_key TEXT) AS $$
+
+DECLARE chrm TEXT;
+DECLARE pos INT;
+BEGIN
+	SELECT 'chr' || split_part(lookup, ':', 1) INTO chrm;
+	SELECT (split_part(lookup, ':', 2))::int INTO pos;
+	
+	RETURN QUERY
+	WITH bin AS (SELECT find_bin_index(chrm, pos, pos) bin_index)
+	SELECT lookup AS lookup_value, v.record_primary_key::TEXT
+	FROM AnnotatedVDB.Variant v, bin b
+	WHERE chromosome = chrm AND v.bin_index @> b.bin_index
+        AND int8range(pos, pos, '[]') && int8range(v.position, v.position, '[]')
+	AND v.record_primary_key NOT LIKE '%:I%'
+	LIMIT CASE WHEN firstHitOnly THEN 1 END;
+END;
+
+$$ LANGUAGE plpgsql;
 
 DROP FUNCTION IF EXISTS find_variant_by_position(chr TEXT, pos INTEGER, firstHitOnly BOOLEAN);
 CREATE OR REPLACE FUNCTION find_variant_by_position(chr TEXT, pos INTEGER, firstHitOnly BOOLEAN DEFAULT FALSE) 

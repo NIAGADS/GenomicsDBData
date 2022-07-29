@@ -1,88 +1,119 @@
 {
     "file": {
-	"path": "$DATA_DIR/1000genomes/linkage_diseq"
+	"path": "$DATA_DIR/1000Genomes/20220422_3202_phased_SNV_INDEL_SV",
+	"sampleFile": "20130606_g1k_3202_samples_ped_population.txt"
     },
+    "external_database": {
+	"name": "1000 Genomes 30x on GRCh38",
+	"version": "30x-grch38",
+	"release_date": "2022-04-22",
+	"download_url": " ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/",
+	"id_url": "https://www.internationalgenome.org/data-portal/data-collection/30x-grch38",
+	"description": "The New York Genome Center (NYGC), funded by NHGRI, has sequenced 3202 samples from the 1000 Genomes Project sample collection to 30x coverage. Initially, the 2504 unrelated samples from the phase three panel from the 1000 Genomes Project were sequenced. Thereafter, an additional 698 samples, related to samples in the 2504 panel, were also sequenced.",
+	"accession": "1000G_2504_high_coverage",
+	"type": "Genetic variation"
+    },
+ 
     "foreach": [
 	{
 	    "EAS" : {
-		"dir": "@file.path+/EAS",
-		"sourceId": "@external_database.accession+LD_EAS",
-		"name": "1000 Genomes LD: EAS",
-		"characteristics": {
+		"dir": "@file.path/linkage/EAS",
+		"sourceId": "@external_database.accession+_LD_EAS",
+		"name": "1000 Genomes 30x LD: EAS",
+		"population": "EAS",
+		"biomaterialCharacteristics": {
 		    "population":"East Asian"
 		}
 	    } 
 	},
 	{
 	    "SAS": {
-		"dir": "@file.path+/SAS",
-		"sourceId": "@external_database.accession+LD_SAS",
-		"name": "1000 Genomes LD: SAS",
-		"characteristics": {
+		"dir": "@file.path/linkage/SAS",
+		"sourceId": "@external_database.accession+_LD_SAS",
+		"name": "1000 Genomes 30x LD: SAS",
+		"population": "SAS",
+		"biomaterialCharacteristics": {
 		    "population":"South Asian"
 		}
 	    }
 	},
 	{
 	    "EUR": {
-		"dir": "@file.path+/EUR",
+		"dir": "@file.path/linkage/EUR",
 		"sourceId": "@external_database.accession+LD_EUR",
-		"name": "1000 Genomes LD: EUR",
-		"characteristics": {
+		"name": "1000 Genomes 30x LD: EUR",
+		"population": "EUR",
+		"biomaterialCharacteristics": {
 		    "population":"European"
 		}
 	    }
 	},
 	{
 	    "AFR": {
-		"dir": "@file.path+/AFR",
-		"sourceId": "@external_database.accession+LD_AFR",
-		"name": "1000 Genomes LD: AFR",
-		"characteristics": {
+		"dir": "@file.path/linkage/AFR",
+		"sourceId": "@external_database.accession+_LD_AFR",
+		"population": "AFR",
+		"name": "1000 Genomes 30x LD: AFR",
+		"biomaterialCharacteristics": {
 		    "population":"African/African American"
 		}
 	    }
 	},
 	{
 	    "AMR": {
-		"dir": "@file.path+/AMR",
-		"sourceId": "@external_database.accession+LD_AMR",
-		"name": "1000 Genomes LD: AMR",
-		"characteristics": {
+		"dir": "@file.path/linkage/AMR",
+		"sourceId": "@external_database.accession+_LD_AMR",
+		"population": "AMR",
+		"name": "1000 Genomes 30x LD: AMR",
+		"biomaterialCharacteristics": {
 		    "population":"Ad Mixed American"
 		}
 	    }
 	}
     ],
-    "external_database": {
-	"name": "1000 Genomes",
-	"version": "Phase 3",
-	"release_date": "05-02-2013",
-	"download_url": "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502",
-	"id_url": "http://www.internationalgenome.org",
-	"description": "The 1000 Genomes Project ran between 2008 and 2015, creating the largest public catalogue of human variation and genotype data. The goal of the 1000 Genomes Project was to find most genetic variants with frequencies of at least 1% in the populations studied.",
-	"accession": "1000Genomes",
-	"type": "Genetic variation"
-    },
  
     "preprocess": [
 	{
 	    "foreach": true,
-	    "skip": true,
 	    "script": {
 		"skip": true,
-		"name": "adapt 'processPopulation.bash' in directory"
+		"name": "calculateLD",
+		"parameters": {
+		    "sampleFile": "@file.path/@file.sampleFile",
+		    "outputDirectory": "@file.path/linkage",
+		    "extractSamples": true,
+		    "population": "foreach"
+		}
+	    }
+	},
+	{
+	    "script": {
+		"skip": true,
+		"name": "calculateLD",
+		"parameters": {
+		    "convertVcf": true,
+		    "outputDirectory": "@file.path/linkage",
+		    "inputDirectory": "@file.path",
+		    "maxWorkers": 10,
+		    "skipYM": true
+		}
 	    }
 	},
 	{
 	    "foreach": true,
 	    "script": {
-		"name": "generate_ld_load_file.py",
+		"name": "calculateLD",
 		"parameters": {
-		    "dir" : "foreach"
+		    "runLD": true,
+		    "outputDirectory": "@file.path/linkage",
+		    "inputDirectory": "@file.path/linkage",
+		    "population": "foreach",
+		    "maxWorkers": 10,
+		    "skipYM": true
 		}
 	    }
 	}
+
     ],
 
     "load" : [
@@ -96,22 +127,31 @@
 		    "subtype": "Linkage analysis",
 		    "description": "Frequency of association (linkage disequilibrium) between alleles at different loci in the selected population.  Calculated using PLINK v.1.9 using default settings.",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version",
-		    "characteristics": "foreach",
+		    "biomaterialCharacteristics": "foreach",
 		    "sourceId" : "foreach",
 		    "name": "foreach"
 		}
 	    }
-	}, 
+	},
+
 	{
-	    "foreach": true,
+	    "foreach":true,
 	    "plugin": {
 		"name": "GenomicsDBData::Load::Plugin::InsertVariantLDResult",
+		"comment": "fields -> #CHR POS1 POS2 R Rsq",
 		"parameters": {
 		    "dir": "foreach",
-		    "sourceId": "foreach",
-		    "skipChr": "Y"
+		    "sourceId" : "foreach",
+		    "chromosome":"CHR_A",
+		    "position1": "BP_A",
+		    "position2": "BP_B",
+		    "maf1": "MAF_A",
+		    "maf2": "MAF_B",
+		    "rSquared": "R2",
+		    "dPrime": "DP"
 		}
 	    }
 	}
+   
     ]
 }

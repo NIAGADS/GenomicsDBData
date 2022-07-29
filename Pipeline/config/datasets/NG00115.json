@@ -40,7 +40,7 @@
 	    }
 	},
 		{
-	    "MALE": {
+	    "FEMALE": {
 		"file": "ADGC.phase12.sex2.grm.assoc.logistic",
 		"sourceId": "@file.accession+_GRCh38_FEMALE",
 		"name": "Genetic architecture of AD and differential effect between sexes: Females (GRCh38)",

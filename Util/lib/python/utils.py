@@ -103,6 +103,10 @@ def is_float(value):
     except ValueError:
         return False
 
+def is_non_numeric(value):
+    if True in [char.isdigit() for char in value]:
+        return False
+    return True
 
 
 def to_numeric(value):

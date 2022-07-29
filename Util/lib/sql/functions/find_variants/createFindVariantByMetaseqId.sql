@@ -55,7 +55,7 @@ BEGIN
 
 	IF NOT FOUND THEN
 	   IF metaseqID LIKE '%:N%' THEN -- contains an unknown allele
-	      IF metaseqID LIKE '%:N:N%' THEN -- containst 2 unknown allele
+	      IF metaseqID LIKE '%:N:N%' THEN -- containst 2 unknown allele 	 
 	      	 RETURN QUERY
 	      	 	SELECT *, 6 AS match_rank, 'position' AS match_type
 		 	FROM find_variant_by_position('chr' || split_part(metaseqId, ':', 1)::text, split_part(metaseqId, ':', 2)::int, firstHitOnly);
@@ -66,6 +66,14 @@ BEGIN
 			     split_part(metaseqId, ':', 2)::int,
 			     CASE WHEN split_part(metaseqId, ':', 3) = 'N' THEN split_part(metaseqId, ':', 4) ELSE split_part(metaseqId, ':', 3) END, firstHitOnly);
 	      END IF;
+	   END IF;
+	END IF;
+
+	IF NOT FOUND THEN
+	   IF array_length(string_to_array(metaseqId, ':'), 1) - 1 = 1 THEN -- chr:pos only
+	      RETURN QUERY
+	      	 SELECT *, 6 AS match_rank, 'position' AS match_type
+		 FROM find_variant_by_position('chr' || split_part(metaseqId, ':', 1)::text, split_part(metaseqId, ':', 2)::int, firstHitOnly);
 	   END IF;
 	END IF;
 END;

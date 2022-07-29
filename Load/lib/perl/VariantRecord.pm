@@ -13,6 +13,7 @@ use GenomicsDBData::Load::VariantAnnotator qw(isNull);
 
 my $LOOKUP_SQL="SELECT * from get_variant_primary_keys_and_annotations(?, ?)";
 
+
 # metaseq_id, ref_snp_id, genomicsdbannotation, grch37, grch38
 
 # my $POSITION_SQL = "SELECT * FROM find_variant_by_position(?,?)";
@@ -29,6 +30,7 @@ sub new {
   $self->connect();
   $self->{lookup_qh} = $self->{dbh}->prepare($LOOKUP_SQL) || $self->{plugin}->error(DBI::errstr);
   $self->{first_value_only} = 0;
+  $self->{allow_allele_mismatches} = 0;
   return $self;
 }
 
@@ -41,6 +43,11 @@ sub DESTROY {
 sub disconnect {
   my ($self) = @_;
   $self->{dbh}->disconnect();
+}
+
+sub setAllowAlleleMismatces {
+  my ($self, $allow) = @_;
+  $self->{allow_allele_mismatches} = $allow;
 }
 
 sub setFirstValueOnly {
@@ -97,7 +104,9 @@ sub isValidMetaseqId {
 sub lookup {
   my ($self, @variants) = @_;
   # $self->{plugin}->log(join(',', @variants));
-  $self->{lookup_qh}->execute(join(',', @variants), $self->{first_value_only}) || $self->{plugin}->error(DBI::errstr);
+
+  $self->{lookup_qh}->execute(join(',', @variants), $self->{first_value_only}) || $self->{plugin}->error(DBI::errstr . "/" . Dumper(\@variants));
+  
   my ($result) = $self->{lookup_qh}->fetchrow_array();
   my $json = JSON::XS->new();
   return $json->decode($result);
