@@ -14,14 +14,7 @@ use File::Slurp;
 # use File::Fetch;
 
 use LWP::UserAgent;
-use HTTP::Request;
-# use Gzip::Faster;
-
-# use Compress::Zlib;
-
-use IO::Uncompress::Gunzip;
-
-use Package::Alias Utils => 'GenomicsDBData::Load::Utils';
+use Gzip::Faster;
 
 use GUS::Model::Study::Study;
 use GUS::Model::Study::StudyLink;
@@ -29,31 +22,7 @@ use GUS::Model::Study::Characteristic;
 use GUS::Model::Study::ProtocolAppNode;
 use GUS::Model::Results::FeatureScore;
 
-my $TYPE = "Functional genomics";
-my $SUBTYPES = { histone => "histone_modification",
-		 enhancer => "enhancer",
-		 "protein peaks" => "transcription factor binding site",
-		 "TSS" => "regulation of transcription, start site selection",
-		 "transcription start sites" => "regulation of transcription, start site selection",
-		 "DNase" => "DNAse hypersensitive region"
-	       };
-
-my $QUALIFIERS = {
-		  Assay => "sequencing assay",
-		  "Genomic feature" => "Sequence feature type",
-		  "Tissue category" => "FILER_TISSUE_CATEGORY",
-		  "Cell type" => "cell type"
-		 };
-#{
-#"type" : "bed",
-#"name" : "ENCODE ENCFF059DTX.bed.gz",
-#"showOnHubLoad" : "true",
-#"url" : "https://tf.lisanwanglab.org/GADB/Annotationtracks/ENCODE/data/ChIP-seq/narrowpeak/hg19/1/ENCFF059DTX.bed.gz",
-#"metadata" : { "Data source" : "ENCODE", "Assay" : "ChIP-seq", "Genomic feature" : "ChIP-seq H3K27ac-histone-mark peaks", "Tis#sue category" : "Male Reproductive", "Cell type" : "22Rv1", "Long name" : "ENCODE 22Rv1 [Male Reproductive] ChIP-seq H3K27ac-h#istone-mark peaks ENCFF059DTX.bed.gz" }
-#},#
-
-  
-
+my $TYPE="Functional genomics";
 
 # ----------------------------------------------------------------------
 # Arguments
@@ -62,13 +31,11 @@ my $QUALIFIERS = {
 sub getArgumentsDeclaration {
   my $argumentDeclaration  =
     [
-     fileArg({name => 'trackHub',
-	      descr => 'FILER track hub',
-	      constraintFunc=> undef,
-	      reqd  => 1,
-	      isList => 0,
-	      type=>'JSON',
-	      mustExist=>1
+     stringArg({name => 'annotationFile',
+		descr => 'tab-delim annotation file detailing files and characteristics to be linked to the datasets, see NOTES',
+		constraintFunc=> undef,
+		reqd  => 1,
+		isList => 0,
 	       }),
 
      stringArg({name => 'filerUri',
@@ -77,6 +44,14 @@ sub getArgumentsDeclaration {
 		reqd  => 1,
 		isList => 0,
 	       }),
+
+
+     booleanArg({name => 'validateOntologyTerms',
+		 descr => 'in non-commit mode; just process annotation to validate ontologyterms',
+		 constraintFunc=> undef,
+		 reqd  => 0,
+		 isList => 0,
+		}),
 
      fileArg({name => 'bedFieldKey',
 		descr => 'JSON file containing mapping of bed file types to expected fields (full path)',
@@ -95,55 +70,82 @@ sub getArgumentsDeclaration {
 	       }),
 
 
-     
-     fileArg({name => 'skip',
-	      descr => 'full path to newline separated list of tracks to skip',
-	      constraintFunc=> undef,
-	      reqd  => 0,
-	      isList => 0,
-	      mustExist => 1,
-	      format => "TXT"
-	     }),
-
-
-     booleanArg({name => 'logCompletedTracks',
-	  descr => 'logs completed tracks; can be used as a "skip" file',
-	      constraintFunc=> undef,
-	      reqd  => 0,
-	      isList => 0,
-	     }),
-
-
-     stringArg({name => 'tracks',
-		descr => 'only load the specified tracks; specify as json object of fields, patterns e.g., {track:trackId, category:<>, datasource<>}, etc.',
+     stringArg({name => 'study',
+		descr => 'study source id; ProtocolAppNode source_ids will be generated as studySourceId_datasetSourceId where datasetSourceId should be specified in the "SOURCE_ID" field of the annotation file',
 		constraintFunc=> undef,
-		reqd  => 0,
+		reqd  => 1,
 		isList => 0,
 	       }),
-
-      stringArg({name => '',
+     
+     stringArg({name => 'track',
 		descr => 'only load the specified track (identified by FILER_TRACK_ID)',
 		constraintFunc=> undef,
 		reqd  => 0,
 		isList => 0,
 	       }),
 
-     booleanArg({name => 'loadTrackMetadata',
-		descr => 'only load track metadata (protocolappnode placeholders)', 
-		constraintFunc=> undef,
-		reqd  => 0,
-		isList => 0,
-		}),
-
-      booleanArg({name => 'loadTracks',
-		descr => 'load tracks; must specify --track option to limit to specific tracks',
+     stringArg({name => 'resumeAtDataset',
+		descr => 'resume load at specific dataset (provide file name)',
 		constraintFunc=> undef,
 		reqd  => 0,
 		isList => 0,
 	       }),
 
+
+     stringArg({name => 'scoreLabel',
+		descr => 'label for the score field, applied to all datasets listed in annotation file; if dataset specific provide "SCORE_LABEL"  field in the annotation file',
+		constraintFunc=> undef,
+		reqd  => 0,
+		isList => 0,
+	       }),
+
+     stringArg({name => 'scoreDescription',
+		descr => 'description for the score field, applied to all datasets listed in annotation file; if dataset specific provide "SCORE_DESCRIPTION" field in the annotation file',
+		constraintFunc=> undef,
+		reqd  => 0,
+		isList => 0,
+	       }),
+
+     stringArg({name => 'trackSubType',
+		descr => 'ontology term defining track type, applied to all datasets listed in annotation file; if dataset specific provide "TYPE" field in annotation file.  All dataset ProtocolAppNodes will be assigned "Functional genomics" as the type.  "TYPE" in the annotation file will be saved in the subtype for the ProtocolAppNode',
+		constraintFunc=> undef,
+		reqd  => 0,
+		isList => 0,
+	       }),
+
+     stringArg({name => 'technologyType',
+		descr => 'technology type (ChIP-Seq, RNA-seq, etc); if dataset specific provide the "CHARACTERISTIC|technology type" field in the annotation file',
+		constraintFunc=> undef,
+		reqd  => 0,
+		isList => 0,
+	       }),
+
+  booleanArg({name => 'useScore',
+		 descr => 'should the genome browser track use the score?',
+		 constraintFunc=> undef,
+		 reqd  => 0,
+		 isList => 0,
+		}),
+
+     booleanArg({name => 'itemRgb',
+		 descr => 'should the genome browser track use the Rgb fields?',
+		 constraintFunc=> undef,
+		 reqd  => 0,
+		 isList => 0,
+		}),
+
+     enumArg({name => 'bedType',
+	      descr => 'type of bed file, if not specified here must be specified in annotation file for each dataset in FILER_FILE_FORMAT field',
+	      constraintFunc=> undef,
+	      reqd  => 0,
+	      isList => 0,
+	      enum => "bed3, bed4, bed6, bed9, bed10, bed12, narrowPeak, broadPeak, gappedPeak, bedRnaElements, idr_peak, tss_peak, bed6+GTEX, bed6+DASHR"
+	     }),
+
+     
+
      stringArg({ name  => 'extDbRlsSpec',
-                 descr => "The ExternalDBRelease specifier for FILER. Must be in the format 'name|version', where the name must match a name in SRes::ExternalDatabase and the version must match an associated version in SRes::ExternalDatabaseRelease.",
+                 descr => "The ExternalDBRelease specifier for the ProtocolAppNodes. Must be in the format 'name|version', where the name must match a name in SRes::ExternalDatabase and the version must match an associated version in SRes::ExternalDatabaseRelease.",
                  constraintFunc => undef,
                  reqd           => 1,
                  isList         => 0 
@@ -171,8 +173,34 @@ sub getDocumentation {
 
   my $notes = <<NOTES;
 
+Annotation file should be tab-delimited w/a (case-insensitive) header and least the following required columns:
+
+FILE (file name, not full path)
+SOURCE_ID (protocol_app_node source_id suffix (prefix will be study source_id)
+NAME (protocol app node name)
+
+Optional Columns include:
+
+DESCRIPTION (protocol app node description)
+TYPE (protocol app node subtype)
+SCORE_LABEL (label for the score field)
+SCORE_DESCRIPTION (description of the score field/displayable help)
+
+Characteristics should be provided by fields named as:
+
+CHARACTERISTIC|QUALIFIER
+
+where "QUALIFIER" is a mappable ontology term (case Sensitive), eg.
+
+CHARACTERISTIC|tissue
+CHARACTERISTIC|technology type
+CHARACTERISTIC|histone modification
+CHARACTERISTIC|antibody target
+
+field values may be terms (case sensitive) or ontology term source_ids (using _ instead of : to delineate the ontology from the ID)
+
 Written by Emily Greenfest-Allen
-Copyright Trustees of University of Pennsylvania 2021. 
+Copyright Trustees of University of Pennsylvania 2019. 
 NOTES
 
   my $documentation = {purpose=>$purpose, purposeBrief=>$purposeBrief, tablesAffected=>$tablesAffected, tablesDependedOn=>$tablesDependedOn, howToRestart=>$howToRestart, failureCases=>$failureCases, notes=>$notes};
@@ -193,7 +221,7 @@ sub new {
   my $argumentDeclaration = &getArgumentsDeclaration();
 
   $self->initialize({requiredDbVersion => 4.0,
-		     cvsRevision => '$Revision: 18 $',
+		     cvsRevision => '$Revision: 50 $',
 		     name => ref($self),
 		     revisionNotes => '',
 		     argsDeclaration => $argumentDeclaration,
@@ -217,21 +245,13 @@ sub run {
   $self->{type_id} = $self->getOntologyTermId($TYPE);
   $self->{subtype_id} =  $self->getOntologyTermId($TYPE) if ($self->getArg('trackSubType') );
   $self->{bed_field_key} = $self->parseBedFieldKey();
+  
 
-  my $trackHub = $self->parseTrackHub();
-  $self->log(Dumper($trackHub)) if $self->getArg('veryVerbose');
+  my $annotation = $self->parseAnnotation();
 
-  if ($self->getArg('logCompletedTracks')) {
-    my $trackLogFile = $self->getArg('fileDir') . '/completed-tracks.log';
-    open(my $fh, '>', $trackLogFile) || $self->error("Unable to create track log file: $trackLogFile");
-    $self->{track_log_fh} = $fh;
-  }
+  $self->log(Dumper($annotation)) if $self->getArg('veryVerbose');
 
-  $self->loadSkips() if ($self->getArg('skip'));
-
-  $self->createPlaceholders($trackHub) if $self->getArg('loadTrackMetaData');
-  # $self->loadDatasets($trackHub);
-  $self->{track_log_fh}->close() if exists ($self->{track_log_fh});
+  $self->loadDatasets($annotation);
   # $self->clean();
 
 }
@@ -239,17 +259,6 @@ sub run {
 # ----------------------------------------------------------------------
 # methods called by run
 # ----------------------------------------------------------------------
-
-sub loadSkips {
-  my ($self) = @_;
-  open(my $fh, $self->getArg('skip')) || $self->error("Unable to open skip file:" . $self->getArg('skip'));
-  my $skips = {};
-  while(my $line = <$fh>) {
-    chomp $line;
-    $skips->{$line} = 1;
-  }
-  $self->{skips} = $skips;
-}
 
 sub parseBedFieldKey {
   my ($self) = @_;
@@ -264,69 +273,15 @@ sub parseBedFieldKey {
 }
 
 
-# {
-# "type" : "bed",
-# "name" : "ENCODE ENCFF000NAW.bed.gz",
-# "url" : "https://tf.lisanwanglab.org/GADB/Annotationtracks/ENCODE/data/ChIP-seq/broadpeak/hg19/ENCFF000NAW.bed.gz",
-# "metadata" : { "Data source" : "ENCODE", "Assay" : "ChIP-seq", "Genomic feature" : "ChIP-seq protein peaks", "Tissue category" :
-
-sub createPlaceholders {
-  my ($self, $trackHub) = @_;
-  my $logTracks = $self->getArg('logCompletedTracks');
-  my $lfh = $self->{track_log_fh};
-
-  foreach my $track (@$trackHub) {
-    next if $track eq "dataset";
-    $self->log("Processing dataset $track with the following annotation: " . Dumper($properties)) 
-      if $self->getArg('veryVerbose');
-
-
-    my $protocolAppNodeId = $self->loadProtocolAppNode($properties);
-    if (!$self->getArg('validateOntologyTerms') or $self->getArg('commit')) {
-      my $fileName = $self->getArg('filerUri') . "/" . $properties->{uri};
-      
-      if (defined $skips) {
-	if (exists $skips->{$track}) {
-	  $self->log("SKIPPING: $track / $fileName");
-	  next;
-	}
-      }
-      
-      if ($logTracks) {
-	print $lfh "$track\n";
-      }
-    }
-  }
-}
-
-
 sub loadDatasets {
   my ($self, $annotation) = @_;
-  my $logTracks = $self->getArg('logCompletedTracks');
-  my $lfh = $self->{track_log_fh};
-  my $skips = (exists $self->{skips}) ? $self->{skips} : undef;
-
   while (my ($track, $properties)  = each %$annotation) {
     next if $track eq "dataset";
-    $self->log("Processing dataset $track with the following annotation: " . Dumper($properties)) 
-      if $self->getArg('veryVerbose');
-
-
+    $self->log("Processing dataset $track with the following annotation: " . Dumper($properties));
     my $protocolAppNodeId = $self->loadProtocolAppNode($properties);
     if (!$self->getArg('validateOntologyTerms') or $self->getArg('commit')) {
-      my $fileName = $self->getArg('filerUri') . "/" . $properties->{uri};
-      
-      if (defined $skips) {
-	if (exists $skips->{$track}) {
-	  $self->log("SKIPPING: $track / $fileName");
-	  next;
-	}
-      }
-      
-      $self->loadFeatureScores($fileName, $protocolAppNodeId, $properties);
-      if ($logTracks) {
-	print $lfh "$track\n";
-      }
+      # my $fileName = $self->getArg('filerUri') . "/" . $annotation->{uri};
+      # $self->loadFeatureScores($fileName, $protocolAppNodeId, $properties);
     }
   }
 }
@@ -336,54 +291,150 @@ sub loadDatasets {
 # supporting methods
 # ----------------------------------------------------------------------
 
- "Lung", "Cell type" : "A549", "Long name" : "ENCODE A549 [Lung] ChIP-seq protein peaks ENCFF000NAW.bed.gz" }
-
-sub parseTrackHub {
+sub parseAnnotation {
   my ($self) = @_;
   
-  my $file = $self->getArg('trackHub');
-  my $fileText = read_file($file) || $self->error("Unable to read track hub: $file");
-  
-  my $json = JSON::XS->new;
-  my $trackHub = $json->decode() || $self->error("Error parsing track hub JSON");
+  my $file = $self->getArg('annotationFile');
+  my $study = $self->getArg('study');
+  open(my $fh, $file) || $self->error("Unable to open: $file");
+  my $header = <$fh>;
+  my @fieldNames = split /\t/, $header;
+  foreach my $i (0..$#fieldNames) {
+    $fieldNames[$i] = lc($fieldNames[$i])
+      if !($fieldNames[$i] =~ /CHARACTERISTIC/);
+  }
 
-  $self->{track_hub} = $trackHub;
+  # $_ = lc for @fieldNames ;	# convert all to lower case except for characteristics
+  
+  my %columnMap = map { $fieldNames[$_] => $_ } 0..$#fieldNames;
+
+  my $fileProps = {};
+  my $foundStartPoint = 0;
+
+  my $bedFileType = ($self->getArg('bedType')) ? $self->getArg('bedType') : undef;
+  my $bedFields =  ($bedFileType) ? $self->getBedFields($self->getArg('bedType')) : undef;
+
+  while (<$fh>) {
+    chomp;
+    my (@values) = split /\t/;
+    my $trackId = $values[$columnMap{filer_track_id}];
+
+    if ($self->getArg('track')) { # only extract info for this dataset
+      next if (!($file =~ $self->getArg('track')));
+    }
+
+    if ($self->getArg('resumeAtDataset')) {
+      next if (!($file =~ $self->getArg('resumeAtDataset')) and !$foundStartPoint);
+      $foundStartPoint = 1; 
+    }
+  
+    $fileProps->{$trackId} = {source_id => $trackId,
+			   name => $values[$columnMap{name}]};
+
+
+    
+    $fileProps->{$trackId}->{uri} = $values[$columnMap{filer_path}] . "/" . $values[$columnMap{filer_file_format}]
+      . "/" . $values[$columnMap{filer_genome_build}] . "/"  . $values[$columnMap{file}];
+
+    
+    $fileProps->{$trackId}->{description} = $values[$columnMap{description}] if (exists $columnMap{description});
+    if (exists $self->{subtype_id}) {
+      $fileProps->{$trackId}->{subtype_id} = $self->{subtype_id};
+    } else {
+      $fileProps->{$trackId}->{subtype_id} = $self->getOntologyTermId($values[$columnMap{type}]);
+    }
+
+    my $trackDisplay = {};
+    $trackDisplay->{score_label} = $self->getArg('scoreLabel') if ($self->getArg('scoreLabel'));
+    $trackDisplay->{score_label} = $values[$columnMap{score_label}] if (exists $columnMap{score_label});
+    $trackDisplay->{score_description} = $self->getArg('scoreDescription') if ($self->getArg('scoreDescription'));
+    $trackDisplay->{score_description} = $values[$columnMap{score_description}] if (exists $columnMap{score_description});
+    $trackDisplay->{useScore} = 1 if ($self->getArg('useScore'));
+    $trackDisplay->{itemRgb} = "on" if ($self->getArg('itemRgb'));
+
+    $fileProps->{$trackId}->{track_display} = TO_JSON($trackDisplay) if (scalar keys %$trackDisplay > 0);
+    $fileProps->{$trackId}->{characteristics} = $self->extractCharacteristics(\%columnMap, @values);
+    if (!$bedFields) {
+      $self->error("No BED 'FILER_FILE_FORMAT' found in annotation for file $file.  Must add to annotation file or specify (bed) file type (for all files) using the --bedType option.")
+	if !(exists $columnMap{file_type});
+
+      $fileProps->{$trackId}->{file_type} = $values[$columnMap{file_type}];
+      $fileProps->{$trackId}->{bed_fields} = $self->getBedFields($values[$columnMap{file_type}]);
+    }
+    else {
+      $fileProps->{$trackId}->{bed_fields} = $bedFields;
+      $fileProps->{$trackId}->{file_type} = $bedFileType;
+    }
+
+  }
+
+  $fh->close();
+
+  return $fileProps;
 }
 
+sub extractCharacteristics {
+  my ($self, $columns, @values) = @_;
+
+  my $chars = {};
+  $chars->{"technology type"} = $self->getArg('technologyType') if ($self->getArg('technologyType'));
+  
+  while (my ($field, $index) = each %$columns) {
+    if ($field =~ m/CHARACTERISTIC/) {
+      my ($temp, $qualifier) = split /\|/, $field;
+      $qualifier =~ s/\s+$//;
+      my $term = $values[$index];
+      if ($term) {
+	$term = "value:" . $term if ($qualifier =~ m/FILE/g);
+	$chars->{$qualifier} =  $term;
+      }
+
+    }
+  }
+
+  return $chars;
+}
 
 sub getFh {
   my ($self, $uri) = @_;
-
-  my @tpath = split "/", $uri;
-  my $targetFile = $self->getArg('fileDir') . '/' . $tpath[-1];
-
-  $self->log("FETCHING $uri and saving to $targetFile.");
   my $ua = LWP::UserAgent->new();
-  my $response = $ua->get($uri, ':content_file' => $targetFile);
+  my $response = $ua->request ($uri);
+  my $text = undef;
   if ($response->is_success ()) {
-    if ($response->header('Client-Aborted') ne 'die') {
-      $self->log("UNCOMPRESSING $targetFile.");
-      open(my $fh, "gunzip -c $targetFile |");
-      return ($fh, $targetFile);
+    $self->log("Successfully fetched $uri");
+    my $content_encoding = $response->header ('Content-Encoding');
+    if ($content_encoding eq 'gzip') {
+      $self->log("Unzipping...");
+      $text = gunzip ($response->content);
     }
     else {
-      $self->log("FETCH ERROR: GET $uri failed.  Error Writing response to $targetFile.");
+      $text = $response->content;
     }
   }
   else {
-    $self->error("FETCH ERROR: GET $uri failed: " . $response->status_line);
+    $self->error("get '$uri' failed: " . $response->status_line);
   }
-  return undef, undef;
+  open(my $fh, "<", \$text);
+  return $fh;
 }
+
 
 sub loadFeatureScores {
   my ($self, $uri, $protocolAppNodeId, $properties) = @_;
 
-  my ($fh, $tempFile) = $self->getFh($uri);
+  my $fh = get($uri);
+ 
+  # if ($uri =~ /\.gz$/) {
+   # $self->log("Uncompressing input file...");
+   # open($fh, "gunzip -c $file |");
+   # $self->log("...done.");
+  #}
+  #else {
+  #  open($fh, $file) or $self->error("Unable to open: $file");
+  #}
 
   my $lineCount = 0;
 
-  $self->log("PROCESSING $tempFile.");
   while (<$fh>) {
     next if m/^track/;		# skip track lines
     chomp;
@@ -397,14 +448,14 @@ sub loadFeatureScores {
     $featureScore->submit();
 
     if (++$lineCount % 50000 == 0) {
-      $self->log("INSERTED $lineCount records.");
+      $self->log("Inserted $lineCount records.");
       $self->undefPointerCache();
     }
   }
   $fh->close();
-  $self->log("DONE. INSERTED $lineCount records from $uri.");
+  $self->log("Done. Inserted $lineCount records from $file.");
   $self->undefPointerCache();
-  unlink($tempFile);
+
 }
 
 sub assembleFeature {
@@ -425,7 +476,7 @@ sub assembleFeature {
 		location_start => $locStart,
 		location_end => $locEnd};
 
-  $result->{feature_name} = Utils::truncateStr($data->[$bedColumnMap->{name}], 22)
+  $result->{feature_name} = VariantAnnotator::truncateStr($data->[$bedColumnMap->{name}], 22)
     if (exists $bedColumnMap->{name});
   $result->{strand} = $data->[$bedColumnMap->{strand}] 
     if (exists $bedColumnMap->{strand});
@@ -461,6 +512,10 @@ sub assembleDisplayJson {
 }
 
 
+sub TO_JSON {
+  my ($data) = @_;
+  return JSON->new->utf8->allow_blessed->convert_blessed->encode($data);
+}
 
 
 sub getOntologyTermId {
@@ -502,6 +557,7 @@ sub loadProtocolAppNode {
     $protocolAppNode->setUri($properties->{uri});
     $protocolAppNode->setDescription($properties->{description}) if (exists $properties->{description});
     $protocolAppNode->setTrackDisplay($properties->{track_display}) if (exists $properties->{track_display});
+
 
     $protocolAppNode->submit() unless ($protocolAppNode->retrieveFromDB());
 

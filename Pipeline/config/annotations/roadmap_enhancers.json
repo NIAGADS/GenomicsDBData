@@ -3,14 +3,14 @@
 	"annotationFile": "$GUS_HOME/data/GenomicsDBData/Load/filer/roadmap_enhancer_FILER_tracks.txt",
 	"directory": "$DATA_DIR/FILER",
 	"bedFieldJsonFile": "$GUS_HOME/data/GenomicsDBData/Pipeline/GADB_bed_file_key.json",
-	"filerUri": "https://tf.lisanwanglab.org/GADB"
+	"filerUri": "https://tf.lisanwanglab.org/FILER"
     },
     "external_database": {
 	"name": "FILER",
 	"description": "The Functional genomics repository (FILER) is a resource developed at the University of Pennsylvania that provides a comprehensive, harmonized, extensible, indexed, searchable database of human functional genomics annotations collection across >20 data sources.",
-	"version": "current",
+	"version": "current-GRCh38",
 	"id_url": "https://tf.lisanwanglab.org/FILER/",
-	"accession": "FILER",
+	"accession": "FILER_GRCH38",
 	"type": "Functional genomics"
     },
     "preprocess": [
@@ -23,7 +23,6 @@
 		    "sourceId": "@external_database.accession+_ROADMAP_ENHANCER",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version"
 		}
-		
 	    }
 	}],
     "load": [
@@ -36,7 +35,7 @@
 		    "annotationFile": "@file.annotationFile",
 		    "filerUri": "@file.filerUri",
 		    "fileDir": "@file.directory",
-		    "study": "FILER_ROADMAP_ENHANCER",
+		    "study": "FILER_GRCH38_ROADMAP_ENHANCER",
 		    "trackSubType": "cis-regulatory element prediction",
 		    "technologyType": "value:ChIP-seq/ChromHMM",
 		    "bedType": "bed4",

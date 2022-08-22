@@ -145,6 +145,12 @@ loadResource --config $CONFIG_DIR/ontologies/pro.json --load data --commit --ver
 loadResource --config $CONFIG_DIR/ontologies/hancestro.json --load xdbr --commit --verbose > $DATA_DIR/logs/xdbr/load_hancestro_xdbr.log 2>&1
 loadResource --config $CONFIG_DIR/ontologies/hancestro.json --load data --commit --verbose > $DATA_DIR/logs/ontologies/load_hancestro.log 2>&1
 
+
+# BRENDA / BTO
+loadResource --config $CONFIG_DIR/ontologies/brenda.json --load xdbr --commit --verbose > $DATA_DIR/logs/xdbr/load_brenda_xdbr.log 2>&1
+loadResource --config $CONFIG_DIR/ontologies/brenda.json --load data --commit --verbose > $DATA_DIR/logs/ontologies/load_brenda.log 2>&1
+
+
 # =================================================
 # REFERENCE BUILD - dbSNP Variants
 # =================================================
@@ -617,3 +623,11 @@ tar -zcvf GRCh37.tar.gz --directory $NIAGADS_GWAS_DIR/NG00115 GRCh37
 tar -zcvf GRCh38.tar.gz --directory $NIAGADS_GWAS_DIR/NG00115 GRCh38
 rm -r $NIAGADS_GWAS_DIR/NG00115/GRCh37
 rm -r $NIAGADS_GWAS_DIR/NG00115/GRCh38
+
+#### FILER
+# roadmap enhancers
+
+loadResource -c $CONFIG_DIR/annotations/roadmap_enhancers.json --load xdbr --commit > $DATA_DIR/logs/filer/load_roadmap_enhancers_xdbr.log 2>&1
+loadResource -c $CONFIG_DIR/annotations/roadmap_enhancers.json --preprocess  --commit > $DATA_DIR/logs/filer/load_roadmap_enhancers_study.log 2>&1
+loadResource -c $CONFIG_DIR/annotations/roadmap_enhancers.json --load data --verbose --commit > $DATA_DIR/logs/filer/load_roadmap_enhancers.log 2>&1
+

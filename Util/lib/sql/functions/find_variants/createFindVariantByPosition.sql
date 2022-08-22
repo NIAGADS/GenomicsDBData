@@ -37,6 +37,7 @@ BEGIN
 	jsonb_build_object(
 	 'associations', v.gwas_flags,
 	 'most_severe_consequence', v.adsp_most_severe_consequence,
+	 'ranked_consequences', v.adsp_ranked_consequences,
 	 'ADSP_QC', v.adsp_qc #- '{17k,info,AF}' #- '{17k,info,AC}' #- '{17k,info,AN}',
 	 'mapped_coordinates', COALESCE(v.other_annotation->'GRCh37' || '{"assembly":"GRCh37"}', v.other_annotation->'GRCh38' || '{"assembly":"GRCh38"}')) AS annotation
 	FROM AnnotatedVDB.Variant v, bin b

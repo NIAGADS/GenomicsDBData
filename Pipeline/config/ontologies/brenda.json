@@ -1,22 +1,22 @@
 {
     "file": {
-	"path": "$SHARED_DATA_DIR/ontologies/brenda",
+	"path": "$DATA_DIR/ontologies/brenda",
 	"file": "bto.owl"
     },
     "external_database": {
 	"name": "BRENDA Tissue and Enzyme Source Ontology",
 	"description": "The BRENDA ontology is a registry of tissues, cell lines and cell types from uni- and multicellular organisms.",
-	"version": "2016-08-04",
-	"release_date": "2016-08-04",
-	"download_url": "",
-	"id_url": "https://www.brenda-enzymes.info/ontology.php?ontology_id=3",
+	"version": "2022.1",
+	"release_date": "2022-01-01",
+	"download_url": "http://purl.obolibrary.org/obo/bto.owl",
+	"id_url": "https://www.brenda-enzymes.org/",
 	"accession": "BRENDA",
 	"type": "Ontology and terminology"
     },
     "load": [
 	{
 	    "plugin": {
-		"name": "GUS::Supported::Plugin::InsertOntologyTermsAndRelationships",
+		"name": "GenomicsDBData::Load::Plugin::InsertOntologyTermsAndRelationships",
 		"parameters": {
 		    "inFile": "@file.path/@file.file",
 		    "extDbRlsSpec": "@external_database.name|@external_database.version",
