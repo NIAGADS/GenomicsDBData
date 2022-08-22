@@ -1,0 +1,5 @@
+name	label	track	source	description	feature_type	track_type
+ADSK 17K R3 Variants	ADSK 17K	ADSP_17K	ADSP	Variants from the Alzheimer''s Disease Sequencing Project (ADSP) 17K R3 whole genome sequencing effort - INDELs and SNVs that passed the ADSP biallelic quality control (QC) criteria. Variants are annotated by the ADSP Annotation Pipeline.	Variant	variant
+Ensembl Genes	Ensembl Genes	ENSEMBL_GENE	Ensembl	Ensembl genes mapped to the +GENOME_BUILD+ gene reference; annotations from GENCODE +GENCODE_VERSION+.	Gene	gene
+dbSNP	dbSNP bld +DBSNP_VERSION+	dbSNP	dbSNP	All variants from the NCBI dbSNP database of single nucleotide polymorphisms and small-scale variations. Variants are annotated by the ADSP Annotation Pipeline.	Variant	variant
+dbSNP (COMMON)	dbSNP bld +DBSNP_VERSION+ (COMMON)	dbSNP_COMMON	dbSNP	Variants from the NCBI dbSNP database that are flagged as COMMON. Variants are annotated by the ADSP Annotation Pipeline.	Variant	variant

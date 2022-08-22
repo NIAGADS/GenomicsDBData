@@ -1,0 +1,36 @@
+<NIAGADS::GenomeBrowserTrackConfig>
+	<name>ADSK 17K R3 Variants</name>
+	<label>ADSK 17K</label>
+	<track>ADSP_17K</track>
+	<source>ADSP</source>
+	<description>Variants from the Alzheimer''s Disease Sequencing Project (ADSP) 17K R3 whole genome sequencing effort - INDELs and SNVs that passed the ADSP biallelic quality control (QC) criteria. Variants are annotated by the ADSP Annotation Pipeline.</description>
+	<feature_type>Variant</feature_type>
+	<track_type>variant</track_type>
+</NIAGADS::GenomeBrowserTrackConfig>
+<NIAGADS::GenomeBrowserTrackConfig>
+	<name>Ensembl Genes</name>
+	<label>Ensembl Genes</label>
+	<track>ENSEMBL_GENE</track>
+	<source>Ensembl</source>
+	<description>Ensembl genes mapped to the +GENOME_BUILD+ gene reference; annotations from GENCODE +GENCODE_VERSION+.</description>
+	<feature_type>Gene</feature_type>
+	<track_type>gene</track_type>
+</NIAGADS::GenomeBrowserTrackConfig>
+<NIAGADS::GenomeBrowserTrackConfig>
+	<name>dbSNP</name>
+	<label>dbSNP bld +DBSNP_VERSION+</label>
+	<track>dbSNP</track>
+	<source>dbSNP</source>
+	<description>All variants from the NCBI dbSNP database of single nucleotide polymorphisms and small-scale variations. Variants are annotated by the ADSP Annotation Pipeline.</description>
+	<feature_type>Variant</feature_type>
+	<track_type>variant</track_type>
+</NIAGADS::GenomeBrowserTrackConfig>
+<NIAGADS::GenomeBrowserTrackConfig>
+	<name>dbSNP (COMMON)</name>
+	<label>dbSNP bld +DBSNP_VERSION+ (COMMON)</label>
+	<track>dbSNP_COMMON</track>
+	<source>dbSNP</source>
+	<description>Variants from the NCBI dbSNP database that are flagged as COMMON. Variants are annotated by the ADSP Annotation Pipeline.</description>
+	<feature_type>Variant</feature_type>
+	<track_type>variant</track_type>
+</NIAGADS::GenomeBrowserTrackConfig>
