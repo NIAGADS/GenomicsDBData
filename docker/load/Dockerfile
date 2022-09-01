@@ -33,8 +33,11 @@ RUN apt-get update && apt-get install -y git maven ant emacs openjdk-11-jre-head
 # samtools, htslib, vcftools, sqlite, BioPerl
 # =================================================
 
-# PERL Modules -- note this is an abbreviate list; will add to it as needed
+# PERL Modules 
 # -------------------------------------------------
+# NOTE: this is an abbreviate list; will add to it as needed
+# to avoid preloading unused dependencies
+
 # BioPerl
 RUN cpanm Bio Bio::DB::HTS Bio::EnsEMBL::XS Bio::Phylo \ 
 # PostgreSQL
@@ -43,8 +46,11 @@ RUN cpanm Bio Bio::DB::HTS Bio::EnsEMBL::XS Bio::Phylo \
         LWP LWP::Parallel \ 
         List::MoreUtils
 
-# Python Modules -- note this is an abbreviate list; will add to it as needed
+# Python Modules 
 # -------------------------------------------------
+# NOTE this is an abbreviate list; will add to it as needed
+# to avoid preloading unused dependencies
+
 RUN pip3 install --no-cache-dir  \
     pylint \
     numpy pandas rpy2\
@@ -52,8 +58,9 @@ RUN pip3 install --no-cache-dir  \
     seqrepo bioutils ga4gh.vrs \
     pysam 
 
-# samtools; adapted from https://github.com/chrishah/samtools-docker/blob/master/Dockerfile
+# samtools
 # -------------------------------------------------
+# adapted from https://github.com/chrishah/samtools-docker/blob/master/Dockerfile
 WORKDIR /opt
 RUN wget https://github.com/samtools/samtools/releases/download/${SAMTOOLS_VERSION}/samtools-${SAMTOOLS_VERSION}.tar.bz2 && \
 	tar jxf samtools-${SAMTOOLS_VERSION}.tar.bz2 && \
@@ -76,6 +83,7 @@ ENV PROJECT_HOME=$HOME/project_home
 # build GUS environment
 RUN mkdir -p ${GUS_HOME}/config ${PROJECT_HOME}
 # checkout the git projects / based on version
+# -------------------------------------------------
 # build 
 
 # update PATH
