@@ -50,12 +50,12 @@ RUN cpanm Bio Bio::DB::HTS Bio::EnsEMBL::XS Bio::Phylo \
 # -------------------------------------------------
 # NOTE this is an abbreviate list; will add to it as needed
 # to avoid preloading unused dependencies
-
+# hgvs --> maybe installed with ga4gh.vrs
 RUN pip3 install --no-cache-dir  \
-    pylint \
+    pylint configparser \
     numpy pandas rpy2\
     psycopg2 \
-    seqrepo bioutils ga4gh.vrs \
+    seqrepo bioutils ga4gh.vrs \ 
     pysam 
 
 # samtools
@@ -69,6 +69,16 @@ RUN wget https://github.com/samtools/samtools/releases/download/${SAMTOOLS_VERSI
 	./configure --prefix $(pwd) && \
 	make
 
+# vcftools
+# -------------------------------------------------
+WORKDIR /opt
+RUN git clone https://github.com/vcftools/vcftools.git && \
+    cd vcftools && \
+    ./autogen.sh && \
+    ./configure && \
+    make && make install 
+
+ENV PERL5LIB=/opt/vcftools/src/perl/
 # =================================================
 # create user from config info / switch to user directory to build GUS
 # =================================================
