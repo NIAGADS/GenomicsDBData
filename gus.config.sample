@@ -12,7 +12,7 @@
 ## jdbcDsn is for Java ( eg jdbc:oracle:thin:@HOSTNAME:PORT:NAME_OF_DATABASE )
 ## NAME_OF_DATABASE can be the full service name or a valid alias
 dbVendor=Postgres
-dbiDsn=DBI::Pg::dbname=@DB_NAME@;host=@DB_HOST@;port=@DB_PORT@
+dbiDsn=DBI:Pg:dbname=@DB_NAME@;host=@DB_HOST@;port=@DB_PORT@
 jdbcDsn=jdbc:postgresql://@DB_HOST@:@DB_PORT@/@DB_NAME@
 
 # Your login and Password to the RDBMS
