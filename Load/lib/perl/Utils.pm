@@ -28,8 +28,16 @@ sub countOccurrenceInFile {
 
 
 sub to_json {
-  my ($data) = @_;
-  return JSON::XS->new->utf8->allow_blessed->convert_blessed->encode($data) if ($data);
+  my ($data, $pretty) = @_;
+  $pretty //= 0;
+  if ($data) {
+    if ($pretty) {
+      return JSON::XS->new->allow_blessed->convert_blessed->pretty->encode($data);
+    }
+    else {
+      return JSON::XS->new->utf8->allow_blessed->convert_blessed->encode($data);
+    }
+  }
   return undef;
 }
 
