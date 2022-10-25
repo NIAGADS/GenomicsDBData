@@ -1,3 +1,4 @@
+
 CREATE OR REPLACE FUNCTION estimate_row_count(s TEXT, t TEXT) 
        RETURNS TEXT AS $$
 
@@ -17,13 +18,16 @@ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION estimate_result_size(query TEXT) 
-RETURNS BIGINT AS $$
+ RETURNS integer AS $$
 DECLARE
-   plan JSONB;
+  rec   record;
+  rows  integer;
 BEGIN
-   EXECUTE 'EXPLAIN (FORMAT JSON) ' || query INTO plan;
- 
-   RETURN (plan->0->'Plan'->>'Plan Rows')::BIGINT;
+  FOR rec IN EXECUTE 'EXPLAIN ' || query LOOP
+    rows := substring(rec."QUERY PLAN" FROM ' rows=([[:digit:]]+)');
+    EXIT WHEN rows IS NOT NULL;
+  END LOOP;
+  RETURN rows;
 END;
 $$
 LANGUAGE plpgsql;
