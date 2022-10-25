@@ -179,7 +179,7 @@ if __name__ == '__main__':
 
     protocols = get_protocol_listing()
     for pId in protocols:
-        if pId == dataset or dataset == 'all':
+        if pId == args.dataset or args.dataset == 'all':
             run_patch(pId)
 
     database.close()
