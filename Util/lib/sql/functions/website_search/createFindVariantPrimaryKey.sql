@@ -58,7 +58,7 @@ END;
 
 $$ LANGUAGE plpgsql;
 
-DROP FUNCTION get_variant_primary_keys_and_annotations(text,boolean,boolean) ;
+--DROP FUNCTION get_variant_primary_keys_and_annotations(text,boolean,boolean) ;
 --DROP FUNCTION get_variant_primary_keys_and_annotations(variantID TEXT, firstHitOnly BOOLEAN);
 CREATE OR REPLACE FUNCTION get_variant_primary_keys_and_annotations(variantID TEXT, firstHitOnly BOOLEAN DEFAULT TRUE)
        RETURNS TABLE(mappings TEXT) AS $$
