@@ -301,12 +301,21 @@ sub run {
       open(my $fh, '>', $logDir . "/" . $r . ".log") || $self->error("Unable to create log file for $r");
       print $fh join("\n", sort (keys %{$DEBUG->{uc($r)}})) . "\n";
       $fh->close();
+      $self->log("NUM DISTINCT " . uc($r) . " = " . scalar (keys %{$DEBUG->{uc($r)}}));
     }
     else {
       if (keys %{$DEBUG->{uc($r)}}) {
 	open(my $fh, '>', $logDir . "/" . $r . ".json") || $self->error("Unable to create log file for $r");
 	print $fh Utils::to_json($DEBUG->{uc($r)}, 1) . "\n"; # 1-> pretty print
 	$fh->close();
+	if ($r eq 'invalid_terms') {
+	  foreach my $rt (keys %{$DEBUG->{uc($r)}}) {
+	    $self->log("NUM DISTINCT INVALID " . $rt . " TERMS = " . scalar (keys %{$DEBUG->{uc($r)}->{$rt}}));
+	  }
+	}
+	else {
+	  $self->log("NUM DISTINCT " . uc($r) . " = " . scalar (keys %{$DEBUG->{uc($r)}}));
+	}
       }
     }
   }
@@ -322,6 +331,7 @@ sub run {
 
 
   $self->{track_log_fh}->close() if exists ($self->{track_log_fh});
+  $self->log("DONE");
 }
 
 # ----------------------------------------------------------------------
@@ -771,7 +781,7 @@ sub patchCharacteristics {
   if (!$validatedSample) {
     $self->log("INVALID Sample: ID - $filerSampleId / TERM - $filerSampleTerm")
       if ($self->getArg('veryVerbose'));
-    $DEBUG->{INVALID_TERMS}->{BS}->{$filerSampleId} = {invalid_filer_annotation => 'cell type',
+    $DEBUG->{INVALID_TERMS}->{BIOSAMPLES}->{$filerSampleId} = {invalid_filer_annotation => 'cell type',
 						       tissue_category => $filerTissueCategory,
 						       system_category => $filerSystemCategory,
 						       term => $filerSampleTerm,
@@ -879,7 +889,7 @@ sub patchCharacteristics {
 		     term => $validatedSample->{term},
 		     mapped_value => $validatedSample->{lookup},
 		     term_id => $validatedSample->{term_id},
-		     category => $validatedTissueCategory->{term},
+		     tissue => $validatedTissueCategory->{term},
 		     system => $validatedSystemCategory->{term},
 		     flags => { is_cancer => $isCancer,
 				is_stem_cell => $isStemCell,
