@@ -28,6 +28,12 @@ SELECT_SQL = """
     AND pan.source_id = 
 """
 
+VALIDATE_PK_SQL = """SELECT variant_primary_key FROM AnnotatedVDB.Variant 
+    WHERE variant_primary_key = %s
+"""
+
+FIND_PK_SQL = "SELECT find_variant_primary_key(%s)"
+
 def get_protocol_listing():
     protocols = []
     with database.cursor("RealDictCursor") as cursor:
@@ -36,6 +42,22 @@ def get_protocol_listing():
             protocols.append(row['source_id'])
     return protocols
 
+
+def is_valid_pk(primaryKey):
+    ''' validate primary key off the database '''
+    with database.cursor() as cursor():
+        cursor.execute(VALIDATE_PK_SQL, (primaryKey))
+        result = cursor.fetchone()
+        return result is not None
+
+def update_pk(oldPk):
+    ''' update the primary key '''
+    # naive approache, substitute '_' for ':'
+    newPk = oldPk.replace('_', ':')
+    if not is_valid_pk(newPk):
+        1
+
+    # update
 
 def estimate_patch_size(sourceId):
     ''' estimate patch size '''
@@ -71,6 +93,7 @@ def run_patch(sourceId):
         else:
             database.rollback()
             warning("ROLLING BACK:", rowCount)    
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="patch old GRCh37 Results.VariantGWAS")
