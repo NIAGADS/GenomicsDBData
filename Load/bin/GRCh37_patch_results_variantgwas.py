@@ -78,17 +78,20 @@ def find_indel_pk(primaryKey):
     with database.cursor() as cursor:
         cursor.execute(FIND_PK_BY_METASEQ_SQL, (primaryKey, ))
         if cursor.rowcount > 1:
-            warning("WARNING: Multple matches for long indel:", primaryKey, "-", cursor.fetchall())
+            warning("WARNING: Multple matches for long INDEL:", primaryKey, "-", cursor.fetchall())
             return None
         else: 
-            return cursor.fetchone()[0] 
+            result = cursor.fetchone()[0] 
+            warning("INFO:", "Found long INDEL -", primaryKey, "->", result)
+            return result
 
 
 def submit_pk_update(newPk, oldPk):
     ''' do the update '''
     with database.cursor() as cursor:
         cursor.execute(UPDATE_PK_SQL, (newPk, oldPk))
-        warning("Updated", cursor.rowcount, "rows with PK = ", newPk)
+        if args.verbose:
+           warning("INFO:", "Updated", cursor.rowcount, "rows with PK = ", newPk)
 
 
 def update_pk(oldPk):
@@ -147,7 +150,8 @@ def run_patch(datasetId, protocolAppNodeId):
     ''' run the patch '''
     warning("Patching", datasetId, "-", estimate_patch_size(protocolAppNodeId), "rows.")
     rowCount = 0
-    with database.cursor("RealDictCursor") as cursor:
+    with database.named_cursor('select_' + datasetId, cursorFactory="RealDictCursor") as cursor:
+        cursor.itersize = 50000 
         cursor.execute(SELECT_SQL, (datasetId, ))
         for row in cursor:
             newPk = update_pk(row['variant_record_primary_key']) 
@@ -157,7 +161,7 @@ def run_patch(datasetId, protocolAppNodeId):
                 update_gwas_flags(datasetId, newPk, row)
 
             rowCount += 1
-            if rowCount % 50000 == 0:
+            if rowCount % 10000 == 0:
                 if args.commit:
                     database.commit()
                     warning("COMMITED:", rowCount)
@@ -182,6 +186,7 @@ if __name__ == '__main__':
     parser.add_argument('--commit', action='store_true')
     parser.add_argument('--dataset')
     parser.add_argument('--debug', action='store_true')
+    parser.add_argument('--verbose', action='store_true')
 
     args =  parser.parse_args()
     
