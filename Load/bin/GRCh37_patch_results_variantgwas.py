@@ -176,7 +176,7 @@ def build_gwas_flags(datasetId, row):
     else:
         return json.dumps({datasetId: {
                             'p_value': row['pvalue_display'],
-                            'is_gwas': True if float(row['neg_log10_pvalue']) >= 7.301029996 else False
+                            'is_gws': True if float(row['neg_log10_pvalue']) >= 7.301029996 else False
                             }
                 })
 
