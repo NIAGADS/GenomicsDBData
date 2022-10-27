@@ -86,8 +86,24 @@ def find_indel_pk(primaryKey):
 
 def submit_pk_update(newPk, oldPk):
     ''' do the update '''
+    global variantCountStepwise
+    global variantCountTotal
+
     with database.cursor() as cursor:
         cursor.execute(UPDATE_PK_SQL, (newPk, oldPk))
+
+        variantCountStepwise = variantCountStepwise + cursor.rowcount
+        variantCountTotal = variantCountTotal + cursor.rowcount
+
+        if variantCountStepwise >= args.commitAfter:
+            if args.commit:
+                database.commit()
+                warning("COMMITED:", variantCountTotal, "result updates")
+                variantCountStepwise = 0
+            else:
+                database.rollback()
+                warning("ROLLING BACK:", variantCountTotal, "result updates")
+                variantCountStepwise = 0
         if args.verbose:
            warning("INFO:", "Updated", cursor.rowcount, "rows with PK = ", newPk)
 
@@ -123,12 +139,14 @@ def estimate_patch_size(protocolAppNodeId):
 
 def update_gwas_flags(datasetId, primaryKey, row):
     ''' update the gwas flags '''
+    global flagCount
     gwasFlags = build_gwas_flags(datasetId, row)
     if args.debug:
         warning("DEBUG:", "Flags = ", gwasFlags, "- pvalue =", row['pvalue_display'])
     if gwasFlags is not None:
         with database.cursor() as cursor:
             cursor.execute(UPDATE_FLAGS_SQL, (gwasFlags, gwasFlags, primaryKey))
+        flagCount = flagCount + 1
 
 
 def build_gwas_flags(datasetId, row):
@@ -152,46 +170,56 @@ def run_patch(datasetId, protocolAppNodeId):
         cursor.itersize = 50000 
         cursor.execute(SELECT_SQL, (protocolAppNodeId, ))
         warning("INFO: Starting Update")
+        rowCount = 0
         for row in cursor:
             newPk = update_pk(row['variant_record_primary_key']) 
             if args.debug:
                 warning("DEBUG:", "mapped", row['variant_record_primary_key'], "->", newPk)
             if newPk is not None:
                 update_gwas_flags(datasetId, newPk, row)
+                if flagCount % args.commitAfter == 0 and flagCount != 0:
+                    if args.commit:
+                        database.commit()
+                        warning("COMMITED:", flagCount, "gwas_flag updates")
+                    else:
+                        database.rollback()
+                        warning("ROLLING BACK:", flagCount, "gwas_flag updates")
+            rowCount = rowCount + 1
+            if rowCount % args.commitAfter == 0:
+                warning("INFO:", "Parsed", rowCount, "rows")
 
-            rowCount += 1
-            if rowCount % 10000 == 0:
-                if args.commit:
-                    database.commit()
-                    warning("COMMITED:", rowCount)
-                else:
-                    database.rollback()
-                    warning("ROLLING BACK:", rowCount)
         # residuals
         if args.commit:
             database.commit()
-            warning("COMMITED:", rowCount)
+            warning("COMMITED:", flagCount, "gwas_flag updates")
+            warning("COMMITED:", variantCountTotal, "result updates")
         else:
             database.rollback()
-            warning("ROLLING BACK:", rowCount)    
+            warning("ROLLING BACK:", flagCount, "gwas_flag updates")   
+            warning("ROLLING BACK:", variantCountTotal, "result updates") 
 
+    warning("INFO:", "Parsed", rowCount, "rows")
     warning("DONE", datasetId)
     
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="patch old GRCh37 Results.VariantGWAS")
+    parser = argparse.ArgumentParser(description="patch old GRCh37 Results.VariantGWAS", allow_abbrev=False)
     parser.add_argument('--gusConfigFile',
                         help="GUS config file. If not provided, assumes default: $GUS_HOME/conf/gus.config")
     parser.add_argument('--commit', action='store_true')
     parser.add_argument('--dataset')
     parser.add_argument('--debug', action='store_true')
     parser.add_argument('--verbose', action='store_true')
+    parser.add_argument('--commitAfter', default=5000, type=int)
 
     args =  parser.parse_args()
     
     database = Database(args.gusConfigFile)
     database.connect()
 
+    variantCountStepwise = 0
+    variantCountTotal = 0
+    flagCount = 0
     protocols = get_protocol_listing()
     for pId in protocols:
         if pId == args.dataset or args.dataset == 'all':
