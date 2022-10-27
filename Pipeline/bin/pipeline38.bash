@@ -231,6 +231,23 @@ loadResource -c $CONFIG_DIR/reference_databases/gwas_catalog.json --load data --
 
 
 # =================================================
+# ADVP
+# =================================================
+
+loadResource -c $CONFIG_DIR/reference_databases/advp.json --load xdbr --verbose --commit > $DATA_DIR/logs/xdbr/advp_xdbr.log 2>&1
+loadResource -c $CONFIG_DIR/reference_databases/advp.json --preprocess --commit --verbose > $DATA_DIR/logs/reference/advp_placeholders.log 2>&1 # skip generate
+loadResource -c $CONFIG_DIR/reference_databases/advp.json --preprocess --verbose > $DATA_DIR/logs/reference/generate_load_advp.log 2>&1 # skip skip pan
+
+# run proprocess in test mode to work out issues w/preprocessing and then manually edit/remove any variants that should not be annotated as novel
+loadResource -c $CONFIG_DIR/reference_databases/advp.json --load data --params '{"test":"true", "preprocess":"true", "genomeBuild":"GRCh38"}' --verbose --commit > $DATA_DIR/logs/reference/preprocess_test_advp.log 2>&1
+
+# skip loading missing / too many issues
+loadResource -c $CONFIG_DIR/reference_databases/advp.json --load data --params '{"preprocess":"true", "genomeBuild":"GRCh38"}' --verbose --commit > $DATA_DIR/logs/reference/preprocess_advp.log 2>&1
+
+loadResource -c $CONFIG_DIR/reference_databases/advp.json --load data --params '{"load":"true", "genomeBuild":"GRCh38", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/reference/load_advp.log 2>&1
+
+
+# =================================================
 # Summary Statistics
 # =================================================
 

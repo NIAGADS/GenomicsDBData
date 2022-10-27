@@ -1,0 +1,134 @@
+{
+    "file": {
+	"path": "$DATA_DIR/ADVP",
+	"file": "ADVP_1026_v3p8.tsv",
+	"cadd_path": "$DATA_DIR/CADD",
+	"vep_result_dir": "vep_results",
+	"seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
+	"consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
+	"chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
+	"chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz",
+	"GRCh37_gus_config": "$GUS_HOME/config/grch37-gus.config"
+    },
+    "external_database": {
+	"name": "AD Variant Portal",
+	"description": "The AD Variants Portal (ADVP) is a harmonized collection of high-quality and suggestive genetic association findings curated from the literature. This resource allows the public community to easily browse, search and understand AD genetics reported across >80 cohorts and 8 populations.",
+	"version": "1.0",
+	"release_date": "2021-02-01",
+	"id_url": "https://advp.niagads.org/",
+	"accession": "ADVP",
+	"type": "Genetic variation"
+    },
+    "preprocess": [
+	{
+	    "plugin": {
+		"skip":true,
+		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
+		"parameters" : {
+		    "type": "Genetic variation",
+		    "subtype": "GWAS summary statistics",
+		    "description": "@external_database.description",
+		    "extDbRlsSpec": "@external_database.name|@external_database.version",
+		    "sourceId" : "@external_database.accession",
+		    "name": "@external_database.name"
+		}
+	    }
+	}, 
+	{
+	    "script": 
+	    {
+
+		"name": "generateAdvpLoadFile",
+		"parameters": {
+		    "fileName": "@file.file",
+		    "dir" : "@file.path/GRCh38",
+		    "genomeBuild": "$GENOME_BUILD"
+		}
+	    }
+	}
+    ],
+    "load": [
+	{
+	    "comment": "'resume' parameter will check before each insert;handle all the duplicates",
+	    "plugin": {
+		"name": "GenomicsDBData::Load::Plugin::LoadVariantGWASResult",
+		"parameters": {
+		    "file": "@file.file+-preprocess.txt",
+		    "sourceId": "@external_database.accession",
+		    "fileDir" : "@file.path",
+		    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
+		    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
+		    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
+		    "liftOverChainFile": "@file.chain_file",
+		    "remapAssemblies": "GCF_000001405.25|GCF_000001405.26",
+		    "caddDatabaseDir": "@file.cadd_path",
+		    "testAllele": "test_allele",
+		    "pvalue": "pvalue",
+		    "frequency": "frequency",
+		    "genomeBuild": "GRCh38",
+		    "marker": "marker",
+		    "mapThruMarker": true,
+		    "skipUnmappableMarkers": true,
+		    "skipVep": true,
+		    "allowAlleleMismatches": true,
+		    "resume": true,
+		    "genomeWideSignificanceThreshold": "1e-6",
+		    "restrictedStats": {
+			"other": [
+			    "Name",
+			    "RecordID",
+			    "Notes",
+			    "Stage_original",
+			    "Stage",
+			    "Study Design",
+			    "Model type",
+			    "Study type",
+			    "Cohort",
+			    "Cohort_simplified_no_counts",
+			    "Sample size",
+			    "Cases",
+			    "Controls",
+			    "Sample information",
+			    "Imputation",
+			    "Population",
+			    "Population_map",
+			    "Analysis group",
+			    "Phenotype",
+			    "Phenotype-derived",
+			    "For plotting Beta and OR - derived",
+			    "Interactions",
+			    "RA 1(Reported Allele 1)",
+			    "RA 2(Reported Allele 2)",
+			    "Note on alleles and AF",
+			    "ReportedAF",
+			    "AF in cases",
+			    "AF in controls",
+			    "Effect Size Type (OR or Beta)",
+			    "Effect Size (alt vs ref)",
+			    "95% Confidence Interval",
+			    "Confirmed affected genes, causal variants, evidence",
+			    "Genome build (hg18/hg37/hg38)",
+			    "Platform",
+			    "Distance to nearest gene (computed)",
+			    "Approved symbol",
+			    "Replication evidence (to be formulized)",
+			    "Pubmed PMID",
+			    "PMCID",
+			    "Table Ref in paper",
+			    "Table links",
+			    "Cohort_simple2",
+			    "Imputation_simple2",
+			    "Cohort_simple3",
+			    "LocusName",
+			    "Meta/Joint",
+			    "Stage only",
+			    "SNV",
+			    "Study category",
+			    "Pubmed ID"
+			]		  
+		    }
+		}
+	    }
+	}
+    ]
+}
