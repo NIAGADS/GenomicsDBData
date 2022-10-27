@@ -29,11 +29,9 @@ PROTOCOL_SQL = """
 ESTIMATE_UPDATES_SQL= "SELECT * FROM Results.VariantGwas WHERE protocol_app_node_id ="
 
 SELECT_SQL = """
-    SELECT pan.source_id, variant_record_primary_key, neg_log10_pvalue, pvalue_display
-    FROM Results.VariantGWAS r,
-    Study.ProtocolAppNode pan
-    WHERE pan.protocol_app_node_id = r.protocol_app_node_id
-    AND pan.source_id = %s
+    SELECT variant_record_primary_key, neg_log10_pvalue, pvalue_display
+    FROM Results.VariantGWAS 
+    WHERE protocol_app_node_id = %s
 """
 
 UPDATE_PK_SQL = """
@@ -148,11 +146,12 @@ def build_gwas_flags(datasetId, row):
 
 def run_patch(datasetId, protocolAppNodeId):
     ''' run the patch '''
-    warning("Patching", datasetId, "-", estimate_patch_size(protocolAppNodeId), "rows.")
+    warning("Patching", datasetId, "(" + str(protocolAppNodeId) + ")", "-", estimate_patch_size(protocolAppNodeId), "rows.")
     rowCount = 0
     with database.named_cursor('select_' + datasetId, cursorFactory="RealDictCursor") as cursor:
         cursor.itersize = 50000 
-        cursor.execute(SELECT_SQL, (datasetId, ))
+        cursor.execute(SELECT_SQL, (protocolAppNodeId, ))
+        warning("INFO: Starting Update")
         for row in cursor:
             newPk = update_pk(row['variant_record_primary_key']) 
             if args.debug:
