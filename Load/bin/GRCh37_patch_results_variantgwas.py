@@ -10,6 +10,7 @@ import argparse # parse command line args
 import json
 from sys import stdout, exit
 from os import environ, path
+from math import isnan
 
 from GenomicsDBData.Util.postgres_dbi import Database
 from GenomicsDBData.Util.utils import warning, die
@@ -88,6 +89,7 @@ def submit_pk_update(newPk, oldPk):
     ''' do the update '''
     global variantCountStepwise
     global variantCountTotal
+    global skipCount
 
     with database.cursor() as cursor:
         cursor.execute(UPDATE_PK_SQL, (newPk, oldPk))
@@ -98,23 +100,32 @@ def submit_pk_update(newPk, oldPk):
         if variantCountStepwise >= args.commitAfter:
             if args.commit:
                 database.commit()
-                warning("COMMITED:", variantCountTotal, "result updates")
+                warning("COMMITED:", variantCountTotal, "variant updates")
                 variantCountStepwise = 0
             else:
                 database.rollback()
-                warning("ROLLING BACK:", variantCountTotal, "result updates")
+                warning("ROLLING BACK:", variantCountTotal, "variant updates")
                 variantCountStepwise = 0
+            warning("SKIPPED:", skipCount, "variants")
+
         if args.verbose:
            warning("INFO:", "Updated", cursor.rowcount, "rows with PK = ", newPk)
 
 
 def update_pk(oldPk):
     ''' update the primary key '''
-   
+    global skipCount
+    # already updated
     if oldPk in VARIANT_MAP:
+        skipCount = skipCount + 1
         return VARIANT_MAP[oldPk] 
 
-    newPk = oldPk.replace('_', ':')   # naive approache, substitute '_' for ':'
+    if oldPk.count(':') == 4: # chr:pos:ref:alt:rsId
+        VARIANT_MAP[oldPk] = oldPk 
+        skipCount = skipCount + 1
+        return oldPk
+
+    newPk = oldPk.replace('_', ':')   # naive approach, substitute '_' for ':'
     if is_valid_pk(newPk):
         VARIANT_MAP[oldPk] = newPk  
         if newPk != oldPk: 
@@ -151,12 +162,20 @@ def update_gwas_flags(datasetId, primaryKey, row):
 
 def build_gwas_flags(datasetId, row):
     ''' build the flag '''
-    flags = {}
+
+    if datasetId == 'NHGRI_GWAS_CATALOG':
+        return None
+    if isnan(float(row['pvalue_display'])):
+        return None
+    if isnan(float(row['neg_log10_pvalue'])):
+        return None
     if float(row['pvalue_display']) > 0.001:
+        return None
+    if float(row['neg_log10_pvalue']) == 0.0:
         return None
     else:
         return json.dumps({datasetId: {
-                            'p_value': float(row['pvalue_display']),
+                            'p_value': row['pvalue_display'],
                             'is_gwas': True if float(row['neg_log10_pvalue']) >= 7.301029996 else False
                             }
                 })
@@ -164,6 +183,11 @@ def build_gwas_flags(datasetId, row):
 
 def run_patch(datasetId, protocolAppNodeId):
     ''' run the patch '''
+    global skipCount
+    global flagCount
+    global variantCountStepwise
+    global variantCountTotal
+
     warning("Patching", datasetId, "(" + str(protocolAppNodeId) + ")", "-", estimate_patch_size(protocolAppNodeId), "rows.")
     rowCount = 0
     with database.named_cursor('select_' + datasetId, cursorFactory="RealDictCursor") as cursor:
@@ -185,7 +209,7 @@ def run_patch(datasetId, protocolAppNodeId):
                         database.rollback()
                         warning("ROLLING BACK:", flagCount, "gwas_flag updates")
             rowCount = rowCount + 1
-            if rowCount % args.commitAfter == 0:
+            if rowCount % 500000 == 0:
                 warning("INFO:", "Parsed", rowCount, "rows")
 
         # residuals
@@ -198,8 +222,14 @@ def run_patch(datasetId, protocolAppNodeId):
             warning("ROLLING BACK:", flagCount, "gwas_flag updates")   
             warning("ROLLING BACK:", variantCountTotal, "result updates") 
 
+    warning("SKIPPED:", skipCount, "variants")
     warning("INFO:", "Parsed", rowCount, "rows")
     warning("DONE", datasetId)
+
+    skipCount = 0
+    variantCountStepwise = 0
+    variantCountTotal = 0
+    flagCount = 0
     
 
 if __name__ == '__main__':
@@ -217,11 +247,13 @@ if __name__ == '__main__':
     database = Database(args.gusConfigFile)
     database.connect()
 
+    protocols = get_protocol_listing()
+    skipCount = 0
     variantCountStepwise = 0
     variantCountTotal = 0
     flagCount = 0
-    protocols = get_protocol_listing()
     for pId in protocols:
+
         if pId == args.dataset or args.dataset == 'all':
             run_patch(pId, protocols[pId])
 
