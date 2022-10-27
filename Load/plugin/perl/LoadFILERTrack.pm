@@ -28,8 +28,6 @@ use IO::Uncompress::Gunzip;
 use Package::Alias Utils => 'GenomicsDBData::Load::Utils';
 use Package::Alias PluginUtils => 'GenomicsDBData::Load::PluginUtils';
 
-use GUS::Model::Study::Study;
-use GUS::Model::Study::StudyLink;
 use GUS::Model::Study::Characteristic;
 use GUS::Model::Study::ProtocolAppNode;
 use GUS::Model::Results::FeatureScore;
@@ -85,15 +83,6 @@ my $QUALIFIERS = {
 		 };
 
 
-#{
-#"type" : "bed",
-#"name" : "ENCODE ENCFF059DTX.bed.gz",
-#"showOnHubLoad" : "true",
-#"url" : "https://tf.lisanwanglab.org/GADB/Annotationtracks/ENCODE/data/ChIP-seq/narrowpeak/hg19/1/ENCFF059DTX.bed.gz",
-#"metadata" : { "Data source" : "ENCODE", "Assay" : "ChIP-seq", "Genomic feature" : "ChIP-seq H3K27ac-histone-mark peaks", "Tis#sue category" : "Male Reproductive", "Cell type" : "22Rv1", "Long name" : "ENCODE 22Rv1 [Male Reproductive] ChIP-seq H3K27ac-h#istone-mark peaks ENCFF059DTX.bed.gz" }
-#},#
-
-  
 
 
 # ----------------------------------------------------------------------
@@ -145,12 +134,6 @@ sub getArgumentsDeclaration {
 	     }),
 
 
-     booleanArg({name => 'logCompletedTracks',
-	  descr => 'logs completed tracks; can be used as a "skip" file',
-	      constraintFunc=> undef,
-	      reqd  => 0,
-	      isList => 0,
-	     }),
      stringArg({name => 'tracks',
 		descr => 'only load the specified tracks; specify as json object of fields, patterns e.g., {track:trackId, category:<>, datasource<>}, etc.',
 		constraintFunc=> undef,
@@ -237,7 +220,7 @@ sub new {
   my $argumentDeclaration = &getArgumentsDeclaration();
 
   $self->initialize({requiredDbVersion => 4.0,
-		     cvsRevision => '$Revision: 22 $',
+		     cvsRevision => '$Revision: 23 $',
 		     name => ref($self),
 		     revisionNotes => '',
 		     argsDeclaration => $argumentDeclaration,
@@ -258,45 +241,37 @@ sub run {
   $self->logArgs();
   $self->getAlgInvocation()->setMaximumNumberOfObjects(100000);
 
+  $self->{completed_tracks} = [];
   $self->{type_id} = $self->getOntologyTermId($TYPE);
   # $self->{subtype_id} =  $self->getOntologyTermId($TYPE) if ($self->getArg('trackSubType') );
   # $self->{bed_field_key} = $self->parseBedFieldKey();
 
+  $self->loadSkipFile() if ($self->getArg('skip'));
+  
   $self->fetchTrackHub();
-
-  
-
-  my $logDir = PluginUtils::createDirectory($self,  $self->getArg('fileDir'),$self->getArg('dataSource'));
-  $self->{completed_tracks} = [];
-
-  
-  # if ($self->getArg('logCompletedTracks')) {
-  #   $self->error("Must supply fileDir to log tracks") if (!$self->getArg('fileDir'));
-  #   my $trackLogFile = $self->getArg('fileDir') . '/' . $self->getArg('dataSource') . '-tracks';
-  #   if ($self->getArg('loadTrackMetadata')) {
-  #     $trackLogFile .= ".json";
-  #     $self->{completed_tracks} = [];
-  #   }
-  #   else {
-  #     $trackLogFile .= ".log";
-  #   }
-
-  #   open(my $fh, '>', $trackLogFile) || $self->error("Unable to create track log file: $trackLogFile");
-  #   $self->{track_log_fh} = $fh;
-  # }
-
-  $self->loadSkips() if ($self->getArg('skip'));
-
   $self->createPlaceholders() if $self->getArg('loadTrackMetadata');
   # $self->loadDatasets($trackHub);
   # $self->clean();
 
   $self->log("NUM SKIPPED TRACKS = $SKIP_COUNT");
+
+  $self->generateReports();
+  
+  $self->log("DONE");
+}
+
+# ----------------------------------------------------------------------
+# methods called by run
+# ----------------------------------------------------------------------
+
+sub generateReports {
+  my ($self) = @_;
   $self->log("Generating DEBUG Reports");
-
+  
+  my $logDir = PluginUtils::createDirectory($self,  $self->getArg('fileDir'),$self->getArg('dataSource'));
   my @reports = qw(assays categories classifications cell_lines tissues systems cancer invalid_terms track_names ns_ontologies);
+  
   foreach my $r (@reports) {
-
     if ($r =~ m/assays|categories|classifications/) {
       open(my $fh, '>', $logDir . "/" . $r . ".log") || $self->error("Unable to create log file for $r");
       print $fh join("\n", sort (keys %{$DEBUG->{uc($r)}})) . "\n";
@@ -322,23 +297,14 @@ sub run {
 
  #  $self->log("DEBUG Cell Lines: " . ((keys %$DEBUG->CELL_LINES) ? Utils::to_json($DEBUG->CELL_LINES) : "None"));
 
-  if ($self->getArg('loadTrackMetadata') && $self->getArg('logCompletedTracks')) {
-    open(my $fh, '>', $logDir . "/updated-track-metadata.json") || $self->error("Unable to create log file for updated tracks");
-    my @cTracks = @{$self->{completed_tracks}};
-    print $fh "[" . join(',', @cTracks) . "]\n";
-    $fh->close();
-  }
+  open(my $fh, '>', $logDir . "/updated-track-metadata.json") || $self->error("Unable to create log file for updated tracks");
+  my @cTracks = @{$self->{completed_tracks}};
+  print $fh "[" . join(',', @cTracks) . "]\n";
+  $fh->close();
 
-
-  $self->{track_log_fh}->close() if exists ($self->{track_log_fh});
-  $self->log("DONE");
 }
 
-# ----------------------------------------------------------------------
-# methods called by run
-# ----------------------------------------------------------------------
-
-sub loadSkips {
+sub loadSkipFile {
   my ($self) = @_;
   open(my $fh, $self->getArg('skip')) || $self->error("Unable to open skip file:" . $self->getArg('skip'));
   my $skips = {};
@@ -365,7 +331,6 @@ sub parseBedFieldKey {
 sub createPlaceholders {
   my ($self) = @_;
   my $trackHub = $self->{track_hub};
-  my $logTracks = $self->getArg('logCompletedTracks');
   my $lfh = $self->{track_log_fh};
 
   foreach my $track (@$trackHub) {
@@ -373,17 +338,12 @@ sub createPlaceholders {
       if $self->getArg('veryVerbose');
 
     my $protocolAppNodeId = $self->loadProtocolAppNode($track);
-    
-    if ($logTracks) {
-      # print $lfh "$track\n";
-    }
   }
 }
 
 
 sub loadDatasets {
   my ($self, $annotation) = @_;
-  my $logTracks = $self->getArg('logCompletedTracks');
   my $lfh = $self->{track_log_fh};
   my $skips = (exists $self->{skips}) ? $self->{skips} : undef;
 
@@ -392,22 +352,17 @@ sub loadDatasets {
     $self->log("Processing dataset $track with the following annotation: " . Dumper($properties)) 
       if $self->getArg('veryVerbose');
 
-
     my $protocolAppNodeId = $self->loadProtocolAppNode($properties);
     if (!$self->getArg('validateOntologyTerms') or $self->getArg('commit')) {
       my $fileName = $self->getArg('filerUri') . "/" . $properties->{uri};
-      
       if (defined $skips) {
 	if (exists $skips->{$track}) {
 	  $self->log("SKIPPING: $track / $fileName") if $self->getArg('veryVerbose');
 	  next;
 	}
       }
-      
       $self->loadFeatureScores($fileName, $protocolAppNodeId, $properties);
-      if ($logTracks) {
-	print $lfh "$track\n";
-      }
+
     }
   }
 }
@@ -416,19 +371,6 @@ sub loadDatasets {
 # ----------------------------------------------------------------------
 # supporting methods
 # ----------------------------------------------------------------------
-
-#  "Lung", "Cell type" : "A549", "Long name" : "ENCODE A549 [Lung] ChIP-seq protein peaks ENCFF000NAW.bed.gz" }
-
-sub parseTrackHub {
-  my ($self) = @_;
-  
-  my $file = $self->getArg('trackHub');
-  my $fileText = read_file($file) || $self->error("Unable to read track hub: $file");
-  
-
-  $self->{track_hub} = $trackHub;
-}
-
 
 sub getFh {
   my ($self, $uri) = @_;
@@ -473,8 +415,8 @@ sub fetchTrackHub {
   if ($response->is_success ()) {
       my $json = JSON::XS->new;
       my $trackHub = $json->decode($response->content) || $self->error("Error parsing track hub JSON: $!");
-      $self->{track_hub} = $trackHub;
       $self->log("DONE: Fetched metadata for " . scalar @$trackHub . " tracks.");
+      $self->{track_hub} = $trackHub;
       $self->log(Dumper($self->{track_hub})) if $self->getArg('veryVerbose');
     }
 
@@ -673,7 +615,6 @@ sub loadProtocolAppNode {
     $DEBUG->{TRACK_NAMES}->{$trackName}->{$trackKey} = ($sourceId);
   }
 
-  
   $protocolAppNode->setName($trackName);
   my $description = (exists $track->{description}) ? $track->{description} : ($track->{trackName} ne $trackName)
     ? $track->{trackName} : undef;
@@ -693,26 +634,20 @@ sub loadProtocolAppNode {
   }
 
   $updatedTrack = $self->cleanUpTrackJson($updatedTrack);
-  if ($self->getArg('logCompletedTracks')) {
-    my @tracks = @{$self->{completed_tracks}};
 
-    if (!@tracks) {
-      @tracks = Utils::to_json($updatedTrack, 1);
-    }
-    else {
-      push(@tracks, Utils::to_json($updatedTrack, 1));
-    }
-    $self->{completed_tracks} = \@tracks;
+  my @tracks = @{$self->{completed_tracks}};
+  if (!@tracks) {
+    @tracks = Utils::to_json($updatedTrack, 1);
   }
-  
+  else {
+    push(@tracks, Utils::to_json($updatedTrack, 1));
+  }
+  $self->{completed_tracks} = \@tracks;
+
   $self->log("DEBUG: " . Dumper($updatedTrack)) if $self->getArg('veryVerbose');
   $protocolAppNode->setTrackSummary(Utils::to_json($updatedTrack));
-
   $protocolAppNode->submit();
-  #$self->loadStudyLink($protocolAppNode->getProtocolAppNodeId())
-  #  if ($self->getArg('study'));
-
-
+ 
   $self->undefPointerCache();
   return $protocolAppNode->getProtocolAppNodeId();
 }
@@ -752,8 +687,8 @@ sub patchCharacteristics {
   my $filerSampleType = $track->{"Biosample type"};
 
   my $filerSampleId = $track->{"Biosamples term id"};
-  my $filerSampleTerm = $track->{"cell type"};
-  my $filerTermKey = join('//', $filerSampleId, $filerSampleTerm);
+  my @filerSampleTerms = ($track->{"cell type"}, $track->{"original cell type name"});
+  my $filerTermKey = join('//', $filerSampleId, @filerSampleTerms);
 
   my $filerTissueCategory = $track->{"Tissue category"};
   my $filerSystemCategory = $track->{"system category"};
@@ -766,7 +701,10 @@ sub patchCharacteristics {
     ? $DEBUG->{PARSED_BIOSAMPLES}->{$filerTermKey}
     : ($filerSampleId)
     ? $self->validateBiosampleOntologyTerm($filerSampleId)
-    : $self->validateBiosampleOntologyTerm($filerSampleTerm);
+    : $self->validateBiosampleOntologyTerm($filerSampleTerms[0]);
+
+  $validatedSample = $self->validateBiosampleOntologyTerm($filerSampleTerms[1])
+    if (!$validatedSample);
 
   my $validatedTissueCategory = (exists $DEBUG->{TISSUES}->{$filerTissueCategory})
     ? $DEBUG->{TISSUES}->{$filerTissueCategory}
@@ -779,17 +717,20 @@ sub patchCharacteristics {
   # sample
   my $validatedTermKey = "invalid//$filerTermKey";
   if (!$validatedSample) {
-    $self->log("INVALID Sample: ID - $filerSampleId / TERM - $filerSampleTerm")
+    $self->log("INVALID Sample: $filerTermKey")
       if ($self->getArg('veryVerbose'));
     $DEBUG->{INVALID_TERMS}->{BIOSAMPLES}->{$filerSampleId} = {invalid_filer_annotation => 'cell type',
-						       tissue_category => $filerTissueCategory,
-						       system_category => $filerSystemCategory,
-						       term => $filerSampleTerm,
-						       term_id => $filerSampleId};
+							       tissue_category => $filerTissueCategory,
+							       system_category => $filerSystemCategory,
+							       term => {
+									filer_term => $filerSampleTerms[0],
+									original_term => $filerSampleTerms[1]
+									},
+							       term_id => $filerSampleId};
   }
   else {
     $validatedTermKey = join('//', $validatedSample->{term_id}, $validatedSample->{term});
-    $self->isNSO("$filerSampleId//$filerSampleTerm", $validatedSample);
+    $self->isNSO($filerTermKey, $validatedSample);
   }
 
   $DEBUG->{PARSED_BIOSAMPLES}->{$filerTermKey} = $validatedSample # this way it is undef if not validated
@@ -799,11 +740,14 @@ sub patchCharacteristics {
   # tissue category
   if(!$validatedTissueCategory) { # invalid?
     $DEBUG->{INVALID_TERMS}->{TISSUES}->{$filerTissueCategory} = {invalid_filer_annotation => 'tissue category',
-							     tissue_category => $filerTissueCategory,
-							     system_category => $filerSystemCategory,
-							     term => $filerSampleTerm,
-							     term_id => $filerSampleId};
-    $self->log("INVALID  Tissue Category: $filerTissueCategory / TERM - $filerSampleTerm")
+								  tissue_category => $filerTissueCategory,
+								  system_category => $filerSystemCategory,
+								  term => {
+									filer_term => $filerSampleTerms[0],
+									original_term => $filerSampleTerms[1]
+									},
+								  term_id => $filerSampleId};
+    $self->log("INVALID  Tissue Category: $filerTissueCategory / TERM - $filerTermKey")
 	if ($self->getArg('veryVerbose'));
   }
 
@@ -830,12 +774,15 @@ sub patchCharacteristics {
 
   # system category
   if(!$validatedSystemCategory) {
-    $self->log("INVALID System Category: $filerSystemCategory / TERM - $filerSampleTerm")
+    $self->log("INVALID System Category: $filerSystemCategory / TERM - $filerTermKey")
            if ($self->getArg('veryVerbose'));
     $DEBUG->{INVALID_TERMS}->{SC}->{$filerSystemCategory} = {invalid_filer_annotation => 'system category',
 							     tissue_category => $filerTissueCategory,
 							     system_category => $filerSystemCategory,
-							     term => $filerSampleTerm,
+							     term => {
+								       filer_term => $filerSampleTerms[0],
+									original_term => $filerSampleTerms[1]
+								      },
 							     term_id => $filerSampleId};
   }
   else {
@@ -905,7 +852,7 @@ sub patchCharacteristics {
       $DEBUG->{CELL_LINES}->{$filerTermKey} = $biosample;
     }
 
-    $self->log(Dumper({$filerSampleTerm => $biosample}))
+    $self->log(Dumper({$filerTermKey => $biosample}))
       if $self->getArg('verbose');
     $track->{biosample} = $biosample;
     return $track;
@@ -920,10 +867,10 @@ sub patchCharacteristics {
 }
 
 sub isNSO { # flag non CL/CLO/UBERON terms
-  my ($self, $filerTerm, $mappedTerm) = @_;
+  my ($self, $filerTermKey, $mappedTerm) = @_;
 
   if ($mappedTerm->{term_id} !~ m/CL_|CLO_|UBERON_/) {
-    $DEBUG->{NS_ONTOLOGIES}->{$filerTerm} = $mappedTerm;
+    $DEBUG->{NS_ONTOLOGIES}->{$filerTermKey} = $mappedTerm;
   }
 }
 
@@ -975,20 +922,6 @@ SQL
   return undef;
 }
 
-sub loadStudyLink {
-  my ($self, $protocolAppNodeId) = @_;
-
-  my $study = GUS::Model::Study::Study
-    ->new({source_id => $self->getArg('study')});
-  $self->error("No study for " . $self->getArg('study') . " found in DB.")
-    unless $study->retrieveFromDB();
-
-  my $studyLink = GUS::Model::Study::StudyLink
-    ->new({study_id => $study->getStudyId()});
-
-  $studyLink->setProtocolAppNodeId($protocolAppNodeId);
-  $studyLink->submit() unless ($studyLink->retrieveFromDB());
-}
 
 sub getBedFields {
   my ($self, $bedFileType)  = @_;
@@ -1009,7 +942,7 @@ sub getBedFields {
 # ----------------------------------------------------------------------
 sub undoTables {
   my ($self) = @_;
-  my @tables = qw(Study.StudyLink Study.Characteristic Results.FeatureScore Study.ProtocolAppNode);
+  my @tables = qw(Study.Characteristic Results.FeatureScore Study.ProtocolAppNode);
   return @tables;
 }
 
