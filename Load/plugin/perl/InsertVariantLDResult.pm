@@ -320,7 +320,6 @@ sub validateArgs {
   if ((!$self->getArg('variant1') && $self->getArg('variant2')) || ($self->getArg('variant1') && !$self->getArg('variant2'))) {
     $self->error("Must suppply both variants (variant1 & variant2)");
   }
-  $self->error("loading variants not yet implemented") if ($self->getArg('variant1') || $self->getArg('variant2'));
 }
 
 sub getFiles {
@@ -351,6 +350,17 @@ sub buildInsertStr {
   my @locations = ($lineValues[$fieldMap->{location1}], $lineValues[$fieldMap->{location2}]);
   push(@insertValues, '{' . join(',', @locations) . '}');
 
+
+  if ($self->getArg('variant1')) {
+    my @variants = ($lineValues[$fieldMap->{variant1}], $lineValues[$fieldMap->{variant2}]);
+    push(@insertValues, '{' . join(',', @variants) . '}');
+  }
+  #else {
+  #  my @variants = $self->lookupVariants($chrm, $fieldMap->{location1}, $fieldMap->{location2});
+  #  push(@insertValues, '{' . join(',', @variants) . '}');
+  #}
+  
+  
   if ($self->getArg('maf1')) {
     my @mafs = ($lineValues[$fieldMap->{maf1}], $lineValues[$fieldMap->{maf2}]);
     push(@insertValues, '{' . join(',', @mafs) . '}');
@@ -506,6 +516,25 @@ sub copy {
 # supporting methods
 # ----------------------------------------------------------------------
 
+sub lookupVariants {
+  my ($self, $chrm, $loc1, $loc2) = @_;
+  return ($self->getVariantPK($chrm, $loc1), $self->getVariantPK($chrm, $loc2));
+}
+
+sub getVariantPK {
+  my ($self, $chrm, $pos) = @_;
+  my $sql = "SELECT record_primary_key, ref_snp_id from find_variant_by_position(?,?)";
+  my $qh = $self->getQueryHandle()->prepare($sql);
+  $qh->execute($chrm, $pos) || $self->error(DBI::errstr);
+  my $vCount = 0;
+  my ($pk, $rsId);
+  while (($pk, $rsId) = $qh->fetchrow_array() ) {
+    $vCount++;
+  }
+  $qh->finish();
+  return $rsId if ($vCount > 1);
+  return $pk;
+}
 
 sub getProtocolAppNodeId {
   my ($self) = @_;
