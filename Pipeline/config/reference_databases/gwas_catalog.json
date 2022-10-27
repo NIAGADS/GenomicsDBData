@@ -74,7 +74,7 @@
 		    "mapThruMarker": true,
 		    "allowAlleleMismatches": true,
 		    "resume": true,
-		    "genomeWideSignificanceThreshold": "9e-6",
+		    "genomeWideSignificanceThreshold": "1e-6",
 		    "restrictedStats": {
 			"other": ["DATE ADDED TO CATALOG", "PUBMEDID", "FIRST AUTHOR", "DATE", "JOURNAL", "LINK", "STUDY", "DISEASE/TRAIT", "INITIAL SAMPLE SIZE", "REPLICATION SAMPLE SIZE", "REGION", "REPORTED GENE(S)", "MAPPED_GENE", "UPSTREAM_GENE_ID", "DOWNSTREAM_GENE_ID", "SNP_GENE_IDS", "UPSTREAM_GENE_DISTANCE", "DOWNSTREAM_GENE_DISTANCE", "STRONGEST SNP-RISK ALLELE", "SNPS", "MERGED", "SNP_ID_CURRENT", "CONTEXT", "INTERGENIC", "OR or BETA", "95% CI (TEXT)", "PLATFORM [SNPS PASSING QC]", "CNV", "MAPPED_TRAIT", "MAPPED_TRAIT_URI", "STUDY ACCESSION", "GENOTYPING TECHNOLOGY"]		  
 		    }
