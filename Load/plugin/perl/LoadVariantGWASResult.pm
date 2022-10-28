@@ -1053,7 +1053,7 @@ sub cleanAndSortInput {
 
     else {		      # chrC not defined / mapping thru marker
       $marker = undef if ($chrC eq $markerC);
-      if ($chromosome eq "NA" || $self->getArg('mapThruMarker') || $marker =~ /:/) {
+      if ($chromosome eq "NA" || ($self->getArg('mapThruMarker') && $self->getArg('markerIsMetaseqId')) || $marker =~ /:/) {
 	$metaseqId = $marker if ($self->getArg('markerIsMetaseqId')); # yes ignore all that processing just did; easy fix added later
 
 	# some weird ones are like chr:ps:ref:<weird:alt:blah:blah>
