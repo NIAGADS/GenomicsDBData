@@ -224,7 +224,7 @@ loadResource -c $CONFIG_DIR/reference_databases/gwas_catalog.json --preprocess -
 loadResource -c $CONFIG_DIR/reference_databases/gwas_catalog.json --load data --params '{"test":"true", "preprocess":"true", "genomeBuild":"GRCh38"}' --verbose --commit > $DATA_DIR/logs/reference/preprocess_test_nhgri_gc.log 2>&1
 
 # skip loading missing / too many issues
-loadResource -c $CONFIG_DIR/reference_databases/gwas_catalog.json --load data --params '{"preprocess":"true", "genomeBuild":"GRCh38"}' --verbose --commit > $DATA_DIR/logs/reference/preprocess_nhgri_gc.log 2>&1
+# loadResource -c $CONFIG_DIR/reference_databases/gwas_catalog.json --load data --params '{"preprocess":"true", "genomeBuild":"GRCh38"}' --verbose --commit > $DATA_DIR/logs/reference/preprocess_nhgri_gc.log 2>&1
 
 loadResource -c $CONFIG_DIR/reference_databases/gwas_catalog.json --load data --params '{"load":"true", "genomeBuild":"GRCh38", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/reference/load_nhgri_gc.log 2>&1
 
@@ -242,7 +242,7 @@ loadResource -c $CONFIG_DIR/reference_databases/advp.json --preprocess --verbose
 loadResource -c $CONFIG_DIR/reference_databases/advp.json --load data --params '{"test":"true", "preprocess":"true", "genomeBuild":"GRCh38"}' --verbose --commit > $DATA_DIR/logs/reference/preprocess_test_advp.log 2>&1
 
 # skip loading missing / too many issues
-loadResource -c $CONFIG_DIR/reference_databases/advp.json --load data --params '{"preprocess":"true", "genomeBuild":"GRCh38"}' --verbose --commit > $DATA_DIR/logs/reference/preprocess_advp.log 2>&1
+# loadResource -c $CONFIG_DIR/reference_databases/advp.json --load data --params '{"preprocess":"true", "genomeBuild":"GRCh38"}' --verbose --commit > $DATA_DIR/logs/reference/preprocess_advp.log 2>&1
 
 loadResource -c $CONFIG_DIR/reference_databases/advp.json --load data --params '{"load":"true", "genomeBuild":"GRCh38", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/reference/load_advp.log 2>&1
 

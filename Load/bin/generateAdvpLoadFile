@@ -54,7 +54,7 @@ def generate_load_file():
                     #warning("DEBUG:", "Record =", row["RecordID"])
                     snp = row['Top SNP']
                     
-                    if not snp.startswith('rs'):
+                    if not snp.startswith('rs') or '+' in snp:
                         warning("WARNING:", "Skipping Record", row['RecordID'], "-", "invalid Top SNP", snp)
                         continue
 
