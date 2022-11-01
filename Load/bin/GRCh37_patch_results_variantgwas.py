@@ -241,11 +241,14 @@ if __name__ == '__main__':
     parser.add_argument('--debug', action='store_true')
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--commitAfter', default=5000, type=int)
+    parser.add_argument('--skip')
 
     args =  parser.parse_args()
     
     database = Database(args.gusConfigFile)
     database.connect()
+
+    skip = args.skip.split(',') if args.split else []
 
     protocols = get_protocol_listing()
     skipCount = 0
@@ -253,8 +256,10 @@ if __name__ == '__main__':
     variantCountTotal = 0
     flagCount = 0
     for pId in protocols:
-
         if pId == args.dataset or args.dataset == 'all':
-            run_patch(pId, protocols[pId])
+            if pId not in skip:
+                run_patch(pId, protocols[pId])
+            else:
+                warning("INFO:", "Skipping Dataset", pId)
 
     database.close()
