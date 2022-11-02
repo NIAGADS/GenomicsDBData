@@ -26,7 +26,7 @@ Biosamples AS (
 SELECT track, jsonb_build_object('biosample_characteristics', jsonb_object_agg(characteristic_type, characteristic)) AS json_obj
 FROM Phenotypes
 GROUP BY track)
-SELECT ta.track, 'gwas_summary_statistics' AS track_type, 'NIAGADS'::text AS datasource,
+SELECT ta.track, 'gwas_summary_statistics' AS track_type, 'NIAGADS'::text AS data_source,
 jsonb_build_object( 
 'track', ta.track, 
 'label', ta.name, 

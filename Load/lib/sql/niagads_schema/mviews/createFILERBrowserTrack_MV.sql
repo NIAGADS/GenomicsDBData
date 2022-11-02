@@ -33,15 +33,18 @@ jsonb_build_object(
 'name', ft.track_name,
 'description', multi_replace(description, ARRAY['eQTL eQTL', 'sQTL sQTL', '_'], ARRAY['eQTL', 'sQTL', ' ']),
 'track', pan.source_id,
+'track_type', 'annotation',
+'feature_type', LOWER(replace(regexp_replace(ft.feature_type, ' \(.+?\)', ''), ' ', '_')),
+'track_type_display', ft.feature_type,
 'label', truncate_str(ft.track_name, 40),
 'format', 'bed',
 'path', track_summary->>'processed_file_download_url',
 'source', pan.track_summary->>'data_source' || ' (FILER)',
-'biosample_characteristics', track_summary->'biosample',
+'biosample_characteristics', (track_summary->'biosample')::jsonb - 'term' - 'system' || jsonb_build_object('biosample', track_summary->'biosample'->>'term') || jsonb_build_object('anatomical_system', track_summary->'biosample'->>'system'),
 'experimental_design', jsonb_build_object(
         'assay', track_summary->>'assay',
-        'antibody_target', CASE WHEN track_summary->>'antibody' LIKE 'Not applicable%' THEN NULL ELSE replace(track_summary->>'antibody', '-human', '') END) AS track_config
-)
+        'antibody_target', CASE WHEN track_summary->>'antibody' LIKE 'Not applicable%' THEN NULL ELSE replace(track_summary->>'antibody', '-human', '') END)) AS track_config
+
 FROM Study.ProtocolAppNode pan, xdbr, FeatureTypes ft
 WHERE xdbr.external_database_release_id = pan.external_database_release_id
 AND ft.track = pan.source_id
