@@ -9,8 +9,8 @@ use strict;
 use GUS::PluginMgr::Plugin;
 use POSIX qw(strftime);
 
-use Package::Alias VariantAnnotator => 'GenomicsDBData::Load::VariantAnnotator';
 use Package::Alias Utils => 'GenomicsDBData::Load::Utils';
+use Package::Alias VariantAnnotator => 'GenomicsDBData::Load::VariantAnnotator';
 use Package::Alias PluginUtils => 'GenomicsDBData::Load::PluginUtils';
 use Package::Alias VariantLoadUtils => 'GenomicsDBData::Load::VariantLoadUtils';
 
