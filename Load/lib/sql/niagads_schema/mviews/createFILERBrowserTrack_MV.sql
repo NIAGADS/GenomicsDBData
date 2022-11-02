@@ -1,3 +1,5 @@
+DROP MATERIALIZED VIEW IF EXISTS NIAGADS.FILERBRowserTracks;
+
 CREATE MATERIALIZED VIEW NIAGADS.FILERBrowserTracks AS (
 WITH xdbr AS (
 SELECT r.external_database_release_id FROM 
@@ -38,7 +40,7 @@ jsonb_build_object(
 'biosample_characteristics', track_summary->'biosample',
 'experimental_design', jsonb_build_object(
         'assay', track_summary->>'assay',
-        'antibody_target', CASE WHEN track_summary->>'antibody' LIKE 'Not applicable%' THEN NULL ELSE replace(track_summary->>'antibody', '-human', '') END)
+        'antibody_target', CASE WHEN track_summary->>'antibody' LIKE 'Not applicable%' THEN NULL ELSE replace(track_summary->>'antibody', '-human', '') END) AS track_config
 )
 FROM Study.ProtocolAppNode pan, xdbr, FeatureTypes ft
 WHERE xdbr.external_database_release_id = pan.external_database_release_id
