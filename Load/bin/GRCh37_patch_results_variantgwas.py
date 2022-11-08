@@ -8,7 +8,7 @@ from __future__ import print_function
 from __future__ import with_statement
 import argparse # parse command line args
 import json
-from sys import stdout, exit
+from sys import stdout, exit, exc_info
 from os import environ, path
 from math import isnan
 
@@ -163,22 +163,32 @@ def update_gwas_flags(datasetId, primaryKey, row):
 def build_gwas_flags(datasetId, row):
     ''' build the flag '''
 
-    if datasetId == 'NHGRI_GWAS_CATALOG':
-        return None
-    if isnan(float(row['pvalue_display'])):
-        return None
-    if isnan(float(row['neg_log10_pvalue'])):
-        return None
-    if float(row['pvalue_display']) > 0.001:
-        return None
-    if float(row['neg_log10_pvalue']) == 0.0:
-        return None
-    else:
-        return json.dumps({datasetId: {
-                            'p_value': row['pvalue_display'],
-                            'is_gws': True if float(row['neg_log10_pvalue']) >= 7.301029996 else False
-                            }
-                })
+    try:
+        if datasetId == 'NHGRI_GWAS_CATALOG':
+            return None
+        if float(row['neg_log10_pvalue']) == 0.0:
+            return None
+        if float(row['neg_log10_pvalue']) == 1.0:
+            return None
+        if isnan(float(row['pvalue_display'])):
+            return None
+        if isnan(float(row['neg_log10_pvalue'])):
+            return None
+        if float(row['pvalue_display']) > 0.001:
+            return None
+        if float(row['neg_log10_pvalue']) == 0.0:
+            return None
+        else:
+            return json.dumps({datasetId: {
+                                'p_value': row['pvalue_display'],
+                                'is_gws': True if float(row['neg_log10_pvalue']) >= 7.301029996 else False
+                                }
+                    })
+    except ValueError:
+         warning("ERROR :" "Failed to extract gwas_flags from row:", row)
+         warning("ERROR", exc_info()[0])
+         database.rollback()
+         raise
 
 
 def run_patch(datasetId, protocolAppNodeId):
@@ -248,7 +258,7 @@ if __name__ == '__main__':
     database = Database(args.gusConfigFile)
     database.connect()
 
-    skip = args.skip.split(',') if args.split else []
+    skip = args.skip.split(',') if args.skip else ['none']
 
     protocols = get_protocol_listing()
     skipCount = 0
