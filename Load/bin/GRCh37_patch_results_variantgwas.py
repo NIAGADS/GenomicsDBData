@@ -201,7 +201,7 @@ def run_patch(datasetId, protocolAppNodeId):
     warning("Patching", datasetId, "(" + str(protocolAppNodeId) + ")", "-", estimate_patch_size(protocolAppNodeId), "rows.")
     rowCount = 0
     with database.named_cursor('select_' + datasetId, cursorFactory="RealDictCursor") as cursor:
-        cursor.itersize = 50000 
+        cursor.itersize = 5000 
         cursor.execute(SELECT_SQL, (protocolAppNodeId, ))
         warning("INFO: Starting Update")
         rowCount = 0
@@ -226,11 +226,11 @@ def run_patch(datasetId, protocolAppNodeId):
         if args.commit:
             database.commit()
             warning("COMMITED:", flagCount, "gwas_flag updates")
-            warning("COMMITED:", variantCountTotal, "result updates")
+            warning("COMMITED:", variantCountTotal, "variant updates")
         else:
             database.rollback()
             warning("ROLLING BACK:", flagCount, "gwas_flag updates")   
-            warning("ROLLING BACK:", variantCountTotal, "result updates") 
+            warning("ROLLING BACK:", variantCountTotal, "variant updates") 
 
     warning("SKIPPED:", skipCount, "variants")
     warning("INFO:", "Parsed", rowCount, "rows")
