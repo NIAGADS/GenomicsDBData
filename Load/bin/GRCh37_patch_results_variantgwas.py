@@ -125,6 +125,11 @@ def update_pk(oldPk):
         skipCount = skipCount + 1
         return oldPk
 
+    if '_' not in oldPk and len(oldPk) < 20: # no rsId, but not a long indel
+        VARIANT_MAP[oldPk] = oldPk
+        skipCount = skipCount + 1
+        return oldPk
+
     newPk = oldPk.replace('_', ':')   # naive approach, substitute '_' for ':'
     if is_valid_pk(newPk):
         VARIANT_MAP[oldPk] = newPk  
@@ -201,7 +206,7 @@ def run_patch(datasetId, protocolAppNodeId):
     warning("Patching", datasetId, "(" + str(protocolAppNodeId) + ")", "-", estimate_patch_size(protocolAppNodeId), "rows.")
     rowCount = 0
     with database.named_cursor('select_' + datasetId, cursorFactory="RealDictCursor") as cursor:
-        cursor.itersize = 5000 
+        cursor.itersize = 50000
         cursor.execute(SELECT_SQL, (protocolAppNodeId, ))
         warning("INFO: Starting Update")
         rowCount = 0
