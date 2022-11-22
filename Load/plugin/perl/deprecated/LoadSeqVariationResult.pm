@@ -10,7 +10,7 @@ use GUS::PluginMgr::Plugin;
 use Data::Dumper;
 use Scalar::Util qw(looks_like_number);
 use POSIX qw(strftime);
-use JSON;
+use JSON::XS;
 
 use GUS::Model::DoTS::SnpFeature;
 use GUS::Model::DoTS::GeneFeature;

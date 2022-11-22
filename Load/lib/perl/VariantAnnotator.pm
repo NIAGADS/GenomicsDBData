@@ -8,7 +8,7 @@ use Scalar::Util qw(looks_like_number);
 
 use LWP::UserAgent;
 use Data::Dumper;
-use JSON;
+use JSON::XS;
 use DBD::Pg;
 use Vcf;
 
@@ -137,7 +137,7 @@ sub queryDbSNP {
   my $ua = LWP::UserAgent->new;
   my $response = $ua->get($url);
   if ($response->is_success) {
-    my $json = JSON->new;
+    my $json = JSON::XS->new;
     my $contentJson = $json->decode($response->content);
     my $annotation = $self->extractDbSnpVariant($contentJson->{primary_snapshot_data}->{placements_with_allele});
     $self->{plugin}->error(Dumper($annotation));
@@ -238,7 +238,7 @@ sub reverseComplement {
 # ----------------------------------------------------------------------
 sub generateUpdatedAnnotation {
   my ($self, $variant, $annotation) = @_;
-  my $json = JSON->new;
+  my $json = JSON::XS->new;
   my $variantAnnotation = $variant->getAnnotation();
   if ($variantAnnotation) {
     $variantAnnotation = $json->decode($variantAnnotation) || $self->{plugin}->error("Error parsing variant annotation: $variantAnnotation");

@@ -662,7 +662,7 @@ sub loadVariants { # load or update
 sub extractAnnotation {
   my ($self, $record, $columns) = @_;
 
-  my $json = JSON->new;
+  my $json = JSON::XS->new;
   my $adspFlag = $self->getArg('adspFlag');
   my $annotation = {};
   $annotation->{$adspFlag} = {};

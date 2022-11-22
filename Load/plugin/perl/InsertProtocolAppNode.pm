@@ -246,7 +246,7 @@ sub loadStudyLink {
 
 sub loadCharacteristics {
   my ($self, $protocolAppNodeId) = @_;
-  my $json = JSON->new;
+  my $json = JSON::XS->new;
   my $chars = $json->decode($self->getArg('biomaterialCharacteristics')) || $self->error("Error parsing characteristic JSON");
   my @terms = undef;
   while (my ($qualifier, $term) = each %$chars) {

@@ -335,7 +335,7 @@ sub loadResult {
     chomp;
     @row{@RESULT_FIELDS} = split /\t/;
 
-    my $json = JSON->new();
+    my $json = JSON::XS->new();
     my $dbv = $json->decode($row{db_variant_json}) || $self->error("Error parsing dbv json: " . $row{db_variant_json});
 
     ++$totalVariantCount;
@@ -633,7 +633,7 @@ sub loadVariants {
       $currentPartition = $partition;
     }
 
-    my $json = JSON->new;
+    my $json = JSON::XS->new;
     my $dbv = $json->decode($row{db_variant_json}) || $self->error("Error parsing dbv json: " . $row{db_variant_json});
     my $recordPK = $dbv->{record_primary_key};
 
@@ -808,7 +808,7 @@ sub getProtocolAppNodeId {
 
 sub generateCustomChrMap {
   my ($self) = @_;
-  my $json = JSON->new;
+  my $json = JSON::XS->new;
   my $chrMap = $json->decode($self->getArg('customChrMap')) || $self->error("Error parsing custom chromosome map");
   $self->log("Found custom chromosome mapping: " . Dumper(\$chrMap));
   return $chrMap;

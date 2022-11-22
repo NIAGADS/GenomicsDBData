@@ -182,7 +182,7 @@ sub annotatedVariantUpdateGwsValueStr {
   my $oldAnnotation = GenomicsDBData::Load::PluginUtils::fetchValueById($recordPK, $selectQh);
 
   if ($oldAnnotation) {
-    my $json = JSON->new;
+    my $json = JSON::XS->new;
     $oldAnnotation = $json->decode($oldAnnotation) 
       || $plugin->error("Error parsing AnnotatedVDB 'other' annotation: $oldAnnotation");
     $newAnnotation = {%$oldAnnotation, %$newAnnotation};
@@ -221,7 +221,7 @@ sub generateUpdatedAvAnnotationStr {
   my $newAnnotation = ($qcResult) ? {$adspFlag => $qcResult} : $qcStatus;
   my $oldAnnotation = GenomicsDBData::Load::PluginUtils::fetchValueById($recordPK, $selectQh);
   if ($oldAnnotation) {
-    my $json = JSON->new;
+    my $json = JSON::XS->new;
     $oldAnnotation = $json->decode($oldAnnotation) 
       || $plugin->error("Error parsing AnnotatedVDB 'other' annotation: $oldAnnotation");
     $newAnnotation = {%$oldAnnotation, %$newAnnotation};

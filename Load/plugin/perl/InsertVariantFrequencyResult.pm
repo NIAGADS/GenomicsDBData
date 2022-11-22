@@ -10,7 +10,7 @@ use GUS::PluginMgr::Plugin;
 use POSIX qw(strftime);
 
 use Data::Dumper;
-use JSON;
+use JSON::XS;
 
 use GUS::Model::Results::VariantFrequency;
 use GUS::Model::Study::ProtocolAppNode;

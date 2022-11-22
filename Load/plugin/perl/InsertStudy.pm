@@ -8,7 +8,7 @@ package GenomicsDBData::Load::Plugin::InsertStudy;
 use strict;
 use GUS::PluginMgr::Plugin;
 use Data::Dumper;
-use JSON;
+use JSON::XS;
 
 use GUS::Model::Study::Study;
 use GUS::Model::SRes::OntologyTerm;
