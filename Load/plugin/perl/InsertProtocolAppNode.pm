@@ -8,7 +8,7 @@ package GenomicsDBData::Load::Plugin::InsertProtocolAppNode;
 use strict;
 use GUS::PluginMgr::Plugin;
 use Data::Dumper;
-use JSON;
+use JSON::XS;
 
 use GUS::Model::Study::ProtocolAppNode;
 use GUS::Model::Study::Characteristic;
