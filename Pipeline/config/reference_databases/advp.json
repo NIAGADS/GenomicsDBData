@@ -101,6 +101,7 @@
 			    "RA 2(Reported Allele 2)",
 			    "Note on alleles and AF",
 			    "ReportedAF",
+				"Reported gene (gene based test)",
 			    "AF in cases",
 			    "AF in controls",
 			    "Effect Size Type (OR or Beta)",
