@@ -9,7 +9,7 @@ use strict;
 use GUS::PluginMgr::Plugin;
 use Data::Dumper;
 
-use JSON;
+use JSON::XS;
 use List::MoreUtils qw(first_index);
 
 
@@ -458,7 +458,7 @@ sub updateAnnotatedVDB {
 
 sub generateUpdatedAnnotation {
   my ($self, $variant, $annotation) = @_;
-  my $json = JSON->new;
+  my $json = JSON::XS->new;
   my $variantAnnotation = $variant->getAnnotation();
   if ($variantAnnotation) {
     $variantAnnotation = $json->decode($variantAnnotation) || $self->error("Error parsing variant annotation: $variantAnnotation");
@@ -472,7 +472,7 @@ sub fetchAnnotation {
   my ($self, $record, $columns) = @_;
 
   my $annotation = {};
-  my $json = JSON->new;
+  my $json = JSON::XS->new;
   my $fields = $json->decode($self->getArg('annotationFields')) || $self->error("Error parsing annotation field JSON");
   while (my ($cName, $label) = each (%$fields)) {
     $annotation->{$label} = $$record[$columns->{$cName}];

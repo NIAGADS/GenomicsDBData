@@ -8,7 +8,7 @@ package GenomicsDBData::Load::Plugin::InsertProtocolAppNode;
 use strict;
 use GUS::PluginMgr::Plugin;
 use Data::Dumper;
-use JSON;
+use JSON::XS;
 
 use GUS::Model::Study::ProtocolAppNode;
 use GUS::Model::Study::Characteristic;
@@ -246,7 +246,7 @@ sub loadStudyLink {
 
 sub loadCharacteristics {
   my ($self, $protocolAppNodeId) = @_;
-  my $json = JSON->new;
+  my $json = JSON::XS->new;
   my $chars = $json->decode($self->getArg('biomaterialCharacteristics')) || $self->error("Error parsing characteristic JSON");
   my @terms = undef;
   while (my ($qualifier, $term) = each %$chars) {

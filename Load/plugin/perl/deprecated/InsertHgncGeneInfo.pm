@@ -7,7 +7,7 @@ package GenomicsDBData::Load::Plugin::InsertHgncGeneInfo;
 
 use strict;
 
-use JSON;
+use JSON::XS;
 
 use GUS::PluginMgr::Plugin;
 use GUS::Model::NIAGADS::GeneAnnotation;

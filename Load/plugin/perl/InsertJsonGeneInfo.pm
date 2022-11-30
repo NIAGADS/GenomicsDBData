@@ -7,7 +7,7 @@ package GenomicsDBData::Load::Plugin::InsertJsonGeneInfo;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use strict;
-use JSON;
+use JSON::XS;
 use GUS::PluginMgr::Plugin;
 
 use GUS::Model::SRes::DbRef;

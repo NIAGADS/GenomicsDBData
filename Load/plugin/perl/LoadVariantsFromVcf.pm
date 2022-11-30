@@ -9,7 +9,7 @@ use strict;
 use GUS::PluginMgr::Plugin;
 use Data::Dumper;
 use Vcf;
-use JSON;
+use JSON::XS;
 use Scalar::Util qw(looks_like_number);
 use POSIX qw(strftime);
 

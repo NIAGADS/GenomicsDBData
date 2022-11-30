@@ -32,7 +32,7 @@ use HTTP::Request::Common qw(POST), qw(GET);
 use HTTP::Headers;
 use XML::XPath;
 use XML::XPath::XMLParser;
-use JSON;
+use JSON::XS;
 
 
 #use Data::Dumper;

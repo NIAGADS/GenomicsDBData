@@ -372,7 +372,7 @@ sub loadStandardizedResult {
     chomp;
     @row{@RESULT_FIELDS} = split /\t/;
 
-    my $json = JSON->new();
+    my $json = JSON::XS->new();
     my $restrictedStats = $json->decode($row{restricted_stats_json}) || $self->error("Error parsing restricted stats json: " . $row{restricted_stats_json});
 
     if ($totalVariantCount == 0) {
@@ -825,7 +825,7 @@ sub loadVariants {
       $currentPartition = $partition;
     }
 
-    my $json = JSON->new;
+    my $json = JSON::XS->new;
     my $dbv = $json->decode($row{db_variant_json}) || $self->error("Error parsing dbv json: " . $row{db_variant_json});
     my $recordPK = $dbv->{record_primary_key};
 
@@ -997,7 +997,7 @@ sub writePreprocessedResult {
 
 sub generateRestrictedStatsFieldMapping {
   my ($self, $columns) = @_;
-  my $json = JSON->new;
+  my $json = JSON::XS->new;
   my $stats = $json->decode($self->getArg('restrictedStats')) || $self->error("Error parsing restricted stats JSON");
 
   $RESTRICTED_STATS_FIELD_MAP = {};
@@ -1073,7 +1073,7 @@ sub getProtocolAppNodeId {
 
 sub generateCustomChrMap {
   my ($self) = @_;
-  my $json = JSON->new;
+  my $json = JSON::XS->new;
   my $chrMap = $json->decode($self->getArg('customChrMap')) || $self->error("Error parsing custom chromosome map");
   $self->log("Found custom chromosome mapping: " . Dumper(\$chrMap));
   return $chrMap;
@@ -1089,7 +1089,7 @@ sub generateStandardizedHeader {
   }
 
 
-  my $json = JSON->new;
+  my $json = JSON::XS->new;
   my $rsParam = $json->decode($self->getArg('restrictedStats')) || $self->error("Error parsing restricted stats JSON");
   my @otherRSTATS = (exists $rsParam->{other}) ? @{$rsParam->{other}} : undef;
   foreach my $label (@otherRSTATS) {

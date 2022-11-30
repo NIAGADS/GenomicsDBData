@@ -22,8 +22,8 @@ databasePassword=@DB_PASSWORD@
 # Username, group, and project info from the relevant Core tables
 # All rows written by you will be tagged with this information
 userName=@DB_USER@
-group=dontcare
-project=@PROJECT_ID@  # eg, PlasmoDB.  Workflow configuration must agree with this
+group=NIAGADS
+project=NIAGADS
 
 # override "tablespace=" attribute of <table> entities in gus_schema.xml
 tablespace=GUS
@@ -37,9 +37,8 @@ md5sum=/usr/bin/md5sum
 ################################################################################
 ###   Warning:  Do not change items below here unless you know what you're doing
 ################################################################################
-
-gusSchemas=Core,RAD,DoTS,SRes,TESS,prot,study
-# gusSchemas=Core,DoTS,SRes,Study,Platform,Model,Results # GUS 4.0 candidate schemata
+# GUS 4.0 candidate schemata
+gusSchemas=Core,DoTS,SRes,Study,Platform,Model,Results 
 coreSchemaName=CORE
 
 sequenceStart=1

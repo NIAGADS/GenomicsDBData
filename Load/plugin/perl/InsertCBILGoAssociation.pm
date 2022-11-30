@@ -5,7 +5,7 @@ package GenomicsDBData::Load::Plugin::InsertCBILGoAssociation;
 @ISA = qw(GUS::PluginMgr::Plugin);
 
 use strict;
-use JSON;
+use JSON::XS;
 use IO::Zlib;
 use Data::Dumper;
 

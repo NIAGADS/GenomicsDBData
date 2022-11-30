@@ -52,7 +52,7 @@ sub generateUpdatedJsonFromGusObj {
   # if newJsonObj is not undef, returns newJsonObj || oldJsonObj, otherwise
   # returns old, which may also be null
   my $oldJsonStr = $gusObj->get($field);
-  my $jsonObj = JSON->new;
+  my $jsonObj = JSON::XS->new;
   $jsonObj = $jsonObj->decode($oldJsonStr) || $plugin->error("Error parsing JSON: $oldJsonStr");
   if ($newJsonObj) {
     $jsonObj = {%$jsonObj, %$newJsonObj};
