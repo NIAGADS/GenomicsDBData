@@ -1,4 +1,5 @@
-DROP MATERIALIZED VIEW IF EXISTS NIAGADS.GWASBrowserTracks;
+DROP MATERIALIZED VIEW IF EXISTS NIAGADS.GWASBrowserTracks CASCADE;
+-- CASCADE will remove NIAGADS.SearchableBrowserTrackAnnotations
 
 CREATE MATERIALIZED VIEW NIAGADS.GWASBrowserTracks AS (
 WITH ExpDesign AS (
@@ -23,7 +24,13 @@ AND c.characteristic_type != 'phenotype_list'
 WHERE ta.track LIKE 'NG0%'
 GROUP BY  ta.track, c.characteristic_type),
 Biosamples AS (
-SELECT track, jsonb_build_object('biosample_characteristics', jsonb_object_agg(characteristic_type, characteristic)) AS json_obj
+SELECT track, jsonb_build_object('biosample_characteristics',
+jsonb_object_agg(characteristic_type,
+
+-- temporary fix for NULL population === 'European' 
+CASE WHEN characteristic_type = 'population' AND characteristic IS NULL
+THEN 'European'
+ELSE characteristic END)) AS json_obj
 FROM Phenotypes
 GROUP BY track)
 SELECT ta.track, 'gwas_summary_statistics' AS track_type, 'NIAGADS'::text AS data_source,
