@@ -2,7 +2,7 @@ CREATE OR REPLACE FUNCTION adsp_variant_flag(flag BOOLEAN)
 RETURNS text AS $$
 	SELECT CASE
 	       WHEN flag
-	       THEN build_icon_attribute(NULL, 'fa-check', 'red', NULL, true::text)::text
+	       THEN TRUE
 	       ELSE NULL END;
 $$ LANGUAGE SQL stable;
 
@@ -54,7 +54,8 @@ $$ LANGUAGE SQL stable;
 CREATE OR REPLACE FUNCTION msc_is_coding_flag(consequence JSONB)
 RETURNS text AS $$
 SELECT CASE WHEN (consequence->>'consequence_is_coding')::BOOLEAN
-THEN build_icon_attribute('Coding', 'fa-check', 'green', NULL, 'true')::text
+THEN TRUE
+--build_icon_attribute('Coding', 'fa-check', 'green', NULL, 'true')::text
 ELSE NULL END;
 $$ LANGUAGE SQL stable;
 
