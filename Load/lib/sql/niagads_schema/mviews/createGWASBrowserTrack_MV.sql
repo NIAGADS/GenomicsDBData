@@ -4,7 +4,7 @@ DROP MATERIALIZED VIEW IF EXISTS NIAGADS.GWASBrowserTracks CASCADE;
 CREATE MATERIALIZED VIEW NIAGADS.GWASBrowserTracks AS (
 WITH ExpDesign AS (
 SELECT ta.track, jsonb_build_object(
-'experimental_design', jsonb_build_object('covariates', string_agg(replace(c.characteristic, 'adjusted for ', ''), ', ' ORDER BY c.characteristic)))
+'experimental_design', jsonb_build_object('covariates', string_agg(replace(c.characteristic, 'adjusted for ', ''), ' // ' ORDER BY c.characteristic)))
 AS json_obj
 FROM NIAGADS.TrackAttributes ta  LEFT OUTER JOIN NIAGADS.ProtocolAppNodeCharacteristic c 
 ON c.track = ta.track
@@ -14,7 +14,7 @@ GROUP BY ta.track),
 Phenotypes AS (
 SELECT ta.track,
 replace(c.characteristic_type, 'biological sex', 'gender') AS characteristic_type,
-string_agg(c.characteristic, ', ' ORDER BY characteristic) AS characteristic
+string_agg(c.characteristic, ' // ' ORDER BY characteristic) AS characteristic
 FROM NIAGADS.TrackAttributes ta LEFT OUTER JOIN NIAGADS.ProtocolAppNodeCharacteristic c
 ON c.track = ta.track
 AND c.characteristic_type != 'covariate specification' 
@@ -26,7 +26,6 @@ GROUP BY  ta.track, c.characteristic_type),
 Biosamples AS (
 SELECT track, jsonb_build_object('biosample_characteristics',
 jsonb_object_agg(characteristic_type,
-
 -- temporary fix for NULL population === 'European' 
 CASE WHEN characteristic_type = 'population' AND characteristic IS NULL
 THEN 'European'

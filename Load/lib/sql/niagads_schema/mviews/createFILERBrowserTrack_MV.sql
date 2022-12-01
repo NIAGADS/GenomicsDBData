@@ -10,15 +10,15 @@ FeatureTypes AS (
 SELECT pan.source_id AS track,
 regexp_replace(multi_replace(name, ARRAY['eQTL eQTL', 'sQTL sQTL', '_'], ARRAY['eQTL', 'sQTL', ' ']),' \(.+?\)', '') AS track_name,
 CASE
-WHEN track_summary->>'classification' LIKE '%CTCF%' THEN 'chromatin conformation'
+WHEN track_summary->>'classification' LIKE '%CTCF%' THEN 'chromatin domain boundary (CTCF) site'
 WHEN track_summary->>'classification' LIKE '%histone%' THEN 'histone modification'
 WHEN track_summary->>'classification' LIKE '%start sites%' THEN 'transcription start site (TSS)'
 WHEN track_summary->>'classification' LIKE '%ATAC%' THEN 'accessible chromatin'
 WHEN track_summary->>'classification' LIKE '%ChIP-seq protein%' THEN 'transcription factor binding site (TFBS)'
 WHEN track_summary->>'classification' LIKE '%eCLIP%' THEN 'RNA binding proteins (RBPs)'
 WHEN track_summary->>'classification' LIKE '%DNase%' THEN 'DNase hypersensitive sites (DHSs)'
-WHEN track_summary->>'classification' LIKE '%eQTL%' THEN 'eQTL'
-WHEN track_summary->>'classification' LIKE '%sQTL%' THEN 'sQTL'
+WHEN track_summary->>'classification' LIKE '%eQTL%' THEN 'expression QTL'
+WHEN track_summary->>'classification' LIKE '%sQTL%' THEN 'splicing QTL'
 WHEN track_summary->>'classification' LIKE '%microRNA%' THEN 'microRNA'
 END AS feature_type
 FROM Study.ProtocolAppNode pan, xdbr
