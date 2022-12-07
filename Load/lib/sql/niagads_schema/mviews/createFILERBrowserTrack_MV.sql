@@ -8,7 +8,7 @@ WHERE d.name = 'FILER'
 AND d.external_database_id = r.external_database_id),
 FeatureTypes AS (
 SELECT pan.source_id AS track,
-regexp_replace(multi_replace(name, ARRAY['eQTL eQTL', 'sQTL sQTL', '_'], ARRAY['eQTL', 'sQTL', ' ']),' \(.+?\)', '') AS track_name,
+regexp_replace(multi_replace(name, ARRAY['eQTL eQTL', 'sQTL sQTL', '_', '-histone-mark', ' replicated peaks', ' peaks'], ARRAY['eQTL', 'sQTL', ' ', '','', '']),' \(.+?\)', '', 'g') AS track_name,
 CASE
 WHEN track_summary->>'classification' LIKE '%CTCF%' THEN 'chromatin domain boundary (CTCF) site'
 WHEN track_summary->>'classification' LIKE '%histone%' THEN 'histone modification'
@@ -26,7 +26,7 @@ WHERE xdbr.external_database_release_id = pan.external_database_release_id
 AND pan.track_summary IS NOT NULL
 ) 
 SELECT ft.track,
-LOWER(replace(regexp_replace(ft.feature_type, ' \(.+?\)', ''), ' ', '_')) AS track_type,
+LOWER(replace(regexp_replace(ft.feature_type, ' \(.+?\)', '', 'g'), ' ', '_')) AS track_type,
 pan.track_summary->>'data_source' AS data_source,
 pan.name,
 jsonb_build_object(
