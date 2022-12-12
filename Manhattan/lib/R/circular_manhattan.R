@@ -9,7 +9,7 @@ chrLabels  <- function(x) {
 filterData  <- function(data, filter=NULL) {
     cdata  <- NULL
     if (!is.null(filter)) {
-        cdata  <- data[data$neg_log10_pvalue > -log10(filter), ]        
+        cdata  <- data[data$neg_log10_pvalue > -log10(filter), ]
         cdata  <- cdata[, c("variant_record_primary_key", "CHR", "BP", "P")]
     }
     else {
@@ -28,19 +28,19 @@ filterHighlight  <- function(annotation, maxHits = 20) {
     if (totalSig  == 0) {
         return(NULL)
     }
-    
+
     if (numGwSig == 0) { # just return the top 5 hits
         return(annotation[1:5, ])
     }
 
     ## isolate significant results
     fAnnotation  <- annotation[annotation$is_significant == 1, ]
-    
+
     if (numGwSig > maxHits) {
         ## filter for genes
         gAnnotation  <- filterHighlightsByType(fAnnotation, maxHits, "gene", "protein coding")
         numGeneHits  <- nrow(gAnnotation)
-     
+
         if (numGeneHits < maxHits) {
             remainingAllowableHits = maxHits - numGeneHits
             vAnnotation  <- filterHighlightsByType(fAnnotation, remainingAllowableHits, "variant")
@@ -49,7 +49,7 @@ filterHighlight  <- function(annotation, maxHits = 20) {
         else {
             return(gAnnotation)
         }
-        
+
     }
 
     ## otherwise return hits w/genome wide significance
@@ -57,13 +57,13 @@ filterHighlight  <- function(annotation, maxHits = 20) {
 }
 
 filterHighlightsByType  <- function(annotation, maxHits, hitType="gene", hitSubType=NULL) {
-  
+
     fAnnotation  <- annotation[annotation$hit_type == hitType, ]
 
     if (!is.null(hitSubType)) {
         fAnnotation  <- fAnnotation[fAnnotation$hit_subtype == hitSubType, ]
     }
-    
+
     if (nrow(fAnnotation) > maxHits) {
         fAnnotation  <- fAnnotation[1:maxHits, ]
     }
@@ -71,13 +71,11 @@ filterHighlightsByType  <- function(annotation, maxHits, hitType="gene", hitSubT
     return(fAnnotation)
 }
 
-cmanhattan <- function(data, r=1, toFile=FALSE, fileName="cmanhattan", fileType="png", filter=NULL) {
-
-    cdata  <- filterData(data, filter)
+cmanhattan <- function(cdata, r=1, toFile=FALSE, fileName="cmanhattan", fileType="png") {
 
     chrLabels = chrLabels(cdata$CHR)
-    
-    CMplot(cdata,type="p", plot.type="c", r=1,
+
+    CMplot(data,type="p", plot.type="c", r=1,
            col=c("grey30","grey60"),
            chr.labels=chrLabels,
            threshold=c(5e-8,1e-5),
@@ -100,7 +98,7 @@ cmanhattan <- function(data, r=1, toFile=FALSE, fileName="cmanhattan", fileType=
 
 generateHighlight  <- function(annotation) {
     ## identify top SNP per gene and label
-    
+
     if (is.null(annotation)) {
         return (NULL)
     }
@@ -110,7 +108,7 @@ generateHighlight  <- function(annotation) {
     if (is.null(fAnnotation)) {
         return (NULL)
     }
-        
+
     highlightSNPs  <-  NULL
     highlightFeatures  <- NULL
 
@@ -140,6 +138,7 @@ snpDensity  <- function(data, toFile=FALSE, fileName="snp-density", fileType="pn
 }
 
 qq <- function(data, toFile=FALSE, fileName="qq", fileType="png") {
+    data$P  <- 10**(-1 * data$neg_log10_pvalue)
     CMplot(data,plot.type="q",
            box=FALSE,
            file=fileType,
@@ -155,15 +154,13 @@ qq <- function(data, toFile=FALSE, fileName="qq", fileType="png") {
            )
 }
 
-manhattan  <- function(data, annotation=NULL, toFile=FALSE, fileName="manhattan", fileType="png", filter=NULL) { 
-
-    cdata  <- filterData(data, filter)
+manhattan  <- function(cdata, annotation=NULL, toFile=FALSE, fileName="manhattan", fileType="png") {
 
     chrLabels = chrLabels(cdata$CHR)
 
     highlights  <- generateHighlight(annotation)
-    
-    if(is.null(highlights)) {    
+
+    if(is.null(highlights)) {
         CMplot(cdata, plot.type="m",
                chr.labels=chrLabels,
                LOG10=TRUE, ylim=NULL,
@@ -211,4 +208,4 @@ manhattan  <- function(data, annotation=NULL, toFile=FALSE, fileName="manhattan"
                width=18,height=6)
     }
 }
-   
+

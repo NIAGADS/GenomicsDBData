@@ -10,55 +10,39 @@ from GenomicsDBData.Util.utils import warning
 from psycopg2.errors import ConnectionDoesNotExist
 
 
-DATA_SQL="""SELECT r.variant_record_primary_key, 
-split_part(r.variant_record_primary_key, '_', 1) AS metaseq_id,
-CASE WHEN split_part(r.variant_record_primary_key, '_', 2) = '' THEN NULL 
-ELSE split_part(r.variant_record_primary_key, '_', 2) END AS ref_snp_id,
-CASE WHEN split_part(r.variant_record_primary_key, '_', 2) != '' THEN split_part(r.variant_record_primary_key, '_', 2) 
-ELSE truncate_str(split_part(r.variant_record_primary_key, '_', 1), 27) END AS "SNP",
+DATA_SQL="""
+SELECT variant_record_primary_key, 
+details->>'metaseq_id' AS metaseq_id,
+replace(details->>'chromosome', 'chr', '') AS "CHR",
+(details->'position')::int AS "BP",
+CASE WHEN details->>'ref_snp_id' IS NOT NULL THEN details->>'ref_snp_id' ELSE details->>'display_id' END AS "SNP",
 r.neg_log10_pvalue,
 r.pvalue_display AS "P",
 CASE WHEN r.neg_log10_pvalue > -1 * log('5e-8') THEN 2 -- gws
 WHEN r.neg_log10_pvalue > 5 THEN 1 -- relaxed
 ELSE 0 END  -- nope
-AS genome_wide_significance_level,
-split_part(r.variant_record_primary_key, ':',1)::text AS "CHR",
-split_part(r.variant_record_primary_key, ':',2)::bigint AS "BP"
-FROM NIAGADS.TrackAttributes ta,
-Results.VariantGWAS r
+AS genome_wide_significance_level
+FROM Results.VariantGWAS r,  get_variant_display_details(variant_record_primary_key) d,
+NIAGADS.TrackAttributes ta
 WHERE ta.track = %(track)s
 AND ta.protocol_app_node_id = r.protocol_app_node_id
-AND neg_log10_pvalue > -1 * log(0.5)"""
+AND neg_log10_pvalue > -1 * log(0.5)
+"""
 
 GENE_SQL='''
 SELECT hit, hit_type, hit_display_value,
-chromosome, location_start, location_end,
+replace(chromosome, 'chr', '') as chromosome, 
+location_start, location_end,
 neg_log10_pvalue AS peak_height, 
 CASE WHEN neg_log10_pvalue >= -1 * log('5e-8') THEN 1 ELSE 0 END AS is_significant,
 ld_reference_variant AS variant, rank
 FROM NIAGADS.DatasetTopFeatures 
 WHERE track = %(track)s
 AND hit_type = 'gene'
-AND CASE WHEN hit_type = 'gene' AND gene_type = 'protein coding' THEN TRUE WHEN hit_type = 'variant' THEN TRUE ELSE FALSE END
+AND CASE WHEN hit_type = 'gene' AND gene_type = 'protein coding' 
+THEN TRUE WHEN hit_type = 'variant' THEN TRUE ELSE FALSE END
 ORDER BY rank
 '''
-
-GENE_SQL_OLD='''WITH result AS (
-SELECT r.variant_record_primary_key, r.neg_log10_pvalue, 
-adsp_most_severe_consequence(r.variant_record_primary_key)->>'gene_id' AS gene_source_id --a.* 
-FROM NIAGADS.TrackAttributes ta, Results.VariantGWAS r
-WHERE ta.track = %(track)s
-AND ta.protocol_app_node_id = r.protocol_app_node_id
-AND r.neg_log10_pvalue > 3 )
-SELECT ga.gene_symbol, ga.source_id, ga.chromosome, ga.location_start, ga.location_end, max(r.neg_log10_pvalue) AS peak_height,
-count(DISTINCT r.variant_record_primary_key) AS num_variants,
-sum(CASE WHEN r.neg_log10_pvalue > -1 * log('5e-8') THEN 1 ELSE 0 END) AS num_sig_variants,
-string_agg(DISTINCT variant_record_primary_key, ',') AS variants
-FROM CBIL.GeneAttributes ga, result r
-WHERE r.gene_source_id = ga.source_id
-AND ga.gene_type = 'protein coding'
-GROUP BY ga.gene_symbol, ga.source_id, ga.chromosome, ga.location_start, ga.location_end
-ORDER BY ga.chromosome, ga.location_start, ga.location_end'''
 
 TITLE_SQL='''SELECT name, attribution FROM Study.ProtocolAppNode where source_id = %(track)s'''
 

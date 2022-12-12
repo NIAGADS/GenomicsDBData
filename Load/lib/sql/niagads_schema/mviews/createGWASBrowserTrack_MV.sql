@@ -40,7 +40,13 @@ jsonb_build_object(
 'track_type_display', 'GWAS Summary Statistics', 
 'track_type', 'gwas_service', 
 'endpoint', '@SERVICE_BASE_URI@/track/gwas', 
-'source', 'NIAGADS', 
+'data_source', 'NIAGADS',
+'repository', 'NIAGADS (DSS)',
+'consortium',
+CASE WHEN ta.name LIKE '%ADSP%' OR ta.description LIKE '%ADSP%' THEN 'ADSP'
+WHEN ta.name LIKE '%IGAP%' OR ta.description LIKE '%IGAP%' THEN 'IGAP'
+WHEN ta.name LIKE '%ADGC%' OR ta.description LIKE '%ADGC%' THEN 'ADGC'
+ELSE NULL END,
 'description', ta.description, 
 'name', ta.name || ' (' || ta.attribution || ')') ||
 b.json_obj || d.json_obj AS track_config

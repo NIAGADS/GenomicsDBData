@@ -41,7 +41,8 @@ jsonb_build_object(
 'format', 'bed',
 'url', track_summary->>'processed_file_download_url',
 'indexURL', track_summary->>'processed_file_download_url' || '.tbi',
-'source', pan.track_summary->>'data_source' || ' (FILER)',
+'data_source', split_part(pan.track_summary->>'data_source', '_', 1),
+'repository', 'NIAGADS (FILER)',
 'biosample_characteristics', (track_summary->'biosample')::jsonb - 'term' - 'system' || jsonb_build_object('biosample', track_summary->'biosample'->>'term') || jsonb_build_object('anatomical_system', track_summary->'biosample'->>'system'),
 'experimental_design', jsonb_build_object(
         'assay', track_summary->>'assay',

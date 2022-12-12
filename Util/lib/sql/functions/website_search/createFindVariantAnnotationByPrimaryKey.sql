@@ -46,6 +46,8 @@ BEGIN
 	jsonb_build_object(
 	'chromosome', chromosome,
 	'position', position,
+	 'location', CASE WHEN v.display_attributes->>'location_start' = v.display_attributes->>'location_end' THEN position::text 
+	 ELSE v.display_attributes->>'location_start' || ' - ' || (v.display_attributes->>'location_end')::text END,
 	'ref_snp_id', ref_snp_id,
 	'metaseq_id', metaseq_id,
 	'display_id', truncate_str(metaseq_id, 30)::text,
