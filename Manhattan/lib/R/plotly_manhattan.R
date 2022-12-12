@@ -39,6 +39,7 @@ plotly_manhattan  <- function(data, fileName) {
 
     gws <- -log10(5e-8)
     sig <- 6
+    yUpperLim <- min(25, max(plotData$NEG_LOG10P)) # 25 is the cap
     
     ## Make the plot -- want to use the capped values, not the actual
     p <- ggplot(plotData, aes(x=BPcum, y=-log10(P), text=text)) +
@@ -54,7 +55,7 @@ plotly_manhattan  <- function(data, fileName) {
     ## custom X axis:
     scale_x_continuous( label = axisdf$CHR, breaks= axisdf$center ) +
     scale_y_continuous(expand = c(0, 0) ) +     ## remove space between plot area and x axis
-    ylim(min(plotData$NEG_LOG10P),9) +
+    ylim(min(plotData$NEG_LOG10P), yUpperLim) +
 
     xlab("BP") + 
 
