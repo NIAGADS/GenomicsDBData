@@ -33,7 +33,7 @@ plotly_manhattan  <- function(data, fileName) {
     plotData$text <- paste("Variant: ", plotData$LABEL, "\nPosition: ",
                            plotData$BP, "\nChromosome: ", paste0('chr',plotData$CHR),
                            "\np-value:", formatC(10**(-1*plotData$NEG_LOG10P), format="e", digits=2),
-                           ##"Impacted Gene:", plotData$GENE,
+                           "Impacted Gene: ", plotData$GENE,
                            sep="")
 
 

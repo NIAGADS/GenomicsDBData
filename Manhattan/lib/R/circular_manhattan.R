@@ -10,12 +10,12 @@ filterData  <- function(data, filter=NULL) {
     cdata  <- NULL
     if (!is.null(filter)) {
         cdata  <- data[data$neg_log10_pvalue > -log10(filter), ]
-        cdata  <- cdata[, c("variant_record_primary_key", "CHR", "BP", "P", "SNP", "neg_log10_pvalue")]
+        cdata  <- cdata[, c("variant_record_primary_key", "CHR", "BP", "P", "SNP", "neg_log10_pvalue", "GENE")]
     }
     else {
-        cdata  <- data[, c("variant_record_primary_key", "CHR", "BP", "P", "SNP", "neg_log10_pvalue")]
+        cdata  <- data[, c("variant_record_primary_key", "CHR", "BP", "P", "SNP", "neg_log10_pvalue", "GENE")]
     }
-    colnames(cdata)  <- c("SNP", "CHR", "BP", "P", "LABEL", "NEG_LOG10P")
+    colnames(cdata)  <- c("SNP", "CHR", "BP", "P", "LABEL", "NEG_LOG10P", "GENE")
     cdata
 }
 

@@ -13,6 +13,7 @@ from psycopg2.errors import ConnectionDoesNotExist
 DATA_SQL="""
 SELECT variant_record_primary_key, 
 details->>'metaseq_id' AS metaseq_id,
+details->'most_severe_consequence'->>'impacted_gene_symbol' AS "GENE",
 replace(details->>'chromosome', 'chr', '') AS "CHR",
 (details->'position')::int AS "BP",
 CASE WHEN details->>'ref_snp_id' IS NOT NULL THEN details->>'ref_snp_id' ELSE details->>'display_id' END AS "SNP",
