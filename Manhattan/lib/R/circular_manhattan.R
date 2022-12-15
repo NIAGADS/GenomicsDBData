@@ -6,16 +6,24 @@ chrLabels  <- function(x) {
     sort(factor(chrlabs,levels=chrOrder, ordered=TRUE))
 }
 
-filterData  <- function(data, filter=NULL) {
-    cdata  <- NULL
+filterData  <- function(data, filter=NULL, withAnnotation=FALSE) {
+
     if (!is.null(filter)) {
         cdata  <- data[data$neg_log10_pvalue > -log10(filter), ]
-        cdata  <- cdata[, c("variant_record_primary_key", "CHR", "BP", "P", "SNP", "neg_log10_pvalue", "GENE")]
     }
     else {
-        cdata  <- data[, c("variant_record_primary_key", "CHR", "BP", "P", "SNP", "neg_log10_pvalue", "GENE")]
+        cdata  <- data
     }
-    colnames(cdata)  <- c("SNP", "CHR", "BP", "P", "LABEL", "NEG_LOG10P", "GENE")
+
+    if (withAnnotation) {
+        cdata  <- data[, c("variant_record_primary_key", "CHR", "BP", "P", "SNP", "neg_log10_pvalue", "GENE")]
+        colnames(cdata)  <- c("SNP", "CHR", "BP", "P", "LABEL", "NEG_LOG10P", "GENE")
+    }
+    else {
+        cdata  <- cdata[, c("variant_record_primary_key", "CHR", "BP", "P")]
+        colnames(cdata)  <- c("SNP", "CHR", "BP", "P")
+    }
+    
     cdata
 }
 
@@ -71,7 +79,7 @@ filterHighlightsByType  <- function(annotation, maxHits, hitType="gene", hitSubT
     return(fAnnotation)
 }
 
-cmanhattan <- function(cdata, r=1, toFile=FALSE, fileName="cmanhattan", fileType="png") {
+cmanhattan <- function(cdata, track, r=1, toFile=FALSE, fileName="cmanhattan", fileType="png") {
 
     chrLabels = chrLabels(cdata$CHR)
 
@@ -92,6 +100,7 @@ cmanhattan <- function(cdata, r=1, toFile=FALSE, fileName="cmanhattan", fileType
            file.output=toFile,
            file.name=fileName,
            file=fileType,
+           main=track,
            signal.cex = 0.4, cex=c(0.2,0.4,1))
 }
 
@@ -122,8 +131,8 @@ generateHighlight  <- function(annotation) {
 }
 
 
-snpDensity  <- function(data, toFile=FALSE, fileName="snp-density", fileType="png") {
-    cdata  <- filterData(data, 1e-5)
+snpDensity  <- function(data, track, toFile=FALSE, fileName="snp-density", fileType="png") {
+    cdata  <- filterData(data, 1e-5, withAnnotation=FALSE)
     CMplot(cdata,
            plot.type="d",
            bin.size=5e5,
@@ -133,11 +142,12 @@ snpDensity  <- function(data, toFile=FALSE, fileName="snp-density", fileType="pn
            file.name=fileName,
            width=9,
            height=6,
-           main="No. Variants (p < 1e-5)"
+           main=paste0(track, " - No. Variants (p < 1e-5)")
     )
 }
 
-qq <- function(data, toFile=FALSE, fileName="qq", fileType="png") {
+qq <- function(data, track, toFile=FALSE, fileName="qq", fileType="png") {
+    cdata  <- filterData(data, filter=NULL, withAnnotation=FALSE)
     data$P  <- 10**(-1 * data$neg_log10_pvalue)
     CMplot(data,plot.type="q",
            box=FALSE,
@@ -150,11 +160,13 @@ qq <- function(data, toFile=FALSE, fileName="qq", fileType="png") {
            file.name=fileName,
            width=5,
            height=5,
+           main=track,
            verbose=TRUE
            )
 }
 
-manhattan  <- function(cdata, annotation=NULL, toFile=FALSE, fileName="manhattan", fileType="png") {
+manhattan  <- function(cdata, track, annotation=NULL, toFile=FALSE, fileName="manhattan", fileType="png") {
+
 
     chrLabels = chrLabels(cdata$CHR)
 
@@ -179,6 +191,7 @@ manhattan  <- function(cdata, annotation=NULL, toFile=FALSE, fileName="manhattan
                file.output=toFile,
                file=fileType,
                file.name=fileName,
+               main=track,
                highlight.text.cex=1.4,
                width=18,height=6)
     } else {
