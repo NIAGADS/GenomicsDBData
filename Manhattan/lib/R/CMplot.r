@@ -2356,9 +2356,12 @@ CMplot <- function(
                 if(file.output){
                     ht=ifelse(is.null(height), 5.5, height)
                     wh=ifelse(is.null(width), 5.5, width)
-                    if(file=="jpg") jpeg(paste("Multraits-QQplot.",paste(taxa,collapse="."),".jpg",sep=""), width = wh*dpi,height=ht*dpi,res=dpi,quality = 100)
-                    if(file=="pdf") pdf(paste("Multraits-QQplot.",paste(taxa,collapse="."),".pdf",sep=""), width = wh,height=ht)
-                    if(file=="tiff")    tiff(paste("Multraits-QQplot.",paste(taxa,collapse="."),".tiff",sep=""), width = wh*dpi,height=ht*dpi,res=dpi)
+                     if(file=="jpg") jpeg(paste0(file.name, ".jpg"), width =  wh*dpi,height=ht*dpi,res=dpi,quality = 100)
+                    if(file=="pdf") pdf(paste0(file.name, ".pdf"), width = wh,height=ht)
+                    if(file=="svg") svg(paste0(file.name, ".svg"), width = wh,height=ht)
+                    if(file=="png") png(paste0(file.name, ".png"), width = R*wh*dpi,height=ht*dpi,res=dpi)
+                if(file=="tiff")    tiff(paste0(file.name, ".tiff"), width = wh*dpi,height=ht*dpi,res=dpi)
+                   
                     par(mar = c(mar[2],mar[2],mar[3],mar[4]),xpd=TRUE)
                 }else{
                     ht=ifelse(is.null(height), 5.5, height)
@@ -2488,6 +2491,7 @@ CMplot <- function(
                     if(file=="jpg") jpeg(paste("QQplot.",taxa[i],".jpg",sep=""), width = wh*dpi,height=ht*dpi,res=dpi,quality = 100)
                     if(file=="pdf") pdf(paste("QQplot.",taxa[i],".pdf",sep=""), width = wh,height=ht)
                     if(file=="tiff")    tiff(paste("QQplot.",taxa[i],".tiff",sep=""), width = wh*dpi,height=ht*dpi,res=dpi)
+                       if(file=="png") png(paste0(file.name, ".png"), width = wh*dpi,height=ht*dpi,res=dpi,quality = 100)
                     par(mar = c(mar[2],mar[2],mar[3],mar[4]),xpd=TRUE)
                 }else{
                     ht=ifelse(is.null(height), 5.5, height)
@@ -2593,6 +2597,6 @@ CMplot <- function(
             }
         }
     }
-    if(file.output & verbose)   cat(paste(" Plots are stored in: ", getwd(), sep=""), "\n")
+
 }
 
