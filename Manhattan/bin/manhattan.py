@@ -46,5 +46,5 @@ if __name__ == "__main__":
         if args.generatePlots:
             create_dir(os.path.join(args.outputPath, "png"))
             create_dir(os.path.join(args.outputPath, "pdf"))
-            cmd = ["generateManhattanPlots.R", trackName, args.outputPath, args.cap]
+            cmd = ["generateManhattanPlots.R", trackName, args.outputPath, str(args.cap)]
             execute_cmd(cmd, verbose=True)

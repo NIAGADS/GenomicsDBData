@@ -12,7 +12,9 @@ track  <- args[1]
 ## preprocess
 preprocessDir  <- args[2]
 ## cap
-cap <- if is.na(args[3]) 50 else args[3]
+cap  <- 50
+if (!is.na(args[3])) {cap  <-  args[3]}
+
 
 GUS_HOME  <-  Sys.getenv("GUS_HOME")
 #GUS_HOME  <-  Sys.getenv("PROJECT_HOME") # temp for debugging w/out build

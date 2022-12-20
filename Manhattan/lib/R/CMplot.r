@@ -2491,7 +2491,7 @@ CMplot <- function(
                     if(file=="jpg") jpeg(paste("QQplot.",taxa[i],".jpg",sep=""), width = wh*dpi,height=ht*dpi,res=dpi,quality = 100)
                     if(file=="pdf") pdf(paste("QQplot.",taxa[i],".pdf",sep=""), width = wh,height=ht)
                     if(file=="tiff")    tiff(paste("QQplot.",taxa[i],".tiff",sep=""), width = wh*dpi,height=ht*dpi,res=dpi)
-                       if(file=="png") png(paste0(file.name, ".png"), width = wh*dpi,height=ht*dpi,res=dpi,quality = 100)
+                       if(file=="png") png(paste0(file.name, ".png"), width = wh*dpi,height=ht*dpi,res=dpi)
                     par(mar = c(mar[2],mar[2],mar[3],mar[4]),xpd=TRUE)
                 }else{
                     ht=ifelse(is.null(height), 5.5, height)
