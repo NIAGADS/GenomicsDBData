@@ -47,7 +47,7 @@ manhattan(fdata, track, annotation, toFile=T, fileName=paste0(pngFilePrefix, "-a
 manhattan(fdata, track,  NULL, toFile=T, fileName=paste0(pngFilePrefix, "-manhattan"), fileType="png")
 cmanhattan(fdata, track, NULL, toFile=T, fileName=paste0(pngFilePrefix, "-cmanhattan"), fileType="png")
 snpDensity(data, track, toFile=T, fileName=paste0(pngFilePrefix, "-snp-density"), fileType="png")
-qq(data, toFile=T, fileName=paste0(pngFilePrefix, "-qq"), fileType="png")
+qq(data, track, toFile=T, fileName=paste0(pngFilePrefix, "-qq"), fileType="png")
 
 ##message("Generating PDFs")
 ##manhattan(fdata, track, annotation, toFile=T, fileName=paste0(pdfFilePrefix, "-annotated-manhattan"), fileType="pdf")
