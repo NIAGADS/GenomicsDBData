@@ -80,7 +80,7 @@ filterHighlightsByType  <- function(annotation, maxHits, hitType="gene", hitSubT
     return(fAnnotation)
 }
 
-cmanhattan <- function(cdata, track, r=1, toFile=FALSE, fileName="cmanhattan", fileType="png") {
+cmanhattan <- function(data, track, r=1, toFile=FALSE, fileName="cmanhattan", fileType="png") {
 
     chrLabels = chrLabels(cdata$CHR)
 
@@ -148,7 +148,6 @@ snpDensity  <- function(data, track, toFile=FALSE, fileName="snp-density", fileT
 }
 
 qq <- function(data, track, toFile=FALSE, fileName="qq", fileType="png") {
-    cdata  <- filterData(data, filter=NULL, withAnnotation=FALSE)
     data$P  <- 10**(-1 * data$neg_log10_pvalue)
     CMplot(data,plot.type="q",
            box=FALSE,
