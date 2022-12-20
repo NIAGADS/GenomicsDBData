@@ -4,7 +4,7 @@ library(htmlwidgets)
 library(plotly)
 library(tidyverse)
 
-plotly_manhattan  <- function(data, fileName) {   
+plotly_manhattan  <- function(data, fileName, cap=50) {   
     ## Prepare the dataset
     plotData <- data  %>%
 
@@ -39,7 +39,7 @@ plotly_manhattan  <- function(data, fileName) {
 
     gws <- -log10(5e-8)
     sig <- 6
-    yUpperLim <- min(25, max(plotData$NEG_LOG10P)) # 25 is the cap
+    yUpperLim <- min(cap, max(plotData$NEG_LOG10P)) 
     
     ## Make the plot -- want to use the capped values, not the actual
     p <- ggplot(plotData, aes(x=BPcum, y=-log10(P), text=text)) +
