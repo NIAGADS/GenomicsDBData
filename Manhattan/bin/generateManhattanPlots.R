@@ -15,12 +15,12 @@ preprocessDir  <- args[2]
 cap <- if is.na(args[3]) 50 else args[3]
 
 GUS_HOME  <-  Sys.getenv("GUS_HOME")
-#GUS_HOME  <-  Sys.getenv("PROJECT_HOME") # temp for debugging w/out build
 MANHATTAN_SCRIPT  <- paste(GUS_HOME, "lib/R/Manhattan/circular_manhattan.R", sep="/")
 PLOTLY_SCRIPT  <- paste(GUS_HOME, "lib/R/Manhattan/plotly_manhattan.R", sep="/");
 source(MANHATTAN_SCRIPT);
 source(PLOTLY_SCRIPT);
 library(data.table) # for faster read and progress bar
+library(htmlwidgets)
 
 filePrefix  <- paste(preprocessDir, track, sep="/")
 pngFilePrefix  <- paste(preprocessDir, "png", track, sep="/")
@@ -39,8 +39,9 @@ row.names(annotation)  <- annotation$hit # data.tables don't have row.names
 message("Generating Plotly Graph")
 message("Filtering data p < 0.001")
 fdata  <- filterData(data, 0.001, withAnnotation=TRUE)
-plotly_manhattan(fdata, fileName=paste(preprocessDir, track, sep="/"), cap=cap)
-
+pGraph <- plotly_manhattan(fdata, fileName=paste(preprocessDir, track, sep="/"), cap=cap)
+pGraphJson <- htmlwidgets:::toJSON(pGraph)
+write(pGraphJson, paste0(preprocessDir, track, "-manhattan.json"))
 
 message("Generating PNGs")
 message("Filtering data p < 0.5")
