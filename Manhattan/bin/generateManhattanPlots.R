@@ -11,6 +11,8 @@ if (length(args) < 2) {
 track  <- args[1]
 ## preprocess
 preprocessDir  <- args[2]
+## cap
+cap <- if is.na(args[3]) 50 else args[3]
 
 GUS_HOME  <-  Sys.getenv("GUS_HOME")
 #GUS_HOME  <-  Sys.getenv("PROJECT_HOME") # temp for debugging w/out build
@@ -37,7 +39,7 @@ row.names(annotation)  <- annotation$hit # data.tables don't have row.names
 message("Generating Plotly Graph")
 message("Filtering data p < 0.001")
 fdata  <- filterData(data, 0.001, withAnnotation=TRUE)
-plotly_manhattan(fdata, fileName=paste(preprocessDir, track, sep="/"))
+plotly_manhattan(fdata, fileName=paste(preprocessDir, track, sep="/"), cap=cap)
 
 
 message("Generating PNGs")
