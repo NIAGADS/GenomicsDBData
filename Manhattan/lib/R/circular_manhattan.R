@@ -148,8 +148,9 @@ snpDensity  <- function(data, track, toFile=FALSE, fileName="snp-density", fileT
 }
 
 qq <- function(data, track, toFile=FALSE, fileName="qq", fileType="png") {
-    data$P  <- 10**(-1 * data$neg_log10_pvalue)
-    CMplot(data,plot.type="q",
+    cdata  <- filterData(data, filter=NULL, withAnnotation=FALSE)
+    cdata$P  <- 10**(-1 * data$neg_log10_pvalue)
+    CMplot(cdata,plot.type="q",
            box=FALSE,
            file=fileType,
            conf.int=TRUE,
