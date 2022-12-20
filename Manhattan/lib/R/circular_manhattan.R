@@ -82,7 +82,7 @@ filterHighlightsByType  <- function(annotation, maxHits, hitType="gene", hitSubT
 
 cmanhattan <- function(data, track, r=1, toFile=FALSE, fileName="cmanhattan", fileType="png") {
 
-    chrLabels = chrLabels(cdata$CHR)
+    chrLabels = chrLabels(data$CHR)
 
     CMplot(data,type="p", plot.type="c", r=1,
            col=c("grey30","grey60"),
