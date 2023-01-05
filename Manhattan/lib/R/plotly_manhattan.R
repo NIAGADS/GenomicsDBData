@@ -76,5 +76,6 @@ plotly_manhattan  <- function(data, fileName, cap=50) {
     )
 
     saveWidget(ggplotly(p, tooltip="text"), file = paste0(fileName, ".html"), selfcontained=FALSE);
-    # system('rm -r test_files')
+    ## system('rm -r test_files')
+    ggplotly(p, tooltip="text")
 }
