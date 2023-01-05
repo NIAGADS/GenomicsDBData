@@ -41,9 +41,9 @@ row.names(annotation)  <- annotation$hit # data.tables don't have row.names
 message("Generating Plotly Graph")
 message("Filtering data p < 0.001")
 fdata  <- filterData(data, 0.001, withAnnotation=TRUE)
-pGraph <- plotly_manhattan(fdata, fileName=paste(preprocessDir, track, sep="/"), cap=cap)
+pGraph <- plotly_manhattan(fdata, fileName=filePrefix, cap=cap)
 pGraphJson <- htmlwidgets:::toJSON(pGraph)
-write(pGraphJson, paste0(preprocessDir, track, "-manhattan.json"))
+write(pGraphJson, paste0(filePrefix, "-manhattan.json"))
 
 message("Generating PNGs")
 message("Filtering data p < 0.5")

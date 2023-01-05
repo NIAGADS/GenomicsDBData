@@ -30,10 +30,10 @@ plotly_manhattan  <- function(data, fileName, cap=50) {
     axisdf <- plotData %>% group_by(CHR) %>% summarize(center=( max(BPcum) + min(BPcum) ) / 2 )
 
     ## Prepare text description for each SNP:
-    plotData$text <- paste("Variant: ", plotData$LABEL, "\nPosition: ",
-                           plotData$BP, "\nChromosome: ", paste0('chr',plotData$CHR),
-                           "\np-value:", formatC(10**(-1*plotData$NEG_LOG10P), format="e", digits=2),
-                           "\nImpacted Gene: ", plotData$GENE,
+    plotData$text <- paste("Variant: ", plotData$LABEL, "<br>Position: ",
+                           plotData$BP, "<br>Chromosome: ", paste0('chr',plotData$CHR),
+                           "<br>p-value:", formatC(10**(-1*plotData$NEG_LOG10P), format="e", digits=2),
+                           "<br>Impacted Gene: ", plotData$GENE,
                            sep="")
 
 
@@ -60,7 +60,7 @@ plotly_manhattan  <- function(data, fileName, cap=50) {
     xlab("BP") + 
 
     ## Add highlighted points
-                                        # geom_point(data=subset(plotData, is_highlight=="yes"), color="orange", size=2) +
+    ## geom_point(data=subset(plotData, is_highlight=="yes"), color="orange", size=2) +
 
     geom_point(data = plotData %>% filter(NEG_LOG10P >= gws), color = "red") +
     geom_point(data = plotData %>% filter(NEG_LOG10P >= sig & NEG_LOG10P < gws), color = "blue") + 
