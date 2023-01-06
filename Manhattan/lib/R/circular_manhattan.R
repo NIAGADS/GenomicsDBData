@@ -47,7 +47,7 @@ filterHighlight  <- function(annotation, maxHits = 20) {
 
     if (numGwSig > maxHits) {
         ## filter for genes
-        gAnnotation  <- filterHighlightsByType(fAnnotation, maxHits, "gene", "protein coding")
+        gAnnotation  <- filterHighlightsByType(fAnnotation, maxHits, "gene", NULL)
         numGeneHits  <- nrow(gAnnotation)
 
         if (numGeneHits < maxHits) {
@@ -167,7 +167,6 @@ qq <- function(data, track, toFile=FALSE, fileName="qq", fileType="png") {
 }
 
 manhattan  <- function(cdata, track, annotation=NULL, toFile=FALSE, fileName="manhattan", fileType="png") {
-
 
     chrLabels = chrLabels(cdata$CHR)
 
