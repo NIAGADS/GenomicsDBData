@@ -8,14 +8,12 @@ chrLabels  <- function(x) {
 
 filterData  <- function(data, filter=NULL, withAnnotation=FALSE) {
 
-    cdata <- NULL
+    cdata <- data[!is.na(data$neg_log10_pvalue), ]   # remove NaNs
+ 
     if (!is.null(filter)) {
-        cdata  <- data[data$neg_log10_pvalue > -log10(filter), ]
+        cdata  <- cdata[cdata$neg_log10_pvalue > -log10(filter), ]
     }
-    else {
-        cdata  <- data
-    }
-
+    
     if (withAnnotation) {
         cdata  <- cdata[, c("variant_record_primary_key", "CHR", "BP", "P", "SNP", "neg_log10_pvalue", "GENE")]
         colnames(cdata)  <- c("SNP", "CHR", "BP", "P", "LABEL", "NEG_LOG10P", "GENE")
