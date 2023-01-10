@@ -30,8 +30,8 @@ plotly_manhattan  <- function(data, fileName, cap=50) {
     axisdf <- plotData %>% group_by(CHR) %>% summarize(center=( max(BPcum) + min(BPcum) ) / 2 )
 
     ## Prepare text description for each SNP:
-    plotData$text <- paste("Variant: ", plotData$LABEL, "<br>Position: ",
-                           plotData$BP, "<br>Chromosome: ", paste0('chr',plotData$CHR),
+    plotData$text <- paste("Variant: ", plotData$LABEL,
+                           "<br>Location: ", paste(plotData$CHR, plotData$BP, sep=":"),
                            "<br>p-value:", formatC(10**(-1*plotData$NEG_LOG10P), format="e", digits=2),
                            "<br>Impacted Gene: ", plotData$GENE,
                            sep="")
@@ -45,7 +45,7 @@ plotly_manhattan  <- function(data, fileName, cap=50) {
     p <- ggplot(plotData, aes(x=BPcum, y=-log10(P), text=text)) +
 
     ## Show all points
-    geom_point( aes(color=as.factor(CHR)), alpha=0.8, size=1.3) +
+    geom_point( aes(color=as.factor(CHR)), alpha=0.8, size=0.8) +
     scale_color_manual(values = rep(c("black", "grey"), 22 )) +
 
     geom_hline(yintercept = gws, linetype = "dashed", color = "red") + 
@@ -54,16 +54,22 @@ plotly_manhattan  <- function(data, fileName, cap=50) {
  
     ## custom X axis:
     scale_x_continuous( label = axisdf$CHR, breaks= axisdf$center ) +
-    scale_y_continuous(expand = c(0, 0) ) +     ## remove space between plot area and x axis
-    ylim(min(plotData$NEG_LOG10P), yUpperLim) +
+    xlab("Chromosome") + 
 
-    xlab("BP") + 
+    ## y axis
+    ## remove space between plot area and x axis; add padding to top
+    scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+
+    ##scale_y_continuous(expand = c(0, 0) ) +     
+    ##ylim(0, yUpperLim) +
+
+    
 
     ## Add highlighted points
     ## geom_point(data=subset(plotData, is_highlight=="yes"), color="orange", size=2) +
 
-    geom_point(data = plotData %>% filter(NEG_LOG10P >= gws), color = "red") +
-    geom_point(data = plotData %>% filter(NEG_LOG10P >= sig & NEG_LOG10P < gws), color = "blue") + 
+    geom_point(data = plotData %>% filter(NEG_LOG10P >= gws), color = "red", size=0.8) +
+    geom_point(data = plotData %>% filter(NEG_LOG10P >= sig & NEG_LOG10P < gws), color = "blue", size=0.8) + 
   
     
     ## Custom the theme:
@@ -75,7 +81,10 @@ plotly_manhattan  <- function(data, fileName, cap=50) {
         panel.grid.minor.x = element_blank()
     )
 
-    saveWidget(ggplotly(p, tooltip="text"), file = paste0(fileName, ".html"), selfcontained=FALSE);
+    gp  <- ggplotly(p, tooltip="text") %>% config(displaylogo = FALSE)
+    ##%>% config(modeBarButtonsToRemove = c("lasso2d"))
+    saveWidget(gp, file = paste0(fileName, ".html"), selfcontained=FALSE);
+    ## saveWidget(ggplotly(p, tooltip="text"), file = paste0(fileName, ".html"), selfcontained=FALSE);
     ## system('rm -r test_files')
-    ggplotly(p, tooltip="text")
+    gp
 }
