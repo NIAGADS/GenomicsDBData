@@ -4,7 +4,18 @@ library(htmlwidgets)
 library(plotly)
 library(tidyverse)
 
-plotly_manhattan  <- function(data, fileName, cap=50) {   
+plotly_manhattan  <- function(data, fileName, cap=50) {
+    # for sorting
+    data$CHR[data$CHR == "X"]  <- 23
+    data$CHR[data$CHR == "Y"]  <- 24
+    data$CHR  <- as.numeric(data$CHR) # in case read as strings
+
+    xTicks  <- sort(unique(data$CHR))
+    xTicks  <- as.character(xTicks)
+    xTicks[xTicks == "23"]  <- "X"
+    xTicks[xTicks == "24"]  <- "Y"
+    
+    
     ## Prepare the dataset
     plotData <- data  %>%
 
@@ -59,11 +70,7 @@ plotly_manhattan  <- function(data, fileName, cap=50) {
     ## y axis
     ## remove space between plot area and x axis; add padding to top
     scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
-
-    ##scale_y_continuous(expand = c(0, 0) ) +     
-    ##ylim(0, yUpperLim) +
-
-    
+ 
 
     ## Add highlighted points
     ## geom_point(data=subset(plotData, is_highlight=="yes"), color="orange", size=2) +

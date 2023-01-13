@@ -43,8 +43,13 @@ row.names(annotation)  <- annotation$hit # data.tables don't have row.names
 ## annotation <- read.table(paste0(filePrefix, "-annotation.txt"), sep="\t", header=1, row.names=1, stringsAsFactors=F)
 
 if (plotType == "all" || plotType == "plotly") {
-    message("Filtering data p < 0.001")
-    fdata  <- filterData(data, 0.001, withAnnotation=TRUE)
+    if (nrow(data) > 100000) {
+        message("Filtering data p < 0.001")
+        fdata  <- filterData(data, 0.001, withAnnotation=TRUE)
+    }
+    else {
+        fdata  <- filterData(data, NULL, withAnnotation=TRUE)
+    }
     message("Generating Plotly Graph")
     pGraph <- plotly_manhattan(fdata, fileName=filePrefix, cap=cap)
     pGraphJson <- htmlwidgets:::toJSON(pGraph)
@@ -59,10 +64,10 @@ if (plotType == "all" || plotType == "png") {
     manhattan(fdata, track, annotation, toFile=T, fileName=paste0(pngFilePrefix, "-annotated-manhattan"), fileType="png")
     message("Generating PNGs - Manhattan")
     manhattan(fdata, track,  NULL, toFile=T, fileName=paste0(pngFilePrefix, "-manhattan"), fileType="png")
-    message("Generating PNGs - Circular Manhattan")
-    cmanhattan(fdata, track, NULL, toFile=T, fileName=paste0(pngFilePrefix, "-cmanhattan"), fileType="png")
-    message("Generating PNGs - SNP Density")
-    snpDensity(data, track, toFile=T, fileName=paste0(pngFilePrefix, "-snp-density"), fileType="png")
+    # message("Generating PNGs - Circular Manhattan")
+    # cmanhattan(fdata, track, NULL, toFile=T, fileName=paste0(pngFilePrefix, "-cmanhattan"), fileType="png")
+    # message("Generating PNGs - SNP Density")
+    # snpDensity(data, track, toFile=T, fileName=paste0(pngFilePrefix, "-snp-density"), fileType="png")
     # message("Generating PNGs - QQ")
     # qq(data, track, toFile=T, fileName=paste0(pngFilePrefix, "-qq"), fileType="png")
 }
