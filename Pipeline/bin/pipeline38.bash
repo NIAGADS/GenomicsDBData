@@ -641,10 +641,9 @@ tar -zcvf GRCh38.tar.gz --directory $NIAGADS_GWAS_DIR/NG00115 GRCh38
 rm -r $NIAGADS_GWAS_DIR/NG00115/GRCh37
 rm -r $NIAGADS_GWAS_DIR/NG00115/GRCh38
 
-#### FILER
-# roadmap enhancers
+#### FILER Genome Browser Tracks
 
-loadResource -c $CONFIG_DIR/annotations/roadmap_enhancers.json --load xdbr --commit > $DATA_DIR/logs/filer/load_roadmap_enhancers_xdbr.log 2>&1
-loadResource -c $CONFIG_DIR/annotations/roadmap_enhancers.json --preprocess  --commit > $DATA_DIR/logs/filer/load_roadmap_enhancers_study.log 2>&1
-loadResource -c $CONFIG_DIR/annotations/roadmap_enhancers.json --load data --verbose --commit > $DATA_DIR/logs/filer/load_roadmap_enhancers.log 2>&1
+ga GenomicsDBData::Load::Plugin::LoadFILERTrack --filerUri https://tf.lisanwanglab.org/FILER/get_metadata.php --genomeBuild hg38 --loadTrackMetadata --fileDir $DATA_DIR/FILER --extDbRlsSpec "FILER|current-GRCh38" --dataSource ENCODE_roadmap --commit > $DATA_DIR/logs/FILER/ENCODE_roadmap.log 2>&1
+ga GenomicsDBData::Load::Plugin::LoadFILERTrack --filerUri https://tf.lisanwanglab.org/FILER/get_metadata.php --genomeBuild hg38 --loadTrackMetadata --fileDir $DATA_DIR/FILER --extDbRlsSpec "FILER|current-GRCh38" --dataSource ENCODE --commit > $DATA_DIR/logs/FILER/ENCODE.log 2>&1
+ga GenomicsDBData::Load::Plugin::LoadFILERTrack --filerUri https://tf.lisanwanglab.org/FILER/get_metadata.php --genomeBuild hg38 --loadTrackMetadata --fileDir $DATA_DIR/FILER --extDbRlsSpec "FILER|current-GRCh38" --dataSource GTEx_v8 --commit  > $DATA_DIR/logs/FILER/GTex_v8.log 2>&1
 
