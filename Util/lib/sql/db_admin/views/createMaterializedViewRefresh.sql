@@ -1,3 +1,5 @@
+-- from https://wiki.postgresql.org/wiki/Refresh_All_Materialized_Views
+
 CREATE OR REPLACE VIEW mat_view_dependencies AS
 WITH RECURSIVE s(start_schemaname,start_relname,start_relkind,
 		 schemaname,relname,relkind,reloid,owneroid,ownername,depth)

@@ -1,3 +1,4 @@
+-- modified from https://wiki.postgresql.org/wiki/Refresh_All_Materialized_Views
 -- cannot be run directly; must copy and replace 'myschema' accordingly
 -- two scripts: 1) all m-views in a schema
 -- 2) all m-views that depend on a particular table
