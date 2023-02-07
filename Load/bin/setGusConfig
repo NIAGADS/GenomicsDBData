@@ -1,0 +1,28 @@
+#!/bin/sh
+# update config files (perform docker substitutions)
+echo "Usage GUS_HOME=$GUS_HOME, PROJECT_HOME=$PROJECT_HOME, PROJECT_ID=$PROJECT_ID pulled from environemnt."
+echo "All other properties from the roperties file = $SITE_ADMIN_PROPERTIES_FILE
+echo "See docker build admin.properties files or guide"
+
+PROPERTIES_FILE=$SITE_ADMIN_PROPERTIES_FILE
+
+if test -f "$PROPERTIES_FILE"; then
+  echo "Pulling properties from $PROPERTIES_FILE"
+else
+    echo "$PROPERTIES_FILE does not exist - exiting" 
+    return 1
+fi
+
+prop() {
+    grep "${1}" ${PROPERTIES_FILE}|cut -d'=' -f2
+}
+
+echo "Setting gus.config (gus.config) file"
+
+cp $PROJECT_HOME/GenomicsDBData/gus.config.sample $GUS_HOME/config/gus.config
+sed -i "s|@DB_USER@|$(prop 'DB_USER')|g" $GUS_HOME/config/gus.config 
+sed -i "s|@DB_PASSWORD@|$(prop 'DB_PASSWORD')|g" $GUS_HOME/config/gus.config 
+sed -i "s|@DB_HOST@|$(prop 'DB_HOST')|g" $GUS_HOME/config/gus.config 
+sed -i "s|@DB_PORT@|$(prop 'DB_PORT')|g" $GUS_HOME/config/gus.config 
+sed -i "s|@DB_NAME@|$(prop 'DB_NAME')|g" $GUS_HOME/config/gus.config 
+sed -i "s|@PROJECT_ID@|$PROJECT_ID|g" $GUS_HOME/config/gus.config
