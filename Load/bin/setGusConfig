@@ -1,7 +1,7 @@
 #!/bin/sh
 # update config files (perform docker substitutions)
 echo "Usage GUS_HOME=$GUS_HOME, PROJECT_HOME=$PROJECT_HOME, PROJECT_ID=$PROJECT_ID pulled from environemnt."
-echo "All other properties from the roperties file = $SITE_ADMIN_PROPERTIES_FILE"
+echo "All other properties from the properties file = $SITE_ADMIN_PROPERTIES_FILE"
 echo "See docker build admin.properties files or guide"
 
 PROPERTIES_FILE=$SITE_ADMIN_PROPERTIES_FILE
