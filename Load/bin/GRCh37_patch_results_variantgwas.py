@@ -79,6 +79,7 @@ def find_matching_refsnp(pk, matches):
         for m in matches:
             mElements = m.split(':')
             if pkRefSnp in mElements:
+                warning("INFO:", "Found long INDEL -", pk, "->", m)
                 return m
     else:
         return None
