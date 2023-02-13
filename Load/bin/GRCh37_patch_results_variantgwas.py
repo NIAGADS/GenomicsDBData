@@ -74,13 +74,13 @@ def is_valid_pk(primaryKey):
 
 def find_matching_refsnp(pk, matches):
     ''' find result that matches ref_snp_id '''
-    if 'rs' in pk and 'rs' in matches:
-        pkRefSnp = pk.split(':')[-1]
+    if 'rs' in pk:
+        pkRefSnp = pk.split('_')[-1] if '_rs' in pk else pk.split(':')[-1]
         for m in matches:
-            mElements = m.split(':')
+            mElements = m[0].split(':')
             if pkRefSnp in mElements:
-                warning("INFO:", "Found long INDEL -", pk, "->", m)
-                return m
+                warning("INFO:", "Found long INDEL -", pk, "->", m[0])
+                return m[0]
     else:
         return None
 
@@ -90,6 +90,7 @@ def find_matching_refsnp(pk, matches):
 def find_indel_pk(primaryKey):
     ''' lookup via metaseq'''
     with database.cursor() as cursor:
+        warning("DEBUG: Looking up:", primaryKey)
         cursor.execute(FIND_PK_BY_METASEQ_SQL, (primaryKey, ))
         if cursor.rowcount > 1:
             result = cursor.fetchall()
@@ -135,6 +136,11 @@ def update_pk(oldPk):
     if oldPk in VARIANT_MAP:
         skipCount = skipCount + 1
         return VARIANT_MAP[oldPk] 
+    
+    if oldPk.count(':') == 2: # chr:pos:encoded_alleles
+        VARIANT_MAP[oldPk] = oldPk
+        skipCount = skipCount + 1
+        return oldPk
 
     if oldPk.count(':') == 4: # chr:pos:ref:alt:rsId
         VARIANT_MAP[oldPk] = oldPk 
