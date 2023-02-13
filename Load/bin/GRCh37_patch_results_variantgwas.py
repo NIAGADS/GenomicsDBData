@@ -72,13 +72,28 @@ def is_valid_pk(primaryKey):
         return result is not None
 
 
+def find_matching_refsnp(pk, matches):
+    ''' find result that matches ref_snp_id '''
+    if 'rs' in pk and 'rs' in matches:
+        pkRefSnp = pk.split(':')[-1]
+        for m in matches:
+            mElements = m.split(':')
+            if pkRefSnp in mElements:
+                return m
+    else:
+        return None
+
+    return None
+
+
 def find_indel_pk(primaryKey):
     ''' lookup via metaseq'''
     with database.cursor() as cursor:
         cursor.execute(FIND_PK_BY_METASEQ_SQL, (primaryKey, ))
         if cursor.rowcount > 1:
-            warning("WARNING: Multple matches for long INDEL:", primaryKey, "-", cursor.fetchall())
-            return None
+            result = cursor.fetchall()
+            warning("WARNING: Multple matches for long INDEL:", primaryKey, "-", result)
+            return find_matching_refsnp(primaryKey, result)
         else: 
             result = cursor.fetchone()[0] 
             warning("INFO:", "Found long INDEL -", primaryKey, "->", result)
