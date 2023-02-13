@@ -90,7 +90,7 @@ def find_matching_refsnp(pk, matches):
 def find_indel_pk(primaryKey):
     ''' lookup via metaseq'''
     with database.cursor() as cursor:
-        warning("DEBUG: Looking up:", primaryKey)
+        # warning("DEBUG: Looking up:", primaryKey)
         cursor.execute(FIND_PK_BY_METASEQ_SQL, (primaryKey, ))
         if cursor.rowcount > 1:
             result = cursor.fetchall()
