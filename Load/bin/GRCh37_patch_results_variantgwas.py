@@ -101,6 +101,7 @@ def find_indel_pk(primaryKey):
         with database.cursor() as cursor:
             # warning("DEBUG: Looking up:", primaryKey)
             cursor.execute(FIND_PK_BY_METASEQ_SQL, (primaryKey, ))
+            # returns pk, metaseq_id
             if cursor.rowcount > 1:
                 result = cursor.fetchall()
                 warning("WARNING: Multple matches for long INDEL:", primaryKey, "-", result)
