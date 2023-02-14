@@ -48,7 +48,7 @@ VALIDATE_PK_SQL = """
 """
 
 FIND_PK_BY_METASEQ_SQL = """
-    SELECT record_primary_key FROM AnnotatedVDB.Variant
+    SELECT record_primary_key, metaseq_id FROM AnnotatedVDB.Variant
     WHERE left(metaseq_id, 50) = left(%s, 50)
 """
 
@@ -86,7 +86,11 @@ def find_matching_refsnp(pk, matches):
                 warning("INFO:", "Found long INDEL -", pk, "->", m[0])
                 return m[0]
     else:
-        return None
+        for m in matches:
+            metaseqId = m[1]
+            if pk == metaseqId:
+                warning("INFO:", "Found long INDEL by matching METASEQ_ID -", pk, "->", m[0])
+                return m[0]
 
     return None
 
@@ -103,8 +107,8 @@ def find_indel_pk(primaryKey):
                 return find_matching_refsnp(primaryKey, result)
             else: 
                 result = cursor.fetchone()[0] 
-                warning("INFO:", "Found long INDEL -", primaryKey, "->", result)
-                return result
+                warning("INFO:", "Found long INDEL -", primaryKey, "->", result[0])
+                return result[0]
     except:
         warning("ERROR: No matches found found Long Indel = ", primaryKey)
         raise
