@@ -8,6 +8,7 @@ from __future__ import print_function
 from __future__ import with_statement
 import argparse # parse command line args
 import json
+import traceback
 from sys import stdout, exit, exc_info
 from os import environ, path
 from math import isnan
@@ -66,6 +67,9 @@ def is_valid_pk(primaryKey):
     ''' validate primary key off the database '''
     with database.cursor() as cursor:
         cursor.execute(VALIDATE_PK_SQL, (primaryKey, ))
+        if cursor.rowcount > 1:
+            warning("ERROR: Found multiple matches for variant:", primaryKey, "-", cursor.fetchall())
+            die("Exiting")
         result = cursor.fetchone()
         if args.debug: 
             warning("DEBUG:", "is_valid", result[0], "-", result is not None)
@@ -89,17 +93,21 @@ def find_matching_refsnp(pk, matches):
 
 def find_indel_pk(primaryKey):
     ''' lookup via metaseq'''
-    with database.cursor() as cursor:
-        # warning("DEBUG: Looking up:", primaryKey)
-        cursor.execute(FIND_PK_BY_METASEQ_SQL, (primaryKey, ))
-        if cursor.rowcount > 1:
-            result = cursor.fetchall()
-            warning("WARNING: Multple matches for long INDEL:", primaryKey, "-", result)
-            return find_matching_refsnp(primaryKey, result)
-        else: 
-            result = cursor.fetchone()[0] 
-            warning("INFO:", "Found long INDEL -", primaryKey, "->", result)
-            return result
+    try:
+        with database.cursor() as cursor:
+            # warning("DEBUG: Looking up:", primaryKey)
+            cursor.execute(FIND_PK_BY_METASEQ_SQL, (primaryKey, ))
+            if cursor.rowcount > 1:
+                result = cursor.fetchall()
+                warning("WARNING: Multple matches for long INDEL:", primaryKey, "-", result)
+                return find_matching_refsnp(primaryKey, result)
+            else: 
+                result = cursor.fetchone()[0] 
+                warning("INFO:", "Found long INDEL -", primaryKey, "->", result)
+                return result
+    except:
+        warning("ERROR: No matches found found Long Indel = ", primaryKey)
+        raise
 
 
 def submit_pk_update(newPk, oldPk):
@@ -138,6 +146,11 @@ def update_pk(oldPk):
         return VARIANT_MAP[oldPk] 
     
     if oldPk.count(':') == 2: # chr:pos:encoded_alleles
+        VARIANT_MAP[oldPk] = oldPk
+        skipCount = skipCount + 1
+        return oldPk
+    
+    if oldPk.count(':') == 3 and ':rs' in oldPk: # chr:pos:encoded_alleles:rsId
         VARIANT_MAP[oldPk] = oldPk
         skipCount = skipCount + 1
         return oldPk
@@ -245,6 +258,10 @@ def run_patch(datasetId, protocolAppNodeId):
                     else:
                         database.rollback()
                         warning("ROLLING BACK:", flagCount, "gwas_flag updates")
+            else:
+                database.rollback()
+                die("ERROR: unable to find new PK for variant: " + row['variant_record_primary_key'])
+                
             rowCount = rowCount + 1
             if rowCount % 500000 == 0:
                 warning("INFO:", "Parsed", rowCount, "rows")
