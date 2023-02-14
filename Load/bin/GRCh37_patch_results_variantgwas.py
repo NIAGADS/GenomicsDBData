@@ -108,8 +108,8 @@ def find_indel_pk(primaryKey):
                 return find_matching_refsnp(primaryKey, result)
             else: 
                 result = cursor.fetchone()[0] 
-                warning("INFO:", "Found long INDEL -", primaryKey, "->", result[0])
-                return result[0]
+                warning("INFO:", "Found long INDEL -", primaryKey, "->", result)
+                return result
     except:
         warning("ERROR: No matches found found Long Indel = ", primaryKey)
         raise
