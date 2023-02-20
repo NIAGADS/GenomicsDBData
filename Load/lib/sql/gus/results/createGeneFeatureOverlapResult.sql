@@ -50,8 +50,6 @@ GRANT SELECT ON Results.GeneFeatureOverlap_SQ TO gus_r;
 
 -- TRIGGERS
 
-CREATE TRIGGER results_feature_score_bin_trigger BEFORE INSERT OR UPDATE ON Results.GeneFeatureOverlap
-       FOR EACH ROW EXECUTE PROCEDURE set_row_bin_index();
 
 -- GUS CORE
 

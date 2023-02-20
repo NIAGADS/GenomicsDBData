@@ -10,7 +10,7 @@ use JSON::XS;
 use Scalar::Util qw(looks_like_number);
 use POSIX        qw(strftime);
 
-use List::MoreUtils   qw(uniq);
+use List::MoreUtils   qw(uniq natatime);
 use String::CamelCase qw(decamelize);
 
 use URI;
@@ -147,7 +147,7 @@ sub new {
     $self->initialize(
         {
             requiredDbVersion => 4.0,
-            cvsRevision       => '$Revision: 1 $',
+            cvsRevision       => '$Revision: 2 $',
             name              => ref($self),
             revisionNotes     => '',
             argsDeclaration   => $argumentDeclaration,
@@ -169,8 +169,10 @@ sub run {
     $self->logArgs();
     $self->getAlgInvocation()->setMaximumNumberOfObjects(100000);
 
-    $self->error("--resumeAtGene not yet implented") if ($self->getArg('resumeAtGene'));
-    $self->error("--testGene not yet implemented") if ($self->getArg('testGene'));
+    $self->error("--resumeAtGene not yet implented")
+      if ( $self->getArg('resumeAtGene') );
+    $self->error("--testGene not yet implemented")
+      if ( $self->getArg('testGene') );
 
     $self->load();
 }
@@ -180,16 +182,15 @@ sub run {
 # ----------------------------------------------------------------------
 
 sub load() {
-  my ($self) = @_;
-    my $extDbRlsId = 
-      $self->getExtDbRlsId( $self->getArg('extDbRlsSpec') );
+    my ($self) = @_;
+    my $extDbRlsId = $self->getExtDbRlsId( $self->getArg('extDbRlsSpec') );
 
     my $resumeAtGene =
       ( $self->getArg("resumeAtGene") )
       ? $self->getGeneId( $self->getArg("resumeAtGene") )
       : undef;
 
-    my $genes = $self->queryGenes();
+    my $genes       = $self->queryGenes();
     my $totalNGenes = keys %$genes;
     $self->log("Retrieved N = $totalNGenes genes.");
     my $nGenes = 0;
@@ -199,33 +200,58 @@ sub load() {
             $genes->{$gid}->{CHROMOSOME} . ':'
           . $genes->{$gid}->{LOCATION_START} . '-'
           . $genes->{$gid}->{LOCATION_END};
-        $self->log("Querying Gene: $gid - $symbol : $span");
+        $self->log("INFO: Querying Gene: $gid - $symbol : $span");
+
         my $dotsGeneId = $genes->{$gid}->{GENE_ID};
-        my $chromosome =$genes->{$gid}->{CHROMOSOME};
+        my $chromosome = $genes->{$gid}->{CHROMOSOME};
+
         foreach my $ds (@ALLOWABLE_DATASOURCES) {
             my $overlappingTracks =
               $self->fetchOverlappingFILERTracks( $span, $ds );
-            my $result = $self->fetchFILERHits( $span, $overlappingTracks );
-            foreach my $track (@$result) {
-              my $trackId = $track->{Identifier};
-              my @features = @{$track->{features}};
-              foreach my $hit (@features) {
-                my $geneFeatureOverlap = GUS::Model::Results::GeneFeatureOverlap->new( {
-                    gene_id => $dotsGeneId,
-                    external_database_release_id => $extDbRlsId,
-                    filer_track_id => $trackId,
-                    chromosome => $chromosome,
-                    location_start => $hit->{chromStart},
-                    location_end => $hit->{chromEnd},
-                    hit_stats => $hit
-                });
-                $geneFeatureOverlap->submit(); #  unless $geneFeatureOverlap->retrieveFromDB();
-              }     
+
+            my $nOverlappingTracks = scalar @$overlappingTracks;
+            $self->log("INFO: Found N = $nOverlappingTracks overlapping tracks for $gid in $ds");
+
+            # slice to avoid long urls (eg., ENCODE -- too many tracks)
+            # split into groups of 1000 tracks
+            my $trackIter = natatime 500, @$overlappingTracks;
+            my $trackCount = 0;
+            my $resultSize = 0;
+            while ( my @trackSubset = $trackIter->() ) {
+                $trackCount += scalar @trackSubset;
+
+                my $result     = $self->fetchFILERHits( $span, \@trackSubset );
+                $resultSize += scalar @$result;
+
+                $self->log("INFO: Found N = $resultSize hits for $gid in $ds (Processed $trackCount / $nOverlappingTracks)");
+
+                foreach my $track (@$result) {
+                    my $trackId  = $track->{Identifier};
+                    my @features = @{ $track->{features} };
+                    foreach my $hit (@features) {
+                        my $geneFeatureOverlap =
+                          GUS::Model::Results::GeneFeatureOverlap->new(
+                            {
+                                gene_id                      => $dotsGeneId,
+                                external_database_release_id => $extDbRlsId,
+                                filer_track_id               => $trackId,
+                                chromosome                   => $chromosome,
+                                location_start => $hit->{chromStart},
+                                location_end   => $hit->{chromEnd},
+                                hit_stats      => Utils::to_json($hit)
+                            }
+                          );
+                        $geneFeatureOverlap->submit();
+
+                        #  unless $geneFeatureOverlap->retrieveFromDB();
+                    }
+                }
             }
         }
+
         $self->undefPointerCache();
-        if (++$nGenes % 1000 == 0) {
-          $self->log("Processed $nGenes / $totalNGenes");
+        if ( ++$nGenes % 1000 == 0 ) {
+            $self->log("Processed $nGenes / $totalNGenes");
         }
     }
 
@@ -239,7 +265,7 @@ sub queryGenes {
     my ($self) = @_;
 
     my $sql =
-"SELECT source_id, gene_id, gene_symbol, chromosome, location_start, location_end FROM CBIL.GeneAttributes ORDER BY source_id";
+"SELECT source_id, gene_id, gene_symbol, chromosome, location_start, location_end FROM CBIL.GeneAttributes ORDER BY gene_id";
 
     my $qh = $self->getQueryHandle()->prepare($sql);
     $qh->execute();
@@ -252,16 +278,15 @@ sub queryGenes {
 sub fetchFILERHits {
     my ( $self, $span, $tracks ) = @_;
 
-    my $requestUrl =
-      $self->getArg('filerUri') . "/get_overlaps.php";
-    my %params = (
-        trackIDs => join(',', @$tracks),
-        region       => $span,
+    my $requestUrl = $self->getArg('filerUri') . "/get_overlaps.php";
+    my %params     = (
+        trackIDs => join( ',', @$tracks ),
+        region   => $span,
     );
 
-    $self->log(
-        "FETCHING FILER hits from $requestUrl with parameters: "
-          . Dumper( \%params ) );
+    $self->log( "FETCHING FILER hits from $requestUrl with parameters: "
+          . Dumper( \%params ) )
+      if $self->getArg('veryVerbose');
     my $ua = LWP::UserAgent->new();
     $ua->ssl_opts( verify_hostname => 0 );    # filer certificate is often bad
     my $uri = URI->new($requestUrl);
@@ -269,7 +294,7 @@ sub fetchFILERHits {
     my $response = $ua->get($uri);
 
     if ( $response->is_success() ) {
-        my $json              = JSON::XS->new;
+        my $json = JSON::XS->new;
         my $hits = $json->decode( $response->content )
           || $self->error("Error fetching overlapping track JSON: $!");
         return $hits;
@@ -297,7 +322,8 @@ sub fetchOverlappingFILERTracks {
 
     $self->log(
         "FETCHING list of overlapping tracks from $requestUrl with parameters: "
-          . Dumper( \%params ) );
+          . Dumper( \%params ) )
+      if $self->getArg('veryVerbose');
     my $ua = LWP::UserAgent->new();
     $ua->ssl_opts( verify_hostname => 0 );    # filer certificate is often bad
     my $uri = URI->new($requestUrl);
@@ -323,8 +349,7 @@ sub fetchOverlappingFILERTracks {
 # ----------------------------------------------------------------------
 sub undoTables {
     my ($self) = @_;
-    my @tables =
-      qw(Results.GeneFeatureOverlap);
+    my @tables = qw(Results.GeneFeatureOverlap);
     return @tables;
 }
 
