@@ -87,6 +87,16 @@ sub getArgumentsDeclaration {
             }
         ),
 
+      stringArg(
+            {
+                name  => 'chromosome',
+                descr => 'load genes on specified chromosome; leave off to do all',
+                constraintFunc => undef,
+                reqd           => 0,
+                isList         => 0,
+            }
+        ),
+
         stringArg(
             {
                 name  => 'resumeAtGene',
@@ -180,7 +190,7 @@ sub new {
     $self->initialize(
         {
             requiredDbVersion => 4.0,
-            cvsRevision       => '6',
+            cvsRevision       => '7',
             name              => ref($self),
             revisionNotes     => '',
             argsDeclaration   => $argumentDeclaration,
@@ -362,10 +372,13 @@ sub removeBadTracks {
 sub queryGenes {
     my ($self) = @_;
 
-    my @result = ();
-    my $sql = "SELECT source_id, gene_id, gene_symbol, chromosome, location_start, location_end FROM CBIL.GeneAttributes ORDER BY gene_id";
+    my $condition = ($self->getArg('chromosome')) ? "WHERE chromosome = '" . $self->getArg('chromosome') . "'" : "";
+
+    my $sql = "SELECT source_id, gene_id, gene_symbol, chromosome, location_start, location_end FROM CBIL.GeneAttributes $condition ORDER BY gene_id";
+
     my $qh = $self->getQueryHandle()->prepare($sql) || $self->error(DBI::errstr);
     $qh->execute();
+    my @result = ();
     while ( my $gene = $qh->fetchrow_hashref() ) {
         push( @result, $gene );
     }
