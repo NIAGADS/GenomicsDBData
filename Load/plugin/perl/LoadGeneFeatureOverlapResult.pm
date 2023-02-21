@@ -319,12 +319,14 @@ sub load() {
                 }
                 $self->log("INFO: Found N = $resultSize hits for $gid in $ds (Processed $trackCount / $nOverlappingTracks)") 
                   if $self->getArg('verbose');
+                $self->undefPointerCache();
+                
             }
             $self->log("INFO: Found N = $resultSize hits for $gid in $ds (Processed $trackCount / $nOverlappingTracks)")
               if !$self->getArg('verbose');
         }
 
-        $self->undefPointerCache();
+
 
         if ( ++$nGenes % 1000 == 0 ) {
             $self->log("Processed $nGenes / $totalNGenes");
