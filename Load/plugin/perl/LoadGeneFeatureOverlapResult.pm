@@ -34,6 +34,18 @@ my @ALLOWABLE_DATASOURCES =
 sub getArgumentsDeclaration {
     my $argumentDeclaration = [
 
+
+      integerArg(
+            {
+                name           => 'requestSize',
+                descr          => 'number of tracks to query simultaneously',
+                constraintFunc => undef,
+                reqd           => 0,
+                isList         => 0,
+                default => 100
+            }
+        ),
+
         stringArg(
             {
                 name           => 'filerUri',
@@ -147,7 +159,7 @@ sub new {
     $self->initialize(
         {
             requiredDbVersion => 4.0,
-            cvsRevision       => '$Revision: 2 $',
+            cvsRevision       => '$Revision: 3 $',
             name              => ref($self),
             revisionNotes     => '',
             argsDeclaration   => $argumentDeclaration,
@@ -190,20 +202,21 @@ sub load() {
       ? $self->getGeneId( $self->getArg("resumeAtGene") )
       : undef;
 
-    my $genes       = $self->queryGenes();
-    my $totalNGenes = keys %$genes;
+    my @genes       = @{$self->queryGenes()};
+    my $totalNGenes = scalar @genes;
     $self->log("Retrieved N = $totalNGenes genes.");
     my $nGenes = 0;
-    foreach my $gid ( keys %$genes ) {
-        my $symbol = $genes->{$gid}->{GENE_SYMBOL};
+    foreach my $gene ( @genes ) {
+        my $gid = $gene->{SOURCE_ID};
+        my $symbol = $gene->{GENE_SYMBOL};
         my $span =
-            $genes->{$gid}->{CHROMOSOME} . ':'
-          . $genes->{$gid}->{LOCATION_START} . '-'
-          . $genes->{$gid}->{LOCATION_END};
+            $gene->{CHROMOSOME} . ':'
+          . $gene->{LOCATION_START} . '-'
+          . $gene->{LOCATION_END};
         $self->log("INFO: Querying Gene: $gid - $symbol : $span");
 
-        my $dotsGeneId = $genes->{$gid}->{GENE_ID};
-        my $chromosome = $genes->{$gid}->{CHROMOSOME};
+        my $dotsGeneId = $gene->{GENE_ID};
+        my $chromosome = $gene->{CHROMOSOME};
 
         foreach my $ds (@ALLOWABLE_DATASOURCES) {
             my $overlappingTracks =
@@ -213,21 +226,19 @@ sub load() {
             $self->log("INFO: Found N = $nOverlappingTracks overlapping tracks for $gid in $ds");
 
             # slice to avoid long urls (eg., ENCODE -- too many tracks)
-            # split into groups of 1000 tracks
-            my $trackIter = natatime 500, @$overlappingTracks;
+            # split into groups of 25 tracks
+            my $trackIter = natatime $self->getArg('requestSize'), @$overlappingTracks;
             my $trackCount = 0;
             my $resultSize = 0;
             while ( my @trackSubset = $trackIter->() ) {
                 $trackCount += scalar @trackSubset;
-
                 my $result     = $self->fetchFILERHits( $span, \@trackSubset );
-                $resultSize += scalar @$result;
-
-                $self->log("INFO: Found N = $resultSize hits for $gid in $ds (Processed $trackCount / $nOverlappingTracks)");
-
+                $self->log("got result");
                 foreach my $track (@$result) {
                     my $trackId  = $track->{Identifier};
                     my @features = @{ $track->{features} };
+                    $resultSize += scalar @features;
+                 
                     foreach my $hit (@features) {
                         my $geneFeatureOverlap =
                           GUS::Model::Results::GeneFeatureOverlap->new(
@@ -242,10 +253,10 @@ sub load() {
                             }
                           );
                         $geneFeatureOverlap->submit();
-
                         #  unless $geneFeatureOverlap->retrieveFromDB();
                     }
                 }
+                $self->log("INFO: Found N = $resultSize hits for $gid in $ds (Processed $trackCount / $nOverlappingTracks)");
             }
         }
 
@@ -266,12 +277,12 @@ sub queryGenes {
 
     my $sql =
 "SELECT source_id, gene_id, gene_symbol, chromosome, location_start, location_end FROM CBIL.GeneAttributes ORDER BY gene_id";
-
+    my @result = ();
     my $qh = $self->getQueryHandle()->prepare($sql);
     $qh->execute();
-    my $result = $qh->fetchall_hashref("SOURCE_ID");
+    push(@result, $qh->fetchrow_hashref());
     $qh->finish();
-    return $result;
+    return \@result;
 }
 
 # https://tf.lisanwanglab.org/FILER/get_overlaps.php?trackIDs=NGEN000611,NGEN000615,NGEN000650&region=chr1:50000-1500000
