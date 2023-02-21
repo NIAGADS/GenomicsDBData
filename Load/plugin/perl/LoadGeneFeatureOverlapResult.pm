@@ -34,15 +34,24 @@ my @ALLOWABLE_DATASOURCES =
 sub getArgumentsDeclaration {
     my $argumentDeclaration = [
 
-
-      integerArg(
+        integerArg(
             {
                 name           => 'requestSize',
                 descr          => 'number of tracks to query simultaneously',
                 constraintFunc => undef,
                 reqd           => 0,
                 isList         => 0,
-                default => 100
+                default        => 100
+            }
+        ),
+
+        booleanArg(
+            {
+                name           => 'checkDuplicates',
+                descr          => "check for duplicates",
+                constraintFunc => undef,
+                reqd           => 0,
+                isList         => 0
             }
         ),
 
@@ -81,6 +90,17 @@ sub getArgumentsDeclaration {
             {
                 name  => 'resumeAtGene',
                 descr => 'resume load at gene, specified by ensembl_id',
+                constraintFunc => undef,
+                reqd           => 0,
+                isList         => 0,
+            }
+        ),
+
+        stringArg(
+            {
+                name  => 'tracks',
+                descr =>
+'comma separated list of tracks to load; ignores allowable datasources',
                 constraintFunc => undef,
                 reqd           => 0,
                 isList         => 0,
@@ -159,7 +179,7 @@ sub new {
     $self->initialize(
         {
             requiredDbVersion => 4.0,
-            cvsRevision       => '$Revision: 10 $',
+            cvsRevision       => '6',
             name              => ref($self),
             revisionNotes     => '',
             argsDeclaration   => $argumentDeclaration,
@@ -187,6 +207,9 @@ sub run {
       if ( $self->getArg('testGene') );
 
     $self->load();
+
+    my @badTracks = @{$self->{bad_tracks}};
+    $self->log("INFO: Bad Tracks found:" . (scalar @badTracks > 0) ? join(',', @badTracks) : "none"  )
 }
 
 # ----------------------------------------------------------------------
@@ -196,18 +219,19 @@ sub run {
 sub load() {
     my ($self) = @_;
     my $extDbRlsId = $self->getExtDbRlsId( $self->getArg('extDbRlsSpec') );
-
+    my @badTracks = ();
+    $self->{bad_tracks} = \@badTracks;
     my $resumeAtGene =
       ( $self->getArg("resumeAtGene") )
       ? $self->getGeneId( $self->getArg("resumeAtGene") )
       : undef;
 
-    my @genes       = @{$self->queryGenes()};
+    my @genes       = @{ $self->queryGenes() };
     my $totalNGenes = scalar @genes;
     $self->log("Retrieved N = $totalNGenes genes.");
     my $nGenes = 0;
-    foreach my $gene ( @genes ) {
-        my $gid = $gene->{SOURCE_ID};
+    foreach my $gene (@genes) {
+        my $gid    = $gene->{SOURCE_ID};
         my $symbol = $gene->{GENE_SYMBOL};
         my $span =
             $gene->{CHROMOSOME} . ':'
@@ -218,27 +242,32 @@ sub load() {
         my $dotsGeneId = $gene->{GENE_ID};
         my $chromosome = $gene->{CHROMOSOME};
 
-        foreach my $ds (@ALLOWABLE_DATASOURCES) {
-            my $overlappingTracks =
-              $self->fetchOverlappingFILERTracks( $span, $ds );
+        my @dataSources = ($self->getArg('tracks')) ? qw(custom_track_list) : @ALLOWABLE_DATASOURCES;
 
-            my $nOverlappingTracks = scalar @$overlappingTracks;
+        foreach my $ds (@dataSources) {
+
+            my @overlappingTracks = ($ds ne "custom_track_list") 
+              ? $self->fetchOverlappingFILERTracks( $span, $ds ) 
+              : split /,/, $self->getArg('tracks');
+
+            @overlappingTracks = $self->removeBadTracks(\@overlappingTracks);
+
+            my $nOverlappingTracks = scalar @overlappingTracks;
             $self->log("INFO: Found N = $nOverlappingTracks overlapping tracks for $gid in $ds");
 
             # slice to avoid long urls (eg., ENCODE -- too many tracks)
             # split into groups of 25 tracks
-            my $trackIter = natatime $self->getArg('requestSize'), @$overlappingTracks;
+            my $trackIter = natatime $self->getArg('requestSize'), @overlappingTracks;
             my $trackCount = 0;
             my $resultSize = 0;
             while ( my @trackSubset = $trackIter->() ) {
                 $trackCount += scalar @trackSubset;
-                my $result     = $self->fetchFILERHits( $span, \@trackSubset );
-                $self->log("got result");
+                my $result = $self->fetchFILERHits( $span, \@trackSubset );
                 foreach my $track (@$result) {
                     my $trackId  = $track->{Identifier};
                     my @features = @{ $track->{features} };
                     $resultSize += scalar @features;
-                 
+
                     foreach my $hit (@features) {
                         my $geneFeatureOverlap =
                           GUS::Model::Results::GeneFeatureOverlap->new(
@@ -252,15 +281,24 @@ sub load() {
                                 hit_stats      => Utils::to_json($hit)
                             }
                           );
-                        $geneFeatureOverlap->submit();
-                        #  unless $geneFeatureOverlap->retrieveFromDB();
+
+                        if ( $self->getArg('checkDuplicates') ) {
+                            $geneFeatureOverlap->submit()
+                              unless $geneFeatureOverlap->retrieveFromDB();
+                        }
+                        else {
+                            $geneFeatureOverlap->submit();
+                        }
                     }
                 }
-                $self->log("INFO: Found N = $resultSize hits for $gid in $ds (Processed $trackCount / $nOverlappingTracks)");
+                $self->log("INFO: Found N = $resultSize hits for $gid in $ds (Processed $trackCount / $nOverlappingTracks)") 
+                  if $self->getArg('verbose');
             }
+            $self->log("INFO: Found N = $resultSize hits for $gid in $ds (Processed $trackCount / $nOverlappingTracks)");
         }
 
         $self->undefPointerCache();
+
         if ( ++$nGenes % 1000 == 0 ) {
             $self->log("Processed $nGenes / $totalNGenes");
         }
@@ -272,15 +310,34 @@ sub load() {
 # supporting methods
 # ----------------------------------------------------------------------
 
+sub removeBadTracks {
+  my ($self, $tracks) = @_;
+  my @badTracks = @{$self->{bad_tracks}};
+  my @revisedTracks = @$tracks;
+  my $nBadTracks = scalar @badTracks;
+  if ($nBadTracks > 0) {
+      foreach my $bt (@badTracks) {
+        @revisedTracks =  grep {$_ ne $bt} @revisedTracks;
+      }
+
+      $self->log("INFO: Removed $nBadTracks bad tracks");
+      return @revisedTracks;
+  }
+  else {
+    return @$tracks;
+  }
+}
+
 sub queryGenes {
     my ($self) = @_;
 
-    my $sql =
-"SELECT source_id, gene_id, gene_symbol, chromosome, location_start, location_end FROM CBIL.GeneAttributes ORDER BY gene_id";
     my @result = ();
-    my $qh = $self->getQueryHandle()->prepare($sql);
+    my $sql = "SELECT source_id, gene_id, gene_symbol, chromosome, location_start, location_end FROM CBIL.GeneAttributes ORDER BY gene_id";
+    my $qh = $self->getQueryHandle()->prepare($sql) || $self->error(DBI::errstr);
     $qh->execute();
-    push(@result, $qh->fetchrow_hashref());
+    while ( my $gene = $qh->fetchrow_hashref() ) {
+        push( @result, $gene );
+    }
     $qh->finish();
     return \@result;
 }
@@ -303,8 +360,18 @@ sub fetchFILERHits {
     my $uri = URI->new($requestUrl);
     $uri->query_form(%params);
     my $response = $ua->get($uri);
-
+ 
     if ( $response->is_success() ) {
+        if ($response->content =~ /ERROR: requested track (.+) not found/) {
+          my $badTrack = $1;
+          $self->log("Bad track $badTrack; removing from list and resubmitting");
+          my @bts = $self->{bad_tracks};
+          push(@bts, $badTrack);
+          $self->{bad_tracks} = \@bts;
+          my @revisedTracks = grep {$_ ne $badTrack} @$tracks;
+          return $self->fetchFILERHits($span, \@revisedTracks);
+        }
+        # $self->log("DEBUG:" . $response->content);
         my $json = JSON::XS->new;
         my $hits = $json->decode( $response->content )
           || $self->error("Error fetching overlapping track JSON: $!");
@@ -347,7 +414,7 @@ sub fetchOverlappingFILERTracks {
           || $self->error("Error fetching overlapping track JSON: $!");
 
         push @trackIds, $_->{Identifier} for @$overlappingTracks;
-        return \@trackIds;
+        return @trackIds;
     }
 
     else {
