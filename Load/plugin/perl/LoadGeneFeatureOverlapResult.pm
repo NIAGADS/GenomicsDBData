@@ -10,6 +10,7 @@ use JSON::XS;
 use Scalar::Util qw(looks_like_number);
 use POSIX        qw(strftime);
 
+use Set::Scalar;
 use List::MoreUtils   qw(uniq natatime);
 use String::CamelCase qw(decamelize);
 
@@ -206,6 +207,12 @@ sub run {
     $self->error("--testGene not yet implemented")
       if ( $self->getArg('testGene') );
 
+    if ($self->getArg('tracks')) {
+      my @tracks = split /,/, $self->getArg('tracks');
+      my $nTracks = scalar @tracks;
+      $self->log("INFO: User submitted N = $nTracks custom tracks");
+    }
+
     $self->load();
 
     my @badTracks = @{$self->{bad_tracks}};
@@ -244,17 +251,17 @@ sub load() {
 
         my @dataSources = ($self->getArg('tracks')) ? qw(custom_track_list) : @ALLOWABLE_DATASOURCES;
 
+
         foreach my $ds (@dataSources) {
 
             my @overlappingTracks = ($ds ne "custom_track_list") 
               ? $self->fetchOverlappingFILERTracks( $span, $ds ) 
-              : split /,/, $self->getArg('tracks');
-
-            @overlappingTracks = $self->removeBadTracks(\@overlappingTracks);
+              : $self->findValidTracks($span, $self->getArg('tracks'));
+              # :  split /,/, $self->getArg('tracks');
 
             my $nOverlappingTracks = scalar @overlappingTracks;
             $self->log("INFO: Found N = $nOverlappingTracks overlapping tracks for $gid in $ds");
-
+            
             # slice to avoid long urls (eg., ENCODE -- too many tracks)
             # split into groups of 25 tracks
             my $trackIter = natatime $self->getArg('requestSize'), @overlappingTracks;
@@ -294,7 +301,8 @@ sub load() {
                 $self->log("INFO: Found N = $resultSize hits for $gid in $ds (Processed $trackCount / $nOverlappingTracks)") 
                   if $self->getArg('verbose');
             }
-            $self->log("INFO: Found N = $resultSize hits for $gid in $ds (Processed $trackCount / $nOverlappingTracks)");
+            $self->log("INFO: Found N = $resultSize hits for $gid in $ds (Processed $trackCount / $nOverlappingTracks)")
+              if !$self->getArg('verbose');
         }
 
         $self->undefPointerCache();
@@ -309,6 +317,17 @@ sub load() {
 # ----------------------------------------------------------------------
 # supporting methods
 # ----------------------------------------------------------------------
+
+sub findValidTracks {
+  my ($self, $span, $trackStr) = @_;
+
+  my $userTracks = Set::Scalar->new(split /,/, $trackStr);
+  my $nTracks = scalar @tracks;
+  my $overlappingTracks = Set::Scalar->new($self->fetchOverlappingFILERTracks( $span, undef ));
+
+  my $validTracks = $overlappingTracks->intersection($userTracks);
+  return @$validTracks;
+}
 
 sub removeBadTracks {
   my ($self, $tracks) = @_;
@@ -391,12 +410,13 @@ sub fetchOverlappingFILERTracks {
 
     my $requestUrl =
       $self->getArg('filerUri') . "/get_overlapping_tracks_by_coord.php";
-    my %params = (
+    my %params =  (
         genomeBuild  => $self->getArg('genomeBuild'),
-        filterString => '."Data Source"=="' . $dataSource . '"',
+        filterString => ($dataSource) ? '."Data Source"=="' . $dataSource . '"' : '.',
         region       => $span,
         outputFormat => "json"
     );
+
 
     $self->log(
         "FETCHING list of overlapping tracks from $requestUrl with parameters: "
