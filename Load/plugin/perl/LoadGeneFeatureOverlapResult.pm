@@ -202,8 +202,6 @@ sub run {
     $self->logArgs();
     $self->getAlgInvocation()->setMaximumNumberOfObjects(100000);
 
-    $self->error("--resumeAtGene not yet implented")
-      if ( $self->getArg('resumeAtGene') );
     $self->error("--testGene not yet implemented")
       if ( $self->getArg('testGene') );
 
@@ -230,15 +228,24 @@ sub load() {
     $self->{bad_tracks} = \@badTracks;
     my $resumeAtGene =
       ( $self->getArg("resumeAtGene") )
-      ? $self->getGeneId( $self->getArg("resumeAtGene") )
+      ? $self->fetchGeneId( $self->getArg("resumeAtGene") )
       : undef;
 
     my @genes       = @{ $self->queryGenes() };
     my $totalNGenes = scalar @genes;
     $self->log("Retrieved N = $totalNGenes genes.");
     my $nGenes = 0;
+
     foreach my $gene (@genes) {
         my $gid    = $gene->{SOURCE_ID};
+        if ($resumeAtGene) {
+          if ($gid ne $resumeAtGene ) {
+            $self->log("WARNING: Resume point not met; SKIPPING $gid");
+            next;
+          }
+          $self->log("INFO: Found resumeAtGene = $gid; resuming load");
+          $resumeAtGene = undef;
+        }
         my $symbol = $gene->{GENE_SYMBOL};
         my $span =
             $gene->{CHROMOSOME} . ':'
@@ -259,7 +266,9 @@ sub load() {
               : $self->findValidTracks($span, $self->getArg('tracks'));
               # :  split /,/, $self->getArg('tracks');
 
+
             my $nOverlappingTracks = scalar @overlappingTracks;
+            next if ($nOverlappingTracks == 1 && $overlappingTracks[0] eq "error");
             $self->log("INFO: Found N = $nOverlappingTracks overlapping tracks for $gid in $ds");
             
             # slice to avoid long urls (eg., ENCODE -- too many tracks)
@@ -322,10 +331,13 @@ sub findValidTracks {
   my ($self, $span, $trackStr) = @_;
 
   my $userTracks = Set::Scalar->new(split /,/, $trackStr);
-  my $nTracks = scalar @tracks;
-  my $overlappingTracks = Set::Scalar->new($self->fetchOverlappingFILERTracks( $span, undef ));
 
-  my $validTracks = $overlappingTracks->intersection($userTracks);
+  my @overlappingTracks = $self->fetchOverlappingFILERTracks( $span, undef );
+  return qw(error) if (!@overlappingTracks);
+
+  my $oTracks = Set::Scalar->new(@overlappingTracks);
+
+  my $validTracks = $oTracks->intersection($userTracks);
   return @$validTracks;
 }
 
@@ -359,6 +371,16 @@ sub queryGenes {
     }
     $qh->finish();
     return \@result;
+}
+
+sub fetchGeneId {
+  my ($self, $gid)  = @_;
+  my $sql = "SELECT source_id FROM CBIL.GeneAttributes WHERE source_id = ? OR gene_symbol = ?";
+  my $qh = $self->getQueryHandle()->prepare($sql) || $self->error(DBI::errstr);
+  $qh->execute($gid, $gid);
+  my ($sourceId) = $qh->fetchrow_array();
+  $qh->finish();
+  return $sourceId;
 }
 
 # https://tf.lisanwanglab.org/FILER/get_overlaps.php?trackIDs=NGEN000611,NGEN000615,NGEN000650&region=chr1:50000-1500000
@@ -438,8 +460,9 @@ sub fetchOverlappingFILERTracks {
     }
 
     else {
-        $self->error(
-            "FETCH ERROR: GET $uri failed: " . $response->status_line );
+        $self->log(
+            "ERROR: GET $uri failed: " . $response->status_line . " - SKIPPING $span" );
+            return undef;
     }
 
 }
