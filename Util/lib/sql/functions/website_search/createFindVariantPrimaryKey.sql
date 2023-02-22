@@ -77,7 +77,7 @@ CASE WHEN firstHitOnly THEN -- return a jsonb object
           (SELECT row_to_json(find_variant_by_metaseq_id_variations(variant.id, firstHitOnly))::jsonb)
      WHEN LOWER(variant.id) LIKE '%:rs%' AND LOWER(variant.id) LIKE '%:%' THEN
           jsonb_build_object('variant_primary_key', variant.id)
-	  -- assume since it is in our format (chr:pos:ref:alt_refsnp), it is a valid NIAGADS GenomicsDB variant id
+	  -- assume since it is in our format (chr:pos:ref:alt:refsnp), it is a valid NIAGADS GenomicsDB variant id
      END
 ELSE -- return a jsonb array b/c may have multiple hits
      CASE WHEN LOWER(variant.id) LIKE 'rs%' AND LOWER(variant.id) NOT LIKE '%:%' THEN
@@ -88,7 +88,7 @@ ELSE -- return a jsonb array b/c may have multiple hits
 	(SELECT json_agg(r)::jsonb FROM (SELECT * FROM find_variant_by_metaseq_id_variations(variant.id, firstHitOnly)) AS r)
      WHEN LOWER(variant.id) LIKE '%:rs%' AND LOWER(variant.id) LIKE '%:%' THEN
            jsonb_agg(jsonb_build_object('variant_primary_key', variant.id))
-	   -- assume since it is in our format (chr:pos:ref:alt_refsnp), it is a valid NIAGADS GenomicsDB variant id
+	   -- assume since it is in our format (chr:pos:ref:alt:refsnp), it is a valid NIAGADS GenomicsDB variant id
      END
 END AS mapped_variant
 FROM variant GROUP BY variant.id
@@ -101,3 +101,42 @@ END;
 
 $$ LANGUAGE plpgsql;
 
+
+CREATE EXTENSION IF NOT EXISTS plperl;
+--extracts types of lookup variant ids from a list
+-- refsnps, refsnps with alleles, metaseq_ids, genomicsdb_pk
+
+-- drop type variantIdlist cascade;
+CREATE TYPE variantIdList AS (rs TEXT, rs_a TEXT, metaseq TEXT, pk TEXT);
+
+-- DROP FUNCTION split_variant_identifer_list_by_types(TEXT);
+CREATE OR REPLACE FUNCTION split_variant_identifer_list_by_types(TEXT) 
+RETURNS variantIdList AS $$
+    my ($variantStr, $idType) = @_;
+
+    my @ids = split /,/, $variantStr;
+    my @rs; 
+    my @rs_a; 
+    my @meta;
+    my @pk;
+
+    foreach my $id (@ids) {
+       if ($id =~ m/^rs/i && $id !~ m/:/) {
+              push(@rs, $id);
+       }
+       elsif ($id =~ m/^rs/i && $id =~ m/:/) {
+              push(@rs_a, $id);
+       }
+       elsif ($id =~ m/:/ && $id !~ m/:rs/) {
+              push(@meta, $id);
+       }
+       elsif ($id =~ m/:rs/) {
+              push(@pk, $id);
+       }
+
+    }
+
+    return {rs => join(',',@rs),  rs_a => join(',', @rs_a), metaseq => join(',', @meta), pk => join(',', @pk)}
+
+
+$$ LANGUAGE plperl;
