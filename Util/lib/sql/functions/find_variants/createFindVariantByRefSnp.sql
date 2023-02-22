@@ -2,8 +2,8 @@
 
 --variantId = rsX:ref:alt
 --DROP FUNCTION IF EXISTS find_variant_by_refsnp_and_alleles(variantId TEXT);
-DROP FUNCTION find_variant_by_refsnp_and_alleles(text,boolean) ;
-CREATE OR REPLACE FUNCTION find_variant_by_refsnp_and_alleles(variantId TEXT)
+DROP FUNCTION find_variant_by_refsnp_and_alleles(text, boolean) ;
+CREATE OR REPLACE FUNCTION find_variant_by_refsnp_and_alleles(variantId TEXT, firstHitOnly BOOLEAN DEFAULT FALSE)
        RETURNS TABLE(record_primary_key TEXT, ref_snp_id CHARACTER VARYING, metaseq_id TEXT, alleles TEXT, variant_class TEXT,
        	             is_adsp_variant BOOLEAN, bin_index LTREE, annotation JSONB) AS $$
 BEGIN
@@ -38,7 +38,8 @@ BEGIN
 
 	SELECT * FROM RefSnpMatch r WHERE NOT EXISTS (SELECT * FROM AlleleMatch)
 	UNION 
-	SELECT * FROM AlleleMatch;
+	SELECT * FROM AlleleMatch
+	LIMIT CASE WHEN firstHitOnly THEN 1 END;
 
 END;
 
