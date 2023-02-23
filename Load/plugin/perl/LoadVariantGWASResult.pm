@@ -876,7 +876,7 @@ sub cleanWorkingDir {    # clean working directory
     $self->log("WARNING: Removing logs and dbmapping files");
 
     my @patterns = map { qr/\Q$_/ } ('dbmapped');
-  FILE: foreach my $file ( glob "$workingDir/*" ) {
+    foreach my $file ( glob "$workingDir/*" ) {
         foreach my $pattern (@patterns) {
             if ( $file =~ $pattern ) {
                 $self->log("INFO: Removing $file");
@@ -891,7 +891,7 @@ sub compressFiles {
     my ( $self, $workingDir, $pattern, $message ) = @_;
 
     my @patterns = map { qr/\Q$_/ } ($pattern);
-  FILE: foreach my $file ( glob "$workingDir/*" ) {
+    foreach my $file ( glob "$workingDir/*" ) {
         foreach my $pattern (@patterns) {
             if ( $file =~ $pattern ) {
                 if ( $file !~ m/\.gz/ )
@@ -1425,8 +1425,27 @@ sub updateDBMappedInput {
 
     my ( $chromosome, $position, @alleles ) = split /:/,
       $$mapping[0]->{metaseq_id};
+    my $row = $lookup->{row};
+
     my @matchedVariants;
+    my $alleleMismatch = 0;
+    my $mappedRefSnp;
     foreach my $variant (@$mapping) {
+        if ( $self->getArg('mapThruMarker') ) {
+
+            # make sure alleles match
+            if ( exists $variant->{annotation}->{allele_match} ) {
+                if ( !( $variant->{annotation}->{allele_match} )
+                    || $variant->{annotation}->{allele_match} eq "false" )
+                {
+                    $alleleMismatch = 1;
+                    # in case original one in file was deprecated
+                    $mappedRefSnp = $variant->{ref_snp_id};
+                    last;
+                }
+            }
+        }
+
         my $ids = {
             ref_snp_id    => $variant->{ref_snp_id},
             genomicsdb_id => $variant->{record_primary_key},
@@ -1436,36 +1455,44 @@ sub updateDBMappedInput {
         push( @matchedVariants, $ids );
     }
 
-    my $currentCoordinates = {
-        chromosome       => $chromosome,
-        location         => int($position),
-        bin_index        => $$mapping[0]->{bin_index},
-        matched_variants => \@matchedVariants
-    };
+    if ( !$alleleMismatch ) {
+        my $currentCoordinates = {
+            chromosome       => $chromosome,
+            location         => int($position),
+            bin_index        => $$mapping[0]->{bin_index},
+            matched_variants => \@matchedVariants
+        };
 
-    my $row = $lookup->{row};
-    $row->{$genomeBuild} = Utils::to_json($currentCoordinates);
+        $row->{$genomeBuild} = Utils::to_json($currentCoordinates);
 
-    my $mappedCoordinates = $$mapping[0]->{annotation}->{mapped_coordinates}
-      ;    # should be the same even if multiple rsIds for the metaseq
-    if ($mappedCoordinates) {
-        my $assembly = $mappedCoordinates->{assembly};
-        if ($updateCheck) {
-            $row->{$mappedBuild} = 'NULL'
-              ; # set to NULL / updateCheck assumes not in DB so overwrite any liftOver inferred info in the file
+        my $mappedCoordinates = $$mapping[0]->{annotation}->{mapped_coordinates}
+          ;    # should be the same even if multiple rsIds for the metaseq
+        if ($mappedCoordinates) {
+            my $assembly = $mappedCoordinates->{assembly};
+            if ($updateCheck) {
+                $row->{$mappedBuild} = 'NULL'
+                  ; # set to NULL / updateCheck assumes not in DB so overwrite any liftOver inferred info in the file
+            }
+            if ( $assembly eq $mappedBuild ) {
+                $row->{$mappedBuild} = Utils::to_json($mappedCoordinates);
+            }
         }
-        if ( $assembly eq $mappedBuild ) {
-            $row->{$mappedBuild} = Utils::to_json($mappedCoordinates);
+
+        # handle marker only mappings
+        if ( $row->{chr} =~ /NA/ || $row->{metaseq_id} eq 'NULL' ) {
+            $row->{chr}        = $chromosome;
+            $row->{bp}         = int($position);
+            $row->{metaseq_id} = $$mapping[0]->{metaseq_id};
         }
     }
-
-    # handle marker only mappings
-    if ( $row->{chr} =~ /NA/ || $row->{metaseq_id} eq 'NULL' ) {
+    else { # mismatched allele for existing refsnp
+        # update the metaseq id to chr:pos:ref:allele_from_file (to be added later)
+        # so it can be treated as a novel variant
         $row->{chr}        = $chromosome;
         $row->{bp}         = int($position);
-        $row->{metaseq_id} = $$mapping[0]->{metaseq_id};
+        $row->{metaseq_id} = join( ':', $chromosome, $position, $alleles[0], $row->{test_allele});
+        $row->{marker} = $mappedRefSnp; 
     }
-
     return join( "\t", @$row{@INPUT_FIELDS} );
 }
 
@@ -1485,7 +1512,11 @@ sub submitDBLookupQuery {
             }
         );
 
-        $recordHandler->setFirstValueOnly($self->getArg('mapThruMarker')); # for rsIds map to all possible values
+        $recordHandler->setFirstValueOnly(
+            $self->getArg('mapThruMarker') ? 0 : 1 );
+
+        # for rsIds map to all possible values
+        # so if mapThruMarker is TRUE, firstValueOnly is FALSE (0)
 
 # $recordHandler->setAllowAlleleMismatches($self->getArg('allowAlleleMismatches'));
 
@@ -1662,18 +1693,18 @@ sub DBLookup {    # check against DB
     }    # end iterate over file
 
     # residuals
-    $self->log("DEBUG: lookupCount = $lookupCount");
+    # $self->log("DEBUG: lookupCount = $lookupCount");
     if ($lookups) {
         $self->log("INFO: Processing Residuals");
 
-        # begin debug block
-        my $it = natatime 100, keys %$lookups;
-        my $sliceCount = 0;
-        while (my @vals = $it->()) {
-            $self->log("DEBUG: Slice " . ++$sliceCount . " - variants = '" . join(',', @vals) ."'");
-        }
-        $self->error("DEBUG: DONE");
-        # end debug block
+# begin debug block
+# my $it = natatime 100, keys %$lookups;
+# my $sliceCount = 0;
+# while (my @vals = $it->()) {
+#     $self->log("DEBUG: Slice " . ++$sliceCount . " - variants = '" . join(',', @vals) ."'");
+# }
+# $self->error("DEBUG: DONE");
+# end debug block
 
         $PROCESS_COUNT_SEMAPHORE->down;
         my $thread =
@@ -1685,13 +1716,13 @@ sub DBLookup {    # check against DB
     }
 
     # catch any still running
-    while ( my @running = threads->list(threads::running) ) {  
+    while ( my @running = threads->list(threads::running) ) {
         ( $fail, @errors ) = $self->monitorThreads( $fail, \@errors, @threads );
     }
 
     # residuals after no more are running
     ( $fail, @errors ) = $self->monitorThreads( $fail, \@errors, @threads );
-      
+
     $self->error( "Parallel DB Query failed: " . Dumper( \@errors ) )
       if ($fail);
     $self->log("DONE: Queried $lineCount variants");
@@ -2078,7 +2109,8 @@ sub cleanMappedBedFile {
         "Unable to open source bed file: $sourceBedFileName for reading");
     while ( my $line = <$ofh> ) {
         chomp($line);
-        my @values = ( $targetDir eq 'liftOver' )
+        my @values =
+          ( $targetDir eq 'liftOver' )
           ? split / /, $line
           : split /\t/, $line;
         my $key = $values[3];
@@ -2594,12 +2626,10 @@ sub extractNovelVariants {
     my ( $self, $file, $filePrefix, $finalCheck ) = @_;
 
     $self->log("INFO: Extracting novel variants from DB Mapped file: $file");
-    $finalCheck //=
-      0;    # final check remaps against db, overwriting existing dbmapping file
+    $finalCheck //= 0;    # final check remaps against db, overwriting existing dbmapping file
 
     my $genomeBuild = $self->getArg('genomeBuild');
-    my $useMarker =
-      ( $self->getArg('mapThruMarker') && !$self->getArg('markerIsMetaseqId') );
+    my $useMarker = ( $self->getArg('mapThruMarker') && !$self->getArg('markerIsMetaseqId') );
 
     my $dbmappedFileName =
       $self->DBLookup( $file, $genomeBuild, $useMarker, $finalCheck );
@@ -2609,10 +2639,7 @@ sub extractNovelVariants {
         "Unable to open DB Mapped file $dbmappedFileName for reading");
     my $header = <$fh>;
 
-    my $novelVariantVCF =
-      ($finalCheck)
-      ? "$filePrefix-novel-final-check.vcf"
-      : "$filePrefix-novel.vcf";
+    my $novelVariantVCF = ($finalCheck) ? "$filePrefix-novel-final-check.vcf" : "$filePrefix-novel.vcf";
     if ( -e $novelVariantVCF && !( $self->getArg('overwrite') ) ) {
         $self->log("INFO: Using existing novel variant VCF: $novelVariantVCF");
         return $novelVariantVCF;
@@ -2620,8 +2647,7 @@ sub extractNovelVariants {
 
     $self->log("INFO: Writing novel variants to $novelVariantVCF");
     open( my $vfh, '>', $novelVariantVCF )
-      || $self->error(
-        "Unable to create novel variant VCF file: $novelVariantVCF");
+      || $self->error("Unable to create novel variant VCF file: $novelVariantVCF");
     $vfh->autoflush(1);
 
     print $vfh join( "\t", @VCF_FIELDS ) . "\n";
@@ -2629,6 +2655,7 @@ sub extractNovelVariants {
     my $lineCount           = 0;
     my $novelVariantCount   = 0;
     my $invalidVariantCount = 0;
+    my $foundNovelVariants = {}; # to avoid writing duplicates to file / counts both invalid and novel
     while ( my $line = <$fh> ) {
         chomp $line;
         my @values = split /\t/, $line;
@@ -2640,6 +2667,8 @@ sub extractNovelVariants {
             my ( $chromosome, $position, $ref, $alt ) = split /:/,
               $row{metaseq_id};
             if ( $row{$genomeBuild} eq 'NULL' ) {    # not in DB
+                next if (exists $foundNovelVariants->{$row{metaseq_id}});
+                $foundNovelVariants->{$row{metaseq_id}} = 1;
                 if ( $row{metaseq_id} =~ m/:\?/ )
                 {    # can't annotate "?" b/c variable length allele str
                     $invalidVariantCount++;
@@ -2651,9 +2680,12 @@ sub extractNovelVariants {
                     '.', '.' )
                   . "\n";
                 ++$novelVariantCount;
+               
             }
         }
         else {
+            next if (exists $foundNovelVariants->{$row{marker}});
+            $foundNovelVariants->{$row{marker}} = 1;
             if ( $row{marker} =~ /^rs/ && $row{chr} ne "NULL" ) {
                 ++$novelVariantCount;
             }
