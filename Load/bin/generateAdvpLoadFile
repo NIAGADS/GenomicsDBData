@@ -54,9 +54,10 @@ def generate_load_file():
                     #warning("DEBUG:", "Record =", row["RecordID"])
                     snp = row['Top SNP']
                     
-                    if not snp.startswith('rs') or '+' in snp or 'genotype' in snp:
+                    if not snp.startswith('rs') or '+' in snp or 'genotype' in snp or 'removed' in snp:
                         warning("WARNING:", "Skipping Record", row['RecordID'], "-", "invalid Top SNP", snp)
                         continue
+
 
                     frequency = row['ReportedAF']
                     if frequency in ['NR', 'NA', 'RA1 is minor allele']: 
@@ -67,7 +68,7 @@ def generate_load_file():
                     pvalue = re.sub(pattern, '', row['P-value']) if row['P-value'] != '' else None
                     
                     testAllele = row['RA 1(Reported Allele 1)']
-                    if testAllele in ['NA', 'NR']:
+                    if testAllele in ['NA', 'NR', 'e4']:
                         testAllele = None
                     valuesTuple = row2value_tuple(fields, row)
 
