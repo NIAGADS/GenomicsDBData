@@ -1,0 +1,62 @@
+{
+    "file": {
+        "file": "genetic_map_GRCh38_merged.tab",
+        "fileDir": "$DATA_DIR/LocusZoom/recomb-hg38"
+    },
+    "external_database": {
+        "name": "LocusZoom Genetic Map (Recombination Rates)",
+        "description": "recombination rates provided by LocusZoom",
+        "version": "recomb-hg38",
+        "id_url": "https://github.com/statgen/locuszoom-standalone/issues/1",
+        "download_url": "http://csg.sph.umich.edu/locuszoom/download/recomb-hg38.tar.gz",
+        "accession": "LZ_RECOMB",
+        "type": "Genetic variation"
+    },
+    "preprocess": [
+        {
+            "comment": "not really preprocessing but necessary to do it independently",
+            "plugin": {
+                "name": "GenomicsDBData::Load::Plugin::InsertStudy",
+                "parameters": {
+                    "name": "LocusZoom GRCh38 Genetic Map (Recombination Rates)",
+                    "description": "a build GRCh38 PLINK-format genetic map created by Xiaowen Tian by lifting over the build GRCh37 genetic map created by Adam Auton (http://bochet.gcc.biostat.washington.edu/beagle/genetic_maps/plink.GRCh37.map.zip). The conversion from build 37 to build 38 was performed using liftMap_b37tob38.py (https://genome.sph.umich.edu/wiki/LiftOver#Lift_PLINK_format) which employs the UCSC liftover tool to convert physical coordinates from GRCh37 to GRCh38.",
+                    "sourceId": "LZ_RECOMB_HG38",
+                    "extDbRlsSpec": "@external_database.name|@external_database.version"
+                }
+            }
+        },
+        {
+            "plugin": {
+                "name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
+                "parameters": {
+                    "type": "Genetic variation",
+                    "subtype": "recombination rate",
+                    "description": "a build GRCh38 PLINK-format genetic map created by Xiaowen Tian by lifting over the build GRCh37 genetic map created by Adam Auton (http://bochet.gcc.biostat.washington.edu/beagle/genetic_maps/plink.GRCh37.map.zip). The conversion from build 37 to build 38 was performed using liftMap_b37tob38.py (https://genome.sph.umich.edu/wiki/LiftOver#Lift_PLINK_format) which employs the UCSC liftover tool to convert physical coordinates from GRCh37 to GRCh38.",
+                    "extDbRlsSpec": "@external_database.name|@external_database.version",
+                    "sourceId": "LZ_RECOMB_HG38",
+                    "name": "LocusZoom GRCh38 Genetic Map",
+                    "studyId": "LZ_RECOMB_HG38",
+                    "uri": "https://github.com/statgen/locuszoom-standalone/issues/1"
+                }
+            }
+        }
+    ],
+    "load": [
+        {
+            "plugin": {
+                "name": "GenomicsDBData::Load::Plugin::LoadFeatureScoreFromCSV",
+                "parameters": {
+                    "file": "@file.file",
+                    "fileDir": "@file.fileDir",
+                    "sourceId": "LZ_RECOMB_HG38",
+                    "columnMap": {
+                        "chrom": "chromosome",
+                        "pos": "location_start",
+                        "recomb_rate": "score",
+                        "pos_cm": "position_cm"
+                    }
+                }
+            }
+        }
+    ]
+}
