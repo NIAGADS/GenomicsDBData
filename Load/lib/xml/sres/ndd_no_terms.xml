@@ -1,0 +1,137 @@
+<SRes::OntologyTerm>
+    <source_id>NO_0000073</source_id>
+    <name>VCPA</name>
+    <definition>NP/Indel Variant Calling Pipeline and data management tool used for analysis of whole genome and exome sequencing (WGS/WES) for the Alzheimer’s Disease Sequencing Project; https://www.niagads.org/resources/tools-and-software/vcpa</definition>
+</SRes::OntologyTerm>
+
+
+<SRes::OntologyTerm>
+    <source_id>NO_0000074</source_id>
+    <name>FGC xQTL pipeline</name>
+    <definition>ADSP FunGen xQTL analysis pipeline</definition>
+</SRes::OntologyTerm>
+
+<SRes::OntologyTerm>
+    <source_id>GCA_000001405.15_GRCh38</source_id>
+    <name>GRCh38</name>
+    <definition>GRCh38 reference genome; https://www.ncbi.nlm.nih.gov/grc/human</definition>
+</SRes::OntologyTerm>
+
+<SRes::OntologyTerm>
+    <source_id>GCF_000001405.25</source_id>
+    <name>GRCh37</name>
+    <definition>GRCh37 reference genome; https://www.ncbi.nlm.nih.gov/grc/human</definition>
+</SRes::OntologyTerm>
+
+<SRes::OntologyTerm>
+    <source_id>OBCS:0000189</source_id>
+    <name>log2 transformation</name>
+    <definition>A logarithmic transformation that uses the base-2 logarithm.</definition>
+</SRes::OntologyTerm>
+
+<SRes::OntologyTerm>
+    <source_id>CHMO:0002719</source_id>
+    <name>mass spectrometry</name>
+    <definition>Spectrometry where the sample is converted into gaseous ions which are characterised by their mass-to-charge ratio and relative abundance.</definition>
+</SRes::OntologyTerm>
+
+<SRes::OntologyTerm>
+    <source_id>CHMO:0000113</source_id>
+    <name>atomic force microscopy</name>
+    <definition>Microscopy which uses a sharp spike (known as a 'tip') mounted on the end of a cantilever to scan the surface of the specimen. An image of the surface is obtained by mechanically moving the probe in a raster scan of the specimen, line by line, and recording the force experienced by the tip as a function of position. A feedback loop is used to maintain a fixed relationship between the tip and surface during scanning</definition>
+</SRes::OntologyTerm>
+
+<SRes::OntologyTerm>
+    <source_id>CHMO:0000104</source_id>
+    <name>bright-field microscopy</name>
+    <definition>Microscopy where the specimen is illuminated with light transmitted from a source on the opposite side of the specimen from the objective.</definition>
+</SRes::OntologyTerm>
+
+<SRes::OntologyTerm>
+    <source_id>BFO:0000020</source_id>
+    <name>material property</name>
+    <definition>An experimental factor which is a property or characteristic of some other entity.</definition>
+</SRes::OntologyTerm>
+
+<SRes::OntologyTerm>
+    <source_id>BFO:0000019</source_id>
+    <name>quality</name>
+    <definition>quality of a material</definition>
+</SRes::OntologyTerm>
+
+<SRes::OntologyTerm>
+    <source_id>ERO:0000657</source_id>
+    <name>metagenomics analysis</name>
+    <definition>A molecular assay that is used to analyze metagenomic data; genetic material recovered directly from environmental samples for genomic research.</definition>
+</SRes::OntologyTerm>
+
+<SRes::OntologyTerm>
+    <source_id>ERO:0001686</source_id>
+    <name>compound library screening</name>
+    <definition>High throughput sample analysis of collections of compounds that provide a variety of chemically diverse structures that can be used to identify structure types that have affinity with pharmacological targets.</definition>
+</SRes::OntologyTerm>
+
+<SRes::OntologyTerm>
+    <source_id>ERO:0000696</source_id>
+    <name>high throughput sample analysis</name>
+    <definition>An assay that allows for high throughput analysis of samples.</definition>
+</SRes::OntologyTerm>
+
+<SRes::OntologyTerm>
+    <source_id>ERO:0001688</source_id>
+    <name>RNAi screening</name>
+    <definition>High throughput sample analysis of RNAi molecules for potential application in gene knockdown or gene silencing of target genes.</definition>
+</SRes::OntologyTerm>
+
+<SRes::OntologyTerm>
+    <source_id>ERO:0001726</source_id>
+    <name>small molecule screening</name>
+    <definition>High throughput sample analysis of small molecules for purpose such as drug discovery, or biochemical, genetic or pharmacological tests.</definition>
+</SRes::OntologyTerm>
+
+<SRes::OntologyTerm>
+    <source_id>ERO:0002178</source_id>
+    <name>functional magnetic resonance imaging</name>
+    <definition>A magnetic resonance imaging technique that measures brain activity by detecting associated changes in blood flow. The procedure is similar to MRI but uses the change in magnetization between oxygen-rich and oxygen-poor blood as its basic measure.</definition>
+</SRes::OntologyTerm>
+
+
+<SRes::OntologyTerm>
+    <source_id>ERO:0001312</source_id>
+    <name>imaging technique</name>
+    <definition>A technique used to create a representation or reproduction of an object's outward form; especially a visual representation (i.e., the formation of an image).</definition>
+</SRes::OntologyTerm>
+
+<SRes::OntologyTerm>
+    <source_id>ERO:0001830</source_id>
+    <name>positron emission tomography</name>
+    <definition>An imaging technique that produces a three-dimensional image or picture of functional processes in the body. The system detects pairs of gamma rays emitted indirectly by a positron-emitting radionuclide (tracer), which is introduced into the body on a biologically active molecule. Three-dimensional images of tracer concentration within the body are then constructed by computer analysis.</definition>
+</SRes::OntologyTerm>
+
+<SRes::OntologyTerm>
+    <source_id>NO_0000075</source_id>
+    <name> biosample/biosource attribute</name>
+    <definition>a characteristic or property of the biosample or biosource</definition>
+</SRes::OntologyTerm>
+
+<SRes::OntologyTerm>
+    <source_id>NO_0000076</source_id>
+    <name>sample attribute</name>
+    <definition>a characteristic or property of a processed sample</definition>
+</SRes::OntologyTerm>
+
+<SRes::OntologyTerm>
+    <source_id>NCBITaxon_9606</source_id>
+    <name>human</name>
+</SRes::OntologyTerm>
+
+<SRes::OntologyTerm>
+    <source_id>NCBITaxon_10090</source_id>
+    <name>mouse</name>
+</SRes::OntologyTerm>
+
+
+<SRes::OntologyTerm>
+    <source_id>NCBITaxon_7215</source_id>
+    <name>drosophila</name>
+</SRes::OntologyTerm>

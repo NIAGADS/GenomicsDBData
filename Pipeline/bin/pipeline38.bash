@@ -150,6 +150,14 @@ loadResource --config $CONFIG_DIR/ontologies/hancestro.json --load data --commit
 loadResource --config $CONFIG_DIR/ontologies/brenda.json --load xdbr --commit --verbose > $DATA_DIR/logs/xdbr/load_brenda_xdbr.log 2>&1
 loadResource --config $CONFIG_DIR/ontologies/brenda.json --load data --commit --verbose > $DATA_DIR/logs/ontologies/load_brenda.log 2>&1
 
+# NCIT OBO Version
+loadResource --config $CONFIG_DIR/ontologies/ncit.json --load xdbr --commit --verbose > $DATA_DIR/logs/xdbr/load_ncit_xdbr.log 2>&1
+loadResource --config $CONFIG_DIR/ontologies/ncit.json --load data --commit --verbose > $DATA_DIR/logs/ontologies/load_ncit.log 2>&1
+
+# NCBI Taxon as an Ontology
+loadResource --config $CONFIG_DIR/ontologies/taxon.json --load xdbr --commit --verbose > $DATA_DIR/logs/xdbr/load_taxon_xdbr.log 2>&1
+loadResource --config $CONFIG_DIR/ontologies/taxon.json --load data --commit --verbose > $DATA_DIR/logs/ontologies/load_taxon.log 2>&1
+
 
 # =================================================
 # REFERENCE BUILD - dbSNP Variants

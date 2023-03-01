@@ -424,8 +424,125 @@ id: NO_0000071
 name: FILER_BIOSAMPLE_TYPE
 def: "biosample classification used in FILER resource"
 
+[Term]
+id: NO_0000072
+name: imputation reference panel
+def: "a reference panel of densely genotyped haplotypes to predict the missing genotypes in a less densely genotyped study sample"
 
-	
+[Term]
+id: NO_0000073
+name: VCPA
+def: "NP/Indel Variant Calling Pipeline and data management tool used for analysis of whole genome and exome sequencing (WGS/WES) for the Alzheimer’s Disease Sequencing Project; https://www.niagads.org/resources/tools-and-software/vcpa"
+
+[Term]
+id: NO_0000074
+name: FGC xQTL pipeline
+def: "ADSP FunGen xQTL analysis pipeline"
+
+[Term]
+id: GCA_000001405.15_GRCh38
+name: GRCh38
+def: "GRCh38 reference genome; https://www.ncbi.nlm.nih.gov/grc/human"
+
+[Term]
+id: GCF_000001405.25
+name: GRCh37
+def: "GRCh37 reference genome; https://www.ncbi.nlm.nih.gov/grc/human"
+
+[Term]
+id: OBCS:0000189
+name: log2 transformation
+def: "A logarithmic transformation that uses the base-2 logarithm."
+
+[Term]
+id: CHMO:0002719
+name: mass spectrometry
+def: "Spectrometry where the sample is converted into gaseous ions which are characterised by their mass-to-charge ratio and relative abundance."
+
+[Term]
+id: CHMO:0000113
+name: atomic force microscopy
+def: "Microscopy which uses a sharp spike (known as a 'tip') mounted on the end of a cantilever to scan the surface of the specimen. An image of the surface is obtained by mechanically moving the probe in a raster scan of the specimen, line by line, and recording the force experienced by the tip as a function of position. A feedback loop is used to maintain a fixed relationship between the tip and surface during scanning"
+
+[Term]
+id: CHMO:0000104
+name: bright-field microscopy
+def: "Microscopy where the specimen is illuminated with light transmitted from a source on the opposite side of the specimen from the objective."
+
+[Term]
+id: BFO:0000020
+name: material property
+def: "An experimental factor which is a property or characteristic of some other entity."
+
+[Term]
+id: BFO:0000019
+name: quality
+def: "quality of a material"
+
+[Term]
+id: ERO:0000657
+name: metagenomics analysis
+def: "A molecular assay that is used to analyze metagenomic data; genetic material recovered directly from environmental samples for genomic research."
+
+[Term]
+id: ERO:0001686
+name: compound library screening
+def: "High throughput sample analysis of collections of compounds that provide a variety of chemically diverse structures that can be used to identify structure types that have affinity with pharmacological targets."
+
+[Term]
+id: ERO:0000696
+name: high throughput sample analysis
+def: "An assay that allows for high throughput analysis of samples."
+
+[Term]
+id: ERO:0001688
+name: RNAi screening
+def: "High throughput sample analysis of RNAi molecules for potential application in gene knockdown or gene silencing of target genes."
+
+[Term]
+id: ERO:0001726
+name: small molecule screening
+def: "High throughput sample analysis of small molecules for purpose such as drug discovery, or biochemical, genetic or pharmacological tests."
+
+[Term]
+id: ERO:0002178
+name: functional magnetic resonance imaging
+def: "A magnetic resonance imaging technique that measures brain activity by detecting associated changes in blood flow. The procedure is similar to MRI but uses the change in magnetization between oxygen-rich and oxygen-poor blood as its basic measure."
+
+[Term]
+id: ERO:0001312
+name: imaging technique
+def: "A technique used to create a representation or reproduction of an object's outward form; especially a visual representation (i.e., the formation of an image)."
+
+[Term]
+id: ERO:0001830
+name: positron emission tomography
+def: "An imaging technique that produces a three-dimensional image or picture of functional processes in the body. The system detects pairs of gamma rays emitted indirectly by a positron-emitting radionuclide (tracer), which is introduced into the body on a biologically active molecule. Three-dimensional images of tracer concentration within the body are then constructed by computer analysis."
+
+[Term]
+id: NO_0000075
+name: biosample attribute
+def: "a characteristic or property of the biosample"
+
+[Term]
+id: NO_0000075
+name: biosample/biosource attribute
+def: "a characteristic or property of the biosample or biosource"
+
+[Term]
+id: NO_0000076
+name: sample attribute
+def: "a characteristic or property of a processed sample"
 
 
+[Term]
+id: NCBITaxon_9606
+name: human
 
+[Term]
+id: NCBITaxon_10090
+name: mouse 
+
+[Term]
+id: NCBITaxon_7215
+name: drosophila

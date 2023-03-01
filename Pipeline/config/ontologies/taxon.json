@@ -1,0 +1,28 @@
+{
+    "file": {
+        "path": "$SHARED_DATA_DIR/ontologies/taxon",
+        "file": "ncbitaxon.owl"
+    },
+    "external_database": {
+        "name": "NCBI Taxon",
+        "description": "An ontology representation of the NCBI organismal taxonomy",
+        "version": "2023-02-24",
+        "release_date": "2023-02-24",
+        "download_url": "http://purl.obolibrary.org/obo/ncbitaxon.owl",
+        "id_url": "https://github.com/obophenotype/ncbitaxon",
+        "accession": "NCBITaxon",
+        "type": "Ontology and terminology"
+    },
+    "load": [
+        {
+            "plugin": {
+                "name": "GenomicsDBData::Load::Plugin::InsertOntologyTermsAndRelationships",
+                "parameters": {
+                    "inFile": "@file.path/@file.file",
+                    "extDbRlsSpec": "@external_database.name|@external_database.version",
+                    "relTypeExtDbRlsSpec": "Niagads Ontology|current"
+                }
+            }
+        }
+    ]
+}

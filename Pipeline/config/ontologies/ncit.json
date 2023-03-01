@@ -1,0 +1,28 @@
+{
+    "file": {
+        "path": "$SHARED_DATA_DIR/ontologies/ncit",
+        "file": "ncit.owl"
+    },
+    "external_database": {
+        "name": "NCI Thesaurus OBO Edition",
+        "description": "NCI Thesaurus (NCIt)is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities. The NCIt OBO Edition aims to increase integration of the NCIt with OBO Library ontologies. NCIt OBO Edition releases should be considered experimental.",
+        "version": "2022-08-19",
+        "release_date": "2022-08-19",
+        "download_url": "http://purl.obolibrary.org/obo/ncit/ncit.owl",
+        "id_url": "https://github.com/NCI-Thesaurus/thesaurus-obo-edition",
+        "accession": "NCIT-OBO",
+        "type": "Ontology and terminology"
+    },
+    "load": [
+        {
+            "plugin": {
+                "name": "GenomicsDBData::Load::Plugin::InsertOntologyTermsAndRelationships",
+                "parameters": {
+                    "inFile": "@file.path/@file.file",
+                    "extDbRlsSpec": "@external_database.name|@external_database.version",
+                    "relTypeExtDbRlsSpec": "Niagads Ontology|current"
+                }
+            }
+        }
+    ]
+}

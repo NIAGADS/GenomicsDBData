@@ -9,7 +9,7 @@ use strict;
 use GUS::PluginMgr::Plugin;
 use GUS::PluginMgr::PluginUtilities;
 
-use UNIVERSAL qw(isa);
+# use UNIVERSAL qw(isa);
 
 use FileHandle;
 
@@ -149,6 +149,7 @@ sub run {
   my $classpath = join(':', @jars);
 
   # This will create a file appending ".out" to the inFile 
+  $self->log("DEBUG: parsing ontology file w/java");
   my $systemResult = system("java -classpath $classpath org.gusdb.gus.supported.OntologyVisitor $file");
   unless($systemResult / 256 == 0) {
     $self->error("Could not Parse OWL file $file");
@@ -158,7 +159,7 @@ sub run {
   unless($systemResult / 256 == 0) {
     $self->error("Could not Parse OWL file $file");
   }
-
+  $self->log("DEBUG: done parsing ontology file w/java");
   my $termLines = $self->readFile($file . "_terms.txt");
   my $relationshipLines = $self->readFile($file . "_isA.txt");
 
@@ -244,6 +245,7 @@ sub doTerms {
     my @a = split(/\t/, $line);
     my $sourceId = $a[0];
     my $name = $a[1];
+    $name = "'Null'" if $name eq "Null";
     my $definition = $a[2];
     my $synonyms = $a[3];
     my $uri = $a[4];
