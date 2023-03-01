@@ -9,6 +9,7 @@ CREATE TABLE NIAGADS.DataDictionary  (
        UNITS CHARACTER VARYING(25),
        DISPLAY_VALUE CHARACTER VARYING (200),
        IS_A CHARACTER VARYING (50) NOT NULL,
+       synonyms CHARACTER VARYING(200),
        is_metadata_field BOOLEAN,
        metadata_field_label	CHARACTER VARYING (50),
        metadata_field_value_type	CHARACTER VARYING (50),
