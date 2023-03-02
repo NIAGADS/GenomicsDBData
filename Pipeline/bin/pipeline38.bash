@@ -657,9 +657,12 @@ ga GenomicsDBData::Load::Plugin::LoadFILERTrack --filerUri https://tf.lisanwangl
 
 #### LocusZoom Tracks
 
+# recombination
 loadResource -c $CONFIG_DIR/tracks/lz_recombination.json --load xdbr --commit > $DATA_DIR/logs/xdbr/load_recomb_xdbr.log 2>&1
 loadResource -c $CONFIG_DIR/tracks/lz_recombination.json --preprocess --commit > $DATA_DIR/logs/reference/load_recomb_placeholders.log 2>&1
 loadResource -c $CONFIG_DIR/tracks/lz_recombination.json --load data --commit > $DATA_DIR/logs/reference/load_recomb.log 2>&1
+
+# gnomAD gene constraint (required or gene tracks will fail)
 
 
 

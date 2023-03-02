@@ -60,7 +60,7 @@ INSERT INTO Core.TableInfo
      other_read, other_write, row_user_id, row_group_id, row_project_id,
      row_alg_invocation_id)
 SELECT nextval('core.tableinfo_sq'), 'GeneFeatureOverlap',
-       'Standard', 'GENE_FEATURE_OVERLAP',
+       'Standard', 'GENE_FEATURE_OVERLAP_ID',
        d.database_id, 0, 0, NULL, NULL, 1,now(), 1, 1, 1, 1, 1, 1, 1, 1,
        p.project_id, 0
 FROM 
