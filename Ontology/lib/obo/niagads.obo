@@ -489,10 +489,6 @@ id: ERO:0001686
 name: compound library screening
 def: "High throughput sample analysis of collections of compounds that provide a variety of chemically diverse structures that can be used to identify structure types that have affinity with pharmacological targets."
 
-[Term]
-id: ERO:0000696
-name: high throughput sample analysis
-def: "An assay that allows for high throughput analysis of samples."
 
 [Term]
 id: ERO:0001688
