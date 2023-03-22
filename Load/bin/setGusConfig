@@ -31,3 +31,7 @@ echo "Setting DB - related ENV in setEnv.bash file"
 sed -i "s|@DB_HOST@|$(prop 'DB_HOST')|g" $HOME/setEnv.bash
 sed -i "s|@DB_PORT@|$(prop 'DB_PORT')|g" $HOME/setEnv.bash
 sed -i "s|@DB_NAME@|$(prop 'DB_NAME')|g" $HOME/setEnv.bash
+
+export DB_HOST=$(prop 'DB_HOST')
+export DB_PORT=$(prop 'DB_PORT')
+export DB_NAME=$(prop 'DB_NAME')
