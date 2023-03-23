@@ -4,7 +4,7 @@ CREATE MATERIALIZED VIEW NIAGADS.DataDictionaryTerms AS (
 SELECT d.isa_ontology_term_id AS parent_id,
 CASE WHEN pd.display_value IS NOT NULL THEN pd.display_value ELSE lower(isat.name) END AS parent_term,
 CASE WHEN d.display_value IS NOT NULL THEN d.display_value ELSE ot.name END AS display_value,
-replace(d.synonyms, '|', ' // ') AS synoynms,
+replace(d.synonyms, '|', ' // ') AS synonyms,
 d.annotation AS notes,
 ot.definition, ot.source_id, ot.uri
 FROM NIAGADS.DataDictionary d,
@@ -18,7 +18,7 @@ UNION ALL
 SELECT NULL AS parent_id, 
 NULL AS parent_term,
 CASE WHEN d.display_value IS NOT NULL THEN d.display_value ELSE lower(ot.name) END AS display_value,
-replace(d.synonyms, '|', ' // ') AS synoynms,
+replace(d.synonyms, '|', ' // ') AS synonyms,
 d.annotation AS notes,
 ot.definition, ot.source_id, ot.uri
 FROM NIAGADS.DataDictionary d,
