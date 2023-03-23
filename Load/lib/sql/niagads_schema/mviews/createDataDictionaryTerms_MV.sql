@@ -2,7 +2,7 @@ DROP MATERIALIZED VIEW IF EXISTS NIAGADS.DataDictionaryTerms;
 
 CREATE MATERIALIZED VIEW NIAGADS.DataDictionaryTerms AS (
 SELECT d.isa_ontology_term_id AS parent_id,
-CASE WHEN pd.display_value IS NOT NULL THEN pd.display_value ELSE isat.name END AS parent_term,
+CASE WHEN pd.display_value IS NOT NULL THEN pd.display_value ELSE lower(isat.name) END AS parent_term,
 CASE WHEN d.display_value IS NOT NULL THEN d.display_value ELSE ot.name END AS display_value,
 replace(d.synonyms, '|', ' // ') AS synoynms,
 d.annotation AS notes,
