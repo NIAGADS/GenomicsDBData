@@ -139,8 +139,9 @@ sub run {
 sub load {
     my ($self) = @_;
 
-    my $file = $self->getArg('file');
-
+    my $file            = $self->getArg('file');
+    my $ontologyTermRef = $self->processOntologyTerms($file);
+   
     open( my $fh, $file )
       || $self->error("Unable to open $file for reading");
 
@@ -157,11 +158,10 @@ sub load {
 
         $self->log("DEBUG: $line") if ( $self->getArg('veryVerbose') );
 
-        my $ontologyTermId =
-          $self->validateOntologyTerm( $row{term}, $row{ontology_term_id} );
+        my $ontologyTermId = $ontologyTermRef->{ $row{term} };
 
         my $isaOntologyTermId =
-          $row{is_a} ? $self->getOntologyTermId( $row{is_a} ) : undef;
+          $row{is_a} ? $ontologyTermRef->{ $row{is_a} } : undef;
 
         my $ddObj = GUS::Model::NIAGADS::DataDictionary->new(
             {
@@ -175,13 +175,18 @@ sub load {
             }
             else {
                 $self->log("INFO: Found existing term; updating");
-                $self->updateEntry( $ddObj, \%row, $ontologyTermId, $isaOntologyTermId );
+                $self->updateEntry( $ddObj, \%row, $ontologyTermId,
+                    $isaOntologyTermId );
             }
         }
         else {                               # otherwise insert
             $ddObj->setIsaOntologyTermId($isaOntologyTermId)
               if ($isaOntologyTermId);
-            $ddObj->setAnnotation( GenomicsDBData::Load::Utils::to_json({units => $row{units}} )) if ( $row{units} );
+            $ddObj->setAnnotation(
+                GenomicsDBData::Load::Utils::to_json(
+                    { units => $row{units} }
+                )
+            ) if ( $row{units} );
             $ddObj->setDisplayValue( $row{display_value} )
               if ( $row{display_value} );
             $ddObj->setSynonyms( $row{synonyms} ) if ( $row{synonyms} );
@@ -217,10 +222,12 @@ sub updateEntry {
 
     foreach my $rf (@refFields) {
         if ( $row->{$rf} ) {
-          if ($rf eq "units") {
-            $self->error("ERROR: Units update not yet implemented; involves JSONB update");
-          }
-          push( @updates, "$rf = '" . $row->{$rf} . "'" );
+            if ( $rf eq "units" ) {
+                $self->error(
+"ERROR: Units update not yet implemented; involves JSONB update"
+                );
+            }
+            push( @updates, "$rf = '" . $row->{$rf} . "'" );
         }
     }
 
@@ -234,6 +241,36 @@ sub updateEntry {
     my $qh = $self->getQueryHandle()->prepare($sql);
     $qh->execute( $entry->getDdTermId() ) || die $self->error(DBI::errstr);
     $qh->finish();
+}
+
+sub processOntologyTerms {
+    my ( $self, $file ) = @_;
+    $self->log("INFO: Validating OntologyTerms");
+
+    open( my $fh, $file ) || $self->error("Unable to open $file for reading");
+    my $header = <$fh>;
+    chomp($header);
+    my @fields = split '\t', $header;
+    $_ = lc for @fields;    # convert to lowercase
+
+    my %row;
+    my $termCount = 0;
+    my %terms;
+    while ( my $line = <$fh> ) {
+        chomp($line);
+        @row{@fields} = split /\t/, $line;
+
+        $self->log("DEBUG: $line") if ( $self->getArg('veryVerbose') );
+
+        # row{ontology_term_id} is the term source_id
+        my $ontologyTermId =
+          $self->validateOntologyTerm( $row{term}, $row{ontology_term_id} );
+
+        $terms{ $row{term} } = $ontologyTermId;
+    }
+    $fh->close();
+
+    return \%terms;
 }
 
 sub validateOntologyTerm {
