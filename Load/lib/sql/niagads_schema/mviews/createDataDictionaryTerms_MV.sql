@@ -25,3 +25,5 @@ FROM NIAGADS.DataDictionary d,
 SRes.OntologyTerm ot
 WHERE d.ontology_term_id = ot.ontology_term_id
 AND d.isa_ontology_term_id IS NULL);
+
+GRANT SELECT ON NIAGADS.DataDictionaryTerms TO comm_wdk_w;
