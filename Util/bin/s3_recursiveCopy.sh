@@ -2,7 +2,7 @@
 
 # Adapted from 
 # https://serverfault.com/questions/682708/copy-directory-structure-intact-to-aws-s3-bucket
-# usage: s3_recursiveCopy.sh  <directory on local server> <s3 bucket path>
+# e.g., usage: s3_recursiveCopy.sh manhattan s3://<bucket name>/<bucket-path>/manhattan
 path=$1 # the path of the directory where the files and directories that need to be copied are located, must not end in /
 s3Dir=$2 # the s3 bucket path; must not end in /
 
