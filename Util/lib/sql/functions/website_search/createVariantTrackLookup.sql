@@ -8,22 +8,25 @@ BEGIN
 	SELECT find_bin_index(chrm, locStart, locEnd) INTO binIndex;
 	WITH vcfRows AS (
 	SELECT jsonb_build_object(
-	'chrom', chromosome,
-	'pos', position,
-	'id', v.record_primary_key,
-	'ref', split_part(metaseq_id, ':', 3),
-	'alt', split_part(metaseq_id, ':', 4),
-	'qual', '.'::text,
-	'filter', (cadd_scores->>'CADD_phred')::numeric,
-	'info', 'record=' || v.record_primary_key || ';consequence=' || most_severe_consequence(v.adsp_most_severe_consequence) || ';impact=' || (v.adsp_most_severe_consequence->>'impact')::text
-) AS row_json	
-  FROM AnnotatedVDB.Variant v
-  WHERE binIndex @> v.bin_index
-  AND int4range(locStart, locEnd, '[]') @> v.position
-  AND v.chromosome = chrm
-  AND v.ref_snp_id IS NOT NULL)
-    SELECT jsonb_agg(row_json) AS RESULT FROM vcfRows INTO trackInfo;
-   RETURN trackInfo;
+		'chrom', chromosome,
+		'pos', position,
+		'id', v.record_primary_key,
+		'ref', split_part(metaseq_id, ':', 3),
+		'alt', split_part(metaseq_id, ':', 4),
+		'qual', '.'::text,
+		'filter', (cadd_scores->>'CADD_phred')::numeric,
+		'info', 
+				CASE WHEN d.details->'most_severe_consequence'->>'conseq' IS NULL 
+				THEN d.details || jsonb_build_object('most_severe_consequence', NULL) ELSE d.details END 
+				- 'bin_index'
+    ) AS row_json	
+	FROM AnnotatedVDB.Variant v, get_variant_display_details(v.record_primary_key) d
+	WHERE binIndex @> v.bin_index
+	AND int4range(locStart, locEnd, '[]') @> v.position
+	AND v.chromosome = chrm
+	AND v.ref_snp_id IS NOT NULL)
+	SELECT jsonb_agg(row_json) AS RESULT FROM vcfRows INTO trackInfo;
+	RETURN trackInfo;
 
 END;
 $$ LANGUAGE plpgsql;
@@ -37,21 +40,24 @@ BEGIN
 	SELECT find_bin_index(chrm, locStart, locEnd) INTO binIndex;
 	WITH vcfRows AS (
 	SELECT jsonb_build_object(
-	'chrom', chromosome,
-	'pos', position,
-	'id', v.record_primary_key,
-	'ref', split_part(metaseq_id, ':', 3),
-	'alt', split_part(metaseq_id, ':', 4),
-	'qual', '.'::text,
-	'filter', (cadd_scores->>'CADD_phred')::numeric,
-	'info', 'record=' || v.record_primary_key || ';consequence=' || most_severe_consequence(v.adsp_most_severe_consequence) || ';impact=' || (v.adsp_most_severe_consequence->>'impact')::text
+		'chrom', chromosome,
+		'pos', position,
+		'id', v.record_primary_key,
+		'ref', split_part(metaseq_id, ':', 3),
+		'alt', split_part(metaseq_id, ':', 4),
+		'qual', '.'::text,
+		'filter', (cadd_scores->>'CADD_phred')::numeric,
+		'info', 
+				CASE WHEN d.details->'most_severe_consequence'->>'conseq' IS NULL 
+				THEN d.details || jsonb_build_object('most_severe_consequence', NULL) ELSE d.details END 
+				- 'bin_index'
 ) AS row_json	
-  FROM AnnotatedVDB.Variant v
+  FROM AnnotatedVDB.Variant v, get_variant_display_details(v.record_primary_key) d
   WHERE binIndex @> v.bin_index
   AND int4range(locStart, locEnd, '[]') @> v.position
   AND v.chromosome = chrm
   AND v.ref_snp_id IS NOT NULL
-  AND (vep_output->'input'->'info'->'COMMON')::integer::boolean)
+  AND (v.vep_output->'input'->'info'->'COMMON')::integer::boolean)
   SELECT jsonb_agg(row_json) AS RESULT FROM vcfRows INTO trackInfo;
 
 RETURN trackInfo;
@@ -69,16 +75,19 @@ BEGIN
 	SELECT find_bin_index(chrm, locStart, locEnd) INTO binIndex;
 	WITH vcfRows AS (
 	SELECT jsonb_build_object(
-	'chrom', chromosome,
-	'pos', position,
-	'id', v.record_primary_key,
-	'ref', split_part(metaseq_id, ':', 3),
-	'alt', split_part(metaseq_id, ':', 4),
-	'qual', '.'::text,
-	'filter', (cadd_scores->>'CADD_phred')::numeric,
-	'info', 'record=' || v.record_primary_key || ';consequence=' || most_severe_consequence(v.adsp_most_severe_consequence) || ';impact=' || (v.adsp_most_severe_consequence->>'impact')::text
+		'chrom', chromosome,
+		'pos', position,
+		'id', v.record_primary_key,
+		'ref', split_part(metaseq_id, ':', 3),
+		'alt', split_part(metaseq_id, ':', 4),
+		'qual', '.'::text,
+		'filter', (cadd_scores->>'CADD_phred')::numeric,
+		'info', 
+				CASE WHEN d.details->'most_severe_consequence'->>'conseq' IS NULL 
+				THEN d.details || jsonb_build_object('most_severe_consequence', NULL) ELSE d.details END 
+				- 'bin_index'
 ) AS row_json	
-  FROM AnnotatedVDB.Variant v
+  FROM AnnotatedVDB.Variant v, get_variant_display_details(v.record_primary_key) d
   WHERE binIndex @> v.bin_index
   AND int4range(locStart, locEnd, '[]') @> v.position
   AND v.chromosome = chrm
