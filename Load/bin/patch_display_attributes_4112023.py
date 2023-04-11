@@ -73,10 +73,13 @@ def update_annotation(chromosome):
             if args.debug:
                 warning(chrmStr, displayAttributes['location_start'], displayAttributes['location_end'], file=lfh, flush=True, prefix="DEBUG")
                 warning(binIndex, prefix="DEBUG", file=lfh, flush=True)
+            
             print(record['record_primary_key'], print_dict(displayAttributes, pretty=False), binIndex, file=ofh )
+            
+            
             recordCount = recordCount + 1
-            if recordCount % 500000 == 0:
-                warning("Parsed", recordCount, "records", prefix="INFO", file=lfh)
+            if recordCount % 100000 == 0:
+                warning("Parsed", recordCount, "records", prefix="INFO", file=lfh, flush=True)
 
                 
 
