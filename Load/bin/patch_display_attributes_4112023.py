@@ -55,7 +55,7 @@ def update_annotation(chromosome):
         selectCursor.itersize = 500000  # args.commitAfter
         recordCount = 0
 
-        print("record_primary_key", "display_attributes", "bin_index", sep="\t", file=ofh)
+        print("variant", "display_attributes", "bin_index", sep="\t", file=ofh)
 
         warning("Executing query: " + SELECT_SQL.replace('%s', "'" + chrmStr + "'"), prefix="DEBUG", file=lfh, flush=True)
         selectCursor.execute(SELECT_SQL, [chrmStr])
