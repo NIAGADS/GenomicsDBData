@@ -74,7 +74,7 @@ def update_annotation(chromosome):
                 warning(chrmStr, displayAttributes['location_start'], displayAttributes['location_end'], file=lfh, flush=True, prefix="DEBUG")
                 warning(binIndex, prefix="DEBUG", file=lfh, flush=True)
             
-            print(record['record_primary_key'], print_dict(displayAttributes, pretty=False), binIndex, file=ofh )
+            print(record['record_primary_key'], print_dict(displayAttributes, pretty=False), binIndex, sep="\t", file=ofh )
             
             
             recordCount = recordCount + 1
@@ -88,6 +88,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(allow_abbrev=False,  # otherwise it can substitute --chr for --chromosomeMap
                                      description='load AnnotatedDB from JSON output of VEP against dbSNP, specify either a file or one or more chromosomes')
     parser.add_argument('--chr')
+    parser.add_argument('--maxWorkers', default=5, type=int)
     parser.add_argument('--gusConfigFile',
                         help="full path to gus config file, else assumes $GUS_HOME/config/gus.config")
     parser.add_argument('--outputFilePath', required=True,
