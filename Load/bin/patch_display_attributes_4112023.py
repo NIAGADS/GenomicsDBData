@@ -33,12 +33,12 @@ def update_annotation(chromosome):
     # if not resume:
     #    warning(("--resumeAfter flag specified; Finding skip until point", args.resumeAfter), prefix="INFO")
     #    loader.set_resume_after_variant(args.resumeAfter)
-    chrm = chromosome
+    chrmStr = chromosome
     cname = 'select'
     if chromosome is not None:
-        chrm = chromosome if 'chr' in xstr(
+        chrmStr = chromosome if 'chr' in xstr(
             chromosome) else 'chr' + xstr(chromosome)
-        cname += '_' + chrm
+        cname += '_' + chrmStr
 
     logFile = path.join(args.outputFilePath, chromosome + ".log")
     outFile = path.join(args.outputFilePath, chromosome + ".txt")
@@ -57,8 +57,8 @@ def update_annotation(chromosome):
 
         print("record_primary_key", "display_attributes", "bin_index", sep="\t", file=ofh)
 
-        warning("Executing query: " + SELECT_SQL.replace('%s', "'" + chrm + "'"), prefix="DEBUG", file=lfh, flush=True)
-        selectCursor.execute(SELECT_SQL, [chrm])
+        warning("Executing query: " + SELECT_SQL.replace('%s', "'" + chrmStr + "'"), prefix="DEBUG", file=lfh, flush=True)
+        selectCursor.execute(SELECT_SQL, [chrmStr])
         for record in selectCursor:
             if args.debug:
                 warning(record, prefix="DEBUG", file=lfh, flush=True)
@@ -68,10 +68,10 @@ def update_annotation(chromosome):
             displayAttributes = annotator.get_display_attributes()
             if args.debug:
                 warning(print_dict(displayAttributes, pretty=True), prefix="DEBUG", file=lfh, flush=True)
-            binCursor.execute(BIN_INDEX_SQL, [chrm, displayAttributes['location_start'], displayAttributes['location_end']])
-            binIndex = binCursor.fetchone()
+            binCursor.execute(BIN_INDEX_SQL, [chrmStr, displayAttributes['location_start'], displayAttributes['location_end']])
+            binIndex = binCursor.fetchone()[0]
             if args.debug:
-                warning(chrm, displayAttributes['location_start'], displayAttributes['location_end'], file=lfh, flush=True, prefix="DEBUG")
+                warning(chrmStr, displayAttributes['location_start'], displayAttributes['location_end'], file=lfh, flush=True, prefix="DEBUG")
                 warning(binIndex, prefix="DEBUG", file=lfh, flush=True)
             print(record['record_primary_key'], print_dict(displayAttributes, pretty=False), binIndex, file=ofh )
             recordCount = recordCount + 1
