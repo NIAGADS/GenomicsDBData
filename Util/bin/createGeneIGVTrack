@@ -1,0 +1,13 @@
+#!/bin/bash
+
+VERSION=$1
+GENOME_BUILD=$2
+
+wget https://ftp.ensembl.org/pub/release-${VERSION}/gff3/homo_sapiens/Homo_sapiens.${GENOME_BUILD}.${VERSION}.chr.gff3.gz
+
+# gunzip Homo_sapiens.GRCh38.108.gff3.gz
+grep -vE '_gene_segment|biological_region|unconfirmed_transcript|scaffold' Homo_sapiens.${GENOME_BUILD}.${VERSION}.gff3 > hs.${GENOME_BUILD}.${VERSION}.filtered.gff3
+(grep "^#" hs.${GENOME_BUILD}.${VERSION}.filtered.gff3; grep -v "^#" hs.${GENOME_BUILD}.${VERSION}.filtered.gff3 | sort -t"`printf '\t'`" -k1,1 -k4,4n) | bgzip > hs.${GENOME_BUILD}.${VERSION}.gff3.gz;
+tabix -p gff hs.${GENOME_BUILD}.${VERSION}.gff3.gz
+rm hs.${GENOME_BUILD}.${VERSION}.filtered.gff3
+
