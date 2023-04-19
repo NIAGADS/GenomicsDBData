@@ -12,28 +12,39 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--track', help='comma separated list of one or more tracks or an accession if fetching metadaa', required=True)
     parser.add_argument('-l', '--limit', help='limit number of rows to return for test')
+    parser.add_argument('-a', '--accession', help='accession number; if fetching metadata only, set track to `None`', required=True)
     parser.add_argument('-o', '--outputPath', help='outputPath', required=True)
-    parser.add_argument('--metadata',  help='fetch metadata? (only) --track should specify the parent accession', action='store_true')
+    parser.add_argument('--metadataOnly',  help='fetch metadata? (only) --track should equal `None`', action='store_true')
 
     args = parser.parse_args()
 
-    create_dir(args.outputPath)
+    outputPath = os.path.join(args.outputPath, args.accession)
+    create_dir(outputPath)
     
-    if args.metadata:
-        track = GWASTrack(args.track)
-        track.connect(None)
-        if args.limit:
-            track.set_limit(args.limit)
-        track.fetch_metadata()
-        with open(os.path.join(args.outputPath, args.track + "-metadata.json"), 'w') as fh:
-            print(print_dict(track.get_metadata(), pretty=True), file=fh)
+
+    warning("Fetching metadata for", args.accession, flush=True)
+    track = GWASTrack(args.accession)
+    track.connect(None)
+    if args.limit:
+        track.set_limit(args.limit)
+    track.fetch_metadata()
+    with open(os.path.join(outputPath, "accession_metadata.json"), 'w') as fh:
+        print(print_dict(track.get_metadata(), pretty=True), file=fh)
         
-    else:
-        tracks = args.tracks.split(',')
-        for trackName in tracks:
-            track = GWASTrack(trackName)
+    if not args.metadataOnly and args.track != 'None':
+        tracks = args.track.split(',')
+        for trackId in tracks:
+            warning("Fetching summary statistics for:", trackId)
+            track = GWASTrack(trackId)
             track.connect(None)
             if args.limit:
                 track.set_limit(args.limit)
             track.fetch_public_sum_stats()
-            track.get_data().to_csv(os.path.join(args.outputPath, trackName + ".tsv"), sep="\t")
+            fileName = os.path.join(outputPath, trackId + ".tsv")
+            track.get_data().to_csv(fileName, sep="\t", index=False)
+
+            warning("Compressing", fileName)
+            execute_cmd(["bgzip", fileName])
+            
+            warning("Indexing", fileName)
+            execute_cmd(["tabix", "-S", "1", "-s", "1", "-e", "2", "-b", "2", "-f", fileName + ".gz"])

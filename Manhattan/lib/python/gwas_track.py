@@ -23,7 +23,7 @@ dataset AS (
 SELECT da.accession, 
 da.name, da.description, 
 split_part(da.attribution, '|', 1) AS attribution, 
-split_part(da.attribution, '|', 2) AS pubmed_id
+split_part(da.attribution, '|', 2) AS primary_publication
 FROM NIAGADS.DatasetAttributes da),
 TrackDetails AS (
 SELECT ta.dataset_accession AS niagads_accn,
@@ -40,7 +40,7 @@ FROM TrackDetails td, Study.ProtocolAppNode pan, PhenotypeJson p, dataset da
 WHERE pan.protocol_app_node_id = p.protocol_app_node_id
 AND td.track = p.track
 AND da.accession = td.niagads_accn
-AND td.track = %(track)s
+AND da.accession = %(accession)s
 GROUP BY da.*;
 """
 
@@ -52,12 +52,15 @@ split_part(details->>'metaseq_id', ':', 4) AS alt_allele,
 CASE WHEN details->>'ref_snp_id' IS NOT NULL 
 THEN details->>'ref_snp_id' 
 ELSE details->>'metaseq_id' END AS variant_id,
-r.test_allele, 
+r.allele AS test_allele, 
 r.pvalue_display AS pvalue
 FROM Results.VariantGWAS r,  get_variant_display_details(variant_record_primary_key) d,
 NIAGADS.TrackAttributes ta
 WHERE ta.track = %(track)s
 AND ta.protocol_app_node_id = r.protocol_app_node_id
+ORDER BY idx(ARRAY['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8',
+'chr9', 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18', 'chr19',
+'chr20', 'chr21', 'chr22', 'chrX', 'chrY', 'chrM'], details->>'chromosome'), position
 """
 
 
@@ -198,8 +201,8 @@ class GWASTrack(object):
             raise ValueError("Must set track value")
 
         with self._database.cursor() as cursor:
-            cursor.execute(TRACK_METADATA_SQL, {'track': self._track})
-            self._metadata_json = cursor.fetchone()
+            cursor.execute(TRACK_METADATA_SQL, {'accession': self._track})
+            self._metadata_json = cursor.fetchone()[0]
 
 
     def fetch_public_sum_stats(self):
@@ -216,7 +219,7 @@ class GWASTrack(object):
             sql = sql.replace("Results.VariantGWAS r", "Results.VariantGWAS r TABLESAMPLE SYSTEM (0.01)")
                     
         warning("Fetching track data -- pvalues only")
-        self._data = pd.read_sql_query(sql, self._database, params={'track': self._track}, index_col = 'variant_record_primary_key')
+        self._data = pd.read_sql_query(sql, self._database, params={'track': self._track}, index_col = None)
         warning("Done", "Fetched", len(self._data), "rows")
         
 
