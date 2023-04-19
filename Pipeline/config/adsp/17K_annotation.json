@@ -8,8 +8,8 @@
 	"consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt"
     },
     "external_database": {
-	"name": "NIAGADS",
-	"version": "current",
+	"name": "ADSP Variants",
+	"version": "NG00067_V7_17K_R3",
 	"release_date": "10-27-2021",
 	"id_url": "https://dss.niagads.org/datasets/ng00067",
 	"description": "Alzheimer's Disease Sequencing Project (ADSP) 17K R3 Variants",
