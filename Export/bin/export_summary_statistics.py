@@ -28,7 +28,7 @@ if __name__ == "__main__":
     if args.limit:
         track.set_limit(args.limit)
     track.fetch_metadata()
-    with open(os.path.join(outputPath, "accession_metadata.json"), 'w') as fh:
+    with open(os.path.join(outputPath, "metadata.json"), 'w') as fh:
         print(print_dict(track.get_metadata(), pretty=True), file=fh)
         
     if not args.metadataOnly and args.track != 'None':

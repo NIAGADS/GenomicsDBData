@@ -58,10 +58,13 @@ FROM Results.VariantGWAS r,  get_variant_display_details(variant_record_primary_
 NIAGADS.TrackAttributes ta
 WHERE ta.track = %(track)s
 AND ta.protocol_app_node_id = r.protocol_app_node_id
-ORDER BY idx(ARRAY['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8',
-'chr9', 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18', 'chr19',
-'chr20', 'chr21', 'chr22', 'chrX', 'chrY', 'chrM'], details->>'chromosome'), position
 """
+# was loaded sorted, so should be OK
+# ORDER BY idx(ARRAY['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8',
+# 'chr9', 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18', 'chr19',
+# 'chr20', 'chr21', 'chr22', 'chrX', 'chrY', 'chrM'], details->>'chromosome')
+# , position
+# """
 
 
 DATA_SQL="""
