@@ -92,10 +92,10 @@
   </target>  
 
   
-   <target name="GenomicsDBData/AI_ML-Installation" depends="ProjectTree">
+   <target name="GenomicsDBData/Export-Installation" depends="ProjectTree">
     <ant target="defaultComponentInstall">
       <property name="project" value="GenomicsDBData"/>
-      <property name="component" value="AI_ML"/>
+      <property name="component" value="Export"/>
     </ant>
   </target>  
 

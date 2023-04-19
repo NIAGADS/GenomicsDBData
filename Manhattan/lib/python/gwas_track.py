@@ -40,7 +40,7 @@ FROM TrackDetails td, Study.ProtocolAppNode pan, PhenotypeJson p, dataset da
 WHERE pan.protocol_app_node_id = p.protocol_app_node_id
 AND td.track = p.track
 AND da.accession = td.niagads_accn
-AND track = %(track)s
+AND td.track = %(track)s
 GROUP BY da.*;
 """
 
@@ -98,8 +98,6 @@ ORDER BY rank
 
 TITLE_SQL='''SELECT name, attribution FROM Study.ProtocolAppNode where source_id = %(track)s'''
 
-METADATA_SQL="""
-"""
 
 class GWASTrack(object):
     '''
@@ -200,7 +198,7 @@ class GWASTrack(object):
             raise ValueError("Must set track value")
 
         with self._database.cursor() as cursor:
-            cursor.execute(METADATA_SQL, {'track': self._track})
+            cursor.execute(TRACK_METADATA_SQL, {'track': self._track})
             self._metadata_json = cursor.fetchone()
 
 
