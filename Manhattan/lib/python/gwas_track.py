@@ -9,6 +9,63 @@ from GenomicsDBData.Util.postgres_dbi import Database
 from GenomicsDBData.Util.utils import warning
 from psycopg2.errors import ConnectionDoesNotExist
 
+TRACK_METADATA_SQL="""
+WITH phenotypes AS (
+SELECT track, protocol_app_node_id, characteristic_type, jsonb_agg(replace(replace(characteristic, 'late onset ', ''), 'adjusted for ', '')) as characteristic
+FROM NIAGADS.ProtocolAppNodeCharacteristic
+WHERE characteristic_type NOT IN ('covariate_list', 'full_list', 'phenotype_list')
+GROUP BY track, protocol_app_node_id, characteristic_type),
+PhenotypeJson AS (
+SELECT track, protocol_app_node_id, jsonb_object_agg(characteristic_type, characteristic) AS p_json
+FROM Phenotypes
+GROUP BY track, protocol_app_node_id),
+dataset AS (
+SELECT da.accession, 
+da.name, da.description, 
+split_part(da.attribution, '|', 1) AS attribution, 
+split_part(da.attribution, '|', 2) AS primary_publication
+FROM NIAGADS.DatasetAttributes da),
+TrackDetails AS (
+SELECT ta.dataset_accession AS niagads_accn,
+ta.track, 
+ta.name, 
+ta.description
+FROM NIAGADS.TrackAttributes ta)
+SELECT 
+row_to_json(da)::jsonb 
+|| jsonb_build_object('tracks', jsonb_object_agg(td.track, row_to_json(td)::jsonb 
+|| COALESCE(pan.track_summary, '{}'::jsonb) 
+|| p.p_json)) AS track_metadata
+FROM TrackDetails td, Study.ProtocolAppNode pan, PhenotypeJson p, dataset da
+WHERE pan.protocol_app_node_id = p.protocol_app_node_id
+AND td.track = p.track
+AND da.accession = td.niagads_accn
+AND da.accession = %(accession)s
+GROUP BY da.*;
+"""
+
+PUBLIC_SUM_STATS_SQL="""
+SELECT details->>'chromosome' AS chromosome,
+split_part(variant_record_primary_key, ':', 2)::int AS position,
+split_part(details->>'metaseq_id', ':', 3) AS ref_allele,
+split_part(details->>'metaseq_id', ':', 4) AS alt_allele,
+CASE WHEN details->>'ref_snp_id' IS NOT NULL 
+THEN details->>'ref_snp_id' 
+ELSE details->>'metaseq_id' END AS variant_id,
+r.allele AS test_allele, 
+r.pvalue_display AS pvalue
+FROM Results.VariantGWAS r,  get_variant_display_details(variant_record_primary_key) d,
+NIAGADS.TrackAttributes ta
+WHERE ta.track = %(track)s
+AND ta.protocol_app_node_id = r.protocol_app_node_id
+"""
+# was loaded sorted, so should be OK
+# ORDER BY idx(ARRAY['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8',
+# 'chr9', 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18', 'chr19',
+# 'chr20', 'chr21', 'chr22', 'chrX', 'chrY', 'chrM'], details->>'chromosome')
+# , position
+# """
+
 
 DATA_SQL="""
 SELECT variant_record_primary_key, 
@@ -63,6 +120,7 @@ class GWASTrack(object):
         self._name = None
         self._attribution = None
         self._cap = None
+        self._metadata_json = None
 
 
     def connect(self, gusConfigFile=None):
@@ -79,6 +137,10 @@ class GWASTrack(object):
 
     def get_gene_annotation(self):
         return self._gene_annotation
+    
+    
+    def get_metadata(self):
+        return self._metadata_json
     
         
     def get_limit(self):
@@ -132,6 +194,37 @@ class GWASTrack(object):
         with self._database.cursor() as cursor:
             cursor.execute(TITLE_SQL, {'track': self._track})
             self._name, self._attribution = cursor.fetchone()
+
+
+    def fetch_metadata(self):
+        if self._database is None:
+            raise ConnectionDoesNotExist("gwas_track object database connection not initialized")
+
+        if self._track is None:
+            raise ValueError("Must set track value")
+
+        with self._database.cursor() as cursor:
+            cursor.execute(TRACK_METADATA_SQL, {'accession': self._track})
+            self._metadata_json = cursor.fetchone()[0]
+
+
+    def fetch_public_sum_stats(self):
+        ''' fetch pvalues only '''
+        if self._database is None:
+            raise ConnectionDoesNotExist("gwas_track object database connection not initialized")
+
+        if self._track is None:
+            raise ValueError("Must set track value")
+
+        sql = PUBLIC_SUM_STATS_SQL
+        if self._limit is not None:
+            sql = PUBLIC_SUM_STATS_SQL + " LIMIT " + self._limit
+            sql = sql.replace("Results.VariantGWAS r", "Results.VariantGWAS r TABLESAMPLE SYSTEM (0.01)")
+                    
+        warning("Fetching track data -- pvalues only")
+        self._data = pd.read_sql_query(sql, self._database, params={'track': self._track}, index_col = None)
+        warning("Done", "Fetched", len(self._data), "rows")
+        
 
             
     def fetch_track_data(self):

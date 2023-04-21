@@ -91,6 +91,14 @@
     </ant>
   </target>  
 
+  
+   <target name="GenomicsDBData/Export-Installation" depends="ProjectTree">
+    <ant target="defaultComponentInstall">
+      <property name="project" value="GenomicsDBData"/>
+      <property name="component" value="Export"/>
+    </ant>
+  </target>  
+
   <target name="GenomicsDBData/Pipeline-Installation" depends="ProjectTree">
     <ant target="defaultComponentInstall">
       <property name="project" value="GenomicsDBData"/>
