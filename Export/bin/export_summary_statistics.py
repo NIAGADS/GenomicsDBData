@@ -10,7 +10,7 @@ from GenomicsDBData.Util.utils import warning, create_dir, execute_cmd, print_di
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', '--track', help='comma separated list of one or more tracks or an accession if fetching metadaa', required=True)
+    parser.add_argument('-t', '--track', help='comma separated list of one or more tracks or an accession if fetching metadata', required=True)
     parser.add_argument('-l', '--limit', help='limit number of rows to return for test')
     parser.add_argument('-a', '--accession', help='accession number; if fetching metadata only, set track to `None`', required=True)
     parser.add_argument('-o', '--outputPath', help='outputPath', required=True)
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     if args.limit:
         track.set_limit(args.limit)
     track.fetch_metadata()
-    with open(os.path.join(outputPath, "metadata.json"), 'w') as fh:
+    with open(os.path.join(outputPath, args.accession + ".json"), 'w') as fh:
         print(print_dict(track.get_metadata(), pretty=True), file=fh)
         
     if not args.metadataOnly and args.track != 'None':
@@ -43,8 +43,17 @@ if __name__ == "__main__":
             fileName = os.path.join(outputPath, trackId + ".tsv")
             track.get_data().to_csv(fileName, sep="\t", index=False)
 
-            warning("Compressing", fileName)
-            execute_cmd(["bgzip", fileName])
+            warning("Sorting", fileName)      
+            cmd = "(head -n 1 " + fileName + " && tail -n +2 " + fileName  \
+                + " | sort -T " + outputPath + " -V -k1,1 -k2,2) > " + fileName + ".sorted"          
+            execute_cmd([cmd], shell=True)
+
+            warning("Compressing sorted", fileName)
+            execute_cmd(["bgzip", fileName + ".sorted"])
+            execute_cmd(["mv", fileName + ".sorted.gz", fileName + ".gz"])
             
             warning("Indexing", fileName)
             execute_cmd(["tabix", "-S", "1", "-s", "1", "-e", "2", "-b", "2", "-f", fileName + ".gz"])
+
+            warning("Cleaning up (removing temp files)")
+            execute_cmd(["rm", fileName])
