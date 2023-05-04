@@ -69,7 +69,8 @@ BEGIN
 	FROM AnnotatedVDB.Variant v, msc
 	WHERE v.record_primary_key = variantPK
 	AND msc.record_primary_key = variantPK
-	AND v.chromosome = chrm;
+	AND v.chromosome = chrm
+	LIMIT 1; -- temp fix b/c of duplicates
 END;
 
 $$ LANGUAGE plpgsql;
