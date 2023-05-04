@@ -4,7 +4,7 @@
 import argparse
 import os
 
-from GenomicsDBData.Util.utils import warning, create_dir, print_dict, execute_cmd, die
+from GenomicsDBData.Util.utils import warning, create_dir, print_dict, execute_cmd, die, xstr
 from GenomicsDBData.Util.list_utils import qw
 from GenomicsDBData.Util.postgres_dbi import Database
 
@@ -43,20 +43,20 @@ if __name__ == "__main__":
     rCount = 0
     with open(fileName, 'w') as fh, \
         database.named_cursor('annotation-select', cursorFactory="RealDictCursor") as cursor:
-        cursor.itersize = 500000  
-        print("\t".join(FIELDS), file=fh)
+        cursor.itersize = 1000 
+        print("\t".join(FIELDS), file=fh, flush=True)
         
         warning("Fetching annotations for DISTINCT variants in Results.VariantGWAS and writing to", fileName)
         cursor.execute(SQL + " LIMIT " + args.limit if args.limit else SQL)
         for record in cursor:
-            print("\t".join([record[field] for field in FIELDS]), file=fh)
+            print("\t".join([xstr(record[field], nullStr="NA") for field in FIELDS]), file=fh)
             rCount = rCount + 1
-            if (rCount % 50000 == 0):
+            if (rCount % 10000 == 0):
                 warning("Processed", rCount)
 
         warning("Sorting", fileName)      
         cmd = "(head -n 1 " + fileName + " && tail -n +2 " + fileName  \
-            + " | sort -T " + outputPath + " -V -k1,1 -k2,2) > " + fileName + ".sorted"          
+            + " | sort -T " + args.outputPath + " -V -k1,1 -k2,2) > " + fileName + ".sorted"          
         execute_cmd([cmd], shell=True)
 
         warning("Compressing sorted", fileName)
