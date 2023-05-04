@@ -56,6 +56,7 @@ BEGIN
 	'variant_class', display_attributes->>'variant_class',
 	'variant_class_abbrev', display_attributes->>'variant_class_abbrev',
 	'is_adsp_variant', is_adsp_variant,
+	'cadd', cadd_scores,
 	'most_severe_consequence', jsonb_build_object(
 	  			   'conseq', msc.most_severe_consequence,
 				   'impacted_gene', msc.conseq->>'gene_id',
