@@ -10,8 +10,8 @@ variant	gwas	NHGRI_GWAS_CATALOG	v1.0.2_e106_r2022-07-09
 variant	gwas	ADVP	1.0
 variant	identity	DBSNP-merge	155-merge
 variant	linkage	1000G_2504_high_coverage	30x-grch38
-variant	linkage	ADSP	ADSP_17K_R3
-variant	identity	ADSP	ADSP_17K_R3
+variant	linkage	NG00067	V7_17K_R3
+variant	identity	NG00067	V7_17K_R3
 variant	gwas	NIAGADS	current
 variant	allele_frequency	DBSNP	155
 variant	identity	DBSNP	155
