@@ -8,7 +8,7 @@ from GenomicsDBData.Util.utils import warning, create_dir, print_dict, execute_c
 from GenomicsDBData.Util.list_utils import qw
 from GenomicsDBData.Util.postgres_dbi import Database
 
-ANNOTATION_MATCHING_SQL = """WITH Variants AS (
+SQL = """WITH Variants AS (
 SELECT DISTINCT variant_record_primary_key AS pk
 FROM Results.VariantGWAS)
 SELECT v.pk,
@@ -24,9 +24,6 @@ d.details->'most_severe_consequence'->>'impact' AS "Impact",
 CASE WHEN (d.details->>'is_adsp_variant')::boolean THEN 'ADSP_17K_R3' ELSE NULL END AS "ADSP_Release"
 FROM Variants v, get_variant_display_details(v.pk) d
 WHERE d.details->'most_severe_consequence'->>'conseq' IS NOT NULL OR d.details->'cadd'->>'CADD_phred' IS NOT NULL
-"""
-
-AGGREGATE_SQL = """
 """
 
 
