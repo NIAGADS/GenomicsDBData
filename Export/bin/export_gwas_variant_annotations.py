@@ -8,7 +8,7 @@ from GenomicsDBData.Util.utils import warning, create_dir, print_dict, execute_c
 from GenomicsDBData.Util.list_utils import qw
 from GenomicsDBData.Util.postgres_dbi import Database
 
-SQL = """WITH Variants AS (
+ANNOTATION_MATCHING_SQL = """WITH Variants AS (
 SELECT DISTINCT variant_record_primary_key AS pk
 FROM Results.VariantGWAS)
 SELECT v.pk,
@@ -26,45 +26,53 @@ FROM Variants v, get_variant_display_details(v.pk) d
 WHERE d.details->'most_severe_consequence'->>'conseq' IS NOT NULL OR d.details->'cadd'->>'CADD_phred' IS NOT NULL
 """
 
-FIELDS = qw('CHR Variant_ID BP Ref_allele Alt_allele Gene Most_damaging_consequence Impact CADD ADSP_Release')
+AGGREGATE_SQL = """
+"""
+
+
+# FIELDS = qw('CHR BP Variant_ID Ref_allele Alt_allele Gene Most_damaging_consequence Impact CADD ADSP_Release')
+FIELDS = qw('CHR BP Variant_ID Ref_allele Alt_allele Gene Most_damaging_consequence Impact CADD ADSP_Release')
     
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-l', '--limit', help='limit number of rows to return for test')
     parser.add_argument('-o', '--outputPath', help='outputPath', required=True)
+    parser.add_argument('--compressOnly', action='store_true')
  
     args = parser.parse_args()
     
-    database = Database(None)
-    database.connect()
-    
     fileName = os.path.join(args.outputPath, "variant_annotations.txt")
-    rCount = 0
-    with open(fileName, 'w') as fh, \
-        database.named_cursor('annotation-select', cursorFactory="RealDictCursor") as cursor:
-        cursor.itersize = 1000 
-        print("\t".join(FIELDS), file=fh, flush=True)
-        
-        warning("Fetching annotations for DISTINCT variants in Results.VariantGWAS and writing to", fileName)
-        cursor.execute(SQL + " LIMIT " + args.limit if args.limit else SQL)
-        for record in cursor:
-            print("\t".join([xstr(record[field], nullStr="NA") for field in FIELDS]), file=fh)
-            rCount = rCount + 1
-            if (rCount % 10000 == 0):
-                warning("Processed", rCount)
+    if not args.compressOnly:
+        database = Database(None)
+        database.connect()
+        rCount = 0
+        with open(fileName, 'w') as fh, \
+            database.named_cursor('annotation-select', cursorFactory="RealDictCursor") as cursor:
+            cursor.itersize = 1000 
+            print("\t".join(FIELDS), file=fh, flush=True)
+            
+            warning("Fetching annotations for DISTINCT variants in Results.VariantGWAS and writing to", fileName)
+            cursor.execute(SQL + " LIMIT " + args.limit if args.limit else SQL)
+            for record in cursor:
+                print("\t".join([xstr(record[field], nullStr="NA") for field in FIELDS]), file=fh)
+                rCount = rCount + 1
+                if (rCount % 10000 == 0):
+                    warning("Processed", rCount)
+                    
+        database.close()
 
-        warning("Sorting", fileName)      
-        cmd = "(head -n 1 " + fileName + " && tail -n +2 " + fileName  \
-            + " | sort -T " + args.outputPath + " -V -k1,1 -k2,2) > " + fileName + ".sorted"          
-        execute_cmd([cmd], shell=True)
+    warning("Sorting", fileName)      
+    cmd = "(head -n 1 " + fileName + " && tail -n +2 " + fileName  \
+        + " | sort -T " + args.outputPath + " -V -k1,1 -k2,2) > " + fileName + ".sorted"          
+    execute_cmd([cmd], shell=True)
 
-        warning("Compressing sorted", fileName)
-        execute_cmd(["bgzip", fileName + ".sorted"])
-        execute_cmd(["mv", fileName + ".sorted.gz", fileName + ".gz"])
-        
-        warning("Indexing", fileName)
-        execute_cmd(["tabix", "-S", "1", "-s", "1", "-e", "3", "-b", "3", "-f", fileName + ".gz"])
+    warning("Compressing sorted", fileName)
+    execute_cmd(["bgzip", fileName + ".sorted"])
+    execute_cmd(["mv", fileName + ".sorted.gz", fileName + ".gz"])
+    
+    warning("Indexing", fileName)
+    execute_cmd(["tabix", "-S", "1", "-s", "1", "-e", "3", "-b", "3", "-f", fileName + ".gz"])
 
-        warning("Cleaning up (removing temp files)")
-        execute_cmd(["rm", fileName])
+    warning("Cleaning up (removing temp files)")
+    execute_cmd(["rm", fileName])
