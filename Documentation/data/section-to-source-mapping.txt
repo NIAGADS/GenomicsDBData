@@ -6,7 +6,7 @@ span	functional_genomics	FILER_GRCH38	current-GRCh38
 gene	overview	GENCODE_GRCH38_GENE	36/GRCh38.p13-Gene
 gene	identity	GENCODE_GRCH38_GENE	36/GRCh38.p13-Gene
 variant	gwas	NHGRI_GWAS_CATALOG	v1.0.2_e106_r2022-07-09
-variant	gwas	ADVP	1
+variant	gwas	ADVP	1.0
 variant	identity	DBSNP-merge	155-merge
 variant	linkage	1000G_2504_high_coverage	30x-grch38
 variant	linkage	NG00067	V7_17K_R3
