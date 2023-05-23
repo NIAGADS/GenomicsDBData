@@ -2522,6 +2522,8 @@ sub preprocess {
     my $filePrefix = $self->{adj_source_id};
     my $filePath =
       PluginUtils::createDirectory( $self, $self->{working_dir}, "preprocess" );
+    PluginUtils::setDirectoryPermissions($self, $filePath, "g+w");
+
     my ( $novelVariantVcfFile, $novelVariantCount ) =
       $self->extractNovelVariants( $inputFileName, "$filePath/$filePrefix" );
     if ( !$self->getArg('test') ) {

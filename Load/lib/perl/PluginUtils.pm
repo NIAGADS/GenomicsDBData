@@ -69,6 +69,12 @@ sub fetchValueById {
   return $value;
 }
 
+sub setDirectoryPermissions {
+  my ($plugin, $directory, $permissions) = @_;
+  `chmod $permissions -R $directory`;
+  $plugin->log("Updated directory permissions for $directory to $permissions");
+}
+
 sub createDirectory {
   my ($plugin, $path, $dirName) = @_;
 
