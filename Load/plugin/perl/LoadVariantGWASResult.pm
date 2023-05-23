@@ -2674,6 +2674,7 @@ sub extractNovelVariants {
                     $invalidVariantCount++;
                     $self->log(
                         "INFO: Found invalid variant " . $row{metaseq_id} );
+                    next;
                 }
                 print $vfh join( "\t",
                     $chromosome, $position, $row{metaseq_id}, $ref, $alt, '.',
