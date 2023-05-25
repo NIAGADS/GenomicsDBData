@@ -403,7 +403,7 @@ sub runVep {
   $self->{plugin}->log("Info: Running VEP on $inputFile");
   my $webhook = $self->{plugin}->getArg('vepWebhook');
   my (@cmd) = ('curl', '-d',
-	       '"' . "file=-f$inputFile" . '"',
+	       '"' . "file=$inputFile" . '"',
 	       '"' . $webhook . '"'
 	      );
   
