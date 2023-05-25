@@ -66,6 +66,7 @@
 					"genomeBuild": "GRCh38",
 					"marker": "marker",
 					"mapThruMarker": true,
+					"markerIsValidRefSnp": true,
 					"skipUnmappableMarkers": true,
 					"allowAlleleMismatches": true,
 					"resume": true,
