@@ -341,6 +341,17 @@ sub getArgumentsDeclaration {
 
         booleanArg(
             {
+                name           => 'markerIsValidRefSnp',
+                descr          => 'flag indicating if marker is valid refSNP (high confidence) and be concatenated to primary keys for novel variants',
+                constraintFunc => undef,
+                reqd           => 0,
+                isList         => 0
+            }
+        ),
+
+
+        booleanArg(
+            {
                 name           => 'skipUnmappableMarkers',
                 descr          => 'skip unmappable markers',
                 constraintFunc => undef,
@@ -643,7 +654,7 @@ sub new {
     $self->initialize(
         {
             requiredDbVersion => 4.0,
-            cvsRevision       => '$Revision: 23$',
+            cvsRevision       => '$Revision: 24$',
             name              => ref($self),
             revisionNotes     => '',
             argsDeclaration   => $argumentDeclaration,
@@ -1729,7 +1740,7 @@ sub DBLookup {    # check against DB
 
     $lineCount = 0;
     $self->log(
-        "INFO: Creating $outputFileName file with GRCh37 database lookups");
+        "INFO: Creating $outputFileName file with ${genomeBuild} database lookups");
     open( my $ofh, '>', $outputFileName )
       || $self->error(
         "Unable to open cleaned input file $outputFileName for updating");
@@ -2522,6 +2533,8 @@ sub preprocess {
     my $filePrefix = $self->{adj_source_id};
     my $filePath =
       PluginUtils::createDirectory( $self, $self->{working_dir}, "preprocess" );
+    PluginUtils::setDirectoryPermissions($self, $filePath, "g+w");
+
     my ( $novelVariantVcfFile, $novelVariantCount ) =
       $self->extractNovelVariants( $inputFileName, "$filePath/$filePrefix" );
     if ( !$self->getArg('test') ) {
@@ -2663,6 +2676,8 @@ sub extractNovelVariants {
         my %row;
         @row{@INPUT_FIELDS} = @values;
 
+        my $id = ($self->getArg('markerIsValidRefSnp')) ? $row{marker} : $row{metaseq_id};
+
         if ( $row{metaseq_id} ne "NULL" ) {
             my ( $chromosome, $position, $ref, $alt ) = split /:/,
               $row{metaseq_id};
@@ -2674,13 +2689,13 @@ sub extractNovelVariants {
                     $invalidVariantCount++;
                     $self->log(
                         "INFO: Found invalid variant " . $row{metaseq_id} );
+                    next;
                 }
                 print $vfh join( "\t",
-                    $chromosome, $position, $row{metaseq_id}, $ref, $alt, '.',
+                    $chromosome, $position, $id, $ref, $alt, '.',
                     '.', '.' )
                   . "\n";
-                ++$novelVariantCount;
-               
+                ++$novelVariantCount;       
             }
         }
         else {
@@ -2692,6 +2707,7 @@ sub extractNovelVariants {
             else {
                 $invalidVariantCount++;
                 $self->log( "INFO: Found invalid variant " . $row{marker} );
+                next;
             }
             print $vfh join( "\t",
                 $row{chr}, $row{bp}, $row{marker}, "N", "N", '.', '.', '.' )

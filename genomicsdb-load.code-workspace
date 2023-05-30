@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "../AnnotatedVDB"
+		},
+		{
+			"path": "../../data/GRCh38"
 		}
 	]
 }

@@ -9,11 +9,11 @@
     },
     "external_database": {
 	"name": "ADSP Variants",
-	"version": "NG00067_V7_17K_R3",
+	"version": "V7_17K_R3",
 	"release_date": "10-27-2021",
 	"id_url": "https://dss.niagads.org/datasets/ng00067",
-	"description": "Alzheimer's Disease Sequencing Project (ADSP) 17K R3 Variants",
-	"accession": "NG00067_V7_17K_R3",
+	"description": "Alzheimer's Disease Sequencing Project (ADSP) Variants",
+	"accession": "NG00067",
 	"type": "Genetic variation"
     },
     "load": [

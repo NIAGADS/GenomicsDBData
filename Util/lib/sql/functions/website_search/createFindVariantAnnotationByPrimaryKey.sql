@@ -56,6 +56,7 @@ BEGIN
 	'variant_class', display_attributes->>'variant_class',
 	'variant_class_abbrev', display_attributes->>'variant_class_abbrev',
 	'is_adsp_variant', is_adsp_variant,
+	'cadd', cadd_scores,
 	'most_severe_consequence', jsonb_build_object(
 	  			   'conseq', msc.most_severe_consequence,
 				   'impacted_gene', msc.conseq->>'gene_id',
@@ -68,7 +69,8 @@ BEGIN
 	FROM AnnotatedVDB.Variant v, msc
 	WHERE v.record_primary_key = variantPK
 	AND msc.record_primary_key = variantPK
-	AND v.chromosome = chrm;
+	AND v.chromosome = chrm
+	LIMIT 1; -- temp fix b/c of duplicates
 END;
 
 $$ LANGUAGE plpgsql;
