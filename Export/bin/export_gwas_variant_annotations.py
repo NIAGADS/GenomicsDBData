@@ -12,7 +12,7 @@ from GenomicsDBData.Util.postgres_dbi import Database
 FIELDS = qw('chromosome position ref_allele alt_allele variant_id gene_symbol gene_id most_damaging_consequence impact CADD_score ADSP_release GWAS_hits')
 
 TOP_HITS_SQL = """SELECT  variant_record_primary_key,
-json_agg(jsonb_build_object(track, jsonb_build_object('pvalue', pvalue_display, 'test_allele', test_allele))) AS hits
+jsonb_object_agg(track, jsonb_build_object('pvalue', pvalue_display, 'test_allele', test_allele)) AS hits
 FROM NIAGADS.VariantGWASTopHits 
 WHERE track != 'NHGRI_GWAS_CATALOG'
 GROUP BY variant_record_primary_key
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     execute_cmd(["mv", fileName + ".sorted.gz", fileName + ".gz"])
     
     warning("Indexing", fileName)
-    execute_cmd(["tabix", "-S", "1", "-s", "1", "-e", "3", "-b", "3", "-f", fileName + ".gz"])
+    execute_cmd(["tabix", "-S", "1", "-s", "1", "-e", "2", "-b", "2", "-f", fileName + ".gz"])
 
     warning("Cleaning up (removing temp files)")
     execute_cmd(["rm", fileName])
