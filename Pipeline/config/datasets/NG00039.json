@@ -1,135 +1,134 @@
-{    
-    "file": {
-	"path": "$NIAGADS_GWAS_DIR",
-	"accession": "NG00039",
-	"cadd_path": "$DATA_DIR/CADD",
-	"vep_result_dir": "vep_results",
-	"seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
-	"consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
-	"chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
-	"chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz",
-	"GRCh37_gus_config": "$GUS_HOME/config/grch37-gus.config"
-    },
-    "external_database": {
-	"name": "NIAGADS",
-	"version": "current",
-	"download_url": "https://www.niagads.org/datasets/",
-	"id_url": "https://www.niagads.org/",
-	"description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
-	"accession": "NIAGADS",
-	"type": "Genetic variation"
-    },
-    "foreach": [	
-	{
-	    "ADJ": {
-		"file": "adj_age_sex_pca.txt",
-		"sourceId": "@file.accession+_GRCh38",
-		"name": "ADGC LOAD: African Americans (GRCh38)",
-		"description" : "summary statistics from an ADGC (2013) GWAS study of African Americans and their genetic risk for late-onset Alzheimer's disease (LOAD), adjusted for age, sex, and population stratification (Lifted Over from GRCh37 to GRCh38)",
-		"biomaterialCharacteristics": {
-		    "diagnosis": "late onset Alzheimer's disease",
-		    "population": "African American",
-		    "covariate specification": "value:age, sex, and population stratification"
-		},
-		"trackSummary": {
-		    "ncase": 1968,
-		    "ncontrol": 3928, 
-		    "cohorts": "ACT,NIA-ADC,UM/VU,MSSM Brain Bank,WHICAP,AAG,MIRAGE,NIA-LOAD/NCRAD,Mayo,ROS/MAP,MARS/CORE,CHAP,Indianapolis,GenerAAtions,UP,WU",
-		    "sex": "Male and Female",
-		    "consortium": "ADGC"
-		}
-	    }
+{
+	"file": {
+		"path": "$NIAGADS_GWAS_DIR",
+		"accession": "NG00039",
+		"cadd_path": "$DATA_DIR/CADD",
+		"vep_result_dir": "vep_results",
+		"seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
+		"consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
+		"chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
+		"chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz",
+		"GRCh37_gus_config": "$GUS_HOME/config/grch37-gus.config"
 	},
-	{
-	    "APOE_ADJ": {
-		"file": "adj_age_sex_pca_apoe.txt",
-		"sourceId": "@file.accession+_GRCh38_ADJ",
-		"name": "ADGC LOAD: African Americans - APOE Adj (GRCh38)",
-		"description" : "summary statistics from an ADGC (2013) GWAS study of African Americans and their genetic risk for late-onset Alzheimer's disease (LOAD), adjusted for age, sex, population stratification, and APOE genotype (Lifted Over from GRCh37 to GRCh38)",
-		"biomaterialCharacteristics": {
-		    "diagnosis": "late onset Alzheimer's disease",
-		    "population": "African American",
-		    "covariate specification": "value:age, sex, population stratification, and APOE"
-		},
-		"trackSummary": {
-		    "ncase": 1968,
-		    "ncontrol": 3928, 
-		    "cohorts": "ACT,NIA-ADC,UM/VU,MSSM Brain Bank,WHICAP,AAG,MIRAGE,NIA-LOAD/NCRAD,Mayo,ROS/MAP,MARS/CORE,CHAP,Indianapolis,GenerAAtions,UP,WU",
-		    "sex": "Male and Female",
-		    "consortium": "ADGC"
-		}
-	    }
-	}
-    ],
-
-    "preprocess": [
-	{
-	    "plugin": {
-		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
-		"parameters": {
-		    "attribution": "Reitz et al. 2013|PMID:23571587",
-		    "name": "ADGC LOAD: African Americans",
-		    "description": "Summary statistics from an Alzheimer's Disease Genetics Consortium (ADGC) GWAS study of African Americans and their genetic risk for late-onset Alzheimer's disease (LOAD). Lifted Over from GRCh37 to GRCh38.",
-		    "sourceId": "@file.accession",
-		    "extDbRlsSpec": "@external_database.name|@external_database.version"
-		}		
-	   }
+	"external_database": {
+		"name": "NIAGADS",
+		"version": "current",
+		"download_url": "https://www.niagads.org/datasets/",
+		"id_url": "https://www.niagads.org/",
+		"description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
+		"accession": "NIAGADS",
+		"type": "Genetic variation"
 	},
-	{
-	    "foreach" : true,
-	    "plugin": {
-		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
-		"parameters" : {
-		    "attribution": "Reitz et al. 2013",
-		    "type": "Genetic variation",
-		    "subtype": "GWAS summary statistics",
-		    "description": "foreach",
-		    "extDbRlsSpec": "@external_database.name|@external_database.version",
-		    "biomaterialCharacteristics": "foreach",
-		    "trackSummary": "foreach",
-		    "sourceId" : "foreach",
-		    "name": "foreach",
-		    "studyId": "@file.accession"
+	"foreach": [
+		{
+			"ADJ": {
+				"file": "adj_age_sex_pca.txt",
+				"sourceId": "@file.accession+_GRCh38",
+				"name": "ADGC LOAD: African Americans (GRCh38)",
+				"description": "summary statistics from an ADGC (2013) GWAS study of African Americans and their genetic risk for late-onset Alzheimer's disease (LOAD), adjusted for age, sex, and population stratification (Lifted Over from GRCh37 to GRCh38)",
+				"biomaterialCharacteristics": {
+					"diagnosis": "late onset Alzheimer's disease",
+					"population": "African American",
+					"covariate specification": "value:age, sex, and population stratification"
+				},
+				"trackSummary": {
+					"ncase": 1968,
+					"ncontrol": 3928,
+					"cohorts": "ACT,NIA-ADC,UM/VU,MSSM Brain Bank,WHICAP,AAG,MIRAGE,NIA-LOAD/NCRAD,Mayo,ROS/MAP,MARS/CORE,CHAP,Indianapolis,GenerAAtions,UP,WU",
+					"sex": "Male and Female",
+					"consortium": "ADGC"
+				}
+			}
+		},
+		{
+			"APOE_ADJ": {
+				"file": "adj_age_sex_pca_apoe.txt",
+				"sourceId": "@file.accession+_GRCh38_ADJ",
+				"name": "ADGC LOAD: African Americans - APOE Adj (GRCh38)",
+				"description": "summary statistics from an ADGC (2013) GWAS study of African Americans and their genetic risk for late-onset Alzheimer's disease (LOAD), adjusted for age, sex, population stratification, and APOE genotype (Lifted Over from GRCh37 to GRCh38)",
+				"biomaterialCharacteristics": {
+					"diagnosis": "late onset Alzheimer's disease",
+					"population": "African American",
+					"covariate specification": "value:age, sex, population stratification, and APOE"
+				},
+				"trackSummary": {
+					"ncase": 1968,
+					"ncontrol": 3928,
+					"cohorts": "ACT,NIA-ADC,UM/VU,MSSM Brain Bank,WHICAP,AAG,MIRAGE,NIA-LOAD/NCRAD,Mayo,ROS/MAP,MARS/CORE,CHAP,Indianapolis,GenerAAtions,UP,WU",
+					"sex": "Male and Female",
+					"consortium": "ADGC"
+				}
+			}
 		}
-	    }
-	}
-    ],
-    "load": [
-	{
-	    "foreach": true,
-	    "plugin": {
-		"name": "GenomicsDBData::Load::Plugin::LoadVariantGWASResult",
-		"parameters": {
-		    "file": "foreach",
-		    "sourceId": "foreach",
-		    "fileDir" : "@file.path/@file.accession",
-		    "sourceGenomeBuildGusConfig": "@file.GRCh37_gus_config",
-		    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
-		    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
-		    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
-		    "liftOverChainFile": "@file.chain_file",
-		    "remapAssemblies": "GCF_000001405.25|GCF_000001405.26",
-		    "caddDatabaseDir": "@file.cadd_path",
-		    "testAllele": "Allele1",
-		    "refAllele": "Allele2",
-		    "frequency": "Freq1",
-		    "pvalue": "P-value",
-		    "genomeBuild": "GRCh37",
-		    "marker": "MarkerName",
-		    "chromosome": "MarkerName",
-		    "position": "MarkerName",
-		    "genomeWideSignificanceThreshold": "5e-8",
-		    "checkAltIndels":"true",
-		    "restrictedStats": {
-			"direction": "Direction",
-			"frequency_se" : "FreqSE",
-			"min_frequency": "MinFreq",
-			"max_frequency": "MaxFreq",
-			"effect": "Effect",
-			"std_err": "StdErr"
-		    }
+	],
+	"preprocess": [
+		{
+			"plugin": {
+				"name": "GenomicsDBData::Load::Plugin::InsertStudy",
+				"parameters": {
+					"attribution": "Reitz et al. 2013|PMID:23571587",
+					"name": "ADGC LOAD: African Americans",
+					"description": "Summary statistics from an Alzheimer's Disease Genetics Consortium (ADGC) GWAS study of African Americans and their genetic risk for late-onset Alzheimer's disease (LOAD). Lifted Over from GRCh37 to GRCh38.",
+					"sourceId": "@file.accession",
+					"extDbRlsSpec": "@external_database.name|@external_database.version"
+				}
+			}
+		},
+		{
+			"foreach": true,
+			"plugin": {
+				"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
+				"parameters": {
+					"attribution": "Reitz et al. 2013",
+					"type": "Genetic variation",
+					"subtype": "GWAS summary statistics",
+					"description": "foreach",
+					"extDbRlsSpec": "@external_database.name|@external_database.version",
+					"biomaterialCharacteristics": "foreach",
+					"trackSummary": "foreach",
+					"sourceId": "foreach",
+					"name": "foreach",
+					"studyId": "@file.accession"
+				}
+			}
 		}
-	    }
-	}
-    ]
+	],
+	"load": [
+		{
+			"foreach": true,
+			"plugin": {
+				"name": "GenomicsDBData::Load::Plugin::LoadVariantGWASResult",
+				"parameters": {
+					"file": "foreach",
+					"sourceId": "foreach",
+					"fileDir": "@file.path/@file.accession",
+					"sourceGenomeBuildGusConfig": "@file.GRCh37_gus_config",
+					"vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
+					"seqrepoProxyPath": "@file.seqrepo_proxy_path",
+					"adspConsequenceRankingFile": "@file.consequence_ranking_file",
+					"liftOverChainFile": "@file.chain_file",
+					"remapAssemblies": "GCF_000001405.25|GCF_000001405.26",
+					"caddDatabaseDir": "@file.cadd_path",
+					"testAllele": "Allele1",
+					"refAllele": "Allele2",
+					"frequency": "Freq1",
+					"pvalue": "P-value",
+					"genomeBuild": "GRCh37",
+					"marker": "MarkerName",
+					"chromosome": "MarkerName",
+					"position": "MarkerName",
+					"genomeWideSignificanceThreshold": "5e-8",
+					"checkAltIndels": "true",
+					"restrictedStats": {
+						"direction": "Direction",
+						"frequency_se": "FreqSE",
+						"min_frequency": "MinFreq",
+						"max_frequency": "MaxFreq",
+						"effect": "Effect",
+						"std_err": "StdErr"
+					}
+				}
+			}
+		}
+	]
 }

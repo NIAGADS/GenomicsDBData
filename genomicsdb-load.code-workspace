@@ -11,6 +11,9 @@
 		},
 		{
 			"path": "../../data/GRCh38"
+		},
+		{
+			"path": "../../data/GRCh38/logs"
 		}
 	]
 }
