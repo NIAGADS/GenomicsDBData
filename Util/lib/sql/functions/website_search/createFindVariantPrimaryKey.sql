@@ -102,6 +102,49 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+CREATE OR REPLACE FUNCTION get_variant_primary_keys_and_annotations_tbl(variantID TEXT, firstHitOnly BOOLEAN DEFAULT TRUE)
+       RETURNS TABLE(lookup_variant_id TEXT, annotation JSONB) AS $$
+
+BEGIN
+RETURN QUERY
+WITH variant AS (SELECT regexp_split_to_table(variantID, ',') AS id),
+
+MatchedVariants AS (
+SELECT variant.id AS search_term,
+CASE WHEN firstHitOnly THEN -- return a jsonb object
+     CASE WHEN LOWER(variant.id) LIKE 'rs%' AND LOWER(variant.id) NOT LIKE '%:%' THEN 
+     	  (SELECT row_to_json(find_variant_by_refsnp(LOWER(variant.id), firstHitOnly))::jsonb)
+     WHEN LOWER(variant.id) LIKE 'rs%' AND LOWER(variant.id) LIKE '%:%' THEN -- refsnp & alleles
+     	  (SELECT row_to_json(find_variant_by_refsnp_and_alleles(variant.id, firstHitOnly))::jsonb)
+     WHEN LOWER(variant.id) LIKE '%:%' AND LOWER(variant.id) NOT LIKE '%:rs%' THEN
+          (SELECT row_to_json(find_variant_by_metaseq_id_variations(variant.id, firstHitOnly))::jsonb)
+     WHEN LOWER(variant.id) LIKE '%:rs%' AND LOWER(variant.id) LIKE '%:%' THEN
+          jsonb_build_object('variant_primary_key', variant.id)
+	  -- assume since it is in our format (chr:pos:ref:alt:refsnp), it is a valid NIAGADS GenomicsDB variant id
+     END
+ELSE -- return a jsonb array b/c may have multiple hits
+     CASE WHEN LOWER(variant.id) LIKE 'rs%' AND LOWER(variant.id) NOT LIKE '%:%' THEN
+     	  (SELECT json_agg(r)::jsonb FROM (SELECT * FROM find_variant_by_refsnp(LOWER(variant.id), firstHitOnly)) AS r)
+     WHEN LOWER(variant.id) LIKE 'rs%' AND LOWER(variant.id) LIKE '%:%' THEN -- refsnp & alleles
+      	  (SELECT json_agg(r)::jsonb FROM (SELECT * FROM find_variant_by_refsnp_and_alleles(variant.id, firstHitOnly)) AS r)
+     WHEN LOWER(variant.id) LIKE '%:%' AND LOWER(variant.id) NOT LIKE '%:rs%' THEN
+	(SELECT json_agg(r)::jsonb FROM (SELECT * FROM find_variant_by_metaseq_id_variations(variant.id, firstHitOnly)) AS r)
+     WHEN LOWER(variant.id) LIKE '%:rs%' AND LOWER(variant.id) LIKE '%:%' THEN
+           jsonb_agg(jsonb_build_object('variant_primary_key', variant.id))::jsonb
+	   -- assume since it is in our format (chr:pos:ref:alt:refsnp), it is a valid NIAGADS GenomicsDB variant id
+     END
+END AS mapped_variant
+FROM variant GROUP BY variant.id
+)
+
+SELECT mv.search_term, mv.mapped_variant::JSONB - 'bin_index'
+FROM MatchedVariants mv;
+
+END;
+
+$$ LANGUAGE plpgsql;
+
+
 CREATE EXTENSION IF NOT EXISTS plperl;
 --extracts types of lookup variant ids from a list
 -- refsnps, refsnps with alleles, metaseq_ids, genomicsdb_pk
