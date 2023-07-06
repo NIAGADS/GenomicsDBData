@@ -102,8 +102,9 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+DROP FUNCTION get_variant_primary_keys_and_annotations_tbl(text,boolean);
 CREATE OR REPLACE FUNCTION get_variant_primary_keys_and_annotations_tbl(variantID TEXT, firstHitOnly BOOLEAN DEFAULT TRUE)
-       RETURNS TABLE(lookup_variant_id TEXT, annotation JSONB) AS $$
+       RETURNS TABLE(lookup_variant_id TEXT, mapping JSONB) AS $$
 
 BEGIN
 RETURN QUERY
