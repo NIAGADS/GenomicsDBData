@@ -6,7 +6,9 @@ DROP MATERIALIZED VIEW IF EXISTS NIAGADS.VariantGWASTopHits CASCADE;
 -- note: NIAGADS.DatasetTopHits depends on this view
 
 CREATE MATERIALIZED VIEW NIAGADS.VariantGWASTopHits AS (
-SELECT r.protocol_app_node_id,
+SELECT 
+row_number() over (order by r.protocol_app_node_id, r.variant_record_primary_key) AS variant_gwas_top_hits_id, -- required by SQLAlchemy for API
+r.protocol_app_node_id,
 pan.source_id AS track,
 r.variant_record_primary_key,
 v.metaseq_id, v.ref_snp_id,
