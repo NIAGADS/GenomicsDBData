@@ -14,16 +14,18 @@ CREATE MATERIALIZED VIEW NIAGADS.ADVP AS (
     v.adsp_most_severe_consequence, 'ALLELE_FREQUENCIES', v.allele_frequencies) AS annotation,
     r.restricted_stats,
     CASE WHEN r.allele = 'N' THEN '?' ELSE r.allele END AS test_allele,
-    r.restricted_stats->>'Population' AS population,
+    r.restricted_stats->>'Population_map' AS population,
     r.restricted_stats->>'Pubmed PMID' AS pubmed_id,
-    CASE WHEN r.restricted_stats->>'Phenotype' = 'LOAD' THEN 'AD' ELSE  r.restricted_stats->>'Phenotype'  END AS phenotype
+    r.restricted_stats->>'Phenotype-derived' AS phenotype,
+    CASE WHEN r.restricted_stats->>'LocusName' = 'NR' THEN NULL 
+    ELSE replace(replace(replace(replace(r.restricted_stats->>'LocusName', ', ', '//'), ',', '//'), '; ', '//'), ';', '//') END AS reported_locus
     FROM Results.VariantGWAS r, Study.ProtocolAppNode pan,  AnnotatedVDB.Variant v
     WHERE r.protocol_app_node_id = pan.protocol_app_node_id
     AND pan.source_id = 'ADVP'
     AND v.record_primary_key = r.variant_record_primary_key
 );
 
-GRANT SELECT ON NIAGADS.DataDictionaryTerms TO comm_wdk_w, genomicsdb_api;
+GRANT SELECT ON NIAGADS.ADVP TO comm_wdk_w, genomicsdb_api;
 
 -- cluster
 CREATE INDEX ADVP_VIEW_ORDER ON NIAGADS.ADVP(CHROMOSOME, NEG_LOG10_PVALUE DESC);
