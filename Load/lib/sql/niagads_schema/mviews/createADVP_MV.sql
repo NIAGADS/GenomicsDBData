@@ -17,6 +17,8 @@ CREATE MATERIALIZED VIEW NIAGADS.ADVP AS (
     r.restricted_stats->>'Population_map' AS population,
     r.restricted_stats->>'Pubmed PMID' AS pubmed_id,
     r.restricted_stats->>'Phenotype-derived' AS phenotype,
+    v.adsp_most_severe_consequence->>'gene_id' AS impacted_gene_id,
+    v.adsp_most_severe_consequence->>'gene_symbol' AS impacted_gene_symbol,
     CASE WHEN r.restricted_stats->>'LocusName' = 'NR' THEN NULL 
     ELSE replace(replace(replace(replace(r.restricted_stats->>'LocusName', ', ', '//'), ',', '//'), '; ', '//'), ';', '//') END AS reported_locus
     FROM Results.VariantGWAS r, Study.ProtocolAppNode pan,  AnnotatedVDB.Variant v
