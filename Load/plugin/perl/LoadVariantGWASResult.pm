@@ -156,7 +156,7 @@ sub getArgumentsDeclaration {
                 descr =>
 'from|dest assembly accessions: e.g., GCF_000001405.25|GCF_000001405.39 (GRCh37.p13|GRCh38.p13)",',
                 constraintFunc => undef,
-                reqd           => 1,
+                reqd           => 0,
                 isList         => 0,
             }
         ),
@@ -654,7 +654,7 @@ sub new {
     $self->initialize(
         {
             requiredDbVersion => 4.0,
-            cvsRevision       => '$Revision: 24$',
+            cvsRevision       => '$Revision: 25$',
             name              => ref($self),
             revisionNotes     => '',
             argsDeclaration   => $argumentDeclaration,
@@ -1691,7 +1691,10 @@ sub DBLookup {    # check against DB
 
         # $self->error(Dumper($lookups->{$variantId}));
 
-        if ( ++$lookupCount % 10000 == 0 ) {
+        if ( ++$lookupCount % 10 == 0 ) {
+            my $debug_vars = join(',', keys %$lookups);
+            $self->log("DEBUG: " . $lookupCount . " -> " . '"' . $debug_vars . '"');
+        #if ( ++$lookupCount % 10000 == 0 ) {
             $PROCESS_COUNT_SEMAPHORE->down;
             my $thread =
               threads->create( \&submitDBLookupQuery, $self, $genomeBuild,
