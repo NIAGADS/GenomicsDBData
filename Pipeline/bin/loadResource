@@ -126,10 +126,15 @@ def get_cmd_options(cmd, cmdConfig, isPlugin=False, foreach=None):
                         value = foreach[option]
                         if isinstance(value, dict):
                             value = json.dumps(value)
-                        if '@' in value:
-                            value = extract_value_from_config(value)
-                        value = replace_environmental_variables(value)
+                        elif option != 'description':
+                            if '@' in value:
+                                value = extract_value_from_config(value)
+                            value = replace_environmental_variables(value)
 
+                if option == 'description': # so special chars don't get parsed
+                    cmd.extend(['--' + option, value])
+                    continue
+                
                 if value is True: # option is a flag w/no value
                     cmd.append('--' + option)
                     continue
@@ -233,6 +238,9 @@ def extract_value_from_config(value):
         also check for specific case of external database release specifier: @xternal_database.name|@external_database.version'''
 
     if '@' not in value: # catch a recursive end case
+        return value
+    
+    if '.' not in value: # not in form @section.attribute, so assume @ is valid text
         return value
 
     if '|' in value: # assuming single pipe -- database specification
