@@ -669,6 +669,22 @@ tar -zcvf GRCh38.tar.gz --directory $NIAGADS_GWAS_DIR/NG00115 GRCh38
 rm -r $NIAGADS_GWAS_DIR/NG00115/GRCh37
 rm -r $NIAGADS_GWAS_DIR/NG00115/GRCh38
 
+# NG00122
+
+mkdir $DATA_DIR/logs/datasets/NG00122
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00122.json --verbose  --preprocess  --commit > $DATA_DIR/logs/datasets/NG00122/placeholders.log 2>&1 
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00122.json --load data --params '{"preprocess":"true", "genomeBuild":"GRCh38"}' --commit --verbose > $DATA_DIR/logs/datasets/NG00122/preprocess.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00122.json --load data --params '{"load":"true", "genomeBuild":"GRCh38", "commitAfter":"50000"}' --verbose --commit > $DATA_DIR/logs/datasets/NG00122/load_result.log 2>&1
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00122.json  --load data --params '{"genomeBuild":"GRCh38", "standardize":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00122/GRCh38_standardize.log 2>&1
+
+loadResource -c $PROJECT_HOME/GenomicsDBData/Pipeline/config/datasets/NG00122.json  --load data --params '{"genomeBuild":"GRCh38", "archive":"true"}' --verbose > $DATA_DIR/logs/datasets/NG00122/GRCh38_archive.log 2>&1
+gzip $SHARED_DATA_DIR/NIAGADS/GRCh38/NG00122/GRCh38/*.txt
+gzip $DATA_DIR/logs/datasets/NG00122/*.log
+
+tar -zcvf GRCh38.tar.gz --directory $SHARED_DATA_DIR/NIAGADS/GRCh38/NG00122 GRCh38
+rm -r $SHARED_DATA_DIR/NIAGADS/GRCh38/NG00122/GRCh38
+
+
 #### FILER Genome Browser Tracks
 
 ga GenomicsDBData::Load::Plugin::LoadFILERTrack --filerUri https://tf.lisanwanglab.org/FILER/get_metadata.php --genomeBuild hg38 --loadTrackMetadata --fileDir $DATA_DIR/FILER --extDbRlsSpec "FILER|current-GRCh38" --dataSource ENCODE_roadmap --commit > $DATA_DIR/logs/FILER/ENCODE_roadmap.log 2>&1
