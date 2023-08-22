@@ -1,120 +1,115 @@
-{    
+{
     "file": {
-	"path": "$NIAGADS_GWAS_DIR",
-	"accession": "NG00053",
-	"cadd_path": "$DATA_DIR/CADD",
-	"vep_result_dir": "vep_results",
-	"seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
-	"consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
-	"chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
-	"chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz",
-	"GRCh37_gus_config": "$GUS_HOME/config/grch37-gus.config"
+        "path": "$NIAGADS_GWAS_DIR",
+        "accession": "NG00053",
+        "cadd_path": "$DATA_DIR/CADD",
+        "vep_result_dir": "vep_results",
+        "seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
+        "consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
+        "chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
+        "chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz",
+        "GRCh37_gus_config": "$GUS_HOME/config/grch37-gus.config"
     },
     "external_database": {
-	"name": "NIAGADS",
-	"version": "current",
-	"download_url": "https://www.niagads.org/datasets/",
-	"id_url": "https://www.niagads.org/",
-	"description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
-	"accession": "NIAGADS",
-	"type": "Genetic variation"
+        "name": "NIAGADS",
+        "version": "current",
+        "download_url": "https://www.niagads.org/datasets/",
+        "id_url": "https://www.niagads.org/",
+        "description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
+        "accession": "NIAGADS",
+        "type": "Genetic variation"
     },
     "foreach": [
-	
-	{
-	    "ALL": {
-		"file": "IGAP_ADGCSubsetMerged_Lambert_Metal_050217.TBL",
-		"sourceId": "@file.accession+_GRCh38",
-		"name": "IGAP Stage 1: ADGC Subset (GRCh38)",
-		"description": "summary statistics from the IGAP (2013) meta-analysis of ADGC Phase I genome-wide association studies (Lifted Over from GRCh37 to GRCh38)",
-		"biomaterialCharacteristics": {
-		    "diagnosis": "late onset Alzheimer's disease",
-		    "covariate specification": "value:adjusted for age, sex, and population stratification",
-		    "population": "European"
-		},
-		"trackSummary": {
-		    "cohorts": "ACT,ADC1,ADC2,GenADA,UM/VU/MSSM,MIRAGE,NIA-LOAD,OHSU,TGEN2, ADC3,MAYO,ROSMAP,UP,WU",
-		    "sex": "Male and Female",
-		    "consortium": "IGAP,ADGC"
-		}
-	    }
-	}
+        {
+            "ALL": {
+                "file": "IGAP_ADGCSubsetMerged_Lambert_Metal_050217.TBL",
+                "sourceId": "@file.accession+_GRCh38",
+                "name": "IGAP Stage 1: ADGC Subset (GRCh38)",
+                "description": "summary statistics from the IGAP (2013) meta-analysis of ADGC Phase I genome-wide association studies (Lifted Over from GRCh37 to GRCh38)",
+                "biomaterialCharacteristics": {
+                    "diagnosis": "late onset Alzheimer's disease",
+                    "covariate specification": "value:adjusted for age, sex, and population stratification",
+                    "population": "European"
+                },
+                "trackSummary": {
+                    "cohorts": "ACT,ADC1,ADC2,GenADA,UM/VU/MSSM,MIRAGE,NIA-LOAD,OHSU,TGEN2, ADC3,MAYO,ROSMAP,UP,WU",
+                    "sex": "Male and Female",
+                    "consortium": "IGAP,ADGC"
+                }
+            }
+        }
     ],
-
-   
     "preprocess": [
-	{
-	    "plugin": {
-		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
-		"parameters": {
-		    "attribution": "Lambert et al. 2013|PMID:24162737",
-		    "name": "IGAP Stage 1: ADGC Subset",
-		    "description": "Summary statistics from the stage 1 (case-control) International Genomics of Alzheimer's Project (IGAP) 2013 meta-analysis of previously published datasets: Alzheimer's Disease Genetics Consortium (ADGC) Phase I cohorts only.  Lifted Over from GRCh37 to GRCh38.",
-		    "sourceId": "@file.accession",
-		    "extDbRlsSpec": "@external_database.name|@external_database.version"
-		}
-		
-	    }
-	},
-
-	{
-	    "foreach" : true,
-	    "plugin": {
-		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
-		"parameters" : {
-		    "type": "Genetic variation",
-		    "attribution": "Lambert et al. 2013",
-		    "subtype": "GWAS summary statistics",
-		    "description": "foreach",
-		    "extDbRlsSpec": "@external_database.name|@external_database.version",
-		    "biomaterialCharacteristics": "foreach",
-		    "sourceId" : "foreach",
-		    "name": "foreach",
-		    "studyId": "@file.accession",
-		    "trackSummary": "foreach"
-		}
-	    }
-	}
+        {
+            "plugin": {
+                "name": "GenomicsDBData::Load::Plugin::InsertStudy",
+                "parameters": {
+                    "attribution": "Lambert et al. 2013|PMID:24162737",
+                    "name": "IGAP Stage 1: ADGC Subset",
+                    "description": "Summary statistics from the stage 1 (case-control) International Genomics of Alzheimer's Project (IGAP) 2013 meta-analysis of previously published datasets: Alzheimer's Disease Genetics Consortium (ADGC) Phase I cohorts only.  Lifted Over from GRCh37 to GRCh38.",
+                    "sourceId": "@file.accession",
+                    "extDbRlsSpec": "@external_database.name|@external_database.version"
+                }
+            }
+        },
+        {
+            "foreach": true,
+            "plugin": {
+                "name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
+                "parameters": {
+                    "type": "Genetic variation",
+                    "attribution": "Lambert et al. 2013",
+                    "subtype": "GWAS summary statistics",
+                    "description": "foreach",
+                    "extDbRlsSpec": "@external_database.name|@external_database.version",
+                    "biomaterialCharacteristics": "foreach",
+                    "sourceId": "foreach",
+                    "name": "foreach",
+                    "studyId": "@file.accession",
+                    "trackSummary": "foreach"
+                }
+            }
+        }
     ],
     "load": [
-	{
-	    "foreach": true,
-	    "plugin": {
-		"name": "GenomicsDBData::Load::Plugin::LoadVariantGWASResult",
-		"parameters": {
-		    "file": "foreach",
-		    "sourceId": "foreach",
-		    "fileDir" : "@file.path/@file.accession",
-		    "sourceGenomeBuildGusConfig": "@file.GRCh37_gus_config",
-		    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
-		    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
-		    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
-		    "liftOverChainFile": "@file.chain_file",
-		    "remapAssemblies": "GCF_000001405.25|GCF_000001405.26",
-		    "caddDatabaseDir": "@file.cadd_path",
-		    "testAllele": "Allele1",
-		    "refAllele": "Allele2",
-		    "chromosome": "MarkerName",
-		    "position": "MarkerName",
-		    "frequency": "Freq1",
-		    "pvalue": "P-value",
-		    "genomeBuild": "GRCh37.p13",
-		    "genomeWideSignificanceThreshold": "5e-8",
-		    "checkAltIndels":"true",
-		    "restrictedStats": {
-			"min_frequency": "MinFreq",
-			"max_frequency": "MaxFreq",
-			"frequency_se": "FreqSE",
-			"effect": "Effect",
-			"std_err": "StdErr",
-			"direction": "Direction",
-			"het_i_sq": "HetISq",
-			"het_chi_sq": "HetChiSq",
-			"het_df": "HetDf",
-			"het_pvalue": "HetPVal"
-		    }
-		}
-	    }
-	}
+        {
+            "foreach": true,
+            "plugin": {
+                "name": "GenomicsDBData::Load::Plugin::LoadVariantGWASResult",
+                "parameters": {
+                    "file": "foreach",
+                    "sourceId": "foreach",
+                    "fileDir": "@file.path/@file.accession",
+                    "sourceGenomeBuildGusConfig": "@file.GRCh37_gus_config",
+                    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
+                    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
+                    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
+                    "liftOverChainFile": "@file.chain_file",
+                    "remapAssemblies": "GCF_000001405.25|GCF_000001405.26",
+                    "caddDatabaseDir": "@file.cadd_path",
+                    "testAllele": "Allele1",
+                    "refAllele": "Allele2",
+                    "chromosome": "MarkerName",
+                    "position": "MarkerName",
+                    "frequency": "Freq1",
+                    "pvalue": "P-value",
+                    "genomeBuild": "GRCh37.p13",
+                    "genomeWideSignificanceThreshold": "5e-8",
+                    "checkAltIndels": "true",
+                    "restrictedStats": {
+                        "min_frequency": "MinFreq",
+                        "max_frequency": "MaxFreq",
+                        "frequency_se": "FreqSE",
+                        "effect": "Effect",
+                        "std_err": "StdErr",
+                        "direction": "Direction",
+                        "het_i_sq": "HetISq",
+                        "het_chi_sq": "HetChiSq",
+                        "het_df": "HetDf",
+                        "het_pvalue": "HetPVal"
+                    }
+                }
+            }
+        }
     ]
 }

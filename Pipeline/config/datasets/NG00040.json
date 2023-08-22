@@ -1,154 +1,162 @@
-{    
+{
     "file": {
-	"path": "$NIAGADS_GWAS_DIR",
-	"accession": "NG00040",
-	"cadd_path": "$DATA_DIR/CADD",
-	"vep_result_dir": "vep_results",
-	"seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
-	"consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
-	"chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
-	"chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz",
-	"GRCh37_gus_config": "$GUS_HOME/config/grch37-gus.config",
-	"arrayAnnotation": "@file.path/@file.accession+/array_annotation/UNGCexon10K_15035704_A.csv",
-	"comment": "files exist where mapping off array annotation was already completed; using those; so no array annotation mapping step included in this file"
+        "path": "$NIAGADS_GWAS_DIR",
+        "accession": "NG00040",
+        "cadd_path": "$DATA_DIR/CADD",
+        "vep_result_dir": "vep_results",
+        "seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
+        "consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
+        "chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
+        "chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz",
+        "GRCh37_gus_config": "$GUS_HOME/config/grch37-gus.config",
+        "arrayAnnotation": "@file.path/@file.accession+/array_annotation/UNGCexon10K_15035704_A.csv",
+        "comment": "files exist where mapping off array annotation was already completed; using those; so no array annotation mapping step included in this file"
     },
     "external_database": {
-	"name": "NIAGADS",
-	"version": "current",
-	"download_url": "https://www.niagads.org/datasets/",
-	"id_url": "https://www.niagads.org/",
-	"description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
-	"accession": "NIAGADS",
-	"type": "Genetic variation"
+        "name": "NIAGADS",
+        "version": "current",
+        "download_url": "https://www.niagads.org/datasets/",
+        "id_url": "https://www.niagads.org/",
+        "description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
+        "accession": "NIAGADS",
+        "type": "Genetic variation"
     },
-    "foreach": [	
-	{
-	    "AD": {
-		"file": "AD_SuppTableS1_MDS_Summary.txt",
-		"sourceId": "@file.accession+_GRCh38_AD",
-		"phenotype": "AD",
-		"name": "Multi-ethnic exome array: AD (GRCh38)",
-		"description" : "a multi-ethnic exome array study to identify low-frequency coding variants that affect susceptibility to Alzheimer's disease  (Lifted Over from GRCh37 to GRCh38)",
-		"biomaterialCharacteristics": {
-		    "diagnosis": "late onset Alzheimer's disease",
-		    "covariate specification": "value:adjusted for population stratification",
-		    "population": ["European", "African/African American", "Hispanic or Latin American", "Asian"]
-		},
-		"trackSummary": {
-		    "ncase": 182,
-		    "ncontrol": 224
-		}
-	    }
-	},
-
-	{
-	    "PSP": {
-		"file": "PSP_SuppTableS1_MDS_Summary.txt",
-		"sourceId": "@file.accession+_GRCh38_PSP",
-		"phenotype": "PSP",
-		"name": "Multi-ethnic exome array: PSP (GRCh38)",
-		"description" : "a multi-ethnic exome array study to identify low-frequency coding variants that affect susceptibility to Progressive supranuclear palsy (Lifted Over from GRCh37 to GRCh38)",
-		"biomaterialCharacteristics": {
-		    "diagnosis": "Progressive supranuclear palsy",
-		    "covariate specification": "value:adjusted for population stratification",
-		    "population": ["European", "African/African American", "Hispanic or Latin American", "Asian"]
-		},
-		"trackSummary": {
-		    "ncase": 16,
-		    "ncontrol": 224
-		}
-	    }
-	},
-
-	{
-	    "FTD": {
-		"file": "FTD_SuppTableS1_MDS_Summary.txt",
-		"inputFile": "FTD_SuppTableS1_MDS_Summary.txt",
-		"sourceId": "@file.accession+_GRCh38_FTD",
-		"phenotype": "FTD",
-		"name": "Multi-ethnic exome array: FTP (GRCh38)",
-		"description" : "a multi-ethnic exome array study to identify low-frequency coding variants that affect susceptibility to Frontotemporal dementia (Lifted Over from GRCh37 to GRCh38)",
-		"biomaterialCharacteristics": {
-		    "diagnosis": "Frontotemporal dementia",
-		    "covariate specification": "value:adjusted for population stratification",
-		    "population": ["European", "African/African American", "Hispanic or Latin American", "Asian"]
-		},
-		"trackSummary": {
-		    "ncase": 128,
-		    "ncontrol": 224
-		}
-	    }
-	}
+    "foreach": [
+        {
+            "AD": {
+                "file": "AD_SuppTableS1_MDS_Summary.txt",
+                "sourceId": "@file.accession+_GRCh38_AD",
+                "phenotype": "AD",
+                "name": "Multi-ethnic exome array: AD (GRCh38)",
+                "description": "a multi-ethnic exome array study to identify low-frequency coding variants that affect susceptibility to Alzheimer's disease  (Lifted Over from GRCh37 to GRCh38)",
+                "biomaterialCharacteristics": {
+                    "diagnosis": "late onset Alzheimer's disease",
+                    "covariate specification": "value:adjusted for population stratification",
+                    "population": [
+                        "European",
+                        "African/African American",
+                        "Hispanic or Latin American",
+                        "Asian"
+                    ]
+                },
+                "trackSummary": {
+                    "ncase": 182,
+                    "ncontrol": 224
+                }
+            }
+        },
+        {
+            "PSP": {
+                "file": "PSP_SuppTableS1_MDS_Summary.txt",
+                "sourceId": "@file.accession+_GRCh38_PSP",
+                "phenotype": "PSP",
+                "name": "Multi-ethnic exome array: PSP (GRCh38)",
+                "description": "a multi-ethnic exome array study to identify low-frequency coding variants that affect susceptibility to Progressive supranuclear palsy (Lifted Over from GRCh37 to GRCh38)",
+                "biomaterialCharacteristics": {
+                    "diagnosis": "Progressive supranuclear palsy",
+                    "covariate specification": "value:adjusted for population stratification",
+                    "population": [
+                        "European",
+                        "African/African American",
+                        "Hispanic or Latin American",
+                        "Asian"
+                    ]
+                },
+                "trackSummary": {
+                    "ncase": 16,
+                    "ncontrol": 224
+                }
+            }
+        },
+        {
+            "FTD": {
+                "file": "FTD_SuppTableS1_MDS_Summary.txt",
+                "inputFile": "FTD_SuppTableS1_MDS_Summary.txt",
+                "sourceId": "@file.accession+_GRCh38_FTD",
+                "phenotype": "FTD",
+                "name": "Multi-ethnic exome array: FTP (GRCh38)",
+                "description": "a multi-ethnic exome array study to identify low-frequency coding variants that affect susceptibility to Frontotemporal dementia (Lifted Over from GRCh37 to GRCh38)",
+                "biomaterialCharacteristics": {
+                    "diagnosis": "Frontotemporal dementia",
+                    "covariate specification": "value:adjusted for population stratification",
+                    "population": [
+                        "European",
+                        "African/African American",
+                        "Hispanic or Latin American",
+                        "Asian"
+                    ]
+                },
+                "trackSummary": {
+                    "ncase": 128,
+                    "ncontrol": 224
+                }
+            }
+        }
     ],
-   
     "preprocess": [
-	{
-	    "plugin": {
-		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
-		"parameters": {
-		    "name": "Multi-ethnic exome array: AD, FTP, and PSP",
-		    "attribution": "Chen et al. 2015|PMID:25706306",
-		    "description": "Summary statistics from a multi-ethnic exome array study to identify low-frequency coding variants that affect susceptibility to Alzheimer's disease (AD), frontotemporal dementia (FTD), and progressive supranuclear palsy (PSP). Lifted Over from GRCh37 to GRCh38.",
-		    "sourceId": "@file.accession",
-		    "extDbRlsSpec": "@external_database.name|@external_database.version"
-		}		
-	    }
-	},
-	{
-	    "foreach" : true,
-	    "plugin": {
-		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
-		"parameters" : {
-		    "attribution": "Chen et al. 2015",
-		    "type": "Genetic variation",
-		    "subtype": "GWAS summary statistics",
-		    "description": "foreach",
-		    "extDbRlsSpec": "@external_database.name|@external_database.version",
-		    "biomaterialCharacteristics": "foreach",
-		    "sourceId" : "foreach",
-		    "name": "foreach",
-		    "studyId": "@file.accession",
-		    "trackSummary": "foreach"
-		}
-	    }
-	}
+        {
+            "plugin": {
+                "name": "GenomicsDBData::Load::Plugin::InsertStudy",
+                "parameters": {
+                    "name": "Multi-ethnic exome array: AD, FTP, and PSP",
+                    "attribution": "Chen et al. 2015|PMID:25706306",
+                    "description": "Summary statistics from a multi-ethnic exome array study to identify low-frequency coding variants that affect susceptibility to Alzheimer's disease (AD), frontotemporal dementia (FTD), and progressive supranuclear palsy (PSP). Lifted Over from GRCh37 to GRCh38.",
+                    "sourceId": "@file.accession",
+                    "extDbRlsSpec": "@external_database.name|@external_database.version"
+                }
+            }
+        },
+        {
+            "foreach": true,
+            "plugin": {
+                "name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
+                "parameters": {
+                    "attribution": "Chen et al. 2015",
+                    "type": "Genetic variation",
+                    "subtype": "GWAS summary statistics",
+                    "description": "foreach",
+                    "extDbRlsSpec": "@external_database.name|@external_database.version",
+                    "biomaterialCharacteristics": "foreach",
+                    "sourceId": "foreach",
+                    "name": "foreach",
+                    "studyId": "@file.accession",
+                    "trackSummary": "foreach"
+                }
+            }
+        }
     ],
     "load": [
-	{
-	    "foreach": true,
-	    "plugin": {
-		"name": "GenomicsDBData::Load::Plugin::LoadVariantGWASResult",
-		"parameters": {
-		    "file": "foreach",
-		    "sourceId": "foreach",
-		    "fileDir" : "@file.path/@file.accession",
-		    "sourceGenomeBuildGusConfig": "@file.GRCh37_gus_config",
-		    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
-		    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
-		    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
-		    "liftOverChainFile": "@file.chain_file",
-		    "remapAssemblies": "GCF_000001405.25|GCF_000001405.26",
-		    "caddDatabaseDir": "@file.cadd_path",
-		    "testAllele": "A1",
-		    "refAllele": "A2",
-		    "chromosome": "CHR",
-		    "position": "BP",
-		    "pvalue": "P",
-		    "marker": "MARKER",
-		    "genomeBuild": "GRCh37",
-		    "genomeWideSignificanceThreshold": "1e-3",
-		    "checkAltIndels":"true",
-		    "probe": "true",
-		    "restrictedStats": {
-			"odds_ratio": "ODDS_RATIO",
-			"probe": "PROBE"
-		    }
-		}
-
-	    }
-	}	
+        {
+            "foreach": true,
+            "plugin": {
+                "name": "GenomicsDBData::Load::Plugin::LoadVariantGWASResult",
+                "parameters": {
+                    "file": "foreach",
+                    "sourceId": "foreach",
+                    "fileDir": "@file.path/@file.accession",
+                    "sourceGenomeBuildGusConfig": "@file.GRCh37_gus_config",
+                    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
+                    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
+                    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
+                    "liftOverChainFile": "@file.chain_file",
+                    "remapAssemblies": "GCF_000001405.25|GCF_000001405.26",
+                    "caddDatabaseDir": "@file.cadd_path",
+                    "testAllele": "A1",
+                    "refAllele": "A2",
+                    "chromosome": "CHR",
+                    "position": "BP",
+                    "pvalue": "P",
+                    "marker": "MARKER",
+                    "genomeBuild": "GRCh37",
+                    "genomeWideSignificanceThreshold": "1e-3",
+                    "checkAltIndels": "true",
+                    "probe": "true",
+                    "restrictedStats": {
+                        "odds_ratio": "ODDS_RATIO",
+                        "probe": "PROBE"
+                    }
+                }
+            }
+        }
     ]
 }
-
-
-

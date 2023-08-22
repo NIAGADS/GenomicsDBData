@@ -1,188 +1,195 @@
-{    
+{
     "file": {
-	"path": "$NIAGADS_GWAS_DIR",
-	"accession": "NG00073",
-	"cadd_path": "$DATA_DIR/CADD",
-	"vep_result_dir": "vep_results",
-	"seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
-	"consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
-	"chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
-	"chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz",
-	"GRCh37_gus_config": "$GUS_HOME/config/grch37-gus.config"
+        "path": "$NIAGADS_GWAS_DIR",
+        "accession": "NG00073",
+        "cadd_path": "$DATA_DIR/CADD",
+        "vep_result_dir": "vep_results",
+        "seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
+        "consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
+        "chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
+        "chain_file": "$DATA_DIR/lift_over/hg19ToHg38.over.chain.gz",
+        "GRCh37_gus_config": "$GUS_HOME/config/grch37-gus.config"
     },
     "external_database": {
-	"name": "NIAGADS",
-	"version": "current",
-	"download_url": "https://www.niagads.org/datasets/",
-	"id_url": "https://www.niagads.org/",
-	"description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
-	"accession": "NIAGADS",
-	"type": "Genetic variation"
+        "name": "NIAGADS",
+        "version": "current",
+        "download_url": "https://www.niagads.org/datasets/",
+        "id_url": "https://www.niagads.org/",
+        "description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
+        "accession": "NIAGADS",
+        "type": "Genetic variation"
     },
-    "foreach": [	
-	{
-	    "MEM": {
-		"file": "epad_cc_mem_metalresults.txt",
-		"sourceId": "@file.accession+_GRCh38_MEM",
-		"name": "Memory predominant AD subgroup (GRCh38)",
-		"description": "summary statistics from a case-control analyses of a memory predominant Alzheimer’s disease subgroup (Lifted Over from GRCh37 to GRCh38)",
-		"biomaterialCharacteristics": {
-		    "diagnosis": "late onset Alzheimer's disease",
-		    "biomarker": "memory performance",
-		    "covariate specification": "value:age, sex, and population stratification"
-		},
-		"trackSummary": {
-		    "cohorts":"ACT,ADNI,ROS/MAP,PITT",
-		    "ncontrol":3444,
-		    "ncase":655
-		}
-	    }
-	},
-	{
-	    "VSP": {
-		"file": "epad_cc_vsp_metalresults.txt",
-		"sourceId": "@file.accession+_GRCh38_VSP",
-		"name": "Visuospatial predominant AD subgroup (GRCh38)",
-		"description": "summary statistics from a case-control analyses of a visuospatial predominant Alzheimer’s disease subgroup (Lifted Over from GRCh37 to GRCh38)",
-		"biomaterialCharacteristics": {
-		    "diagnosis": "late onset Alzheimer's disease",
-		    "biomarker": "value:visuospatial impairment",
-		    "covariate specification": "value:age, sex, and population stratification"
-		},
-		"trackSummary": {
-		    "cohorts":"ACT,ADNI,ROS/MAP,PITT",
-		    "ncontrol":3444,
-		    "ncase":294
-		}
-	    }
-	},
-	{
-	    "LANG": {
-		"file": "epad_cc_lan_metalresults.txt",
-		"sourceId": "@file.accession+_GRCh38_LANG",
-		"name": "Language predominant AD subgroup (GRCh38)",
-		"description": "summary statistics from a case-control analyses of a language predominant Alzheimer’s disease subgroup (Lifted Over from GRCh37 to GRCh38)",
-		"biomaterialCharacteristics": {
-		    "diagnosis": "late onset Alzheimer's disease",
-		    "biomarker": "linguistic error measurement",
-		    "covariate specification": "value:age, sex, and population stratification"
-		},
-		"trackSummary": {
-		    "cohorts":"ACT,ADNI,ROS/MAP,PITT",
-		    "ncontrol":3444,
-		    "ncase":324
-		}
-	    }
-	},
-	{
-	    "NONE": {
-		"file": "epad_cc_none_metalresults.txt",
-		"sourceId": "@file.accession+_GRCh38_NONE",
-		"name": "No domain-specific substantial cognitive impairment AD subgroup (GRCh38)",
-		"description": "summary statistics from a case-control analyses of an Alzheimer’s disease subgroup with no domains (memory, visuospatial, language) of substantial relative cognitive impairment (Lifted Over from GRCh37 to GRCh38)",
-		"biomaterialCharacteristics": {
-		    "diagnosis": "late onset Alzheimer's disease",
-		    "covariate specification": "value:age, sex, and population stratification",
-		    "biomarker": ["linguistic error measurement","value:visuospatial impairment","memory performance"]
-		},
-		"trackSummary": {
-		    "cohorts":"ACT,ADNI,ROS/MAP,PITT",
-		    "ncontrol":3444,
-		    "ncase":974
-		}
-	    }
-	},
-	{
-	    "MIX": {
-		"file": "epad_cc_mix_metalresults.txt",
-		"sourceId": "@file.accession+_GRCh38_MIX",
-		"name": "Multiple substantial cognitive impairments AD subgroup (GRCh38)",
-		"description": "summary statistics from a case-control analyses of an Alzheimer’s disease subgroup with multiple domains (memory, visuospatial, language) of substantial cognitive impairment (Lifted Over from GRCh37 to GRCh38)",
-		"biomaterialCharacteristics": {
-		    "diagnosis": "late onset Alzheimer's disease",
-		    "biomarker": ["linguistic error measurement","value:visuospatial impairment","memory performance"],
-		    "covariate specification": "value:age, sex, and population stratification"
-		},
-		"trackSummary": {
-		    "cohorts":"ACT,ADNI,ROS/MAP,PITT",
-		    "ncontrol": 3444,
-		    "ncase":141
-		}
-	    }
-	}
-
+    "foreach": [
+        {
+            "MEM": {
+                "file": "epad_cc_mem_metalresults.txt",
+                "sourceId": "@file.accession+_GRCh38_MEM",
+                "name": "Memory predominant AD subgroup (GRCh38)",
+                "description": "summary statistics from a case-control analyses of a memory predominant Alzheimer’s disease subgroup (Lifted Over from GRCh37 to GRCh38)",
+                "biomaterialCharacteristics": {
+                    "diagnosis": "late onset Alzheimer's disease",
+                    "biomarker": "memory performance",
+                    "covariate specification": "value:age, sex, and population stratification"
+                },
+                "trackSummary": {
+                    "cohorts": "ACT,ADNI,ROS/MAP,PITT",
+                    "ncontrol": 3444,
+                    "ncase": 655
+                }
+            }
+        },
+        {
+            "VSP": {
+                "file": "epad_cc_vsp_metalresults.txt",
+                "sourceId": "@file.accession+_GRCh38_VSP",
+                "name": "Visuospatial predominant AD subgroup (GRCh38)",
+                "description": "summary statistics from a case-control analyses of a visuospatial predominant Alzheimer’s disease subgroup (Lifted Over from GRCh37 to GRCh38)",
+                "biomaterialCharacteristics": {
+                    "diagnosis": "late onset Alzheimer's disease",
+                    "biomarker": "value:visuospatial impairment",
+                    "covariate specification": "value:age, sex, and population stratification"
+                },
+                "trackSummary": {
+                    "cohorts": "ACT,ADNI,ROS/MAP,PITT",
+                    "ncontrol": 3444,
+                    "ncase": 294
+                }
+            }
+        },
+        {
+            "LANG": {
+                "file": "epad_cc_lan_metalresults.txt",
+                "sourceId": "@file.accession+_GRCh38_LANG",
+                "name": "Language predominant AD subgroup (GRCh38)",
+                "description": "summary statistics from a case-control analyses of a language predominant Alzheimer’s disease subgroup (Lifted Over from GRCh37 to GRCh38)",
+                "biomaterialCharacteristics": {
+                    "diagnosis": "late onset Alzheimer's disease",
+                    "biomarker": "linguistic error measurement",
+                    "covariate specification": "value:age, sex, and population stratification"
+                },
+                "trackSummary": {
+                    "cohorts": "ACT,ADNI,ROS/MAP,PITT",
+                    "ncontrol": 3444,
+                    "ncase": 324
+                }
+            }
+        },
+        {
+            "NONE": {
+                "file": "epad_cc_none_metalresults.txt",
+                "sourceId": "@file.accession+_GRCh38_NONE",
+                "name": "No domain-specific substantial cognitive impairment AD subgroup (GRCh38)",
+                "description": "summary statistics from a case-control analyses of an Alzheimer’s disease subgroup with no domains (memory, visuospatial, language) of substantial relative cognitive impairment (Lifted Over from GRCh37 to GRCh38)",
+                "biomaterialCharacteristics": {
+                    "diagnosis": "late onset Alzheimer's disease",
+                    "covariate specification": "value:age, sex, and population stratification",
+                    "biomarker": [
+                        "linguistic error measurement",
+                        "value:visuospatial impairment",
+                        "memory performance"
+                    ]
+                },
+                "trackSummary": {
+                    "cohorts": "ACT,ADNI,ROS/MAP,PITT",
+                    "ncontrol": 3444,
+                    "ncase": 974
+                }
+            }
+        },
+        {
+            "MIX": {
+                "file": "epad_cc_mix_metalresults.txt",
+                "sourceId": "@file.accession+_GRCh38_MIX",
+                "name": "Multiple substantial cognitive impairments AD subgroup (GRCh38)",
+                "description": "summary statistics from a case-control analyses of an Alzheimer’s disease subgroup with multiple domains (memory, visuospatial, language) of substantial cognitive impairment (Lifted Over from GRCh37 to GRCh38)",
+                "biomaterialCharacteristics": {
+                    "diagnosis": "late onset Alzheimer's disease",
+                    "biomarker": [
+                        "linguistic error measurement",
+                        "value:visuospatial impairment",
+                        "memory performance"
+                    ],
+                    "covariate specification": "value:age, sex, and population stratification"
+                },
+                "trackSummary": {
+                    "cohorts": "ACT,ADNI,ROS/MAP,PITT",
+                    "ncontrol": 3444,
+                    "ncase": 141
+                }
+            }
+        }
     ],
     "preprocess": [
-	{
-	    "plugin": {
-		"name": "GenomicsDBData::Load::Plugin::InsertStudy",
-		"skip":true,
-		"parameters": {
-		    "attribution": "Crane",
-		    "name": "Cognitively defined late-onset Alzheimer’s disease subgroups",
-		    "description" : "GWAS meta-analysis summary statistics for case-control analyses of five cognitively defined Alzheimer’s disease subgroups, assigned on the basis of relative performance in memory, executive functioning, visuospatial functioning, and language at the time of Alzheimer’s disease diagnosis. Lifted Over from GRCh37 to GRCh38.",
-		    "sourceId": "@file.accession",
-		    "extDbRlsSpec": "@external_database.name|@external_database.version"
-		}		
-	    }
-	},
-	{
-	    "foreach" : true,
-	    "plugin": {
-		"name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
-		"parameters" : {
-		    "attribution": "Crane",
-		    "type": "Genetic variation",
-		    "subtype": "GWAS summary statistics",
-		    "description": "foreach",
-		    "extDbRlsSpec": "@external_database.name|@external_database.version",
-		    "biomaterialCharacteristics": "foreach",
-		    "sourceId" : "foreach",
-		    "name": "foreach",
-		    "studyId": "@file.accession",
-		    "trackSummary": "foreach"
-		}
-	    }
-	}
+        {
+            "plugin": {
+                "name": "GenomicsDBData::Load::Plugin::InsertStudy",
+                "skip": true,
+                "parameters": {
+                    "attribution": "Crane",
+                    "name": "Cognitively defined late-onset Alzheimer’s disease subgroups",
+                    "description": "GWAS meta-analysis summary statistics for case-control analyses of five cognitively defined Alzheimer’s disease subgroups, assigned on the basis of relative performance in memory, executive functioning, visuospatial functioning, and language at the time of Alzheimer’s disease diagnosis. Lifted Over from GRCh37 to GRCh38.",
+                    "sourceId": "@file.accession",
+                    "extDbRlsSpec": "@external_database.name|@external_database.version"
+                }
+            }
+        },
+        {
+            "foreach": true,
+            "plugin": {
+                "name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
+                "parameters": {
+                    "attribution": "Crane",
+                    "type": "Genetic variation",
+                    "subtype": "GWAS summary statistics",
+                    "description": "foreach",
+                    "extDbRlsSpec": "@external_database.name|@external_database.version",
+                    "biomaterialCharacteristics": "foreach",
+                    "sourceId": "foreach",
+                    "name": "foreach",
+                    "studyId": "@file.accession",
+                    "trackSummary": "foreach"
+                }
+            }
+        }
     ],
-    "load":[
-	{
-	    "foreach": true,
-	    "plugin": {
-		"name": "GenomicsDBData::Load::Plugin::LoadVariantGWASResult",
-		"parameters": {
-		    "file": "foreach",
-		    "sourceId": "foreach",
-		    "fileDir" : "@file.path/@file.accession",
-		    "sourceGenomeBuildGusConfig": "@file.GRCh37_gus_config",
-		    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
-		    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
-		    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
-		    "liftOverChainFile": "@file.chain_file",
-		    "remapAssemblies": "GCF_000001405.25|GCF_000001405.26",
-		    "caddDatabaseDir": "@file.cadd_path",
-		    "testAllele": "Allele1",
-		    "refAllele": "Allele2",
-		    "chromosome": "CHR",
-		    "position": "BP",
-		    "marker": "SNP",
-		    "pvalue": "Pvalue",
-		    "frequency": "Freq1",
-		    "genomeBuild": "GRCh37",
-		    "genomeWideSignificanceThreshold": "5e-8",
-		    "checkAltIndels":"true",
-		    "restrictedStats": {
-			"frequency_se": "FreqSE",
-			"min_frequency": "MinFreq",
-			"max_frequency": "MaxFreq",
-			"effect": "Effect",
-			"std_err": "StdErr",
-			"direction": "Direction",
-			"het_df": "HetDf",
-			"het_pvalue": "HetPVal"
-		    }
-		}
-	    }
-	}	
+    "load": [
+        {
+            "foreach": true,
+            "plugin": {
+                "name": "GenomicsDBData::Load::Plugin::LoadVariantGWASResult",
+                "parameters": {
+                    "file": "foreach",
+                    "sourceId": "foreach",
+                    "fileDir": "@file.path/@file.accession",
+                    "sourceGenomeBuildGusConfig": "@file.GRCh37_gus_config",
+                    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
+                    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
+                    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
+                    "liftOverChainFile": "@file.chain_file",
+                    "remapAssemblies": "GCF_000001405.25|GCF_000001405.26",
+                    "caddDatabaseDir": "@file.cadd_path",
+                    "testAllele": "Allele1",
+                    "refAllele": "Allele2",
+                    "chromosome": "CHR",
+                    "position": "BP",
+                    "marker": "SNP",
+                    "pvalue": "Pvalue",
+                    "frequency": "Freq1",
+                    "genomeBuild": "GRCh37",
+                    "genomeWideSignificanceThreshold": "5e-8",
+                    "checkAltIndels": "true",
+                    "restrictedStats": {
+                        "frequency_se": "FreqSE",
+                        "min_frequency": "MinFreq",
+                        "max_frequency": "MaxFreq",
+                        "effect": "Effect",
+                        "std_err": "StdErr",
+                        "direction": "Direction",
+                        "het_df": "HetDf",
+                        "het_pvalue": "HetPVal"
+                    }
+                }
+            }
+        }
     ]
 }
