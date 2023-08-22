@@ -1,0 +1,136 @@
+{
+    "file": {
+        "path": "$SHARED_DATA_DIR/NIAGADS/GRCh38",
+        "accession": "NG00122",
+        "cadd_path": "$DATA_DIR/CADD",
+        "vep_result_dir": "vep_results",
+        "seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
+        "consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
+        "chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt"
+    },
+    "external_database": {
+        "name": "NIAGADS",
+        "version": "current",
+        "download_url": "https://www.niagads.org/datasets/",
+        "id_url": "https://www.niagads.org/",
+        "description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
+        "accession": "NIAGADS",
+        "type": "Genetic variation"
+    },
+    "foreach": [
+        {
+            "ALL": {
+                "file": "Sweet_RA_Meta-analysis_results_02-24-2022.txt",
+                "sourceId": "@file.accession",
+                "name": "Prediction of Psychosis in Alzheimer Disease ",
+                "description": "summary statistics from a meta-analysis of subjects (N=12,317) with probable, psosible, or autopsy-confirmed Alzheimer's disease who were characterized to be negative or positive for pyschosis (delusions and/or hallucinations).",
+                "biomaterialCharacteristics": {
+                    "diagnosis": [
+                        "late-onset Alzheimers disease",
+                        "psychosis"
+                    ],
+                    "population": "European",
+                    "covariate specification": "value:sex and population stratification"
+                },
+                "trackSummary": {
+                    "cohorts": [
+                        "ACE/GR@CE",
+                        "NEXGENS",
+                        "ADC",
+                        "LILLY",
+                        "NIA-LOAD",
+                        "NIMH",
+                        "PITT-ADRC",
+                        "UK-Cardiff"
+                    ],
+                    "ncase": 5445,
+                    "ncontrol": 6872
+                }
+            }
+        }
+    ],
+    "preprocess": [
+        {
+            "plugin": {
+                "name": "GenomicsDBData::Load::Plugin::InsertStudy",
+                "parameters": {
+                    "attribution": "Sweets et al. 2021|PMID:34112972",
+                    "name": "Prediction of Psychosis in Alzheimer Disease",
+                    "description": "Subjects included this study (N=12,317) originated from eight program sources, had probable, possible, or autopsy-confirmed AD, and were characterized to be negative or positive for psychosis (delusions and/or hallucinations). Program sources provided either whole blood, DNA, single nucleotide polymorphism (SNP) array data, or genome-wide association statistics. Data from the eight program sources were processed as four cohorts (Phase 1, Phase 2, GR@ACE, and NEXGENS), based on timing of receipt of the data. Data processing, QC, and statistical analyses were uniform across three of the cohorts for which there were genotypes (Phase 1, Phase 2, GR@ACE), whereas only summary statistics were available for the fourth cohort (NEXGENS). Separate GWA analyses were performed for the Phase 1, Phase 2, and GR@ACE cohorts, to contrast AD+P versus AD-P for the 9,200,578 SNPs using the Plink option --logistic and with adjustment for three ancestry dimensions. For chromosome X, an additional covariate for sex was included. For NEXGENS, separate logistic regressions, implemented in PLINK for each of the five NEXGENS consortium datasets was used to contrast AD+P versus AD-P for each SNP, with adjustment for the first 10 ancestry principal components. METAL software was used to conduct inverse-variance weighted fixed effects meta-analysis across the five NEXGENS datasets, applying genomic control, to generate the summary statistics used in the current analysis. The four GWAS statistics (Phase 1, Phase 2, GR@ACE, NEXGENS summary), per SNP, were then meta-analyzed using METAL.",
+                    "sourceId": "@file.accession",
+                    "extDbRlsSpec": "@external_database.name|@external_database.version"
+                }
+            }
+        },
+        {
+            "foreach": true,
+            "plugin": {
+                "name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
+                "parameters": {
+                    "attribution": "Sweets et al. 2021",
+                    "type": "Genetic variation",
+                    "subtype": "GWAS summary statistics",
+                    "description": "foreach",
+                    "extDbRlsSpec": "@external_database.name|@external_database.version",
+                    "biomaterialCharacteristics": "foreach",
+                    "sourceId": "foreach",
+                    "name": "foreach",
+                    "studyId": "@file.accession",
+                    "trackSummary": "foreach"
+                }
+            }
+        }
+    ],
+    "load": [
+        {
+            "foreach": true,
+            "plugin": {
+                "name": "GenomicsDBData::Load::Plugin::LoadVariantGWASResult",
+                "parameters": {
+                    "file": "foreach",
+                    "sourceId": "foreach",
+                    "fileDir": "@file.path/@file.accession",
+                    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
+                    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
+                    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
+                    "caddDatabaseDir": "@file.cadd_path",
+                    "testAllele": "Allele1",
+                    "refAllele": "Allele2",
+                    "chromosome": "CHR",
+                    "position": "LOC.hg38",
+                    "marker": "RS",
+                    "pvalue": "P-value",
+                    "genomeBuild": "GRCh38",
+                    "genomeWideSignificanceThreshold": "5e-8",
+                    "markerIndicatesIndel": "true",
+                    "checkAltIndels": "true",
+                    "restrictedStats": {
+                        "effect": "Effect",
+                        "std_err": "StdErr",
+                        "odds_ratio": "OR",
+                        "direction": "Direction",
+                        "het_chi_sq": "HetChiSq",
+                        "het_i_sq": "HetISq",
+                        "het_df": "HetDf",
+                        "het_pvalue": "HetPVal",
+                        "other": [
+                            "95%CI",
+                            "b.PHASE1",
+                            "b.PHASE2",
+                            "b.GR@CE",
+                            "b.NEXGENS",
+                            "OR.PHASE1",
+                            "OR.PHASE2",
+                            "OR.GR@CE",
+                            "OR.NEXGENS",
+                            "p.PHASE1",
+                            "p.PHASE2",
+                            "p.GR@CE",
+                            "p.NEXGENS"
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}
