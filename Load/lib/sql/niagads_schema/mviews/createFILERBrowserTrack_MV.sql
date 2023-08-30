@@ -30,15 +30,19 @@ LOWER(replace(regexp_replace(ft.feature_type, ' \(.+?\)', '', 'g'), ' ', '_')) A
 pan.track_summary->>'data_source' AS data_source,
 pan.name,
 jsonb_build_object(
-'name', ft.track_name,
+'name', ft.track || ': ' || ft.track_name,
 'description', multi_replace(description, ARRAY['eQTL eQTL', 'sQTL sQTL', '_'], ARRAY['eQTL', 'sQTL', ' ']),
 'track', pan.source_id,
-'track_type', 'annotation',
+'track_type', CASE WHEN name ILIKE '%qtl%' THEN 'qtl' ELSE 'annotation' END,
 --'feature_type', LOWER(replace(regexp_replace(ft.feature_type, ' \(.+?\)', ''), ' ', '_')),
 'track_type_display', CASE WHEN ft.feature_type LIKE '%QTL%' THEN 'xQTL' ELSE 'Functional Genomics' END,
 'feature_type', ft.feature_type,
 'label', truncate_str(ft.track_name, 40),
-'format', 'bed',
+'format',
+CASE WHEN split_part(pan.track_summary->>'file_format', ' ', 2) LIKE '%Peak%' THEN LOWER(split_part(pan.track_summary->>'file_format', ' ', 2))
+WHEN split_part(pan.track_summary->>'file_format', ' ', 2) = 'bed13' AND name ILIKE '%qtl%' THEN 'bed3+10'
+WHEN split_part(pan.track_summary->>'file_format', ' ', 2) = 'bed16' AND name ILIKE '%qtl%' THEN 'bed3+13'
+ELSE 'bed' END,
 'url', track_summary->>'processed_file_download_url',
 'indexURL', track_summary->>'processed_file_download_url' || '.tbi',
 'data_source', split_part(pan.track_summary->>'data_source', '_', 1),
