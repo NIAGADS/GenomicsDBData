@@ -23,6 +23,8 @@ BEGIN
 	CASE WHEN v.is_adsp_variant THEN TRUE ELSE FALSE END AS is_adsp_variant, v.bin_index,
 	jsonb_build_object(
 	 'associations', v.gwas_flags,
+     'allele_frequencies', v.allele_frequencies,
+     'cadd_scores', v.cadd_scores,
 	 'most_severe_consequence', v.adsp_most_severe_consequence,
 	 'ranked_consequences', v.adsp_ranked_consequences,	 
 	 'ADSP_QC', v.adsp_qc #- '{17k,info,AF}' #- '{17k,info,AC}' #- '{17k,info,AN}',
@@ -63,6 +65,8 @@ BEGIN
 	CASE WHEN v.is_adsp_variant THEN TRUE ELSE FALSE END AS is_adsp_variant, v.bin_index,
 	jsonb_build_object(
 	 'associations', v.gwas_flags,
+     'allele_frequencies', v.allele_frequencies,
+     'cadd_scores', v.cadd_scores,
 	 'most_severe_consequence', v.adsp_most_severe_consequence,
 	 'ranked_consequences', v.adsp_ranked_consequences,	 
 	 'ADSP_QC', v.adsp_qc #- '{17k,info,AF}' #- '{17k,info,AC}' #- '{17k,info,AN}',
@@ -89,6 +93,8 @@ BEGIN
 	CASE WHEN v.is_adsp_variant THEN TRUE ELSE FALSE END AS is_adsp_variant, v.bin_index,
 	jsonb_build_object(
 	 'associations', v.gwas_flags,
+     'allele_frequencies', v.allele_frequencies,
+     'cadd_scores', v.cadd_scores,
 	 'most_severe_consequence', v.adsp_most_severe_consequence,
 	 'ranked_consequences', v.adsp_ranked_consequences,	 
 	 'ADSP_QC', v.adsp_qc #- '{17k,info,AF}' #- '{17k,info,AC}' #- '{17k,info,AN}',
