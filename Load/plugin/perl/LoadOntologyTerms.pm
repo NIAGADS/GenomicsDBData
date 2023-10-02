@@ -15,14 +15,54 @@ use GUS::Model::SRes::OntologyTerm;
 use GUS::Model::SRes::OntologyRelationship;
 use GUS::Model::SRes::OntologySynonym;
 
+BEGIN { $Package::Alias::BRAVE = 1 }
+use Package::Alias Utils            => 'GenomicsDBData::Load::Utils';
+use Package::Alias PluginUtils      => 'GenomicsDBData::Load::PluginUtils';
+
 # ----------------------------------------------------------------------
 # Arguments
 # ---------------------------------------------------------------------
 
 sub getArgumentsDeclaration {
-  my $argumentDeclaration  = [];
+    my $argumentDeclaration  = [
+    stringArg({ descr => 'Ontology external database release specification',
+            name  => 'extDbRlsSpec',
+            isList    => 0,
+            reqd  => 1,
+            constraintFunc => undef,
+        }),
 
-  return $argumentDeclaration;
+    stringArg({ descr => 'url of the OWL file',
+            name  => 'owlFileUrl',
+            isList    => 0,
+            reqd  => 1,
+            constraintFunc => undef,
+        }),
+
+    stringArg({ descr => 'path for saving parsed OWL file excerpts; must exist',
+        name  => 'outputPath',
+        isList    => 0,
+        reqd  => 1,
+        constraintFunc => undef,
+    }),
+
+    stringArg({ descr => 'preferred namespace; will synonymize same term if already in DB from other namespace',
+        name  => 'namespace',
+        isList    => 0,
+        reqd  => 0,
+        constraintFunc => undef,
+    }),
+
+    integerArg({ name  => 'numWorkers',
+                descr => 'number of workers for parallel processing; defaults to number of processors',
+                constraintFunc => undef,
+                isList         => 0,
+                reqd => 0
+    }),
+
+    ];
+
+    return $argumentDeclaration;
 }
 
 
@@ -31,30 +71,30 @@ sub getArgumentsDeclaration {
 # ----------------------------------------------------------------------
 
 sub getDocumentation {
-  my $purposeBrief = 'Loads ontology terms, synonyms, and relationships from an OWL file';
+    my $purposeBrief = 'Loads ontology terms, synonyms, and relationships from an OWL file';
 
-  my $purpose = 'Loads ontology terms, synonyms, and relationships from an OWL file';
+    my $purpose = 'Loads ontology terms, synonyms, and relationships from an OWL file';
 
-  my $tablesAffected = [['SRes::OntologyTerm', 'enter a row for or update each term'],
-                        ['SRes::OntologySynonym', 'enter a row for each synonym'],
-                        ['SRes::OntologyRelationship', 'enter a row for each relation']];
+    my $tablesAffected = [['SRes::OntologyTerm', 'enter a row for or update each term'],
+                            ['SRes::OntologySynonym', 'enter a row for each synonym'],
+                            ['SRes::OntologyRelationship', 'enter a row for each relation']];
 
-  my $tablesDependedOn = [];
+    my $tablesDependedOn = [];
 
-  my $howToRestart = '';
+    my $howToRestart = '';
 
-  my $failureCases = '';
+    my $failureCases = '';
 
-  my $notes = <<NOTES;
-Written by Emily Greenfest-Allen
-Copyright Trustees of University of Pennsylvania 2023.
+    my $notes = <<NOTES;
+    Written by Emily Greenfest-Allen
+    Copyright Trustees of University of Pennsylvania 2023.
 NOTES
 
-  my $documentation = {purpose=>$purpose, purposeBrief=>$purposeBrief, 
-                       tablesAffected=>$tablesAffected, tablesDependedOn=>$tablesDependedOn, 
-                       howToRestart=>$howToRestart, failureCases=>$failureCases, notes=>$notes};
+    my $documentation = {purpose=>$purpose, purposeBrief=>$purposeBrief, 
+        tablesAffected=>$tablesAffected, tablesDependedOn=>$tablesDependedOn, 
+        howToRestart=>$howToRestart, failureCases=>$failureCases, notes=>$notes};
 
-  return $documentation;
+    return $documentation;
 }
 
 # ----------------------------------------------------------------------
@@ -62,22 +102,22 @@ NOTES
 # ----------------------------------------------------------------------
 
 sub new {
-  my ($class) = @_;
-  my $self = {};
-  bless($self,$class);
+    my ($class) = @_;
+    my $self = {};
+    bless($self,$class);
 
 
-  my $documentation = &getDocumentation();
-  my $argumentDeclaration    = &getArgumentsDeclaration();
+    my $documentation = &getDocumentation();
+    my $argumentDeclaration    = &getArgumentsDeclaration();
 
-  $self->initialize({requiredDbVersion => 4.0,
-                     cvsRevision => '$Revision: 1 $',
-                     name => ref($self),
-                     revisionNotes => '',
-                     argsDeclaration => $argumentDeclaration,
-                     documentation => $documentation
-                    });
-  return $self;
+    $self->initialize({requiredDbVersion => 4.0,
+        cvsRevision => '$Revision: 1 $',
+        name => ref($self),
+        revisionNotes => '',
+        argsDeclaration => $argumentDeclaration,
+        documentation => $documentation
+        });
+    return $self;
 }
 
 
@@ -86,18 +126,18 @@ sub new {
 # ----------------------------------------------------------------------
 
 sub run {
-  my ($self) = @_;
+    my ($self) = @_;
 
-  $self->logAlgInvocationId();
-  $self->logCommit();
-  $self->logArgs();
-  $self->getAlgInvocation()->setMaximumNumberOfObjects(100000);
+    $self->logAlgInvocationId();
+    $self->logCommit();
+    $self->logArgs();
+    $self->getAlgInvocation()->setMaximumNumberOfObjects(100000);
 
-  $self->parseOwlFile();
-  # my $extDbRlsId = $self->getExtDbRlsId($self->getArg('extDbRlsSpec'));
-  my $ontologyTerms, $demotedTerms = $self->loadTerms();
-  $self->loadSynonyms($ontologyTerms, $demotedTerms);
-  # $self->loadRelationships($ontologyTerms);
+    my $outputDir = $self->parseOwlFile();
+    # my $extDbRlsId = $self->getExtDbRlsId($self->getArg('extDbRlsSpec'));
+    my $ontologyTerms, $demotedTerms = $self->loadTerms($targetDir);
+    $self->loadSynonyms($ontologyTerms, $demotedTerms);
+    # $self->loadRelationships($ontologyTerms);
 }
 
 # ----------------------------------------------------------------------
@@ -107,13 +147,41 @@ sub run {
 sub parseOwlFile {
     my ($self) = @_;
 
-    # make call to niagads-pylib/owl_parser
+    my $owlFile = $self->getArg('owlFileUrl');
+    my $namespace = ($self->getArg('namespace')) ? $self->getArg('namespace') : 'full';
+    my $outputPath = $self->getArg('outputPath');
+
+    $self->error("Output path $outputPath does not exist") unless (-d $outputPath);
+    my $targetDir = ($namespace ne 'full') 
+        ? PluginUtils::createDirectory($self, $outputPath, $namespace)
+        : $outputPath;
+
+    $self->log("INFO: Parsing OWL File $owlFile using niagads-pylib owl_parser")
+
+    my (@cmd) = ('owl_parser', '--reportSuccess', '--url', $owlFileUrl, '--outputDir', $outputPath )
+    if ($namespace ne 'full') {
+        push(@cmd, '--namespace')
+        push(@cmod, $namespace)
+    }
+    if ($self->getArg('numWorkers')) {
+        push(@cmd, '--numWorkers')
+        push(@cmd, $self->getArg('numWorkers'))
+    }
+
+    $self->log("INFO: Executing command: " . join(' ', @cmd));
+    my $message = qx(@cmd);
+
+    $self->error("ERROR parsing OWL file $owlFileUrl: see $targetDir/owl_parser.log")
+        if ($message !~ /SUCCESS/);
+    $self->{plugin}->log("DONE: Parsing OWL File $owlFileUrl");
+
+    return $targetDir;
 }
 
 sub loadTerms {
     my ($self) = @_;
     my $ontologyTerms = {};
-    my $demotedTerms = {};
+    my $demotedTerms = {}; # terms moved from ontology term to ontology synonym
 
     # for each term in the term file
 
@@ -132,8 +200,21 @@ sub loadRelationships {
 }
 
 # ----------------------------------------------------------------------
-sub undoTables {
-  my ($self) = @_;
+# supporting
+# ----------------------------------------------------------------------
 
-  return ('SRes.OntologyTerm', 'SRes.OntologySynonym', 'SRes.OntologyRelationship');
+sub getOntologyTerm {
+    my ($self, $termId, $term) = @_;
+    # pull by name first
+    my $otObj = GUS::Model::SRes::OntologyTerm->new({
+        name => $term
+    })
+
+}
+
+# ----------------------------------------------------------------------
+sub undoTables {
+    my ($self) = @_;
+
+    return ('SRes.OntologyTerm', 'SRes.OntologySynonym', 'SRes.OntologyRelationship');
 }
