@@ -60,6 +60,13 @@ sub getArgumentsDeclaration {
                 reqd => 0
     }),
 
+    booleanArg({ name  => 'skipParsing',
+            descr => 'skip parsing (e.g., for resume)',
+            constraintFunc => undef,
+            isList         => 0,
+            reqd => 0
+    }),
+
     ];
 
     return $argumentDeclaration;
@@ -133,10 +140,10 @@ sub run {
     $self->logArgs();
     $self->getAlgInvocation()->setMaximumNumberOfObjects(100000);
 
-    my $outputDir = $self->parseOwlFile();
     # my $extDbRlsId = $self->getExtDbRlsId($self->getArg('extDbRlsSpec'));
-    my $ontologyTerms, $demotedTerms = $self->loadTerms($targetDir);
-    $self->loadSynonyms($ontologyTerms, $demotedTerms);
+    my $outputDir = $self->parseOwlFile() if (!$self->getArg('skipParsing'));
+    # my $ontologyTerms, $demotedTerms = $self->loadTerms($targetDir);
+    # self->loadSynonyms($ontologyTerms, $demotedTerms);
     # $self->loadRelationships($ontologyTerms);
 }
 
@@ -147,7 +154,7 @@ sub run {
 sub parseOwlFile {
     my ($self) = @_;
 
-    my $owlFile = $self->getArg('owlFileUrl');
+    my $owlFileUrl = $self->getArg('owlFileUrl');
     my $namespace = ($self->getArg('namespace')) ? $self->getArg('namespace') : 'full';
     my $outputPath = $self->getArg('outputPath');
 
@@ -156,16 +163,23 @@ sub parseOwlFile {
         ? PluginUtils::createDirectory($self, $outputPath, $namespace)
         : $outputPath;
 
-    $self->log("INFO: Parsing OWL File $owlFile using niagads-pylib owl_parser")
+    PluginUtils::setDirectoryPermissions($self, $outputPath, "g+w");
 
-    my (@cmd) = ('owl_parser', '--reportSuccess', '--url', $owlFileUrl, '--outputDir', $outputPath )
+    $self->log("INFO: Parsing OWL File $owlFileUrl using niagads-pylib owl_parser");
+
+    my (@cmd) = ('owl_parser', '--reportSuccess', '--verbose', '--url', $owlFileUrl, '--outputDir', $targetDir );
     if ($namespace ne 'full') {
-        push(@cmd, '--namespace')
-        push(@cmod, $namespace)
+        push(@cmd, '--namespace');
+        push(@cmd, $namespace);
     }
+
     if ($self->getArg('numWorkers')) {
-        push(@cmd, '--numWorkers')
-        push(@cmd, $self->getArg('numWorkers'))
+        push(@cmd, '--numWorkers');
+        push(@cmd, $self->getArg('numWorkers'));
+    }
+    
+    if ($self->getArg('debug')) {
+        push(@cmd, '--debug')
     }
 
     $self->log("INFO: Executing command: " . join(' ', @cmd));
