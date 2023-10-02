@@ -17,6 +17,9 @@
         },
         {
             "path": "../niagads-pylib"
+        },
+        {
+            "path": "../../data/shared/ontologies"
         }
     ]
 }
