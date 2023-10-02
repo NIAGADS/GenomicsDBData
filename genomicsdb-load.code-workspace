@@ -1,19 +1,22 @@
 {
 	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "../GUS"
-		},
-		{
-			"path": "../AnnotatedVDB"
-		},
-		{
-			"path": "../../data/GRCh38"
-		},
-		{
-			"path": "../../data/GRCh38/logs"
-		}
-	]
+        {
+            "path": "."
+        },
+        {
+            "path": "../GUS"
+        },
+        {
+            "path": "../AnnotatedVDB"
+        },
+        {
+            "path": "../../data/GRCh38"
+        },
+        {
+            "path": "../../data/GRCh38/logs"
+        },
+        {
+            "path": "../niagads-pylib"
+        }
+    ]
 }
