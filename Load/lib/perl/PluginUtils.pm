@@ -78,7 +78,7 @@ sub setDirectoryPermissions {
 sub createDirectory {
   my ($plugin, $path, $dirName) = @_;
 
-  my $fullPath = $path . "/" . $dirName;
+  my $fullPath = ($dirName) ? $path . "/" . $dirName : $path;
   $fullPath =~ s/\/\//\//g; # substitute // for /
 
   if (-e $fullPath) {
