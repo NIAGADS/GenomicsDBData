@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+
+'''
+wrapper for running PSQL, using gus.config to connect
+'''
+
+import argparse # parse command line args
+
+from sys import stdout, exit
+from os import environ, path
+from subprocess import check_call
+
+# from $GUS_HOME/lib/python --> add to python path
+
+from GenomicsDBData.Util.postgres_dbi import Database
+from GenomicsDBData.Util.utils import warning, verify_path, die
+
+
+def run_sql(sFile):
+    '''
+    run selected sql file
+    '''
+    warning("Executing SQL File: " + sFile)
+
+    if not verify_path(sFile):
+        die("File not found: " + sFile)
+
+    # -v ON_ERROR_STOP=ON : stop on first error
+    # --no-psqlrc: ignore start-up file
+    database.set_pgpassword()
+
+    cmd = ['psql', '--no-psqlrc',
+           '-d', database.name(),
+           '-U', database.user,
+           '-v', 'ON_ERROR_STOP=ON',
+           '--file', sFile]
+        
+    if database.port() is not None:
+        cmd.append('-p')
+        cmd.append(database.port())
+    if database.host() is not None:
+        cmd.append('-h')
+        cmd.append(database.host())
+
+    if args.verbose:
+        cmd.append('-a') # echo all
+    else:
+        cmd.append('-b') # echo only errors
+
+    # log = sqlFile.replace('.sql', '.log')
+    # cmd.append("2>&1 " + log) # redirect stdout & stderr
+
+    if args.verbose:
+        warning(cmd)
+
+    check_call(cmd) # runs command and waits for it to complete
+    database.reset_pgpassword()
+
+    
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description="Run SQL file using PSQL; pulling DB connection info from gus.config file")
+    parser.add_argument('--gusConfigFile',
+                        help="GUS config file. If not provided, assumes default: $GUS_HOME/conf/gus.config")
+    parser.add_argument('-f', '--file', required=True, help="file name; full path")
+    parser.add_argument('-v', '--verbose', help="verbose output?", action='store_true')
+    parser.add_argument('-p', '--psql', help="full path to psql executeable if not standard 'psql'", default="psql")
+    
+    args =  parser.parse_args()
+    
+    database = Database(args.gusConfigFile) # just using to set password etc. never connect
+
+    run_sql(args.file)
+
