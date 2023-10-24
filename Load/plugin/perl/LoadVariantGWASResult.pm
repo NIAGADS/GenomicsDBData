@@ -77,7 +77,7 @@ NULL 'NULL')
 COPYSQL
 
 my $SHARED_VARIABLE_SEMAPHORE = Thread::Semaphore->new(1);
-my $PROCESS_COUNT_SEMAPHORE   = Thread::Semaphore->new(20);
+my $PROCESS_COUNT_SEMAPHORE   = undef;
 
 # ----------------------------------------------------------------------
 # Arguments
@@ -591,6 +591,17 @@ sub getArgumentsDeclaration {
                 reqd           => 0
             }
         ),
+
+        integerArg(
+            {
+                name  => 'numWorkers',
+                descr => 'num parallel workers',
+                constraintFunc => undef,
+                isList         => 0,
+                default        => 10,
+                reqd           => 0
+            }
+        ),
     ];
     return $argumentDeclaration;
 }
@@ -672,6 +683,10 @@ sub run {
     my ($self) = @_;
 
     $self->initializePlugin();
+
+    my $numWorkers = $self->getArg('numWorkers');
+    $self->log('Initializing PROCESS COUNT SEMAPHORE; num workers = $numWorkers');
+    $PROCESS_COUNT_SEMAPHORE = Thread::Semaphore->new($numWorkers);
 
     my $liftedOverInputFile =
       ( $self->getArg('liftOver') )
