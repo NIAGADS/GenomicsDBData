@@ -1,6 +1,6 @@
 * Guideline for writing Python scripts for accessing the NIAGADS GenomicsDB
 
-shebang = #!/usr/bin/env python32.7
+shebang = #!/usr/bin/env python3
 
 * Recommended imports
 
