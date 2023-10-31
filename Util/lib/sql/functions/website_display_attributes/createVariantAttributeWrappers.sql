@@ -30,10 +30,8 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION most_severe_consequence(consequence JSONB)
  RETURNS text AS $$
-BEGIN
 	SELECT replace(array_to_string(json_array_cast_to_text((consequence->'consequence_terms')::json), ','), '_', ' ');
-END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE SQL stable;
 
 CREATE OR REPLACE FUNCTION msc_impacted_gene_link(consequence JSONB)
 RETURNS text AS $$
