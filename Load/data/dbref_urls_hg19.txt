@@ -16,10 +16,11 @@ pubmed_id	references	PubMed	PubMed	https://www.ncbi.nlm.nih.gov/pubmed/
 refseq_accession	nucleotide sequences	NCBI RefSeq	RefSeq	https://www.ncbi.nlm.nih.gov/nuccore/
 rgd_id	homolog	Rat Genome Database	RGD	https://rgd.mcw.edu/rgdweb/report/gene/main.html?id=
 rna_central_ids	nucleotide sequences	RNAcentral: non-coding RNA sequence database	RNAcentral	http://rnacentral.org/rna/
-ucsc_id	gene	UCSC 	UCSC 	https://genome.cse.ucsc.edu/cgi-bin/hgGene?db=hg19&org=Human&hgg_type=knownGene&hgg_gene=
-ucsc_id	gene	UCSC 	Genome Browser	https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19&position=
+ucsc_id_grch37	gene	UCSC 	UCSC 	https://genome.cse.ucsc.edu/cgi-bin/hgGene?db=hg19&org=Human&hgg_type=knownGene&hgg_gene=
+ucsc_id_grch37	gene	UCSC 	Genome Browser	https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19&position=
 uniprot_ids	protein	UniProt	UniProt	http://www.uniprot.org/uniprot/
 uniprot_ids	protein	InterPro	InterPro	https://www.ebi.ac.uk/interpro/protein/
 uniprot_ids	protein	Protein Data Bank in Europe	PDBe	https://www.ebi.ac.uk/pdbe/entry/search/index?uniprot_accession:
 vega_id	gene	VEGA archive	VEGA	https://vega.sanger.ac.uk/Homo_sapiens/Gene/Summary?db=core;g=
 gnomad	gene	Genome Aggregation Database	gnomAD	https://gnomad.broadinstitute.org/gene/
+ensembl_gene_id	gene	Agora AD Knowledge Portal	Agora	https://agora.adknowledgeportal.org/genes/
