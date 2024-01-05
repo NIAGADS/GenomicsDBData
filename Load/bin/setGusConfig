@@ -1,6 +1,6 @@
 #!/bin/sh
 # update config files (perform docker substitutions)
-echo "Usage GUS_HOME=$GUS_HOME, PROJECT_HOME=$PROJECT_HOME, PROJECT_ID=$PROJECT_ID, and HOME=$HOME pulled from environemnt."
+echo "Usage GUS_HOME=$GUS_HOME, PROJECT_HOME=$PROJECT_HOME, PROJECT_ID=$PROJECT_ID, PROJECT_ROOT=$PROJECT_ROOT, and HOME=$HOME pulled from environemnt."
 echo "All other properties from the properties file = $SITE_ADMIN_PROPERTIES_FILE"
 echo "See docker build admin.properties files or guide"
 
@@ -28,8 +28,7 @@ sed -i "s|@DB_NAME@|$(prop 'DB_NAME')|g" $GUS_HOME/config/gus.config
 sed -i "s|@PROJECT_ID@|$PROJECT_ID|g" $GUS_HOME/config/gus.config
 
 echo "Setting DB - related ENV in setEnv.bash file"
-PROJECT_ROOT = $(prop 'PROJECT_ROOT')
-[[ -z "${PROJECT_ROOT}" ]] && PROJECT_HOME=$HOME || PROJECT_HOME=$HOME/$PROJECT_ROOT
+[[ -z "${PROJECT_ROOT}" ]] && PROJECT_HOME=$HOME || PROJECT_HOME=$PROJECT_ROOT
 
 sed -i "s|@DB_HOST@|$(prop 'DB_HOST')|g" $PROJECT_HOME/setEnv.bash
 sed -i "s|@DB_PORT@|$(prop 'DB_PORT')|g" $PROJECT_HOME/setEnv.bash
