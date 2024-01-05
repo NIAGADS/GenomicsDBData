@@ -104,6 +104,7 @@
                     "genomeWideSignificanceThreshold": "5e-8",
                     "markerIndicatesIndel": "true",
                     "checkAltIndels": "true",
+                    "numWorkers": 12,
                     "restrictedStats": {
                         "effect": "Effect",
                         "std_err": "StdErr",
