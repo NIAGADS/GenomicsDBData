@@ -14,8 +14,9 @@ import os.path as path
 import csv
 import json
 
-
-from GenomicsDBData.Util.utils import qw, warning, die, xstr
+from niagads.utils.sys import warning, die
+from niagads.utils.string import xstr
+from niagads.utils.list import qw
 
 
 def build_evidence_json(row):

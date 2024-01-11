@@ -105,7 +105,8 @@ sub lookup {
   my ($self, @variants) = @_;
   # $self->{plugin}->log(join(',', @variants));
 
-  $self->{lookup_qh}->execute(join(',', @variants), $self->{first_value_only}) || $self->{plugin}->error(DBI::errstr . "/" . Dumper(\@variants));
+  $self->{lookup_qh}->execute(join(',', @variants), $self->{first_value_only}) 
+    || $self->{plugin}->error(DBI::errstr . "/" . Dumper(\@variants));
   
   my ($result) = $self->{lookup_qh}->fetchrow_array();
   my $json = JSON::XS->new();

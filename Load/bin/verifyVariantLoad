@@ -3,8 +3,8 @@
 
 import json
 import argparse
-from GenomicsDBData.Util.postgres_dbi import Database
-from GenomicsDBData.Util.utils import die, warning, get_opener
+from niagads.db.postgres_dbi import Database
+from niagads.utils.sys import die, warning, get_opener
 
 
 def verify_variants():
