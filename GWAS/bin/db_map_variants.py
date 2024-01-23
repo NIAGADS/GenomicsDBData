@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import logging
 import json
 import argparse
@@ -13,13 +15,16 @@ from niagads.utils.logging import ExitOnExceptionHandler
 from niagads.utils.sys import verify_path, file_line_count
 from niagads.utils.reg_ex import regex_replace
 from niagads.utils.list import qw, chunker
+from niagads.utils.string import eval_null, xstr
+from niagads.utils.dict import print_dict
 
 LOGGER = logging.getLogger(__name__)
 
 CheckType = Enum('CheckType', ['NORMAL', 'UPDATE', 'FINAL'])
 FileFormat = Enum('FileFormat', ['LOAD', 'LIST'])
 
-INPUT_FIELDS = qw('chr bp allele1 allele2 marker metaseq_id freq1 pvalue neg_log10_p display_p gwas_flags test_allele restricted_stats_json mapped_variant_json')
+INPUT_FIELDS = qw('chr bp allele1 allele2 marker metaseq_id freq1 pvalue neg_log10_p display_p gwas_flags test_allele restricted_stats_json mapped_variant bin_index')
+
 
 def init_worker(debug: bool):
     """initialize parallel worker with large data structures 
@@ -35,13 +40,48 @@ def init_worker(debug: bool):
     sharedDebugFlag = debug
 
 
+def standardize_id(value):
+    if value is not None:
+        return value.replace('_', ':').replace('/', ':').replace('chr', '')
+    return value
 
 
+def build_variant_id(row, lineNum):
+    variantId = None
+    marker = standardize_id(eval_null(row['marker']))
+    metaseqId = standardize_id(eval_null(row['metaseq_id']))
+    if args.useMarker:     
+        if marker.count(':') == 3: # assume marker is metaseq_id
+            variantId = marker
+        else:
+            variantId = ':'.join(marker, row['allele1'], row['allele2']) 
+    else:        
+        if metaseqId is None:
+            chrom = eval_null(row['chr'])
+            if chrom is None:
+                if marker is None:
+                    LOGGER.warning("Cannot generate variant ID from the following: " + xstr(row))
+                    raise ValueError("metaseq_id, chromosome, marker and marker are all NULL - line number:" + str(lineNum))       
+                variantId = ':'.join(marker, row['allele1', row['allele2']])
+            else:
+                variantId = ':'.join(chrom, row['bp'], row['allele1'], row['allele2'])
+        else:
+            variantId = metaseqId
+    
+    # if both alleles are unknown, drop alleles and just map against position
+    variantId = regex_replace(':N:N', variantId) 
+    return variantId
 
 
-
-def parallel_db_lookup(variants):
-    1
+def parallel_db_lookup(lookups):
+    # lookups is [{'variant': row}, {'variant2': row}, ... pairs]
+    # to extract the variants, need to do the following:
+    # [list(d) for d in lookups] -> [['variant'], '[variant2'], ...]; i.e. a nested list
+    # unnested/flattened after: https://www.makeuseof.com/python-nested-list-flatten/
+    # flatList = [k for i in nestedList for k in i]
+    variants = [k for i in [list(d) for d in lookups] for k in i]
+    variantStr = ','.join(variants)
+    
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="", allow_abbrev=False)
@@ -91,22 +131,30 @@ if __name__ == "__main__":
     # create list of variant ids to look up
     # assumes variant_id is first column or only column
     with open(args.inputFile, 'r') as fh:
-        rowCount = 0
         if FileFormat[args.format] == FileFormat.LOAD:
-            header = fh.readline()
-            rowCount += 1
+            reader = DictReader(fh)
+            header = reader.fieldnames
+            # reader.line_num
             
-        lookups = []
-        for line in fh:
-            rowCount += 1
-            values = line.rstrip().split('\t')
-            lookups.append(values[0])
+            lookups = [] # using an array to keep order of file
+            for row in reader:
+                line = reader.line_num
+                # array of variant_id : row pairs
+                lookups.append({build_variant_id(row, line): row})
 
+        else:
+            raise NotImplementedError("DB Lookups for LISTs of variants not yet implemented")
 
-    chunks = chunker(list(lookups), size=args.chunkSize)
+    # rs88684912
+    variant = list(lookups[0])
+    annotator = VariantRecord()
+    print("test - " + variant)
+    result = annotator.bulk_lookup(variant)
+    print_dict(result, pretty=True)
 
-    with Pool(numWorkers, initializer=init_worker, initargs=(args.debug)) as pool:  
-        if args.debug:
-            LOGGER.debug("Starting parallel processing of variants; max number workers = " + str(numWorkers))
+    # chunks = chunker(list(lookups), size=args.chunkSize)
+    # with Pool(numWorkers, initializer=init_worker, initargs=(args.debug)) as pool:  
+    #     if args.debug:
+    #        LOGGER.debug("Starting parallel processing of variants; max number workers = " + str(numWorkers))
                 
-        mapping = pool.imap(parallel_db_lookup, [c for c in chunks])
+    #    mapping = pool.imap(parallel_db_lookup, [c for c in chunks])
