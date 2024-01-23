@@ -47,6 +47,7 @@ def standardize_id(value):
 
 
 def build_variant_id(row, lineNum):
+    LOGGER.debug(row)
     variantId = None
     marker = standardize_id(eval_null(row['marker']))
     metaseqId = standardize_id(eval_null(row['metaseq_id']))
@@ -132,7 +133,7 @@ if __name__ == "__main__":
     # assumes variant_id is first column or only column
     with open(args.inputFile, 'r') as fh:
         if FileFormat[args.format] == FileFormat.LOAD:
-            reader = DictReader(fh)
+            reader = DictReader(fh, delimiter='\t')
             header = reader.fieldnames
             # reader.line_num
             
