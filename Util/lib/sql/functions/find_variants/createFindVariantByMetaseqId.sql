@@ -24,6 +24,16 @@ END;
 
 $$ LANGUAGE plpgsql;
 
+/*CREATE OR REPLACE FUNCTION generate_normalized_metaseq_id(metaseqId TEXT)
+            RETURNS TEXT AS $$
+DECLARE
+	altId TEXT;
+BEGIN
+	TODO
+END;
+
+$$ LANGUAGE plpgsql; */
+
 
 DROP FUNCTION IF EXISTS find_variant_by_metaseq_id_variations(TEXT, BOOLEAN);
 CREATE OR REPLACE FUNCTION find_variant_by_metaseq_id_variations(metaseqId TEXT, firstHitOnly BOOLEAN DEFAULT FALSE)
@@ -31,51 +41,59 @@ CREATE OR REPLACE FUNCTION find_variant_by_metaseq_id_variations(metaseqId TEXT,
        	             is_adsp_variant BOOLEAN, bin_index LTREE, annotation JSONB, match_rank INTEGER, match_type TEXT) AS $$
 
 BEGIN
-	RETURN QUERY
-    	SELECT *, 1 AS match_rank, 'exact' AS match_type
-	FROM find_variant_by_metaseq_id(metaseqId, firstHitOnly);
+    IF array_length(string_to_array(metaseqId, ':'), 1) - 1 = 1 THEN -- chr:pos only
+        -- RAISE NOTICE 'POSITION';
+        RETURN QUERY
+            SELECT *, 6 AS match_rank, 'position' AS match_type
+        FROM find_variant_by_position('chr' || split_part(metaseqId, ':', 1)::text, split_part(metaseqId, ':', 2)::int, firstHitOnly);
+    END IF;
 
-	IF NOT FOUND THEN
-	   RETURN QUERY
-               SELECT *, 2 AS match_rank, 'switch' AS match_type
-	       FROM find_variant_by_metaseq_id(generate_alt_metaseq_id(metaseqId), firstHitOnly);
-	END IF;
-
-	IF NOT FOUND THEN
-	   RETURN QUERY
-	   	  SELECT *, 3 AS match_rank, 'reverse comp' AS match_type
-	   	  FROM find_variant_by_metaseq_id(generate_rc_metaseq_id(metaseqId), firstHitOnly);
-	END IF;
-
-	IF NOT FOUND THEN
-	   RETURN QUERY
-	   	  SELECT *, 4 AS match_rank, 'reverse comp//switch' AS match_type
-		  FROM find_variant_by_metaseq_id(generate_alt_metaseq_id(generate_rc_metaseq_id(metaseqId)), firstHitOnly);
-        END IF;
-
-	IF NOT FOUND THEN
-	   IF metaseqID LIKE '%:N%' THEN -- contains an unknown allele
-	      IF metaseqID LIKE '%:N:N%' THEN -- containst 2 unknown allele 	 
-	      	 RETURN QUERY
+    IF metaseqID LIKE '%:N%' THEN -- contains an unknown allele
+        IF metaseqID LIKE '%:N:N%' THEN -- containst 2 unknown allele 	 
+            -- RAISE NOTICE 'POSITION';
+            RETURN QUERY
 	      	 	SELECT *, 6 AS match_rank, 'position' AS match_type
-		 	FROM find_variant_by_position('chr' || split_part(metaseqId, ':', 1)::text, split_part(metaseqId, ':', 2)::int, firstHitOnly);
-	      ELSE -- contains one unknown allele
-	      	 RETURN QUERY
-		 	SELECT *, 5 AS match_rank, 'position and allele' AS match_type
-		 	FROM find_variant_by_position_and_allele('chr' || split_part(metaseqId, ':', 1)::text,
-			     split_part(metaseqId, ':', 2)::int,
-			     CASE WHEN split_part(metaseqId, ':', 3) = 'N' THEN split_part(metaseqId, ':', 4) ELSE split_part(metaseqId, ':', 3) END, firstHitOnly);
-	      END IF;
-	   END IF;
+		    FROM find_variant_by_position('chr' || split_part(metaseqId, ':', 1)::text, split_part(metaseqId, ':', 2)::int, firstHitOnly);
+	    ELSE -- contains one unknown allele
+            -- RAISE NOTICE 'POSITION & ALLELE';
+	      	RETURN QUERY
+		 	    SELECT *, 5 AS match_rank, 'position and allele' AS match_type
+		 	    FROM find_variant_by_position_and_allele('chr' || split_part(metaseqId, ':', 1)::text,
+			        split_part(metaseqId, ':', 2)::int,
+			    CASE WHEN split_part(metaseqId, ':', 3) = 'N' 
+                    THEN split_part(metaseqId, ':', 4) 
+                    ELSE split_part(metaseqId, ':', 3) 
+                    END, firstHitOnly);
+        END IF; -- metaseq 
+	END IF; -- metaseq ID contains N
+
+    IF NOT FOUND THEN        
+        -- RAISE NOTICE 'EXACT';
+	    RETURN QUERY
+    	    SELECT *, 1 AS match_rank, 'exact' AS match_type
+	        FROM find_variant_by_metaseq_id(metaseqId, firstHitOnly);
+    END IF;
+	
+    IF NOT FOUND THEN
+        -- RAISE NOTICE 'SWITCH';
+        RETURN QUERY
+            SELECT *, 2 AS match_rank, 'switch' AS match_type
+	        FROM find_variant_by_metaseq_id(generate_alt_metaseq_id(metaseqId), firstHitOnly);
 	END IF;
 
 	IF NOT FOUND THEN
-	   IF array_length(string_to_array(metaseqId, ':'), 1) - 1 = 1 THEN -- chr:pos only
-	      RETURN QUERY
-	      	 SELECT *, 6 AS match_rank, 'position' AS match_type
-		 FROM find_variant_by_position('chr' || split_part(metaseqId, ':', 1)::text, split_part(metaseqId, ':', 2)::int, firstHitOnly);
-	   END IF;
+        -- RAISE NOTICE 'REVERSE COMP';
+	    RETURN QUERY
+	   	    SELECT *, 3 AS match_rank, 'reverse comp' AS match_type
+            FROM find_variant_by_metaseq_id(generate_rc_metaseq_id(metaseqId), firstHitOnly);
 	END IF;
+
+	IF NOT FOUND THEN
+        -- RAISE NOTICE 'RC/SWITCH';
+        RETURN QUERY
+	   	    SELECT *, 4 AS match_rank, 'reverse comp//switch' AS match_type
+		    FROM find_variant_by_metaseq_id(generate_alt_metaseq_id(generate_rc_metaseq_id(metaseqId)), firstHitOnly);
+    END IF;
 END;
 
 $$ LANGUAGE plpgsql;
