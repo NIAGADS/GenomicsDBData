@@ -30,3 +30,5 @@ SELECT mv.search_term, mv.mapped_variant
 FROM MatchedVariants mv;
 
 END;
+
+$$ LANGUAGE plpgsql;
