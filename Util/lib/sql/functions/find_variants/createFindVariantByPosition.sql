@@ -45,6 +45,7 @@ BEGIN
 	FROM AnnotatedVDB.Variant v, bin b
 	WHERE chromosome = chr AND v.bin_index @> b.bin_index
         AND int8range(pos, pos, '[]') && int8range(v.position, v.position, '[]')	
+    ORDER BY record_primary_key -- LIMIT 1 hangs the query for some reason; see for ORDER BY solution https://stackoverflow.com/a/27237698
 	LIMIT CASE WHEN firstHitOnly THEN 1 END;
 END;
 
