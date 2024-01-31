@@ -73,13 +73,15 @@ def build_variant_id(row):
                 if args.failOnInvalidVariant:
                     raise ValueError("metaseq_id and BP are NULL - line number:" + xstr(row))
                 else:
-                    LOGGER.warning("Cannot generate variant ID from the following: " + xstr(row))
+                    if args.verbose:
+                        LOGGER.warning("Cannot generate variant ID from the following: " + xstr(row))
                     return None
             if chrom is None:
                 if args.failOnInvalidVariant:
                     raise ValueError("metaseq_id and chromosome are NULL - line number:" + xstr(row))  
                 else:
-                    LOGGER.warning("Cannot generate variant ID from the following: " + xstr(row))
+                    if args.verbose:
+                        LOGGER.warning("Cannot generate variant ID from the following: " + xstr(row))
                     return None
 
             variantId = ':'.join((chrom, bp, row['allele1'], row['allele2']))
@@ -212,7 +214,7 @@ def parse_input_file():
                     LOGGER.info("Done reading in test lines: n = " + xstr(args.test))
                     break
                 
-                if args.verbose and lineCount % 500000 == 0:
+                if lineCount % 500000 == 0:
                     LOGGER.info("Read " + str(lineCount) + " lines.")
 
         else:
@@ -226,8 +228,8 @@ def parse_input_file():
 # print('\t'.join(header), file=sfh) # skip
 
 def run(header, lookups):
-    if args.verbose:
-        LOGGER.info("Starting parallel processing of variants; max number workers = " + str(args.numWorkers))
+
+    LOGGER.info("Starting parallel processing of variants; max number workers = " + str(args.numWorkers))
     
     mappedHeader = header + ['db_mapped_variant']
     with open(args.mappedFile, 'w') as mfh, \
@@ -269,7 +271,7 @@ def run(header, lookups):
                     print('\t'.join([ row[field] for field in mappedHeader]), file = mfh)
                     mCount = mCount + 1
                     
-                if args.verbose and count % 500000 == 0:
+                if count % 500000 == 0:
                     LOGGER.info("Processed " + str(count) + " variants.")
 
     if args.verbose:
