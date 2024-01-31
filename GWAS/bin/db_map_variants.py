@@ -99,7 +99,7 @@ def catch_db_lookup_error(variants, lookups, firstHitOnly):
             mappings.update(annotator.bulk_lookup(variant, fullAnnotation=False, firstHitOnly=firstHitOnly))
         except Exception as err:
             annotator.rollback()
-            mappings.update({variant: {'error': str(err), 'input': list(lookups[index].values())[0]}})
+            mappings.update({variant: {'error': str(err), 'variant':variant, 'input': list(lookups[index].values())[0]}})
     
     return {"lookups" :lookups, "mappings": mappings }
 
@@ -207,7 +207,7 @@ def parse_input_file():
                 else:
                     # array of variant_id : row pairs
                     lookups.append({variantId: row})
-    
+
                 if args.test and lineCount == args.test:
                     LOGGER.info("Done reading in test lines: n = " + xstr(args.test))
                     break
@@ -317,4 +317,5 @@ if __name__ == "__main__":
             if len(errors) > 0: 
                 LOGGER.info("Error mapping " + str(len(errors)) + " variants.")      
                 for e in errors:
-                    LOGGER.error("Unable to map variant: " +  e['error'] + "; " + xstr(e['input']))
+                    LOGGER.error("Unable to map variant: " +  e['error'] 
+                        + "; variant = " + xstr(e['variant']) + "; row =  " + xstr(e['input']))
