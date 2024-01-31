@@ -4,6 +4,7 @@ import logging
 import json
 import argparse
 
+from os import getcwd, path
 from csv import DictReader
 from multiprocessing import Pool, cpu_count
 from enum import Enum
@@ -55,7 +56,7 @@ def mapping_to_string(value):
     return json.dumps(value)
 
 
-def build_variant_id(row, lineNum):
+def build_variant_id(row):
     variantId = None
     marker = standardize_id(eval_null(row['marker']))
     metaseqId = standardize_id(eval_null(row['metaseq_id']))
@@ -68,23 +69,20 @@ def build_variant_id(row, lineNum):
         if metaseqId is None:
             chrom = eval_null(row['chr'])
             bp = eval_null(row['bp'])
-            if bp is None:
-                if marker is None:
+            if bp is None:    
+                if args.failOnInvalidVariant:
+                    raise ValueError("metaseq_id and BP are NULL - line number:" + xstr(row))
+                else:
                     LOGGER.warning("Cannot generate variant ID from the following: " + xstr(row))
-                    if args.failOnInvalidVariant:
-                        raise ValueError("metaseq_id, and BP are NULL - line number:" + str(lineNum))      
-                    # else:
-                    #     return None
+                    return None
             if chrom is None:
-                if marker is None:
+                if args.failOnInvalidVariant:
+                    raise ValueError("metaseq_id and chromosome are NULL - line number:" + xstr(row))  
+                else:
                     LOGGER.warning("Cannot generate variant ID from the following: " + xstr(row))
-                    if args.failOnInvalidVariant:
-                        raise ValueError("metaseq_id, chromosome, marker and marker are all NULL - line number:" + str(lineNum))  
-                    # else:
-                    #    return None     
-                variantId = ':'.join((marker, row['allele1', row['allele2']]))
-            else:
-                variantId = ':'.join((chrom, row['bp'], row['allele1'], row['allele2']))
+                    return None
+
+            variantId = ':'.join((chrom, bp, row['allele1'], row['allele2']))
         else:
             variantId = metaseqId
     
@@ -95,16 +93,17 @@ def build_variant_id(row, lineNum):
 
 def catch_db_lookup_error(variants, lookups, firstHitOnly):
     annotator = VariantRecord(debug=args.debug)
-    result = {}
+    mappings = {}
     for index, variant in enumerate(variants):
         try:
-            result.update(annotator.bulk_lookup(variant, fullAnnotation=False, firstHitOnly=firstHitOnly))
+            mappings.update(annotator.bulk_lookup(variant, fullAnnotation=False, firstHitOnly=firstHitOnly))
         except Exception as err:
-            result.update({variant, {'error': str(err), 'input': lookups[index].values()[0]} })
+            annotator.rollback()
+            mappings.update({variant: {'error': str(err), 'input': list(lookups[index].values())[0]}})
     
-    return result
+    return {"lookups" :lookups, "mappings": mappings }
 
-            
+
 def parallel_db_lookup(lookups):
     global sharedFirstHitOnlyFlag
     # lookups is [{'variant': row}, {'variant2': row}, ... pairs]
@@ -120,10 +119,21 @@ def parallel_db_lookup(lookups):
     except Exception as err:
         LOGGER.warning("ERROR with bulk lookup; finding problematic variant")
         return catch_db_lookup_error(variants, lookups, sharedFirstHitOnlyFlag)
+    finally:
+        annotator.close()
+
+
+def check_file(extension, fileType):
+    baseName = path.basename(args.inputFile)
+    filePath = path.join(args.outputDir, baseName + "." + extension)
+    LOGGER.info(fileType + ": " + filePath)
+    if verify_path(filePath):
+        LOGGER.warning(fileType + " : already exists; OVERWRITING")
+    return filePath
 
 
 def initialize():
-    logFileName = args.inputFile + ".log"
+    logFileName = path.join(args.outputDir, path.basename(args.inputFile) + ".log")
     logging.basicConfig(
         handlers=[ExitOnCriticalExceptionHandler(
             filename= logFileName,
@@ -134,27 +144,23 @@ def initialize():
         level=logging.DEBUG if args.debug else logging.INFO
     )
     
-    LOGGER.info("Logging to: " + logFileName)
+    LOGGER.info("SETTINGS")
     
     checkType = CheckType[args.checkType]
     LOGGER.info("Check Type: " + checkType.name)
     
-    numWorkers = args.numWorkers
-    if numWorkers > cpu_count() - 2:
+    if args.numWorkers > cpu_count() - 2:
         LOGGER.warning("Invalid value for `numWorkers`" 
-            + str(numWorkers), "must be <= #CPUS - 2: " 
+            + str(args.numWorkers), "must be <= #CPUS - 2: " 
             + str(cpu_count() - 2) + ": ADJUSTING")
-        numWorkers = cpu_count() - 2
+        args.numWorkers = cpu_count() - 2
         
-    LOGGER.info("Num workers: " + str(numWorkers))
+    LOGGER.info("Num workers: " + str(args.numWorkers))
 
-    outputFileName = args.inputFile + ".dbmapped.uc" \
-        if checkType == CheckType.FINAL else args.inputFile + ".dbmapped"
-        
-    LOGGER.info("Writing DB-mapped variants to: " + outputFileName)
-    
-    if verify_path(outputFileName):
-        LOGGER.warning("DB Mapped file: " + outputFileName + " already exists; OVERWRITING")
+    args.mappedFile = check_file("map", "DB mapped variants file")
+    args.unmappedFile = check_file("unmap", "Unmapped DB mapped variants file")
+    args.skipFile = check_file("skip", "Skipped variants file")
+    args.errorFile = check_file("error", "DB mapping Error file")
     
     # create hash of variant_id -> line #
     # chunk the array keys (variant_id) and then run thru pool.imap
@@ -172,22 +178,36 @@ def initialize():
     else:
         f, i = modf(numLines / args.chunkSize)
         LOGGER.info("Estimated paged lookups: " + (str(int(i) + 1) if f > 0 else str(int(i))))
-        
-    return numWorkers, outputFileName
+    
+    return args
 
 
 def parse_input_file():
     lineCount = 0
+    skipCount = 0
     header = None
-    with open(args.inputFile, 'r') as fh:
+    with open(args.inputFile, 'r') as fh, \
+        open(args.skipFile, 'w') as sfh:
+            
         if FileFormat[args.format] == FileFormat.LOAD:
             reader = DictReader(fh, delimiter='\t')
             header = reader.fieldnames
+            
+            print('\t'.join(header), file=sfh)
+            
             lookups = [] # using an array to keep order of file
             for row in reader:
                 lineCount = lineCount + 1
-                # array of variant_id : row pairs
-                lookups.append({build_variant_id(row, lineCount): row})
+                
+                variantId = build_variant_id(row)
+                
+                if variantId is None:
+                    print('\t'.join([row[field] for field in header]), file = sfh)   
+                    skipCount = skipCount + 1
+                else:
+                    # array of variant_id : row pairs
+                    lookups.append({variantId: row})
+    
                 if args.test and lineCount == args.test:
                     LOGGER.info("Done reading in test lines: n = " + xstr(args.test))
                     break
@@ -200,59 +220,75 @@ def parse_input_file():
 
     LOGGER.info("Done reading file.  Parsed " + str(lineCount) + " lines.")
     
-    return header, lookups
+    return header, lookups, skipCount
 
+# open(args.skipFile, 'w') as sfh, 
+# print('\t'.join(header), file=sfh) # skip
 
-def run(outputFileName, numWorkers, header, lookups):
+def run(header, lookups):
     if args.verbose:
-        LOGGER.info("Starting parallel processing of variants; max number workers = " + str(numWorkers))
-        
-    with open(outputFileName, 'w') as ofh, \
-        Pool(numWorkers, initializer=init_worker, initargs=(args.debug, not args.allHits)) as pool: 
+        LOGGER.info("Starting parallel processing of variants; max number workers = " + str(args.numWorkers))
+    
+    mappedHeader = header + ['db_mapped_variant']
+    with open(args.mappedFile, 'w') as mfh, \
+        open(args.unmappedFile, 'w') as ufh, \
+        open(args.errorFile, 'w') as efh, \
+        Pool(args.numWorkers, initializer=init_worker, initargs=(args.debug, not args.allHits)) as pool: 
 
-        lineCount = 0
-        errorCount = 0
-        header = header + ['db_mapped_variant']
-        print('\t'.join(header), file=ofh)
+        print('\t'.join(header), file=ufh) # unmapped
+        print('\t'.join(header), file=efh) # error
+        print('\t'.join(mappedHeader), file=mfh) # mapped
+
+        mCount = 0
+        uCount = 0
+        count = 0
+        errors = []
         
         chunks = chunker(list(lookups), size=args.chunkSize, returnIterator=False)
         result = pool.imap(parallel_db_lookup, [c for c in chunks])        
-        
         for r in result:           
             lookups = r['lookups']
             mappings = r['mappings']
             for item in lookups:
+                count = count + 1
+                
                 variant = list(item.keys())[0]
                 row = list(item.values())[0]
                 mappedVariant = mappings[variant]
+                
                 if mappedVariant is None:
-                    # TODO: print Nones to unmapped file
-                    LOGGER.debug("Unmapped Variant: " + print_dict({'variant': variant, 'row': row}))
+                    print('\t'.join([ row[field] for field in header]), file = ufh)   
+                    uCount = uCount + 1
+                    if args.debug and args.verbose:
+                        LOGGER.debug("Unmapped Variant: " + xstr({'variant': variant, 'row': row}))
                 elif 'error' in mappedVariant:
-                    errorCount = errorCount + 1
-                    LOGGER.error("Unable to map variant: " + print_dict(mappedVariant))
-                else:
-                    
+                    print('\t'.join([ row[field] for field in header]), file = efh)   
+                    errors.append(mappedVariant)
+                else:      
                     row['db_mapped_variant'] = mapping_to_string(mappings[variant])
-                    print('\t'.join([ row[field] for field in header]), file = ofh)
-                    lineCount = lineCount + 1
-                    if args.verbose and lineCount % 500000 == 0:
-                        LOGGER.info("Wrote " + str(lineCount) + " updated lines.")
+                    print('\t'.join([ row[field] for field in mappedHeader]), file = mfh)
+                    mCount = mCount + 1
+                    
+                if args.verbose and count % 500000 == 0:
+                    LOGGER.info("Processed " + str(count) + " variants.")
 
-    LOGGER.info("Wrote " + str(lineCount) + " updated lines.")    
-    LOGGER.info("Error mapping " + str(errorCount) + " variants; see log file.")      
-    # LOGGER.info("Unable to map " + str(unmappedCount) + " variants; see " + unmappedFileName) 
-    # LOGGER.info("Skipped " + str(invalidCount)) + " invalid variants; see log file.")
+    if args.verbose:
+        LOGGER.info("Processed " + str(count) + " variants.")
+        
+    return {'mapped': mCount, 'unmapped': uCount}, errors
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="", allow_abbrev=False)
     parser.add_argument('--inputFile', help="full path to input file", required=True)
+    parser.add_argument('--outputDir', default=getcwd(), help="full path to output directory; if not specified will use current working directory")
     parser.add_argument('--format', choices=["LOAD", "LIST"], default="LOAD")
     parser.add_argument('--gusConfigFile', help="gus config file; defaults to $GUS_HOME/config/gus.config if not specified")
     parser.add_argument('--debug', action='store_true')
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--chunkSize', type=int, default=200)
     parser.add_argument('--failOnInvalidVariant', action='store_true', help="fail when invalid variants found, otherwise logs & skips")
+    # parser.add_argument('--failOnDbLookupError', action='store_true', help="fail instead of logging DB variant lookup error")
     parser.add_argument('--useMarker', action='store_true')
     parser.add_argument('--allHits', action='store_true', help="return all hits to a marker; if not specified will return first hit only")
     parser.add_argument('--checkType', choices = ["NORMAL", "UPDATE", "FINAL"], default="NORMAL")
@@ -262,9 +298,23 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
 
+    errors = None
+    counts = None
     try:
-        numWorkers, outputFileName = initialize()
-        header, lookups = parse_input_file()
-        run(outputFileName, numWorkers, header, lookups)
+        args = initialize()
+        header, lookups, skipCount = parse_input_file()
+        counts, errors = run(header, lookups)
+        
     except Exception as err:
-        LOGGER.critical("DB mapping FAILED: ", err, stack_info=True)
+        LOGGER.critical("DB MAPPING FAILED: " + str(err), stack_info=True)
+        
+    finally:
+        if counts is not None:
+            LOGGER.info("Mapped " + str(counts['mapped']) + " variants.")    
+            LOGGER.info("Unable to map " + str(counts['unmapped']) + " variants.")    
+            LOGGER.info("Skipped " + str(skipCount) + " invalid variants.")      
+        if errors is not None:
+            if len(errors) > 0: 
+                LOGGER.info("Error mapping " + str(len(errors)) + " variants.")      
+                for e in errors:
+                    LOGGER.error("Unable to map variant: " +  e['error'] + "; " + xstr(e['input']))
