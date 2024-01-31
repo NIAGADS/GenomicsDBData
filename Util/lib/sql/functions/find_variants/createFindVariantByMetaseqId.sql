@@ -86,27 +86,30 @@ BEGIN
 	        FROM find_variant_by_metaseq_id(generate_alt_metaseq_id(metaseqId), firstHitOnly);
 	END IF;
 
-    IF NOT FOUND THEN
-        IF length(split_part(metaseqID, ':', 3)) > 1 OR length(split_part(metaseqID, ':', 4)) > 1 THEN -- indel
+    IF NOT FOUND AND 
+        /* only normalize if not an SNV */
+        (length(split_part(metaseqID, ':', 3)) > 1 OR length(split_part(metaseqID, ':', 4)) > 1) THEN -- indel
             -- RAISE NOTICE 'NORMALIZED'
             RETURN QUERY
                 SELECT *, 3 AS match_rank, 'normalized alleles' AS match_type
                 FROM find_variant_by_normalized_metaseq_id(metaseqID, firstHitOnly);
-        END IF;
     END IF; 
 
-	IF NOT FOUND THEN
+    
+    IF NOT FOUND AND 
+        /* do not look for reverse complements on long INDELS, only SNVs and short INDELS, and MNVs */
+        (length(split_part(metaseqID, ':', 3)) <= 3 AND length(split_part(metaseqID, ':', 4)) <=3) THEN
         -- RAISE NOTICE 'REVERSE COMP';
 	    RETURN QUERY
 	   	    SELECT *, 4 AS match_rank, 'reverse comp' AS match_type
             FROM find_variant_by_metaseq_id(generate_rc_metaseq_id(metaseqId), firstHitOnly);
-	END IF;
 
-	IF NOT FOUND THEN
-        -- RAISE NOTICE 'RC/SWITCH';
-        RETURN QUERY
-	   	    SELECT *, 5 AS match_rank, 'reverse comp//switch' AS match_type
-		    FROM find_variant_by_metaseq_id(generate_alt_metaseq_id(generate_rc_metaseq_id(metaseqId)), firstHitOnly);
+        IF NOT FOUND THEN
+            -- RAISE NOTICE 'RC/SWITCH';
+            RETURN QUERY
+                SELECT *, 5 AS match_rank, 'reverse comp//switch' AS match_type
+                FROM find_variant_by_metaseq_id(generate_alt_metaseq_id(generate_rc_metaseq_id(metaseqId)), firstHitOnly);
+        END IF;
     END IF;
 
     
