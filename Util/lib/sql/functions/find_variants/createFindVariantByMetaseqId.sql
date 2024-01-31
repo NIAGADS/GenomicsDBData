@@ -24,15 +24,20 @@ END;
 
 $$ LANGUAGE plpgsql;
 
-/*CREATE OR REPLACE FUNCTION generate_normalized_metaseq_id(metaseqId TEXT)
+CREATE OR REPLACE FUNCTION generate_normalized_metaseq_id(metaseqId TEXT)
             RETURNS TEXT AS $$
 DECLARE
 	altId TEXT;
 BEGIN
-	TODO
+    WITH _array AS (SELECT regexp_split_to_array(metaseqId, ':') AS VALUES)
+    SELECT  CONCAT(_array.values[1], ':'::text, _array.values[2], ':'::text, 
+    CASE WHEN ref = ''  THEN '-' ELSE ref END, ':'::text,
+    CASE WHEN alt = ''  THEN '-' ELSE alt END) INTO altID
+    FROM _array, normalize_alleles(_array.values[3], _array.values[4]);
+    RETURN altId;
 END;
 
-$$ LANGUAGE plpgsql; */
+$$ LANGUAGE plpgsql; 
 
 
 DROP FUNCTION IF EXISTS find_variant_by_metaseq_id_variations(TEXT, BOOLEAN);
@@ -81,19 +86,31 @@ BEGIN
 	        FROM find_variant_by_metaseq_id(generate_alt_metaseq_id(metaseqId), firstHitOnly);
 	END IF;
 
+    IF NOT FOUND THEN
+        IF length(split_part(metaseqID, ':', 3)) > 1 OR length(split_part(metaseqID, ':', 4)) > 1 THEN -- indel
+            -- RAISE NOTICE 'NORMALIZED'
+            RETURN QUERY
+                SELECT *, 3 AS match_rank, 'normalized alleles' AS match_type
+                FROM find_variant_by_normalized_metaseq_id(metaseqID, firstHitOnly);
+        END IF;
+    END IF; 
+
 	IF NOT FOUND THEN
         -- RAISE NOTICE 'REVERSE COMP';
 	    RETURN QUERY
-	   	    SELECT *, 3 AS match_rank, 'reverse comp' AS match_type
+	   	    SELECT *, 4 AS match_rank, 'reverse comp' AS match_type
             FROM find_variant_by_metaseq_id(generate_rc_metaseq_id(metaseqId), firstHitOnly);
 	END IF;
 
 	IF NOT FOUND THEN
         -- RAISE NOTICE 'RC/SWITCH';
         RETURN QUERY
-	   	    SELECT *, 4 AS match_rank, 'reverse comp//switch' AS match_type
+	   	    SELECT *, 5 AS match_rank, 'reverse comp//switch' AS match_type
 		    FROM find_variant_by_metaseq_id(generate_alt_metaseq_id(generate_rc_metaseq_id(metaseqId)), firstHitOnly);
     END IF;
+
+    
+
 END;
 
 $$ LANGUAGE plpgsql;
@@ -127,10 +144,36 @@ END;
 
 $$ LANGUAGE plpgsql;
 
+
+--firstHitOnly default TRUE b/c positional match
+--DROP FUNCTION find_variant_by_normalized_metaseq_id(text,boolean);
+CREATE OR REPLACE FUNCTION find_variant_by_normalized_metaseq_id(metaseqId TEXT, firstHitOnly BOOLEAN DEFAULT TRUE)
+    RETURNS TABLE(record_primary_key TEXT, ref_snp_id CHARACTER VARYING, metaseq_id TEXT, alleles TEXT, variant_class TEXT,
+            is_adsp_variant BOOLEAN, bin_index LTREE, annotation JSONB) AS $$
+
+DECLARE chrm TEXT;
+DECLARE pos INT;
+DECLARE normMetaseqId TEXT;
+
+BEGIN
+    SELECT generate_normalized_metaseq_id(metaseqId) INTO normMetaseqId;
+    SELECT 'chr' || split_part(normMetaseqId, ':', 1) INTO chrm;
+    SELECT (split_part(normMetaseqId, ':', 2))::int INTO pos;
+
+    RETURN QUERY
+        SELECT v.record_primary_key, v.ref_snp_id, v.metaseq_id, v.alleles, v.variant_class,
+        v.is_adsp_variant, v.bin_index, v.annotation
+        FROM find_variant_by_position(chrm, pos) v
+        , generate_normalized_metaseq_id(v.metaseq_id) AS n_metaseq_id
+        WHERE n_metaseq_id = normMetaseqId
+        LIMIT CASE WHEN firstHitOnly THEN 1 END;
+END;
+$$ LANGUAGE plpgsql;
+
 DROP FUNCTION IF EXISTS find_variant_by_metaseq_id(metaseqId TEXT, chrm TEXT, firstHitOnly BOOLEAN);
 CREATE OR REPLACE FUNCTION find_variant_by_metaseq_id(metaseqId TEXT, chrm TEXT, firstHitOnly BOOLEAN DEFAULT FALSE)
         RETURNS TABLE(record_primary_key TEXT, ref_snp_id CHARACTER VARYING, metaseq_id TEXT, alleles TEXT, variant_class TEXT,
-       	             is_adsp_variant BOOLEAN, bin_index LTREE, annotation JSONB) AS $$
+            is_adsp_variant BOOLEAN, bin_index LTREE, annotation JSONB) AS $$
 BEGIN
 	RETURN QUERY
 	SELECT v.record_primary_key::TEXT, v.ref_snp_id, v.metaseq_id,
