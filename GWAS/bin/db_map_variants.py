@@ -271,10 +271,9 @@ def run(header, lookups):
                     print('\t'.join([ row[field] for field in mappedHeader]), file = mfh)
                     mCount = mCount + 1
                     
-                if count % 500000 == 0:
+                if count % 50000 == 0:
                     LOGGER.info("Processed " + str(count) + " variants.")
 
-    if args.verbose:
         LOGGER.info("Processed " + str(count) + " variants.")
         
     return {'mapped': mCount, 'unmapped': uCount}, errors
