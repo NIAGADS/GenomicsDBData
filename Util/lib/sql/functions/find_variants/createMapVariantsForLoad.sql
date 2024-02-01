@@ -1,6 +1,7 @@
 /* NOTE THESE FUNCTIONS ARE DERIVED FROM THOSE IN ../website_search/createFindVariantPrimaryKey.sql; may need to adjust accordingly */
 
-CREATE OR REPLACE FUNCTION map_variants(variantID TEXT, firstHitOnly BOOLEAN DEFAULT TRUE) 
+DROP FUNCTION map_variants(TEXT, BOOLEAN);
+CREATE OR REPLACE FUNCTION map_variants(variantID TEXT, firstHitOnly BOOLEAN DEFAULT TRUE, checkAltAlleles BOOLEAN DEFAULT TRUE) 
        RETURNS JSONB AS $$
 DECLARE 
 	result JSONB;
@@ -18,7 +19,7 @@ MatchedVariants AS (
         FROM find_variant_by_refsnp_and_alleles(variant.id, firstHitOnly))
     WHEN LOWER(variant.id) LIKE '%:%' AND LOWER(variant.id) NOT LIKE '%:rs%' THEN
         (SELECT jsonb_agg(jsonb_build_object('primary_key', record_primary_key, 'bin_index', bin_index) ) 
-        FROM find_variant_by_metaseq_id_variations(variant.id, firstHitOnly))
+        FROM find_variant_by_metaseq_id_variations(variant.id, firstHitOnly, checkAltAlleles))
     WHEN LOWER(variant.id) LIKE '%:rs%' AND LOWER(variant.id) LIKE '%:%' THEN
         (SELECT jsonb_agg(jsonb_build_object('primary_key', av.record_primary_key, 'bin_index', av.bin_index)) 
         FROM AnnotatedVDB.Variant av, variant WHERE record_primary_key = variant.id) 
