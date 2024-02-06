@@ -137,9 +137,10 @@ def parallel_db_lookup(lookups):
         annotator.close()
 
 
-def check_file(extension, fileType):
+def check_file(extension, fileType, suffix):
+    
     baseName = path.basename(args.inputFile)
-    filePath = path.join(args.outputDir, baseName + "." + extension)
+    filePath = path.join(args.outputDir, baseName + '-' + suffix + '.' + extension)
     LOGGER.info(fileType + ": " + filePath)
     if verify_path(filePath):
         LOGGER.warning(fileType + " : already exists; OVERWRITING")
@@ -147,7 +148,9 @@ def check_file(extension, fileType):
 
 
 def initialize():
-    logFileName = path.join(args.outputDir, path.basename(args.inputFile) + ".log")
+    suffix = '' if not args.outputSuffix else args.outputSuffix
+    
+    logFileName = path.join(args.outputDir, path.basename(args.inputFile) + '-' + suffix + ".log")
     logging.basicConfig(
         handlers=[ExitOnCriticalExceptionHandler(
             filename= logFileName,
@@ -155,7 +158,7 @@ def initialize():
             encoding='utf-8',
         )],
         format='%(asctime)s %(funcName)s %(levelname)-8s %(message)s',
-        level=logging.DEBUG # if args.debug else logging.INFO
+        level=logging.DEBUG if args.debug else logging.INFO
     )
     
     LOGGER.info("SETTINGS")
@@ -170,11 +173,11 @@ def initialize():
         args.numWorkers = cpu_count() - 2
         
     LOGGER.info("Num workers: " + str(args.numWorkers))
-
-    args.mappedFile = check_file("map", "DB mapped variants file")
-    args.unmappedFile = check_file("unmap", "Unmapped DB mapped variants file")
-    args.skipFile = check_file("skip", "Skipped variants file")
-    args.errorFile = check_file("error", "DB mapping Error file")
+    
+    args.mappedFile = check_file("map", "DB mapped variants file", suffix)
+    args.unmappedFile = check_file("unmap" , "Unmapped DB mapped variants file", suffix)
+    args.skipFile = check_file("skip", "Skipped variants file", suffix)
+    args.errorFile = check_file("error", "DB mapping Error file", suffix)
     
     # create hash of variant_id -> line #
     # chunk the array keys (variant_id) and then run thru pool.imap
@@ -268,8 +271,12 @@ def run(header, lookups, chunkSize, debug = False, checkAltVariants=True, append
         errors = []
         
         chunks = chunker(list(lookups), size=chunkSize, returnIterator=False)
-        result = pool.imap(parallel_db_lookup, [c for c in chunks])        
-        for r in result:           
+        result = pool.imap(parallel_db_lookup, [c for c in chunks])   
+        chunkCount = 0     
+        for r in result:    
+            chunkCount = chunkCount + 1
+            if chunkCount % 100 == 0:
+                LOGGER.debug("Completed Chunks: " + str(chunkCount))
             lookups = r['lookups']
             mappings = r['mappings']
             for item in lookups:
@@ -303,6 +310,7 @@ def run(header, lookups, chunkSize, debug = False, checkAltVariants=True, append
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="", allow_abbrev=False)
     parser.add_argument('--inputFile', help="full path to input file", required=True)
+    parser.add_argument('--outputSuffix', help="suffix to append to output files to prevent overwriting; for debug/testing")
     parser.add_argument('--outputDir', default=getcwd(), help="full path to output directory; if not specified will use current working directory")
     parser.add_argument('--format', choices=["LOAD", "LIST"], default="LOAD")
     parser.add_argument('--gusConfigFile', help="gus config file; defaults to $GUS_HOME/config/gus.config if not specified")
@@ -337,8 +345,8 @@ if __name__ == "__main__":
         
         if indelsFound:
             LOGGER.info("Processing INDELS: n = " + str(len(input['indels'])))
-            icounts, ierrors = run(input['header'], input['indels'], args.indelChunkSize, debug=True, 
-                                   checkAltVariants=not args.keepIndelDirection, append=True)
+            icounts, ierrors = run(input['header'], input['indels'], args.indelChunkSize, debug=args.debug, 
+                checkAltVariants=not args.keepIndelDirection, append=True)
         
         
     except Exception as err:
