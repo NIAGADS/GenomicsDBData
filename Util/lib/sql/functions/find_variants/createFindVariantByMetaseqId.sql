@@ -47,20 +47,24 @@ CREATE OR REPLACE FUNCTION find_variant_by_metaseq_id_variations(metaseqId TEXT,
 
 BEGIN
     IF array_length(string_to_array(metaseqId, ':'), 1) - 1 = 1 THEN -- chr:pos only
-        -- RAISE NOTICE 'POSITION';
+        RAISE NOTICE 'POSITION (%)', metaseqId;
         RETURN QUERY
             SELECT *, 6 AS match_rank, 'position' AS match_type
-        FROM find_variant_by_position('chr' || split_part(metaseqId, ':', 1)::text, split_part(metaseqId, ':', 2)::int, firstHitOnly);
+        FROM find_variant_by_position('chr' || split_part(metaseqId, ':', 1)::text, split_part(metaseqId, ':', 2)::int) r
+        ORDER BY LENGTH(r.record_primary_key) ASC
+        LIMIT CASE WHEN firstHitOnly THEN 1 END;
     END IF;
 
     IF metaseqID LIKE '%:N%' THEN -- contains an unknown allele
         IF metaseqID LIKE '%:N:N%' THEN -- containst 2 unknown allele 	 
-            --RAISE NOTICE 'POSITION';
+            RAISE NOTICE 'POSITION (%)', metaseqId;
             RETURN QUERY
 	      	 	SELECT *, 6 AS match_rank, 'position' AS match_type
-            FROM find_variant_by_position('chr' || split_part(metaseqId, ':', 1)::text, split_part(metaseqId, ':', 2)::int, firstHitOnly);
+            FROM find_variant_by_position('chr' || split_part(metaseqId, ':', 1)::text, split_part(metaseqId, ':', 2)::int) r
+            ORDER BY LENGTH(r.record_primary_key) ASC
+            LIMIT CASE WHEN firstHitOnly THEN 1 END;
         ELSE -- contains one unknown allele
-            --RAISE NOTICE 'POSITION & ALLELE';
+            RAISE NOTICE 'POSITION & ALLELE (%)', metaseqId;
             RETURN QUERY
 		 	    SELECT *, 5 AS match_rank, 'position and allele' AS match_type
                 FROM find_variant_by_position_and_allele('chr' || split_part(metaseqId, ':', 1)::text,
@@ -68,13 +72,14 @@ BEGIN
                     CASE WHEN split_part(metaseqId, ':', 3) = 'N' 
                         THEN split_part(metaseqId, ':', 4) 
                         ELSE split_part(metaseqId, ':', 3) 
-                        END,
-                    firstHitOnly);
+                        END) r
+                ORDER BY LENGTH(r.record_primary_key) ASC
+                LIMIT CASE WHEN firstHitOnly THEN 1 END;
         END IF; -- metaseq 
 	END IF; -- metaseq ID contains N
 
     IF NOT FOUND THEN        
-        --RAISE NOTICE 'EXACT';
+        RAISE NOTICE 'EXACT (%)', metaseqId;
         RETURN QUERY
     	    SELECT *, 1 AS match_rank, 'exact' AS match_type
         FROM find_variant_by_metaseq_id(metaseqId, firstHitOnly);
@@ -82,22 +87,22 @@ BEGIN
 	
     IF NOT FOUND THEN
         IF checkAltAlleles THEN
-            --RAISE NOTICE 'SWITCH';
+            RAISE NOTICE 'SWITCH (%)', metaseqId;
             RETURN QUERY
                 SELECT *, 2 AS match_rank, 'switch' AS match_type
                 FROM find_variant_by_metaseq_id(generate_alt_metaseq_id(metaseqId), firstHitOnly);
 
             IF NOT FOUND THEN    
-                --RAISE NOTICE 'REVERSE COMP';
+                RAISE NOTICE 'REVERSE COMP (%)', metaseqId;
                 RETURN QUERY
-                    SELECT *, 4 AS match_rank, 'reverse comp' AS match_type
+                    SELECT *, 5 AS match_rank, 'reverse comp' AS match_type
                     FROM find_variant_by_metaseq_id(generate_rc_metaseq_id(metaseqId), firstHitOnly);
             END IF;
 
             IF NOT FOUND THEN
-                --RAISE NOTICE 'RC/SWITCH';
+                RAISE NOTICE 'RC/SWITCH (%)', metaseqId;
                 RETURN QUERY
-                    SELECT *, 5 AS match_rank, 'reverse comp//switch' AS match_type
+                    SELECT *, 6 AS match_rank, 'reverse comp//switch' AS match_type
                     FROM find_variant_by_metaseq_id(generate_alt_metaseq_id(generate_rc_metaseq_id(metaseqId)), firstHitOnly);
             END IF;
         END IF;
@@ -106,17 +111,16 @@ BEGIN
     IF NOT FOUND THEN
         IF (LENGTH(split_part(metaseqID, ':', 3)) > 1 OR LENGTH(split_part(metaseqID, ':', 4)) > 1) THEN
             /* normalize alleles and check for exact match */
-            RAISE NOTICE 'NORMALIZED';
-            -- only for INDELS --      
+            RAISE NOTICE 'NORMALIZED (%)', metaseqId;   
             RETURN QUERY
                 SELECT *, 3 AS match_rank, 'normalized alleles' AS match_type
                 FROM find_variant_by_normalized_metaseq_id(metaseqID, firstHitOnly);
 
             IF NOT FOUND THEN
                 IF checkAltAlleles THEN
-                    RAISE NOTICE 'SWITCH/NORMALIZED';
+                    RAISE NOTICE 'SWITCH/NORMALIZED (%)', metaseqId;
                     RETURN QUERY
-                        SELECT *, 3 AS match_rank, 'normalized alleles' AS match_type
+                        SELECT *, 4 AS match_rank, 'switch//normalized alleles' AS match_type
                         FROM find_variant_by_normalized_metaseq_id(generate_alt_metaseq_id(metaseqID), firstHitOnly);
                 END IF;
             END IF;
@@ -164,19 +168,19 @@ CREATE OR REPLACE FUNCTION find_variant_by_normalized_metaseq_id(metaseqId TEXT,
 
 DECLARE chrm TEXT;
 DECLARE pos INT;
-DECLARE normMetaseqId TEXT;
+--DECLARE normMetaseqId TEXT;
 
 BEGIN
-    SELECT generate_normalized_metaseq_id(metaseqId) INTO normMetaseqId;
-    SELECT 'chr' || split_part(normMetaseqId, ':', 1) INTO chrm;
-    SELECT (split_part(normMetaseqId, ':', 2))::int INTO pos;
+    -- SELECT generate_normalized_metaseq_id(metaseqId) INTO normMetaseqId;
+    SELECT 'chr' || split_part(metaseqId, ':', 1) INTO chrm;
+    SELECT (split_part(metaseqId, ':', 2))::int INTO pos;
 
     RETURN QUERY
         SELECT v.record_primary_key, v.ref_snp_id, v.metaseq_id, v.alleles, v.variant_class,
         v.is_adsp_variant, v.bin_index, v.annotation
         FROM find_variant_by_position(chrm, pos) v
-        , generate_normalized_metaseq_id(v.metaseq_id) AS n_metaseq_id
-        WHERE n_metaseq_id = normMetaseqId
+        WHERE generate_normalized_metaseq_id(v.metaseq_id) = generate_normalized_metaseq_id(metaseqId)
+        ORDER BY LENGTH(v.record_primary_key) ASC
         LIMIT CASE WHEN firstHitOnly THEN 1 END;
 END;
 $$ LANGUAGE plpgsql;
