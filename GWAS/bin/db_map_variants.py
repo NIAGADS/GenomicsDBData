@@ -235,7 +235,7 @@ def parse_input_file():
                     LOGGER.info("Done reading in test lines: n = " + xstr(args.test))
                     break
                 
-                if lineCount % 500000 == 0:
+                if lineCount % args.logAfter  == 0:
                     LOGGER.info("Read " + str(lineCount) + " lines.")
 
         else:
@@ -299,7 +299,7 @@ def run(header, lookups, chunkSize, debug = False, checkAltVariants=True, append
                     print('\t'.join([ row[field] for field in mappedHeader]), file = mfh)
                     mCount = mCount + 1
                     
-                if count % 500000 == 0:
+                if count % args.logAfter == 0:
                     LOGGER.info("Processed " + str(count) + " variants.")
 
         LOGGER.info("Processed " + str(count) + " variants.")
@@ -326,6 +326,7 @@ if __name__ == "__main__":
     parser.add_argument('--allHits', action='store_true', help="return all hits to a marker; if not specified will return first hit only")
     parser.add_argument('--checkType', choices = ["NORMAL", "UPDATE", "FINAL"], default="NORMAL")
     parser.add_argument('--test', help="test run, supply # of lines to read from input file", type=int)
+    parser.add_argument('--logAfter', type=int, default=500000)
     parser.add_argument('--numWorkers', help="number of workers for parallel processing, default = #CPUs - 2", 
                         type=int, default=cpu_count() - 2)
     
