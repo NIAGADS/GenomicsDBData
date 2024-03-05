@@ -150,6 +150,9 @@ def initialize():
     checkType = CheckType[args.checkType]
     LOGGER.info("Check Type: " + checkType.name)
             
+    if args.maxWorkers > 75:
+        LOGGER.warning("maxWorkers too high, setting to 75")
+        args.maxWorkers = 75
     LOGGER.info("Max number of threads: " + str(args.maxWorkers))
     
     args.mappedFile = check_file("map", "DB mapped variants file", suffix)
@@ -157,9 +160,7 @@ def initialize():
     args.skipFile = check_file("skip", "Skipped variants file", suffix)
     args.errorFile = check_file("error", "DB mapping Error file", suffix)
     
-    # create hash of variant_id -> line #
-    # chunk the array keys (variant_id) and then run thru pool.imap
-    
+    # create hash of variant_id -> line #   
     numLines = file_line_count(args.inputFile, header=True)
     LOGGER.info("Estimated Lines in Input File: " + str(numLines))
     LOGGER.info("Chunk Size = " + str(args.chunkSize))
@@ -213,7 +214,7 @@ def parse_input_file():
                     LOGGER.info("Done reading in test lines: n = " + xstr(args.test))
                     break
                 
-                if lineCount % 500000 == 0:
+                if lineCount % args.logAfter == 0:
                     LOGGER.info("Read " + str(lineCount) + " lines.")
 
         else:
@@ -273,7 +274,7 @@ def run(header, lookups, chunkSize, debug = False, checkAltVariants=True, append
                         print('\t'.join([ row[field] for field in mappedHeader]), file = mfh)
                         mCount = mCount + 1
                     
-                    if count % 500000 == 0:
+                    if count % args.logAfter == 0:
                         LOGGER.info("Processed " + str(count) + " variants.")
                     
             except Exception as err:
@@ -303,8 +304,9 @@ if __name__ == "__main__":
     parser.add_argument('--allHits', action='store_true', help="return all hits to a marker; if not specified will return first hit only")
     parser.add_argument('--checkType', choices = ["NORMAL", "UPDATE", "FINAL"], default="NORMAL")
     parser.add_argument('--test', help="test run, supply # of lines to read from input file", type=int)
-    parser.add_argument('--maxWorkers', type=int, default=5000,
-                        help="maximum number of workers/threads for parallel processing (to find system limits, run `cat /proc/sys/kernel/threads-max`)")
+    parser.add_argument('--logAfter', type=int, default=500000)
+    parser.add_argument('--maxWorkers', type=int, default=75,
+                        help="maximum number of workers/threads")
                         
     
     args = parser.parse_args()
@@ -325,11 +327,7 @@ if __name__ == "__main__":
             LOGGER.info("Processing INDELS: n = " + str(len(input['indels'])))
             icounts, ierrors = run(input['header'], input['indels'], args.indelChunkSize, debug=args.debug, 
                 checkAltVariants=not args.keepIndelDirection, append=True)
-        
-    except Exception as err:
-        LOGGER.critical("DB MAPPING FAILED: " + str(err), stack_info=True, exc_info=True)
-        
-    finally:
+            
         if counts is not None:
             if indelsFound and icounts is not None:
                 LOGGER.info("Mapped " + str(counts['mapped'] + icounts['mapped']) + " variants.")    
@@ -339,6 +337,13 @@ if __name__ == "__main__":
                 LOGGER.info("Mapped " + str(counts['mapped']) + " variants.")    
                 LOGGER.info("Unable to map " + str(counts['unmapped']) + " variants.")    
                 LOGGER.info("Skipped " + str(input['skipped']) + " invalid variants.")      
+            
+        LOGGER.info("SUCCESS")
+        
+    except Exception as err:
+        LOGGER.critical("DB MAPPING FAILED: " + str(err), stack_info=True, exc_info=True)
+        
+    finally:
         if errors is not None:
             if len(errors) > 0: 
                 LOGGER.info("Error mapping " + str(len(errors)) + " variants.")      
@@ -351,8 +356,3 @@ if __name__ == "__main__":
                         LOGGER.error("Unable to map INDEL: " +  e['error'] 
                             + "; variant = " + xstr(e['variant']) + "; row =  " + xstr(e['input']))
                 LOGGER.info("FAIL")
-            else:
-                LOGGER.info("SUCCESS")
-        else:
-            LOGGER.info("SUCCESS")
-        
