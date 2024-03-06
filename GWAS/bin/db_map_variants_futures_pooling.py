@@ -10,7 +10,7 @@ from enum import Enum
 from math import modf
 from sys import exc_info
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 
 from AnnotatedVDB.Util.database.variant import VariantRecord
 from niagads.utils.logging import ExitOnCriticalExceptionHandler
@@ -19,7 +19,7 @@ from niagads.utils.reg_ex import regex_replace
 from niagads.utils.list import qw, chunker
 from niagads.utils.string import eval_null, xstr
 from niagads.utils.dict import print_dict
-from niagads.utils.postgres_dbi import DatabaseError, DataError
+from niagads.utils.postgres_dbi import DatabaseError, DataError, Database
 
 LOGGER = logging.getLogger(__name__)
 
@@ -85,8 +85,8 @@ def build_variant_id(row):
     return variantId, isIndel
 
 
-def catch_db_lookup_error(variants, lookups, firstHitOnly, checkAltVariants):
-    annotator = VariantRecord(gusConfigFile=args.gusConfigFile, debug=args.debug)
+def catch_db_lookup_error(variants, lookups, connHandle, firstHitOnly, checkAltVariants):
+    annotator = VariantRecord(connHandle=connHandle, debug=args.debug)
     mappings = {}
     for index, variant in enumerate(variants):
         try:
@@ -106,23 +106,29 @@ def parallel_db_lookup(lookups, debug=False, firstHitOnly=True, checkAltVariants
     # unnested/flattened after: https://www.makeuseof.com/python-nested-list-flatten/
     # flatList = [k for i in nestedList for k in i]
     variants = [k for i in [list(d) for d in lookups] for k in i]
+    annotator = None
+    connHandle = None
     try:
-        annotator = VariantRecord(gusConfigFile=args.gusConfigFile, debug=debug)
+        connHandle = pool.getconn()
+        annotator = VariantRecord(connHandle=connHandle, debug=debug)
         mappings = annotator.bulk_lookup(variants, 
             fullAnnotation=False, firstHitOnly=firstHitOnly, checkAltVariants=checkAltVariants)     
         return {"lookups" :lookups, "mappings": mappings }
     except (DatabaseError, DataError) as err:
-        LOGGER.warning("ERROR with bulk lookup; finding problematic variant")
-        return catch_db_lookup_error(variants, lookups, firstHitOnly, checkAltVariants)
+        LOGGER.warning("ERROR with bulk lookup") #; finding problematic variant")
+        raise err
+        # return { "error": "UNEXPECTED ERROR: " + str(exc_info()[0]) }
+        # catch_db_lookup_error(variants, lookups, connHandle, firstHitOnly, checkAltVariants)
     except:
         LOGGER.warning("UNEXPECTED ERROR with DB lookup")
-        return { "error": "UNEXPECTED ERROR: " + str(exc_info()[0]) }
+        LOGGER.critical(str(exc_info()[0]))
+        # return { "error": "UNEXPECTED ERROR: " + str(exc_info()[0]) }
     finally:
-        annotator.close()
+        if annotator is not None: annotator.close()
+        if connHandle is not None: pool.putconn(connHandle) # free up the connection
 
 
-def check_file(extension, fileType, suffix):
-    
+def check_file(extension, fileType, suffix):   
     baseName = path.basename(args.inputFile)
     filePath = path.join(args.outputDir, baseName + '-' + suffix + '.' + extension)
     LOGGER.info(fileType + ": " + filePath)
@@ -150,10 +156,10 @@ def initialize():
     checkType = CheckType[args.checkType]
     LOGGER.info("Check Type: " + checkType.name)
             
-    if args.maxWorkers > 75:
-        LOGGER.warning("maxWorkers too high, setting to 75")
-        args.maxWorkers = 75
-    LOGGER.info("Max number of threads: " + str(args.maxWorkers))
+    if args.maxConnections > 75:
+        LOGGER.warning("maxConnections too high, setting to 75")
+        args.maxConnections = 75
+    LOGGER.info("Max number of threads: " + str(args.maxConnections))
     
     args.mappedFile = check_file("map", "DB mapped variants file", suffix)
     args.unmappedFile = check_file("unmap" , "Unmapped DB mapped variants file", suffix)
@@ -227,7 +233,7 @@ def parse_input_file():
 
 def run(header, lookups, chunkSize, debug = False, checkAltVariants=True, append=False):
 
-    LOGGER.info("Starting parallel processing; max number workers = " + str(args.maxWorkers))
+    LOGGER.info("Starting parallel processing; max number workers = " + str(args.maxConnections))
     
     writeType = 'a' if append else 'w'
 
@@ -238,12 +244,14 @@ def run(header, lookups, chunkSize, debug = False, checkAltVariants=True, append
     errors = []
     chunkCount = 0  # for debugging
     
+    chunks = chunker(list(lookups), size=chunkSize, returnIterator=False)
+    
     with open(args.mappedFile, writeType) as mfh, \
         open(args.unmappedFile, writeType) as ufh, \
         open(args.errorFile, writeType) as efh, \
-        ThreadPoolExecutor(args.maxWorkers) as executor:
+        ThreadPoolExecutor(args.maxConnections) as executor:
                             
-        chunks = chunker(list(lookups), size=chunkSize, returnIterator=False)
+
         futureUpdate = {executor.submit(parallel_db_lookup,
             c, 
             debug=args.debug,
@@ -305,8 +313,8 @@ if __name__ == "__main__":
     parser.add_argument('--checkType', choices = ["NORMAL", "UPDATE", "FINAL"], default="NORMAL")
     parser.add_argument('--test', help="test run, supply # of lines to read from input file", type=int)
     parser.add_argument('--logAfter', type=int, default=500000)
-    parser.add_argument('--maxWorkers', type=int, default=75,
-                        help="maximum number of workers/threads")
+    parser.add_argument('--maxConnections', type=int, default=20,
+                        help="maximum number of db coonections/threads")
                         
     
     args = parser.parse_args()
@@ -315,10 +323,16 @@ if __name__ == "__main__":
     counts = None
     ierrors = None
     icounts = None
+    database = None
+    
     try:
         args = initialize()
         input = parse_input_file()
         indelsFound = len(input['indels']) > 0
+
+        database = Database(args.gusConfigFile)
+        database.create_pool(maxConnections=args.maxConnections, threaded=True)
+        pool = database.pool()
 
         LOGGER.info("Processing SNVs/MNVs: n = " + str(len(input['variants'])))
         counts, errors = run(input['header'], input['variants'], args.chunkSize, debug=args.debug)
@@ -356,3 +370,4 @@ if __name__ == "__main__":
                         LOGGER.error("Unable to map INDEL: " +  e['error'] 
                             + "; variant = " + xstr(e['variant']) + "; row =  " + xstr(e['input']))
                 LOGGER.info("FAIL")
+        if database is not None: database.close()
