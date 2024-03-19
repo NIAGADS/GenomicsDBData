@@ -222,11 +222,12 @@ async def run(header, lookups, chunkSize, checkAltVariants=True, append=False):
     
     with open(args.mappedFile, writeType) as mfh, \
         open(args.unmappedFile, writeType) as ufh, \
-        open(args.errorFile, writeType) as efh, \
-        ThreadPoolExecutor(args.maxWorkers) as executor:
+        open(args.errorFile, writeType) as efh:
             
-        # loop = asyncio.get_running_loop()
-        # loop.run_in_executor(executor, )
+        if not append:
+            print('\t'.join(mappedHeader), file=mfh)
+            print('\t'.join(header), file=ufh)
+            print('\t'.join(header), file=efh)
                             
         chunks = chunker(list(lookups), size=chunkSize, returnIterator=False)
         tasks = [db_lookup(c, firstHitOnly=not args.allHits, checkAltVariants=checkAltVariants) for c in chunks]
@@ -303,7 +304,7 @@ if __name__ == "__main__":
         loop = asyncio.get_event_loop()
 
         LOGGER.info("Processing SNVs/MNVs: n = " + str(len(input['variants'])))
-        counts, errors = loop.run_until_complete(run(input['header'], input['variants'], args.chunkSize))
+        counts, errors = loop.run_until_complete(run(input['header'], input['variants'], args.chunkSize, append=False))
         
         if indelsFound:
             LOGGER.info("Processing INDELS: n = " + str(len(input['indels'])))
