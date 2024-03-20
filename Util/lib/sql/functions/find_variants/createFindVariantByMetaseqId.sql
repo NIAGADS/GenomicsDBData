@@ -40,14 +40,15 @@ END;
 $$ LANGUAGE plpgsql; 
 
 
---DROP FUNCTION IF EXISTS find_variant_by_metaseq_id_variations(TEXT, BOOLEAN, BOOLEAN);
-CREATE OR REPLACE FUNCTION find_variant_by_metaseq_id_variations(metaseqId TEXT, firstHitOnly BOOLEAN DEFAULT FALSE, checkAltAlleles BOOLEAN DEFAULT TRUE)
+DROP FUNCTION IF EXISTS find_variant_by_metaseq_id_variations(TEXT, BOOLEAN, BOOLEAN);
+CREATE OR REPLACE FUNCTION find_variant_by_metaseq_id_variations(metaseqId TEXT, firstHitOnly BOOLEAN DEFAULT FALSE, 
+            checkAltAlleles BOOLEAN DEFAULT TRUE, checkNormalizedAlleles BOOLEAN DEFAULT FALSE)
        RETURNS TABLE(record_primary_key TEXT, ref_snp_id CHARACTER VARYING, metaseq_id TEXT, alleles TEXT, variant_class TEXT,
        	             is_adsp_variant BOOLEAN, bin_index LTREE, annotation JSONB, match_rank INTEGER, match_type TEXT) AS $$
 
 BEGIN
     IF array_length(string_to_array(metaseqId, ':'), 1) - 1 = 1 THEN -- chr:pos only
-        RAISE NOTICE 'POSITION (%)', metaseqId;
+        --RAISE NOTICE 'POSITION (%)', metaseqId;
         RETURN QUERY
             SELECT *, 6 AS match_rank, 'position' AS match_type
         FROM find_variant_by_position('chr' || split_part(metaseqId, ':', 1)::text, split_part(metaseqId, ':', 2)::int) r
@@ -57,14 +58,14 @@ BEGIN
 
     IF metaseqID LIKE '%:N%' THEN -- contains an unknown allele
         IF metaseqID LIKE '%:N:N%' THEN -- containst 2 unknown allele 	 
-            RAISE NOTICE 'POSITION (%)', metaseqId;
+            --RAISE NOTICE 'POSITION (%)', metaseqId;
             RETURN QUERY
 	      	 	SELECT *, 6 AS match_rank, 'position' AS match_type
             FROM find_variant_by_position('chr' || split_part(metaseqId, ':', 1)::text, split_part(metaseqId, ':', 2)::int) r
             ORDER BY LENGTH(r.record_primary_key) ASC
             LIMIT CASE WHEN firstHitOnly THEN 1 END;
         ELSE -- contains one unknown allele
-            RAISE NOTICE 'POSITION & ALLELE (%)', metaseqId;
+            --RAISE NOTICE 'POSITION & ALLELE (%)', metaseqId;
             RETURN QUERY
 		 	    SELECT *, 5 AS match_rank, 'position and allele' AS match_type
                 FROM find_variant_by_position_and_allele('chr' || split_part(metaseqId, ':', 1)::text,
@@ -79,7 +80,7 @@ BEGIN
 	END IF; -- metaseq ID contains N
 
     IF NOT FOUND THEN        
-        RAISE NOTICE 'EXACT (%)', metaseqId;
+        --RAISE NOTICE 'EXACT (%)', metaseqId;
         RETURN QUERY
     	    SELECT *, 1 AS match_rank, 'exact' AS match_type
         FROM find_variant_by_metaseq_id(metaseqId, firstHitOnly);
@@ -87,20 +88,20 @@ BEGIN
 	
     IF NOT FOUND THEN
         IF checkAltAlleles THEN
-            RAISE NOTICE 'SWITCH (%)', metaseqId;
+            --RAISE NOTICE 'SWITCH (%)', metaseqId;
             RETURN QUERY
                 SELECT *, 2 AS match_rank, 'switch' AS match_type
                 FROM find_variant_by_metaseq_id(generate_alt_metaseq_id(metaseqId), firstHitOnly);
 
             IF NOT FOUND THEN    
-                RAISE NOTICE 'REVERSE COMP (%)', metaseqId;
+                --RAISE NOTICE 'REVERSE COMP (%)', metaseqId;
                 RETURN QUERY
                     SELECT *, 5 AS match_rank, 'reverse comp' AS match_type
                     FROM find_variant_by_metaseq_id(generate_rc_metaseq_id(metaseqId), firstHitOnly);
             END IF;
 
             IF NOT FOUND THEN
-                RAISE NOTICE 'RC/SWITCH (%)', metaseqId;
+                --RAISE NOTICE 'RC/SWITCH (%)', metaseqId;
                 RETURN QUERY
                     SELECT *, 6 AS match_rank, 'reverse comp//switch' AS match_type
                     FROM find_variant_by_metaseq_id(generate_alt_metaseq_id(generate_rc_metaseq_id(metaseqId)), firstHitOnly);
@@ -109,22 +110,24 @@ BEGIN
     END IF;
 
     IF NOT FOUND THEN
-        IF (LENGTH(split_part(metaseqID, ':', 3)) > 1 OR LENGTH(split_part(metaseqID, ':', 4)) > 1) THEN
-            /* normalize alleles and check for exact match */
-            RAISE NOTICE 'NORMALIZED (%)', metaseqId;   
-            RETURN QUERY
-                SELECT *, 3 AS match_rank, 'normalized alleles' AS match_type
-                FROM find_variant_by_normalized_metaseq_id(metaseqID, firstHitOnly);
+        IF checkNormalizedAlleles THEN
+            IF (LENGTH(split_part(metaseqID, ':', 3)) > 1 OR LENGTH(split_part(metaseqID, ':', 4)) > 1) THEN
+                /* normalize alleles and check for exact match */
+                --RAISE NOTICE 'NORMALIZED (%)', metaseqId;   
+                RETURN QUERY
+                    SELECT *, 3 AS match_rank, 'normalized alleles' AS match_type
+                    FROM find_variant_by_normalized_metaseq_id(metaseqID, firstHitOnly);
 
-            IF NOT FOUND THEN
-                IF checkAltAlleles THEN
-                    RAISE NOTICE 'SWITCH/NORMALIZED (%)', metaseqId;
-                    RETURN QUERY
-                        SELECT *, 4 AS match_rank, 'switch//normalized alleles' AS match_type
-                        FROM find_variant_by_normalized_metaseq_id(generate_alt_metaseq_id(metaseqID), firstHitOnly);
+                IF NOT FOUND THEN
+                    IF checkAltAlleles THEN
+                        --RAISE NOTICE 'SWITCH/NORMALIZED (%)', metaseqId;
+                        RETURN QUERY
+                            SELECT *, 4 AS match_rank, 'switch//normalized alleles' AS match_type
+                            FROM find_variant_by_normalized_metaseq_id(generate_alt_metaseq_id(metaseqID), firstHitOnly);
+                    END IF;
                 END IF;
-            END IF;
-        END IF; 
+            END IF; 
+        END IF;
     END IF; 
 END;
 

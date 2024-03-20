@@ -11,20 +11,20 @@ from enum import Enum
 from math import modf
 from sys import exc_info
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
-
-from AnnotatedVDB.Util.database.variant import VariantRecord
 from niagads.utils.logging import ExitOnCriticalExceptionHandler
 from niagads.utils.sys import verify_path, file_line_count
 from niagads.utils.reg_ex import regex_replace
 from niagads.utils.list import qw, chunker
 from niagads.utils.string import eval_null, xstr
 from niagads.utils.dict import print_dict
-from niagads.db.postgres import DatabaseError, DataError, AsyncDatabase
+from niagads.db.postgres import AsyncDatabase
+
 
 LOGGER = logging.getLogger(__name__)
 
-BULK_LOOKUP_SQL = "SELECT * from map_variants($1, $2, $3) AS mappings"; # second param is "firstValueOnly flag", then checkAltVariants
+NORMALIZE_CHUNK_SIZE = 20
+NORMALIZE_MAX_CONNECTIONS = 10
+BULK_LOOKUP_SQL = "SELECT * from map_variants($1, $2, $3, $4) AS mappings"; # second param is "firstValueOnly flag", then checkAltVariants
 
 CheckType = Enum('CheckType', ['NORMAL', 'UPDATE', 'FINAL'])
 FileFormat = Enum('FileFormat', ['LOAD', 'LIST'])
@@ -117,10 +117,10 @@ def initialize():
     checkType = CheckType[args.checkType]
     LOGGER.info("Check Type: " + checkType.name)
             
-    if args.maxWorkers > 75:
-        LOGGER.warning("maxWorkers too high, setting to 75")
-        args.maxWorkers = 75
-    LOGGER.info("Max number of threads: " + str(args.maxWorkers))
+    if args.maxConnections > 50:
+        LOGGER.warning("maxConnections too high, setting to 50")
+        args.maxConnections = 50
+    LOGGER.info("Max number of threads: " + str(args.maxConnections))
     
     args.mappedFile = check_file("map", "DB mapped variants file", suffix)
     args.unmappedFile = check_file("unmap" , "Unmapped DB mapped variants file", suffix)
@@ -131,7 +131,6 @@ def initialize():
     numLines = file_line_count(args.inputFile, header=True)
     LOGGER.info("Estimated Lines in Input File: " + str(numLines))
     LOGGER.info("Chunk Size = " + str(args.chunkSize))
-    LOGGER.info("Chunk Size (INDELs) = " + str(args.indelChunkSize))
     
     if args.test:
         if args.test > numLines:
@@ -181,7 +180,7 @@ def parse_input_file():
                     LOGGER.info("Done reading in test lines: n = " + xstr(args.test))
                     break
                 
-                if lineCount % args.logAfter == 0:
+                if lineCount % 500000 == 0:
                     LOGGER.info("Read " + str(lineCount) + " lines.")
 
         else:
@@ -192,65 +191,61 @@ def parse_input_file():
     return { 'header': header, 'variants': variants, 'indels': indels, 'skipped': skipCount}
 
 
-async def db_lookup(lookups, firstHitOnly=True, checkAltVariants=True):
-    try:
-        annotator = AsyncDatabase(connectionString=args.connectionString)
-        await annotator.connect()
-        connection = annotator.connection()
-        
-        variants = [k for i in [list(d) for d in lookups] for k in i]
-        mappings = await connection.fetchval(BULK_LOOKUP_SQL, ','.join(variants), firstHitOnly, checkAltVariants, column=0)
-        
-        return {"lookups" :lookups, "mappings": mappings }
+async def db_lookup(lookups, semaphore: asyncio.Semaphore, firstHitOnly=True, checkAltVariants=True, normalize=False):
+    async with semaphore:
+        try:
+            annotator = AsyncDatabase(connectionString=args.connectionString)
+            await annotator.connect()
+            connection = annotator.connection()
+            
+            variants = [k for i in [list(d) for d in lookups] for k in i]
+            mappings = await connection.fetchval(BULK_LOOKUP_SQL,
+                ','.join(variants),
+                firstHitOnly, checkAltVariants, normalize,
+                column=0)
+            
+            return {"lookups" :lookups, "mappings": mappings }
 
-    finally:
-        await annotator.close()
+        finally:
+            await annotator.close()
 
 
-async def run(header, lookups, chunkSize, checkAltVariants=True, append=False):
+async def run(header, lookups, chunkSize, maxConnections = NORMALIZE_MAX_CONNECTIONS,
+    checkAltVariants=True, checkNormalizedAlleles=False, append=False):
 
-    LOGGER.info("Starting parallel processing; max number workers = " + str(args.maxWorkers))
+    LOGGER.info("Starting parallel processing; max number workers = " + str(maxConnections) + "; chunk size = " + str(chunkSize))
     
     writeType = 'a' if append else 'w'
 
     mappedHeader = header + ['db_mapped_variant']
     mCount = 0
-    uCount = 0
     count = 0
     errors = []
-    chunkCount = 0  # for debugging
+    unmapped = []
     
     with open(args.mappedFile, writeType) as mfh, \
-        open(args.unmappedFile, writeType) as ufh, \
         open(args.errorFile, writeType) as efh:
             
         if not append:
             print('\t'.join(mappedHeader), file=mfh)
-            print('\t'.join(header), file=ufh)
             print('\t'.join(header), file=efh)
                             
+        semaphore = asyncio.Semaphore(maxConnections)
         chunks = chunker(list(lookups), size=chunkSize, returnIterator=False)
-        tasks = [db_lookup(c, firstHitOnly=not args.allHits, checkAltVariants=checkAltVariants) for c in chunks]
+        tasks = [db_lookup(c, semaphore, firstHitOnly=not args.allHits, 
+            checkAltVariants=checkAltVariants, normalize=checkNormalizedAlleles) for c in chunks]
         for task in asyncio.as_completed(tasks):
             result = await task
 
             lookups = result['lookups']
             mappings = result['mappings']
-            print(mappings)
-            print(isinstance(mappings, str))
-            print(type(mappings))
             for item in lookups:
                 count = count + 1
                 variant = list(item.keys())[0]
-                print(variant)
                 row = list(item.values())[0]
-                print(row)
                 mappedVariant = mappings[variant]
                 if mappedVariant is None:
-                    print('\t'.join([ row[field] for field in header]), file = ufh)   
-                    uCount = uCount + 1
-                    if args.debug and args.verbose:
-                        LOGGER.debug("Unmapped Variant: " + xstr({'variant': variant, 'row': row}))
+                    unmapped.append(item)
                 elif 'error' in mappedVariant:
                     print('\t'.join([ row[field] for field in header]), file = efh)   
                     errors.append(mappedVariant)
@@ -263,8 +258,18 @@ async def run(header, lookups, chunkSize, checkAltVariants=True, append=False):
                     LOGGER.info("Processed " + str(count) + " variants.")
                 
     LOGGER.info("Processed " + str(count) + " variants.")    
-    return {'mapped': mCount, 'unmapped': uCount}, errors
+    return {'count': mCount, 'unmapped': unmapped, 'errors': errors}
 
+
+def write_unmapped_variants(header, variants):
+    with open(args.unmappedFile, 'w') as fh:
+        print('\t'.join(header), file=fh)
+        for item in variants:
+            variant = list(item.keys())[0]
+            row = list(item.values())[0]
+            print('\t'.join([ row[field] for field in header]), file = fh)   
+            if args.debug and args.verbose:
+                LOGGER.debug("Unmapped Variant: " + xstr({'variant': variant, 'row': row}))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="", allow_abbrev=False)
@@ -276,8 +281,7 @@ if __name__ == "__main__":
     parser.add_argument('--debug', action='store_true')
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--chunkSize', type=int, default=5000)
-    parser.add_argument('--indelChunkSize', type=int, default=20, help="chunk size for processing INDELs")
-    parser.add_argument('--indelLength', type=int, default=2, help="length of variant considered to be INDEL/treated as INDEL in lookup")
+    parser.add_argument('--indelLength', type=int, default=2, help="length of variant considered to be a 'long' INDEL")
     parser.add_argument('--failOnInvalidVariant', action='store_true', help="fail when invalid variants found, otherwise logs & skips")
     # parser.add_argument('--failOnDbLookupError', action='store_true', help="fail instead of logging DB variant lookup error")
     parser.add_argument('--useMarker', action='store_true')
@@ -286,40 +290,65 @@ if __name__ == "__main__":
     parser.add_argument('--checkType', choices = ["NORMAL", "UPDATE", "FINAL"], default="NORMAL")
     parser.add_argument('--test', help="test run, supply # of lines to read from input file", type=int)
     parser.add_argument('--logAfter', type=int, default=500000)
-    parser.add_argument('--maxWorkers', type=int, default=75,
-                        help="maximum number of workers/threads")
+    parser.add_argument('--maxConnections', type=int, default=10, help="maximum number of database connections")
                         
     
     args = parser.parse_args()
     args.connectionString = AsyncDatabase.connection_string_from_config(gusConfigFile=args.gusConfigFile, url=False)
- 
+
     errors = None
-    counts = None
+    mCount = 0
+    umCount = 0
     ierrors = None
     icounts = None
+
     try:
         args = initialize()
         input = parse_input_file()
         indelsFound = len(input['indels']) > 0
         loop = asyncio.get_event_loop()
 
-        LOGGER.info("Processing SNVs/MNVs: n = " + str(len(input['variants'])))
-        counts, errors = loop.run_until_complete(run(input['header'], input['variants'], args.chunkSize, append=False))
+        LOGGER.info("Processing SNVs/MNVs/short INDELs: n = " + str(len(input['variants'])))
+        result = loop.run_until_complete(run(input['header'], input['variants'], 
+                                            args.chunkSize, maxConnections=args.maxConnections, append=False))
+        errors = result['errors']
+        mCount += result['count']
+        
+        # running through unmapped again w/normalization check
+        umCount = len(result['unmapped'])
+        if umCount > 0:
+            LOGGER.info("Normalizing and remapping unmapped short INDELs: n = " + str(umCount))
+            result = loop.run_until_complete(run(input['header'], result['unmapped'], NORMALIZE_CHUNK_SIZE, 
+                checkNormalizedAlleles=True, append=True))
+            errors = errors + result['errors']
+            mCount += result['count']
+            unmapped = result['unmapped']
         
         if indelsFound:
             LOGGER.info("Processing INDELS: n = " + str(len(input['indels'])))
-            icounts, ierrors = loop.run_until_complete(run(input['header'], input['indels'], args.indelChunkSize,
+            result = loop.run_until_complete(run(input['header'], input['indels'], args.chunkSize,
+                maxConnections=args.maxConnections, 
                 checkAltVariants=not args.keepIndelDirection, append=True))
+            errors = errors + result['errors']
+            mCount += result['count']
             
-        if counts is not None:
-            if indelsFound and icounts is not None:
-                LOGGER.info("Mapped " + str(counts['mapped'] + icounts['mapped']) + " variants.")    
-                LOGGER.info("Unable to map " + str(counts['unmapped'] + icounts['unmapped']) + " variants.")    
-                LOGGER.info("Skipped " + str(input['skipped']) + " invalid variants.")     
-            else: 
-                LOGGER.info("Mapped " + str(counts['mapped']) + " variants.")    
-                LOGGER.info("Unable to map " + str(counts['unmapped']) + " variants.")    
-                LOGGER.info("Skipped " + str(input['skipped']) + " invalid variants.")      
+            # running through unmapped again w/normalization check
+            umCount = len(result['unmapped'])
+            if umCount > 0:
+                LOGGER.info("Normalizing and remapping unmapped INDELs: n = " + str(umCount))
+                result = loop.run_until_complete(run(input['header'], input['indels'], NORMALIZE_CHUNK_SIZE,
+                    checkAltVariants=not args.keepIndelDirection, checkNormalizedAlleles=True, append=True))
+                errors = errors + result['errors']
+                mCount += result['count']
+                unmapped = unmapped + result['unmapped']
+                
+        umCount = len(unmapped)
+        if umCount > 0:
+            write_unmapped_variants(input['header'], unmapped)
+
+        LOGGER.info("Mapped " + str(mCount) + " variants.")    
+        LOGGER.info("Unable to map " + str(umCount) + " variants.")    
+        LOGGER.info("Skipped " + str(input['skipped']) + " invalid variants.")      
             
         LOGGER.info("SUCCESS")
         
