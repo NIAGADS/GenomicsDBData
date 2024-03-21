@@ -32,10 +32,9 @@ FileFormat = Enum('FileFormat', ['LOAD', 'LIST'])
 INPUT_FIELDS = qw('chr bp allele1 allele2 marker metaseq_id freq1 pvalue neg_log10_p display_p gwas_flags test_allele restricted_stats_json mapped_variant bin_index')
 
 
-def check_file(extension, fileType, suffix):
-    
+def check_file(extension, fileType, suffix):    
     baseName = path.basename(args.inputFile)
-    filePath = path.join(args.outputDir, baseName + '-' + suffix + '.' + extension)
+    filePath = path.join(args.outputDir, baseName + suffix + '.' + extension)
     LOGGER.info(fileType + ": " + filePath)
     if verify_path(filePath):
         LOGGER.warning(fileType + " : already exists; OVERWRITING")
@@ -99,9 +98,9 @@ def build_variant_id(row):
 
 
 def initialize():
-    suffix = '' if not args.outputSuffix else args.outputSuffix
+    suffix = '' if not args.outputSuffix else '-' + args.outputSuffix
     
-    logFileName = path.join(args.outputDir, path.basename(args.inputFile) + '-' + suffix + ".log")
+    logFileName = path.join(args.outputDir, path.basename(args.inputFile) + suffix + ".log")
     logging.basicConfig(
         handlers=[ExitOnCriticalExceptionHandler(
             filename= logFileName,
