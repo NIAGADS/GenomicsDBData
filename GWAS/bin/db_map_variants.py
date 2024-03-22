@@ -12,7 +12,7 @@ from math import modf
 from pydantic import BaseModel
 
 from niagads.utils.logging import ExitOnCriticalExceptionHandler
-from niagads.utils.sys import verify_path, file_line_count
+from niagads.utils.sys import verify_path, file_line_count, execute_cmd
 from niagads.utils.reg_ex import regex_replace
 from niagads.utils.list import qw, chunker
 from niagads.utils.string import eval_null, xstr
@@ -21,7 +21,7 @@ from niagads.db.postgres import AsyncDatabase
 LOGGER = logging.getLogger(__name__)
 
 NORMALIZE_CHUNK_SIZE = 1000
-NORMALIZE_MAX_CONNECTIONS = 10
+NORMALIZE_MAX_CONNECTIONS = 50
 NORMALIZE_LOG_AFTER = 10
 
 BULK_LOOKUP_SQL = "SELECT * from map_variants($1, $2, $3, $4) AS mappings"; 
@@ -406,6 +406,14 @@ async def run(header:list, lookups:list, options:LookupOptions, append=False):
     return {'count': mCount, 'unmapped': unmapped, 'errors': errors}
 
 
+def sort_file(fileName: str):
+    sortedFileName = fileName + "-sorted.tmp"
+    LOGGER.info("Sorting " + fileName)
+    cmd = "(head -n 1 " + fileName + " && tail -n +2 " + fileName + " | sort -T " + args.outputDir + " -V -k1,1 -k2,2) > " + sortedFileName
+    execute_cmd(cmd, shell=True)
+    execute_cmd("mv " + sortedFileName + " " + fileName, shell=True)
+    
+
 def write_unmapped_variants(header: list, variants: list):
     """
     write unmapped variants to file
@@ -525,6 +533,9 @@ if __name__ == "__main__":
         LOGGER.info("Mapped " + str(mCount) + " variants.")    
         LOGGER.info("Unable to map " + str(umCount) + " variants.")    
         LOGGER.info("Skipped " + str(input['skipped']) + " invalid variants.")      
+        
+        sort_file(args.unmappedFile)
+        sort_file(args.mappedFile)
             
         LOGGER.info("SUCCESS")
         
