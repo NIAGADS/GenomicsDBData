@@ -39,12 +39,38 @@ END;
 
 $$ LANGUAGE plpgsql; 
 
+--DROP FUNCTION IF EXISTS find_variant_by_metaseq_id_normalized_variations();
+CREATE OR REPLACE FUNCTION find_variant_by_metaseq_id_normalized_variations(metaseqId TEXT, firstHitOnly BOOLEAN DEFAULT FALSE, 
+            checkAltAlleles BOOLEAN DEFAULT TRUE)
+        RETURNS TABLE(record_primary_key TEXT, ref_snp_id CHARACTER VARYING, metaseq_id TEXT, alleles TEXT, variant_class TEXT,
+        is_adsp_variant BOOLEAN, bin_index LTREE, annotation JSONB, match_rank INTEGER, match_type TEXT) AS $$
+
+BEGIN
+    IF (LENGTH(split_part(metaseqID, ':', 3)) > 1 OR LENGTH(split_part(metaseqID, ':', 4)) > 1) THEN
+        /* normalize alleles and check for exact match */
+        --RAISE NOTICE 'NORMALIZED (%)', metaseqId;   
+        RETURN QUERY
+            SELECT *, 3 AS match_rank, 'normalized alleles' AS match_type
+            FROM find_variant_by_normalized_metaseq_id(metaseqID, firstHitOnly);
+
+        IF NOT FOUND THEN
+            IF checkAltAlleles THEN
+                --RAISE NOTICE 'SWITCH/NORMALIZED (%)', metaseqId;
+                RETURN QUERY
+                    SELECT *, 4 AS match_rank, 'switch//normalized alleles' AS match_type
+                    FROM find_variant_by_normalized_metaseq_id(generate_alt_metaseq_id(metaseqID), firstHitOnly);
+            END IF;
+        END IF;
+    END IF; 
+END;
+
+$$ LANGUAGE plpgsql; 
 
 DROP FUNCTION IF EXISTS find_variant_by_metaseq_id_variations(TEXT, BOOLEAN, BOOLEAN);
 CREATE OR REPLACE FUNCTION find_variant_by_metaseq_id_variations(metaseqId TEXT, firstHitOnly BOOLEAN DEFAULT FALSE, 
             checkAltAlleles BOOLEAN DEFAULT TRUE, checkNormalizedAlleles BOOLEAN DEFAULT FALSE)
-       RETURNS TABLE(record_primary_key TEXT, ref_snp_id CHARACTER VARYING, metaseq_id TEXT, alleles TEXT, variant_class TEXT,
-       	             is_adsp_variant BOOLEAN, bin_index LTREE, annotation JSONB, match_rank INTEGER, match_type TEXT) AS $$
+        RETURNS TABLE(record_primary_key TEXT, ref_snp_id CHARACTER VARYING, metaseq_id TEXT, alleles TEXT, variant_class TEXT,
+        is_adsp_variant BOOLEAN, bin_index LTREE, annotation JSONB, match_rank INTEGER, match_type TEXT) AS $$
 
 BEGIN
     IF array_length(string_to_array(metaseqId, ':'), 1) - 1 = 1 THEN -- chr:pos only
@@ -111,22 +137,8 @@ BEGIN
 
     IF NOT FOUND THEN
         IF checkNormalizedAlleles THEN
-            IF (LENGTH(split_part(metaseqID, ':', 3)) > 1 OR LENGTH(split_part(metaseqID, ':', 4)) > 1) THEN
-                /* normalize alleles and check for exact match */
-                --RAISE NOTICE 'NORMALIZED (%)', metaseqId;   
-                RETURN QUERY
-                    SELECT *, 3 AS match_rank, 'normalized alleles' AS match_type
-                    FROM find_variant_by_normalized_metaseq_id(metaseqID, firstHitOnly);
-
-                IF NOT FOUND THEN
-                    IF checkAltAlleles THEN
-                        --RAISE NOTICE 'SWITCH/NORMALIZED (%)', metaseqId;
-                        RETURN QUERY
-                            SELECT *, 4 AS match_rank, 'switch//normalized alleles' AS match_type
-                            FROM find_variant_by_normalized_metaseq_id(generate_alt_metaseq_id(metaseqID), firstHitOnly);
-                    END IF;
-                END IF;
-            END IF; 
+            RETURN QUERY
+                SELECT * FROM find_variant_by_metaseq_id_normalized_variations(metaseqId, firstHitOnly, checkAltAlleles);
         END IF;
     END IF; 
 END;

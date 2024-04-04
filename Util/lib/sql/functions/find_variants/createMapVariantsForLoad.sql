@@ -35,3 +35,28 @@ RETURN result;
 END;
 
 $$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION map_variants_normalized_check_only(variantID TEXT, firstHitOnly BOOLEAN DEFAULT TRUE, 
+    checkAltAlleles BOOLEAN DEFAULT TRUE) 
+       RETURNS JSONB AS $$
+DECLARE 
+	result JSONB;
+BEGIN
+
+WITH variant AS (SELECT regexp_split_to_table(variantID, ',') AS id),
+
+MatchedVariants AS (
+    SELECT variant.id AS search_term,
+    (SELECT jsonb_agg(jsonb_build_object('primary_key', record_primary_key, 'bin_index', bin_index) ) 
+        FROM find_variant_by_metaseq_id_normalized_variations(variant.id, firstHitOnly, checkAltAlleles)) as match    
+FROM variant GROUP BY variant.id
+)
+
+SELECT jsonb_object_agg(mv.search_term, mv.match) INTO result
+FROM MatchedVariants mv;
+
+RETURN result;
+END;
+
+$$ LANGUAGE plpgsql;
