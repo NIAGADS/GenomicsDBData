@@ -20,11 +20,12 @@ from niagads.db.postgres import AsyncDatabase
 
 LOGGER = logging.getLogger(__name__)
 
-NORMALIZE_CHUNK_SIZE = 1000
-NORMALIZE_MAX_CONNECTIONS = 50
+NORMALIZE_CHUNK_SIZE = 50
+NORMALIZE_MAX_CONNECTIONS = 25
 NORMALIZE_LOG_AFTER = 10
 
-BULK_LOOKUP_SQL = "SELECT * from map_variants($1, $2, $3, $4) AS mappings"; 
+BULK_LOOKUP_SQL = "SELECT * FROM map_variants($1, $2, $3, False) AS mappings"; 
+BULK_NORMALIZED_LOOKUP_SQL = "SELECT * FROM map_variants($1, $2, $3) AS mappings"
 # $1 - comma separated string list of variants
 # $2 - firstHitOnly
 # $3 - checkAltVariants
@@ -278,19 +279,21 @@ def parse_input_file():
         
     return { 'header': header, 'variants': variants, 'indels': indels, 'skipped': skipCount}
 
-async def catch_db_lookup_error(lookups, semaphore: asyncio.Semaphore, flags):
+
+async def catch_db_lookup_error(lookups, semaphore: asyncio.Semaphore, flags: LookupOptions):
     async with semaphore:
         variants = [k for i in [list(d) for d in lookups] for k in i]
         mappings = {}
+        sql = BULK_NORMALIZED_LOOKUP_SQL if flags.checkNormalizedAlleles else BULK_NORMALIZED_LOOKUP_SQL
+
         try:
             annotator = AsyncDatabase(connectionString=args.connectionString)
             await annotator.connect()
             connection = annotator.connection()
             
             for index, variant in enumerate(variants):
-                result = await connection.fetchval(BULK_LOOKUP_SQL, variant,
-                    flags.firstHitOnly, flags.checkAltVariants, flags.checkNormalizedAlleles,
-                    column=0)
+                parameters = [variant, flags.firstHitOnly, flags.checkAltVariants]
+                result = await connection.fetchval(sql, *parameters, column=0)
                 
                 mappings.update(result)
         except Exception as err:
@@ -314,18 +317,18 @@ async def db_lookup(lookups: list, semaphore: asyncio.Semaphore, flags: LookupOp
         the mappings
     """
     async with semaphore:
+        sql = BULK_NORMALIZED_LOOKUP_SQL if flags.checkNormalizedAlleles else BULK_NORMALIZED_LOOKUP_SQL
+        variants = [k for i in [list(d) for d in lookups] for k in i]
+        parameters = [','.join(variants), flags.firstHitOnly, flags.checkAltVariants]
+
         try:
             annotator = AsyncDatabase(connectionString=args.connectionString)
             await annotator.connect()
             connection = annotator.connection()
-            
-            variants = [k for i in [list(d) for d in lookups] for k in i]
-            mappings = await connection.fetchval(BULK_LOOKUP_SQL,
-                ','.join(variants),
-                flags.firstHitOnly, flags.checkAltVariants, flags.checkNormalizedAlleles,
-                column=0)
-            
+    
+            mappings = await connection.fetchval(sql, *parameters, column=0)       
             return {"lookups": lookups, "mappings": mappings }
+        
         except Exception as err:
             if args.failOnDbLookupError:
                 raise err
