@@ -5,6 +5,7 @@ import json
 import argparse
 import asyncio
 
+from typing import List
 from os import getcwd, path, remove as delete_file
 from csv import DictReader
 from enum import Enum
@@ -20,16 +21,16 @@ from niagads.db.postgres import AsyncDatabase
 
 LOGGER = logging.getLogger(__name__)
 
-NORMALIZE_CHUNK_SIZE = 50
-NORMALIZE_MAX_CONNECTIONS = 25
-NORMALIZE_LOG_AFTER = 10
+NORMALIZE_CHUNK_SIZE = 2 # basically, no benefit to bulk lookup, query duration increases proportionally
+NORMALIZE_MAX_CONNECTIONS = 80 # so do more in parallel
+NORMALIZE_LOG_AFTER = 100
 
 BULK_LOOKUP_SQL = "SELECT * FROM map_variants($1, $2, $3, False) AS mappings"; 
-BULK_NORMALIZED_LOOKUP_SQL = "SELECT * FROM map_variants($1, $2, $3) AS mappings"
+BULK_NORMALIZED_LOOKUP_SQL = "SELECT * FROM map_variants_normalized_check_only($1, $2, $3) AS mappings"
 # $1 - comma separated string list of variants
 # $2 - firstHitOnly
 # $3 - checkAltVariants
-# $4 - checkNormalizedAlleles
+# $4 (False) - checkNormalizedAlleles
 
 INPUT_FIELDS = qw('chr bp allele1 allele2 marker metaseq_id freq1 pvalue neg_log10_p display_p gwas_flags test_allele restricted_stats_json mapped_variant bin_index')
 
@@ -45,7 +46,18 @@ class LookupOptions(BaseModel):
     logAfter: int 
     
     def update(self, data: dict):
-        # adapted from https://github.com/pydantic/pydantic/discussions/3139#discussioncomment-4797649
+        """
+        update property values from a dictionary
+        adapted from https://github.com/pydantic/pydantic/discussions/3139#discussioncomment-4797649
+
+        TODO: abstract out custom BaseModel class with this functionality
+
+        Args:
+            data (dict): key-value pairs indicating values to be updated
+
+        Returns:
+            updated class object
+        """
         update = self.model_dump()
         update.update(data)
         for k,v in self.model_validate(update).model_dump(exclude_defaults=True).items():
@@ -204,7 +216,7 @@ def initialize():
     args.mappedFile = check_file("map", "DB mapped variants file", suffix)
     args.unmappedFile = check_file("unmap" , "Unmapped DB mapped variants file", suffix)
     args.skipFile = check_file("skip", "Skipped variants file", suffix)
-    args.errorFile = check_file("error", "DB mapping Error file", suffix)
+    args.errorFile = check_file("error", "DB mapping error file", suffix)
     
     # create hash of variant_id -> line #   
     numLines = file_line_count(args.inputFile, header=True)
@@ -317,7 +329,7 @@ async def db_lookup(lookups: list, semaphore: asyncio.Semaphore, flags: LookupOp
         the mappings
     """
     async with semaphore:
-        sql = BULK_NORMALIZED_LOOKUP_SQL if flags.checkNormalizedAlleles else BULK_NORMALIZED_LOOKUP_SQL
+        sql = BULK_NORMALIZED_LOOKUP_SQL if flags.checkNormalizedAlleles else BULK_LOOKUP_SQL
         variants = [k for i in [list(d) for d in lookups] for k in i]
         parameters = [','.join(variants), flags.firstHitOnly, flags.checkAltVariants]
 
@@ -409,6 +421,35 @@ async def run(header:list, lookups:list, options:LookupOptions, append=False):
     return {'count': mCount, 'unmapped': unmapped, 'errors': errors}
 
 
+def normalization_lookups(lookups:list):
+    """
+    weed out variants that will not benefit from normalization lookups; e.g., SNVs, refSNP ids
+
+    Args:
+        lookups (list): original list of lookups
+
+    Returns:
+        list of lookups that are appropriate for checking validation
+        unmappable lookups
+    """
+   
+    # variants = [k for i in [list(d) for d in lookups] for k in i]
+    validLookups = []
+    invalidLookups = []
+    for item in lookups:
+        variant: str = list(item)[0]
+        if variant.startswith('rs'): # skip refsnps
+            invalidLookups.append(item)
+        
+        chrm, pos, ref, alt = variant.split(':')
+        if len(ref) > 1 or len(alt) > 1:
+            validLookups.append(item)
+        else:
+            invalidLookups.append(item)
+
+    return validLookups, invalidLookups
+
+
 def sort_file(fileName: str):
     sortedFileName = fileName + "-sorted.tmp"
     LOGGER.info("Sorting " + fileName)
@@ -458,7 +499,6 @@ if __name__ == "__main__":
     parser.add_argument('--maxConnections', type=int, default=10, help="maximum number of database connections")
     parser.add_argument('--overwrite', action='store_true', help="overwrite existing files")
                         
-    
     args = parser.parse_args()
     args.connectionString = AsyncDatabase.connection_string_from_config(gusConfigFile=args.gusConfigFile, url=False)
 
@@ -492,42 +532,54 @@ if __name__ == "__main__":
             logAfter = NORMALIZE_LOG_AFTER
         )
     
-        loop = asyncio.get_event_loop()
         
-
         LOGGER.info("Processing SNVs/MNVs/short INDELs: n = " + str(len(input['variants'])))
-        result = loop.run_until_complete(run(input['header'], input['variants'], options, append=False))
+        result = asyncio.run(run(input['header'], input['variants'], options, append=False))
         errors = result['errors']
         mCount += result['count']
         
         # running through unmapped again w/normalization check
         umCount = len(result['unmapped'])
-        if umCount > 0 and args.checkNormalizedAlleles:
-            LOGGER.info("Normalizing and remapping unmapped short INDELs: n = " + str(umCount))
-            result = loop.run_until_complete(run(input['header'], result['unmapped'], normalizeOptions, append=True))
-            
-            errors = errors + result['errors']
-            mCount += result['count']
-            
-        unmapped = result['unmapped']
+        if umCount > 0:
+            if args.checkNormalizedAlleles:
+                valid, invalid = normalization_lookups(result['unmapped'])
+                unmapped = invalid
+                
+                if len(valid) > 0:
+                    LOGGER.info("Normalizing and remapping unmapped short INDELs: n = " + str(len(valid)))
+                    result = asyncio.run(run(input['header'], valid, normalizeOptions, append=True))
+                    errors = errors + result['errors']
+                    mCount += result['count']
+                    unmapped = unmapped + result['unmapped']
+                    
+            else:
+                unmapped = result['unmapped']
         
+        # indels, separated so we can accomodate checkAltVariants flag for indels
         options.update({'checkAltVariants':not args.keepIndelDirection})
         normalizeOptions.update({'checkAltVariants': not args.keepIndelDirection})
         if indelsFound:
             LOGGER.info("Processing INDELS: n = " + str(len(input['indels'])))
-            result = loop.run_until_complete(run(input['header'], input['indels'], options, append=True))
+            result = asyncio.run(run(input['header'], input['indels'], options, append=True))
             errors = errors + result['errors']
             mCount += result['count']
             
             # running through unmapped again w/normalization check
             umCount = len(result['unmapped'])
-            if umCount > 0 and args.checkNormalizedAlleles:
-                LOGGER.info("Normalizing and remapping unmapped INDELs: n = " + str(umCount))
-                result = loop.run_until_complete(run(input['header'], input['indels'], normalizeOptions, append=True))
-                errors = errors + result['errors']
-                mCount += result['count']
-                
-            unmapped = unmapped + result['unmapped']
+            if umCount > 0:
+                if args.checkNormalizedAlleles:
+
+                    valid, invalid = normalization_lookups(result['unmapped'])
+                    unmapped = unmapped + invalid
+                    
+                    if len(valid) > 0:
+                        LOGGER.info("Normalizing and remapping unmapped INDELs: n = " + str(len(valid)))
+                        result = asyncio.run(run(input['header'], valid, normalizeOptions, append=True))
+                        errors = errors + result['errors']
+                        mCount += result['count']
+                        unmapped = unmapped + result['unmapped']
+                else:
+                    unmapped = unmapped + result['unmapped']
                 
         umCount = len(unmapped)
         if umCount > 0:
