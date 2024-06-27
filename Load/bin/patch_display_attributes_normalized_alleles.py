@@ -71,6 +71,10 @@ def update_annotation(chromosome):
             if vc not in ['SNV', 'MNV']:
                 metaseqId = record['metaseq_id']
                 chrm, pos, ref, alt = metaseqId.split(':')
+                
+                if len(ref) > 50 or len(alt) > 50:
+                    continue
+                
                 annotator = VariantAnnotator(ref, alt, chrm, int(pos))
                 nref, nalt = annotator.get_normalized_alleles(True)
                 nMetaseqId = ':'.join((chrm, pos, nref, nalt))
@@ -78,7 +82,8 @@ def update_annotation(chromosome):
                     if args.debug:
                         warning(metaseqId, nMetaseqId, prefix="DEBUG", file=lfh, flush=True)
                     displayAttributes.update({'normalized_metaseq_id': ':'.join((chrm, pos, nref, nalt))})
-                    print(record['record_primary_key'], print_dict(displayAttributes, pretty=False), sep="\t", file=ofh )
+                    print(record['record_primary_key'], print_dict(displayAttributes, pretty=False), sep="\t", file=ofh)
+                    
             
             recordCount = recordCount + 1
             if recordCount % 100000 == 0:

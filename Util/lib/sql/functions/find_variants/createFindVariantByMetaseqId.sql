@@ -45,8 +45,16 @@ CREATE OR REPLACE FUNCTION find_variant_by_metaseq_id_normalized_variations(meta
         RETURNS TABLE(record_primary_key TEXT, ref_snp_id CHARACTER VARYING, metaseq_id TEXT, alleles TEXT, variant_class TEXT,
         is_adsp_variant BOOLEAN, bin_index LTREE, annotation JSONB, match_rank INTEGER, match_type TEXT) AS $$
 
+DECLARE ref TEXT;
+DECLARE alt TEXT;
+
 BEGIN
-    IF (LENGTH(split_part(metaseqID, ':', 3)) > 1 OR LENGTH(split_part(metaseqID, ':', 4)) > 1) THEN
+
+    SELECT (split_part(metaseqId, ':', 3))::text INTO ref;
+    SELECT (split_part(metaseqId, ':', 4))::text INTO alt;
+
+    IF ((LENGTH(ref) > 1 OR LENGTH(alt) > 1) AND (LENGTH(ref) < 50 AND LENGTH(alt) < 50)) -- indel, but not too long
+        THEN
         /* normalize alleles and check for exact match */
         --RAISE NOTICE 'NORMALIZED (%)', metaseqId;   
         RETURN QUERY
