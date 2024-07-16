@@ -21,9 +21,9 @@ from niagads.db.postgres import AsyncDatabase
 
 LOGGER = logging.getLogger(__name__)
 
-NORMALIZE_CHUNK_SIZE = 2 # basically, no benefit to bulk lookup, query duration increases proportionally
-NORMALIZE_MAX_CONNECTIONS = 80 # so do more in parallel
-NORMALIZE_LOG_AFTER = 100
+NORMALIZE_CHUNK_SIZE = 5 # basically, no benefit to bulk lookup, query duration increases proportionally b/c of find by position
+NORMALIZE_MAX_CONNECTIONS = 80
+NORMALIZE_LOG_AFTER = 1000
 
 BULK_LOOKUP_SQL = "SELECT * FROM map_variants($1, $2, $3, False) AS mappings"; 
 BULK_NORMALIZED_LOOKUP_SQL = "SELECT * FROM map_variants_normalized_check_only($1, $2, $3) AS mappings"
@@ -442,7 +442,7 @@ def normalization_lookups(lookups:list):
             invalidLookups.append(item)
         
         chrm, pos, ref, alt = variant.split(':')
-        if len(ref) > 1 or len(alt) > 1:
+        if (len(ref) > 1 or len(alt) > 1) and (len(ref) < 50 and len(alt) < 50):
             validLookups.append(item)
         else:
             invalidLookups.append(item)
@@ -546,7 +546,7 @@ if __name__ == "__main__":
                 unmapped = invalid
                 
                 if len(valid) > 0:
-                    LOGGER.info("Normalizing and remapping unmapped short INDELs: n = " + str(len(valid)))
+                    LOGGER.info("Normalizing and remapping unmapped short SNVs/short INDELs: n = " + str(len(valid)))
                     result = asyncio.run(run(input['header'], valid, normalizeOptions, append=True))
                     errors = errors + result['errors']
                     mCount += result['count']
@@ -568,7 +568,6 @@ if __name__ == "__main__":
             umCount = len(result['unmapped'])
             if umCount > 0:
                 if args.checkNormalizedAlleles:
-
                     valid, invalid = normalization_lookups(result['unmapped'])
                     unmapped = unmapped + invalid
                     
