@@ -27,7 +27,7 @@
                     "rankingFile": "@file.consequence_ranking_file",
                     "extension": ".ALL.site_only.vcf.bgz.vep.json.gz",
                     "commitAfter": 100000,
-                    "chr": "all",
+                    "chr": "autosome",
                     "maxWorkers": 10,
                     "datasource": "ADSP",
                     "skipExisting": true
