@@ -204,6 +204,18 @@ loadResource --config $CONFIG_DIR/adsp/17K_LD.json --load data --params '{"onlyC
 loadResource --config $CONFIG_DIR/adsp/17K_LD.json --load data --params '{"onlyChr":"6,7,18,21"}' --verbose --commit > $LOG_FILE_DIR/data/load_adsp_17K_ld_part6.log 2>&1
 
 # =================================================
+# ADSP R4/36K
+# =================================================
+
+# variants
+
+loadResource --config $CONFIG_DIR/adsp/R4_annotation.json --load xdbr --verbose --commit > $LOG_FILE_DIR/xdbr/load_adsp_R4_xdbr.log 2>&1
+loadResource --config $CONFIG_DIR/adsp/R4_annotation.json --load data --verbose --commit > $LOG_FILE_DIR/data/load_adsp_R4_vep.log 2>&1 # skip cadd & qc
+loadResource --config $CONFIG_DIR/adsp/R4_annotation.json --load data --verbose --commit > $LOG_FILE_DIR/data/load_adsp_R4_cadd.log 2>&1 # skip vep & qc
+loadResource --config $CONFIG_DIR/adsp/R4_annotation.json --load data --verbose --commit > $LOG_FILE_DIR/data/load_adsp_R4_qc.log 2>&1 # skip vep & cadd
+
+
+# =================================================
 # 1000 Genomes LD
 # =================================================
 
