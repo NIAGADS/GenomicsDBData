@@ -1,0 +1,9 @@
+<NIAGADS::GenomeBrowserTrackConfig>
+	<name>ADSK 36K R4 Variants</name>
+	<label>ADSK 36K</label>
+	<track>ADSP_36K</track>
+	<source>ADSP</source>
+	<description>Variants from the Alzheimer''s Disease Sequencing Project (ADSP) 36K R4 whole genome sequencing effort - INDELs and SNVs that passed the ADSP biallelic quality control (QC) criteria. Variants are annotated by the ADSP Annotation Pipeline.</description>
+	<feature_type>Variant</feature_type>
+	<track_type>variant</track_type>
+</NIAGADS::GenomeBrowserTrackConfig>
