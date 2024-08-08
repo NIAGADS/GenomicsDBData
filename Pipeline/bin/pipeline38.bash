@@ -211,9 +211,17 @@ loadResource --config $CONFIG_DIR/adsp/17K_LD.json --load data --params '{"onlyC
 
 loadResource --config $CONFIG_DIR/adsp/R4_annotation.json --load xdbr --verbose --commit > $LOG_FILE_DIR/xdbr/load_adsp_R4_xdbr.log 2>&1
 loadResource --config $CONFIG_DIR/adsp/R4_annotation.json --load data --verbose --commit > $LOG_FILE_DIR/data/load_adsp_R4_vep.log 2>&1 # skip cadd & qc
+
+# loadResource --config $CONFIG_DIR/adsp/R4_annotation.json --load data --params '{"chr":"8,9"}' --verbose --commit > $LOG_FILE_DIR/data/load_adsp_R4_vep_8_9.log 2>&1 # skip cadd & qc
+
 loadResource --config $CONFIG_DIR/adsp/R4_annotation.json --load data --verbose --commit > $LOG_FILE_DIR/data/load_adsp_R4_cadd.log 2>&1 # skip vep & qc
 loadResource --config $CONFIG_DIR/adsp/R4_annotation.json --load data --verbose --commit > $LOG_FILE_DIR/data/load_adsp_R4_qc.log 2>&1 # skip vep & cadd
 
+
+# loadResource --config $CONFIG_DIR/adsp/R4_annotation.json --load data --params '{"chr":"1,2,3,4,5"}' --verbose --commit > $LOG_FILE_DIR/data/load_adsp_R4_qc_1_thru_5.log 2>&1
+# loadResource --config $CONFIG_DIR/adsp/R4_annotation.json --load data --verbose --commit > $LOG_FILE_DIR/data/load_adsp_R4_qc.log 2>&1
+
+ga GUS::Supported::Plugin::LoadGusXml --file $GUS_HOME/lib/xml/niagads/r4_36k_track_config.xml --commit
 
 # =================================================
 # 1000 Genomes LD
