@@ -62,8 +62,7 @@
                     "chr": "autosome",
                     "maxWorkers": 25,
                     "version": "R4",
-                    "vcfHeaderFields": "#CHROM,POS,ID,REF,ALT,QUAL,FILTER,INFO",
-                    "updateExistingValues": true
+                    "vcfHeaderFields": "#CHROM,POS,ID,REF,ALT,QUAL,FILTER,INFO"
                 }
             }
         }
