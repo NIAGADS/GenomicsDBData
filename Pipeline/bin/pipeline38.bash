@@ -218,9 +218,6 @@ loadResource --config $CONFIG_DIR/adsp/R4_annotation.json --load data --verbose 
 loadResource --config $CONFIG_DIR/adsp/R4_annotation.json --load data --verbose --commit > $LOG_FILE_DIR/data/load_adsp_R4_qc.log 2>&1 # skip vep & cadd
 
 
-# loadResource --config $CONFIG_DIR/adsp/R4_annotation.json --load data --params '{"chr":"1,2,3,4,5"}' --verbose --commit > $LOG_FILE_DIR/data/load_adsp_R4_qc_1_thru_5.log 2>&1
-# loadResource --config $CONFIG_DIR/adsp/R4_annotation.json --load data --verbose --commit > $LOG_FILE_DIR/data/load_adsp_R4_qc.log 2>&1
-
 ga GUS::Supported::Plugin::LoadGusXml --file $GUS_HOME/lib/xml/niagads/r4_36k_track_config.xml --commit
 
 # =================================================
