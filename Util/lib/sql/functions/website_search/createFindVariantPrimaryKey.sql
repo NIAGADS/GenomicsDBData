@@ -62,7 +62,7 @@ END;
 
 $$ LANGUAGE plpgsql;
 
-DROP FUNCTION get_variant_primary_keys_and_annotations(TEXT, BOOLEAN, BOOLEAN);
+--DROP FUNCTION get_variant_primary_keys_and_annotations(TEXT, BOOLEAN, BOOLEAN, BOOLEAN);
 CREATE OR REPLACE FUNCTION get_variant_primary_keys_and_annotations(variantID TEXT, firstHitOnly BOOLEAN DEFAULT TRUE, 
     checkAltAlleles BOOLEAN DEFAULT TRUE, checkNormalizedAlleles BOOLEAN DEFAULT FALSE)
        RETURNS TABLE(mappings TEXT) AS $$
