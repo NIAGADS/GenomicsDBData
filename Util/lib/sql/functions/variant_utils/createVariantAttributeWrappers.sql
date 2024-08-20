@@ -2,10 +2,12 @@ CREATE OR REPLACE FUNCTION get_restricted_adsp_qc(fullQC JSONB)
     RETURNS JSONB AS $$
 DECLARE result JSONB;
 BEGIN
-    SELECT fullQC
-        #- '{17k,info,AF}' #- '{17k,info,AC}' #- '{17k,info,AN}'    
-        #- '{r4,info,AF}' #- '{r4,info,AC}' #- '{r4,info,AN}'
-    INTO result;
+    SELECT 
+        CASE WHEN fullQC = 'null' THEN NULL ELSE 
+            fullQC
+                #- '{17k,info,AF}' #- '{17k,info,AC}' #- '{17k,info,AN}'    
+                #- '{r4,info,AF}' #- '{r4,info,AC}' #- '{r4,info,AN}'
+    END INTO result;
     RETURN result;
 END;
 $$ LANGUAGE plpgsql;
@@ -23,7 +25,7 @@ BEGIN
         'allele_frequencies', variant->'allele_frequencies', 
         'cadd_scores', variant->'cadd_scores',
         'most_severe_consequence', variant->'adsp_most_severe_consequence',
-        'ADSP_QC', get_restricted_adsp_qc(variant->'adsp_qc'),
+        'adsp_qc', get_restricted_adsp_qc(variant->'adsp_qc'),
         'ranked_consequences', variant->'adsp_ranked_consequences',
         'loss_of_function', variant->'loss_of_function',
         'clinvar', 'Not Yet Available',
