@@ -13,6 +13,7 @@ def create_file_handles():
     for c in Human: # c.name -> 'chrN'; c.value -> N
         fileName = path.join(args.outputPath, c.name + ".gff3")
         files[c.value] = open(fileName, 'w')
+    files['MT'] = files['M']
         
     return files
 
@@ -33,8 +34,9 @@ if __name__ == "__main__":
     with open(args.file, 'r') as fh:
         for line in fh:
             line = line.strip()
-            values = line.split('\t')
-            print(line, file=oFileHandles[values[0]])     
+            chromosome = line.split('\t')
+            if chromosome in oFileHandles: # ignore anything not on primary assembly
+                print(line, file=oFileHandles[chromosome])     
             
     close_file_handles(oFileHandles)   
 
