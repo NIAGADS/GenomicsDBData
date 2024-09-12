@@ -8,12 +8,15 @@ import argparse
 from os import path
 from niagads.reference.chromosomes import Human
 
-def create_file_handles():
+def create_file_handles(skipChrs):
     files = {}
     for c in Human: # c.name -> 'chrN'; c.value -> N
-        fileName = path.join(args.outputPath, c.name + ".gff3")
-        files[c.value] = open(fileName, 'w')
-    files['MT'] = files['M']
+        if c.value not in skipChrs:
+            fileName = path.join(args.outputPath, c.name + ".gff3")
+            files[c.value] = open(fileName, 'w')
+    
+    if 'M' not in skipChrs and 'MT' not in skipChrs:
+        files['MT'] = files['M']
         
     return files
 
@@ -27,10 +30,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--outputPath', help="output directory", required=True)
     parser.add_argument('--file', help="full path to GFF3 file", required=True)
+    parser.add_argument('--skipChrs', help="comma separated list of chromosomes to skip")
 
     args = parser.parse_args()
     
-    oFileHandles = create_file_handles()
+    skip = args.skipChr.split(',') if args.skip else []
+    
+    oFileHandles = create_file_handles(skip)
     with open(args.file, 'r') as fh:
         for line in fh:
             line = line.strip()
