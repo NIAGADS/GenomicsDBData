@@ -11,7 +11,7 @@ from niagads.reference.chromosomes import Human
 def create_file_handles():
     files = {}
     for c in Human: # c.name -> 'chrN'; c.value -> N
-        fileName = path.join(args.outputFile, c.name + ".gff3")
+        fileName = path.join(args.outputPath, c.name + ".gff3")
         files[c.value] = open(fileName, 'w')
         
     return files
