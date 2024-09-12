@@ -47,9 +47,10 @@
                                             GenomicsDBData/Load-Installation,
                                             GenomicsDBData/Util-Installation,
                                             GenomicsDBData/Documentation-Installation,
-					                                  GenomicsDBData/BinIndex-Installation,
+					                        GenomicsDBData/BinIndex-Installation,
                                             GenomicsDBData/Pipeline-Installation,
-					                                  GenomicsDBData/Ontology-Installation">
+                                            GenomicsDBData/GWAS-Installation,
+					                        GenomicsDBData/Ontology-Installation">
 
     <ant target="defaultProjectInstall"/>
   </target>  
@@ -82,6 +83,13 @@
     <ant target="defaultComponentInstall">
       <property name="project" value="GenomicsDBData"/>
       <property name="component" value="Documentation"/>
+    </ant>
+  </target>
+
+<target name="GenomicsDBData/GWAS-Installation" depends="ProjectTree">
+    <ant target="defaultComponentInstall">
+      <property name="project" value="GenomicsDBData"/>
+      <property name="component" value="GWAS"/>
     </ant>
   </target>
 

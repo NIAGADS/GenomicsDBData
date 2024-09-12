@@ -89,7 +89,7 @@ UNION
 SELECT st.search_term, st.term, f.record_primary_key, f.metaseq_id, f.ref_snp_id, 
 f.is_adsp_variant, f.alleles, f.variant_class, f.annotation, 
 f.match_type, 2 AS match_ranking
-FROM STerm st, find_variant_by_metaseq_id_variations(st.term) f
+FROM STerm st, find_variant_by_metaseq_id_variations(st.term, FALSE, TRUE, TRUE) f
 WHERE st.term LIKE '%:%' AND array_length(regexp_split_to_array(st.term, ':'),1) = 4
 
 UNION

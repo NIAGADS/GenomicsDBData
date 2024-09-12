@@ -1547,6 +1547,7 @@ sub submitDBLookupQuery {
 # $recordHandler->setAllowAlleleMismatches($self->getArg('allowAlleleMismatches'));
 
         my $mappings = $recordHandler->lookup( keys %$lookups );
+        $self->error("DEBUG: mapped: " . $mappings);
         $SHARED_VARIABLE_SEMAPHORE->down;
         foreach my $vid ( keys %$mappings ) {
             next if ( !defined $mappings->{$vid} );    # "null" returned
@@ -1580,6 +1581,9 @@ sub monitorThreads {
                 push( @$errors, $result );
                 $fail = 1;
             }
+        }
+        else {
+            $self->log("Running: " . Dumper($_))
         }
     }
     return $fail, @$errors;
@@ -1718,6 +1722,7 @@ sub DBLookup {    # check against DB
             push( @threads, $thread );
             ( $fail, @errors ) =
               $self->monitorThreads( $fail, \@errors, @threads );
+            last;
         }    # end do lookup
     }    # end iterate over file
 

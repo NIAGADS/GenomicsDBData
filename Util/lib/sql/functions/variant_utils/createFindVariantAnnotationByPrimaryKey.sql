@@ -1,5 +1,6 @@
+
 CREATE OR REPLACE FUNCTION get_variant_linkage(variantPK TEXT)
-       RETURNS TABLE(record_primary_key TEXT, linkage JSONB) AS $$
+    RETURNS TABLE(record_primary_key TEXT, linkage JSONB) AS $$
 
 DECLARE chrm TEXT;
 DECLARE pos INT;
@@ -30,7 +31,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION get_variant_display_details(variantPK TEXT)
-       RETURNS TABLE(record_primary_key TEXT, details JSONB) AS $$
+    RETURNS TABLE(record_primary_key TEXT, details JSONB) AS $$
 
 DECLARE chrm TEXT;
 BEGIN

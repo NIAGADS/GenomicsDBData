@@ -65,8 +65,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-
-CREATE OR REPLACE FUNCTION get_adsp_variants(chrm TEXT, locStart INTEGER, locEnd INTEGER)
+drop function get_adsp_variants(text,  INTEGER,  INTEGER);
+CREATE OR REPLACE FUNCTION get_adsp_variants(chrm TEXT, locStart INTEGER, locEnd INTEGER, release TEXT)
        RETURNS JSONB AS $$
 
 DECLARE binIndex LTREE;
@@ -91,7 +91,9 @@ BEGIN
   WHERE binIndex @> v.bin_index
   AND int4range(locStart, locEnd, '[]') @> v.position
   AND v.chromosome = chrm
-  AND is_adsp_variant)
+  AND is_adsp_variant
+  AND jsonb_path_exists(v.adsp_qc, ('$.' || lower(release))::jsonpath)
+  )
 SELECT jsonb_agg(row_json) AS RESULT FROM vcfRows INTO trackInfo;
 
 RETURN trackInfo;

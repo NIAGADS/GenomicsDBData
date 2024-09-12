@@ -1,3 +1,43 @@
+CREATE OR REPLACE FUNCTION get_restricted_adsp_qc(fullQC JSONB)
+    RETURNS JSONB AS $$
+DECLARE result JSONB;
+BEGIN
+    SELECT 
+        CASE WHEN fullQC = 'null' THEN NULL ELSE 
+            fullQC
+                #- '{17k,info,AF}' #- '{17k,info,AC}' #- '{17k,info,AN}'    
+                #- '{r4,info,AF}' #- '{r4,info,AC}' #- '{r4,info,AN}'
+    END INTO result;
+    RETURN result;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- NOTE variant here is the result from calling SELECT row_to_json(v)::jsonb 
+-- FROM AnnotatedVDB.Variant v WHERE record_primary_key = ?
+CREATE OR REPLACE FUNCTION get_variant_annotation_summary(variant JSONB) 
+    RETURNS JSONB AS $$
+DECLARE result JSONB;
+BEGIN
+	SELECT 
+	jsonb_build_object(	
+        'associations', variant->'gwas_flags',
+        'allele_frequencies', variant->'allele_frequencies', 
+        'cadd_scores', variant->'cadd_scores',
+        'most_severe_consequence', variant->'adsp_most_severe_consequence',
+        'adsp_qc', get_restricted_adsp_qc(variant->'adsp_qc'),
+        'ranked_consequences', variant->'adsp_ranked_consequences',
+        'loss_of_function', variant->'loss_of_function',
+        'clinvar', 'Not Yet Available',
+        'other_annotations', 'Not Yet Available')
+    INTO result;
+
+    RETURN result;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
 CREATE OR REPLACE FUNCTION adsp_variant_flag(flag BOOLEAN)
 RETURNS text AS $$
 	SELECT CASE
