@@ -74,13 +74,6 @@ sub getArgumentsDeclaration {
 		default => 10000
 	       }),
 
-     stringArg({name => 'filePattern',
-		descr => 'for file name <pattern usually species.genomebuild>.<chr>.motif_features.gff',
-		constraintFunc=> undef,
-		reqd  => 0,
-		isList => 0
-	   }),
-
      stringArg({name => 'chromosomes',
 		descr => 'comma separated lists of chromosomes',
 		constraintFunc=> undef,
@@ -148,7 +141,7 @@ sub new {
   my $argumentDeclaration    = &getArgumentsDeclaration();
 
   $self->initialize({requiredDbVersion => 4.0,
-		     cvsRevision => '$Revision: 15 $',
+		     cvsRevision => '$Revision: 17 $',
 		     name => ref($self),
 		     revisionNotes => '',
 		     argsDeclaration => $argumentDeclaration,
@@ -164,53 +157,39 @@ sub new {
 sub run {
   my ($self) = @_;
 
-  $self->logAlgInvocationId();
+  $self->logAlgInvocationId();l
   $self->logCommit();
   $self->logArgs();
   $self->getAlgInvocation()->setMaximumNumberOfObjects(100000);
 
-  $self->{external_database_release_id} = $self->getExtDbRlsId($self->getArg('extDbRlsSpec'));
-
-  my $chrms = $self->getArg('chromosomes');
-  my @chrmList = ($chrms) ? split /,/, $chrms : undef;
-  my %chrmHash = (@chrmList) ?  map { $_ => 1 } @chrmList : undef;
+  $self->{external_database_release_id} = $self->getExtDbRlsId($self->getArg('extDbRlsSpec'));  
 
   my $schema = lc($self->getArg('schema'));
-  my @files = $self->getFiles();
-  foreach my $f (@files) {
-    $f =~ m/\.(\d+|MT)\./;
-    my $chromosome = $1;
-    $self->{chromosomse} = "chr$chromosome";
-    if ($chrms) {
-      if (exists $chrmHash{$chromosome}) {
-	$self->loadResult($f) if ($schema eq "results");
-	$self->loadSRes($f) if ($schema eq "sres");
-      }
-    }
-    else {
-      $self->loadResult($f) if ($schema eq "results");
-      $self->loadSRes($f) if ($schema eq "sres");
-    }
+
+  if ($self->getArg('file')) {
+    my $file = $self->getArg('file');
+    $self->loadResult($file) if ($schema eq "results");
+	$self->loadSRes($file) if ($schema eq "sres");
   }
+  else {
+    my $chrms = $self->getArg('chromosomes');
+    my @chrmList = ($chrms) ? split /,/, $chrms : (1..22);
+    $self->log("Processing chromosomes: @chrmList");
+    $self->log("Processing chr*.gff3 files in " . $self->getArg('fileDir'));
+    foreach my $chromosome (@chrmList) {
+        $self->log("Processing chr$chromosome");
+        $self->{chromosomse} = "chr$chromosome";
+        my $file = "chr$chromosome.gff3";
+        $self->loadResult($file) if ($schema eq "results");
+	    $self->loadSRes($file) if ($schema eq "sres");
+    }
+  } 
 
 }
 
 # ----------------------------------------------------------------------
 # methods called by run
 # ----------------------------------------------------------------------
-
-sub getFiles {
-  my ($self) = @_;
-
-  return ($self->getArg('file')) if ($self->getArg('file'));
-
-  my $pattern = $self->getArg('filePattern');
-  $self->log("Finding files in " . $self->getArg('fileDir') . " that match $pattern");
-  opendir(my $dh, $self->getArg('fileDir')) || $self->error("Path does not exists: " . $self->getArg('fileDir'));
-  my @files = grep(/${pattern}/, readdir($dh));
-  closedir($dh);
-  return @files;
-}
 
 sub loadResult {
   my ($self, $fileName) = @_;

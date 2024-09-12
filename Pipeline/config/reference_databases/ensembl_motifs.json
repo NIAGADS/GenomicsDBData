@@ -28,10 +28,12 @@
         },
         {
             "script": {
+                "skip": true,
                 "name": "splitGFF3byChr",
                 "parameters": {
                     "outputPath": "@file.path/motifs",
-                    "file": "@file.path/@file.pattern"
+                    "file": "@file.path/@file.file",
+                    "skipChrs": "X,Y,M,MT"
                 }
             }
         }
@@ -43,7 +45,6 @@
                 "parameters": {
                     "extDbRlsSpec": "@external_database.name|@external_database.version",
                     "fileDir": "@file.path/motifs",
-                    "filePattern": "@file.pattern",
                     "schema": "results"
                 }
             }

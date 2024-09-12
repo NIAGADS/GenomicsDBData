@@ -183,6 +183,17 @@ loadResource --config $CONFIG_DIR/reference_databases/dbsnp_merge.json --preproc
 loadResource --config $CONFIG_DIR/reference_databases/dbsnp_merge.json --load data --verbose --commit > $LOG_FILE_DIR/reference/load_dbsnp_merge.log 2>&1
 
 # =================================================
+# REFERENCE BUILD - Functional Genomics
+# =================================================
+
+# Ensembl Motifs
+loadResource -c $CONFIG_DIR/reference_databases/ensembl_motifs.json --load xdbr --commit > $LOG_FILE_DIR/xdbr/load_ensembl_motifs_xdbr.log 2>&1
+loadResource -c $CONFIG_DIR/reference_databases/ensembl_motifs.json --preprocess --verbose --commit > $LOG_FILE_DIR/reference/load_ensembl_motifs_study.log 2>&1
+loadResource -c $CONFIG_DIR/reference_databases/ensembl_motifs.json --load data --verbose --commit > $LOG_FILE_DIR/reference/load_ensembl_motifs.log 2>&1
+
+
+
+# =================================================
 # ADSP 17K
 # =================================================
 
