@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+
+"""
+split a large GFF3 file by chromosome
+"""
+
+import argparse
+from os import path
+from niagads.reference.chromosomes import Human
+
+def create_file_handles():
+    files = {}
+    for c in Human: # c.name -> 'chrN'; c.value -> N
+        fileName = path.join(args.outputFile, c.name + ".gff3")
+        files[c.value] = open(fileName, 'w')
+        
+    return files
+
+def close_file_handles(fileHandles):
+    for fh in fileHandles.values():
+        fh.close()
+
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--outputPath', help="output directory", required=True)
+    parser.add_argument('--file', help="full path to GFF3 file", required=True)
+
+    args = parser.parse_args()
+    
+    oFileHandles = create_file_handles()
+    with open(args.file, 'r') as fh:
+        for line in fh:
+            line = line.strip()
+            values = line.split('\t')
+            print(line, file=oFileHandles[values[0]])     
+            
+    close_file_handles(oFileHandles)   
+
