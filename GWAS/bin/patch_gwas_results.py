@@ -9,7 +9,7 @@ Patch Results.VariantGWAS
 
 import argparse
 import os.path as path
-import random
+from random import shuffle
 
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
@@ -58,8 +58,7 @@ def patch_table(panId: int):
         with open(logFileName, 'w') as lfh, \
             dbSelect.named_cursor(cname, cursorFactory="RealDictCursor") as selectCursor, \
             db.cursor(cursorFactory="RealDictCursor") as validCursor, \
-            db.cursor() as deleteCursor, \
-            db.cursor() as updateCursor:
+            db.cursor() as deleteCursor:
                 
             warning("Reviewing variants from: " + xstr(panId), file=lfh, flush=True)
             selectCursor.itersize = ITERATION_SIZE 
@@ -67,36 +66,21 @@ def patch_table(panId: int):
             for record in selectCursor:
                 recordCount = recordCount + 1
                 vpk = record['variant_record_primary_key']
-                if record['chromosome'] is None:
+                if 'I' in vpk or 'R' in vpk or 'D' in vpk or 'N' in vpk or '?' in vpk:
                     validCursor.execute(VALID_PK_SQL, [vpk])
                     lookup = validCursor.fetchone()
                     if lookup is None:
-                        deleteCursor.execute(DELETE_SQL, [vpk])
-                        warning("DELETED: " + vpk, file=lfh, flush=True)
-                    else: # update
-                        updates.append([lookup['chromosome'], lookup['position'], vpk])
-                        # updateCursor.execute(UPDATE_SQL, )
-                        
-                    # either updating or deleting so, can count just one mod
-                    modificationCount += 1
-                    
-                    if modificationCount % args.commitAfter == 0:
-                        updateCursor.executemany(UPDATE_SQL, updates)
-                        updates = []
-                        commit(modificationCount, db, lfh)
-                    
-                    if args.test and modificationCount == args.commitAfter:
-                        warning("DONE", file=lfh, flush=True)
-                        die("Done with test on " + xstr(panId))
-                        
+                        updates.append([vpk])             
                 if recordCount % 100000 == 0:
                     warning("PROCESSED: " + xstr(recordCount) + " variants.", file=lfh, flush=True)
 
-            warning("Processing residuals", file=lfh, flush=True)
-            if len(updates) != 0:
-                updateCursor.executemany(UPDATE_SQL, updates)
-            commit(modificationCount, db, lfh)
-            warning("PROCESSED: " + xstr(recordCount) + " variants.")
+            nUpdates = len(updates)
+            if nUpdates > 0:
+                deleteCursor.executemany(DELETE_SQL, updates)
+                warning("DELETED: " + xstr(nUpdates), file=lfh, flush=True)  
+                commit(nUpdates, db, lfh)
+                
+            warning("PROCESSED: " + xstr(recordCount) + " variants.", file=lfh, flush=True)
             warning("DONE", file=lfh, flush=True)
             
     finally:
@@ -113,13 +97,14 @@ if __name__ == '__main__':
     parser.add_argument('--test', action='store_true')
     parser.add_argument('--veryVerbose', action='store_true')
     parser.add_argument('--logFilePath', required=True)
-    parser.add_argument('--panId', type=int)
+    parser.add_argument('--panId')
     parser.add_argument('--gusConfigFile',
                         help="GUS config file. If not provided, assumes default: $GUS_HOME/conf/gus.config")
     args = parser.parse_args()
     
+    panIds = None
     if args.panId:
-        patch_table(args.panId)
+        panIds = args.panId.split(',')
     else:
         try:
             database = Database(args.gusConfigFile)
@@ -129,25 +114,30 @@ if __name__ == '__main__':
                 warning("Fetching Dataset Protocol App Node IDs")
                 cursor.execute(PAN_SELECT_SQL)
                 panIds = [r[0] for r in cursor.fetchall()]
-                
-            warning("Found " + xstr(len(panIds)) + " distinct datasets")
+
             database.close()
-            
-            # decided not to do it in parallel b/c of the huge degree of overlap among datasets
-            # this way we minimize checks against annotatedvdb.variant reference
-            for pid in panIds:
-                patch_table(pid)
-            
-            """
-            with ProcessPoolExecutor(args.maxWorkers) as executor:
-                futureUpdate = {executor.submit(patch_table, panId=pid) : pid for pid in panIds}
-                for future in as_completed(futureUpdate): # this should allow catching errors 
-                    try:
-                        future.result()
-                    except Exception as err:
-                        raise(err)       
-            """
+
             
         finally:
             database.close()
+    
+    warning("Processing " + xstr(len(panIds)) + " distinct datasets")
+    panIds.sort()
+    warning(panIds)  
+    
+    shuffle(panIds)
+    
+    for pid in panIds:
+        patch_table(pid)
+
+    """
+    with ProcessPoolExecutor(args.maxWorkers) as executor:
+        futureUpdate = {executor.submit(patch_table, panId=pid) : pid for pid in panIds}
+        for future in as_completed(futureUpdate): # this should allow catching errors 
+            try:
+                future.result()
+            except Exception as err:
+                raise(err)       
+    """
+
 
