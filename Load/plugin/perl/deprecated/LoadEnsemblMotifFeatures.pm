@@ -300,6 +300,7 @@ sub setMatrixValues {
     $MATRICES->{$matrixId} = \%values;
     $count++;
   }
+  
 
   my @sources = @{$MATRICES->{$matrixId}->{motif_source_id}};
   push(@sources, $sourceId);
