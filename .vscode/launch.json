@@ -1,0 +1,25 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: Current File with Arguments",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+                "--inputFile", "/mnt/efs/trx/genomicsdb/data/GRCh38/NIAGADS/GRCh38/NG00122/GRCh38/NG00122/NG00122-input.txt",
+                "--outputDir", "/mnt/efs/trx/genomicsdb/data/GRCh38/NIAGADS/GRCh38/NG00122/GRCh38/NG00122/preprocess",
+                "--outputSuffix", "test",
+                "--test", "500000",
+                "--maxConnections", "10",
+                "--logAfter", "5000",
+                "--overwrite", "--debug", "--keepIndelDirection"
+                // "${command:pickArgs}"
+            ]
+        }
+    ]
+}
