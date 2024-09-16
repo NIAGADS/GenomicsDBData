@@ -326,6 +326,7 @@ def run():
     skipCount = 0
     mappedCount = 0
     lineCount = 0
+    asyncRunCount = 0
     with open(args.inputFile, 'r') as fh, open(args.skipFile, 'w') as sfh:      
         reader = DictReader(fh, delimiter='\t')
         header = reader.fieldnames
@@ -351,9 +352,9 @@ def run():
                 LOGGER.info("Parsed " + str(lineCount) + " lines.")
             
             if lineCount % lookupThreshold == 0:
-                LOGGER.info("Processing SNVs/MNVs/short INDELs: n = " + str(len(variants)))
-                result = asyncio.run(async_db_mapping(header, variants, options, append=True))
-                
+                asyncRunCount = asyncRunCount + 1
+                LOGGER.info("RUN " + xstr(asyncRunCount) + " - Processing SNVs/MNVs/short INDELs: n = " + str(len(variants)))
+                result = asyncio.run(async_db_mapping(header, variants, options, append=False if asyncRunCount == 1 else True))
                 errors = result['errors']
                 mappedCount = result['count']
                 unmapped = result['unmapped']
