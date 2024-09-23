@@ -719,7 +719,9 @@ sub buildGWASFlags {
 # ----------------------------------------------------------------------
 sub undoTables {
     my ($self) = @_;
-    return ('Results.VariantGWAS'); # 'Results.VariantGWAS', 'NIAGADS.Variant');
+    if (!$self->getArg('preprocess')) {
+        return ('Results.VariantGWAS') 
+    }
+    return ();
 }
-
 1;
