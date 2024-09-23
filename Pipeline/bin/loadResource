@@ -6,19 +6,15 @@
 generic function for loading data based on info in a json config file
 """
 
-from __future__ import with_statement
-from __future__ import print_function
-
 import argparse
 import json
-import csv
 
 from os import path, listdir, environ
-from GenomicsDBData.Util.utils import warning, die, create_dir, xstr, execute_cmd, ascii_safe_str, is_number, xstr
-from GenomicsDBData.Util.list_utils import qw
+
+from niagads.utils.sys import warning, die, create_dir, execute_cmd, ascii_safe_str
+from niagads.utils.string import is_number, xstr
 
 ENVIRONMENTAL_VARS = ['NIAGADS_GWAS_DIR', 'GUS_HOME', 'PROJECT_HOME', 'DATA_DIR', 'GENOME_BUILD', 'SHARED_DATA_DIR', 'CONFIG_DIR', 'WEBHOOK_URL']
-
 
 def tune():
     ''' run tuning SQL '''
@@ -35,10 +31,14 @@ def tune():
 
 def run_script(sConfig, foreach=None):
     ''' runs a script '''
-    try: 
-        cmd = [sConfig['name']]
+    try:         
+        stepName = sConfig['name']
+        cmd = [stepName]
         cmd = get_cmd_options(cmd, sConfig, False, foreach)
+        
         if 'skip' in sConfig and sConfig['skip']:
+            warning("SKIPPING: " + ascii_safe_str(' '.join(cmd)))
+        elif args.stepName and stepName != args.stepName:
             warning("SKIPPING: " + ascii_safe_str(' '.join(cmd)))
         else:
             execute_cmd(cmd, cwd=None, printCmdOnly=args.printCmd, verbose=args.verbose)                  
@@ -49,9 +49,12 @@ def run_script(sConfig, foreach=None):
 def run_plugin(pConfig, foreach=None):
     ''' runs a plugin '''
     try: 
-        cmd = ['ga', pConfig['name']] 
+        stepName = pConfig['name']
+        cmd = ['ga', stepName] 
         cmd = get_cmd_options(cmd, pConfig, True, foreach)
         if 'skip' in pConfig and pConfig['skip']:
+            warning("SKIPPING: " + ascii_safe_str(' '.join(cmd)))
+        elif args.stepName and stepName != args.stepName:
             warning("SKIPPING: " + ascii_safe_str(' '.join(cmd)))
         else:
             execute_cmd(cmd, cwd=None, printCmdOnly=args.printCmd, verbose=args.verbose)                  
@@ -93,8 +96,6 @@ def preprocess():
             else:
                 die("Unrecognized preprocessing step: " + json.dumps(step))
             
-
-
 
 def use_foreach(stepConfig):
     ''' check whether expecting to have to run cmd for multiple conditions'''
@@ -382,7 +383,7 @@ def parse_config():
     try:
         with open(args.config, 'r') as f:
             data = json.load(f)
-         
+
     except (OSError, IOError) as e: # FileNotFoundError does not exist below python 3.3
         warning("Could not open config file " + args.config)
         die(e)
@@ -437,6 +438,7 @@ if __name__ == "__main__":
     parser.add_argument('--gusConfigFile', help="full path to gusConfig File; if not specified uses $GUS_HOME/config/gus.config")
     parser.add_argument('--preprocess', help="preprocess", action='store_true')
     parser.add_argument('--commit', help="commit", action='store_true')
+    parser.add_argument('--stepName', help="name of step to process")
     parser.add_argument('--load', help="specify type of load: External Database (xdbr), Data (data), Patch (patch)",
                         choices=['xdbr', 'data', 'patch'])
     parser.add_argument('--verbose', help="run in verbose mode", action='store_true')
@@ -474,13 +476,12 @@ if __name__ == "__main__":
     if args.preprocess: 
         validate_preprocess_dir()
         preprocess()
-        exit(0) # don't want to accidently load data w/out verifying preprocessing
+      
+    elif args.load == 'xdbr': load_external_database_and_release()
 
-    if args.load == 'xdbr': load_external_database_and_release()
+    elif args.load == 'data': load_data()
 
-    if args.load == 'data': load_data()
-
-    if args.load == 'patch': run_patch()
+    elif args.load == 'patch': run_patch()
     
-    if args.tuning:
+    elif args.tuning:
         tune()
