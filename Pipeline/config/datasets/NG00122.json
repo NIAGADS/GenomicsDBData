@@ -1,9 +1,8 @@
 {
     "file": {
-        "path": "$SHARED_DATA_DIR/NIAGADS/GRCh38",
+        "path": "$DATA_DIR/NIAGADS",
         "accession": "NG00122",
         "cadd_path": "$DATA_DIR/CADD",
-        "vep_result_dir": "vep_results",
         "seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
         "consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
         "chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt"
@@ -20,7 +19,7 @@
     "foreach": [
         {
             "ALL": {
-                "file": "Sweet_RA_Meta-analysis_results_02-24-2022.txt",
+                "file": "@file.path/@file.accession/Sweet_RA_Meta-analysis_results_02-24-2022-w-header.txt",
                 "sourceId": "@file.accession",
                 "name": "Prediction of Psychosis in Alzheimer Disease ",
                 "description": "summary statistics from a meta-analysis of subjects (N=12,317) with probable, psosible, or autopsy-confirmed Alzheimer's disease who were characterized to be negative or positive for pyschosis (delusions and/or hallucinations).",
@@ -79,32 +78,22 @@
                     "trackSummary": "foreach"
                 }
             }
-        }
-    ],
-    "load": [
+        },
         {
             "foreach": true,
             "plugin": {
-                "name": "GenomicsDBData::Load::Plugin::LoadVariantGWASResult",
+                "name": "GenomicsDBData::GWAS::Plugin::LoadVariantGWASResult",
                 "parameters": {
                     "file": "foreach",
+                    "preprocess": true,
                     "sourceId": "foreach",
-                    "fileDir": "@file.path/@file.accession",
-                    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
-                    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
-                    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
-                    "caddDatabaseDir": "@file.cadd_path",
                     "testAllele": "Allele1",
                     "refAllele": "Allele2",
                     "chromosome": "CHR",
                     "position": "LOC.hg38",
                     "marker": "RS",
                     "pvalue": "P-value",
-                    "genomeBuild": "GRCh38",
-                    "genomeWideSignificanceThreshold": "5e-8",
-                    "markerIndicatesIndel": "true",
-                    "checkAltIndels": "true",
-                    "numWorkers": 12,
+                    "gwsThreshold": "5e-8",
                     "restrictedStats": {
                         "effect": "Effect",
                         "std_err": "StdErr",
@@ -130,6 +119,18 @@
                             "p.NEXGENS"
                         ]
                     }
+                }
+            }
+        }
+    ],
+    "load": [
+        {
+            "foreach": true,
+            "plugin": {
+                "name": "GenomicsDBData::GWAS::Plugin::LoadVariantGWASResult",
+                "parameters": {
+                    "file": "@file.path/@file.accession/Sweet_RA_Meta-analysis_results_02-24-2022.txt",
+                    "sourceId": "foreach"
                 }
             }
         }

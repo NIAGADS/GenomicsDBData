@@ -701,7 +701,7 @@ rm -r $NIAGADS_GWAS_DIR/NG00115/GRCh38
 
 mkdir $LOG_FILE_DIR/datasets/NG00122
 loadResource -c $CONFIG_DIR/datasets/NG00122.json --verbose  --preprocess  --commit > $LOG_FILE_DIR/datasets/NG00122/placeholders.log 2>&1 
-loadResource -c $CONFIG_DIR/datasets/NG00122.json --load data --params '{"preprocess":"true", "genomeBuild":"GRCh38"}' --commit --verbose > $LOG_FILE_DIR/datasets/NG00122/preprocess.log 2>&1
+loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --stepName GenomicsDBData::GWAS::Plugin::LoadVariantGWASResult > $LOG_FILE_DIR/datasets/NG00122/preprocess.log 2>&1
 loadResource -c $CONFIG_DIR/datasets/NG00122.json --load data --params '{"load":"true", "genomeBuild":"GRCh38", "commitAfter":"50000"}' --verbose --commit > $LOG_FILE_DIR/datasets/NG00122/load_result.log 2>&1
 loadResource -c $CONFIG_DIR/datasets/NG00122.json  --load data --params '{"genomeBuild":"GRCh38", "standardize":"true"}' --verbose > $LOG_FILE_DIR/datasets/NG00122/GRCh38_standardize.log 2>&1
 
