@@ -46,7 +46,7 @@ if __name__ == "__main__":
     parser.add_argument('--splitByChromosome', help="split vcf by chromosome", action='store_true')
     parser.add_argument('--annotate', help="run snpEff annotation", action='store_true')
     parser.add_argument('--vcf', help="vcf file,; name only; expect it to be uncompressed to be able to split", required=True)
-    parser.add_argument('-c', '--chromosome', help="only run vep on specific chromosome")
+    parser.add_argument('-c', '--chromosome', help="only run snpEff on specific chromosome")
     parser.add_argument('-o', '--filePath', help="file path", required=True)
 
     args = parser.parse_args()
