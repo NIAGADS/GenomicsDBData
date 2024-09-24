@@ -7,6 +7,7 @@ import asyncio
 
 from typing import List
 from os import getcwd, path, remove as delete_file
+from sys import stderr
 from csv import DictReader
 from enum import Enum
 from math import modf
@@ -28,9 +29,6 @@ BULK_LOOKUP_SQL = "SELECT * FROM map_variants($1, $2, $3, False) AS mappings";
 # $4 (False) - checkNormalizedAlleles
 
 INPUT_FIELDS = qw('chr bp allele1 allele2 marker metaseq_id freq1 pvalue neg_log10_p display_p gwas_flags test_allele restricted_stats_json mapped_variant bin_index')
-
-CheckType = Enum('CheckType', ['NORMAL', 'UPDATE', 'FINAL'])
-FileFormat = Enum('FileFormat', ['LOAD', 'LIST'])
 
 class LookupOptions(BaseModel):
     firstHitOnly: bool
@@ -407,20 +405,20 @@ def initialize():
     suffix = '' if not args.outputSuffix else '-' + args.outputSuffix
     
     logFileName = path.join(args.outputDir, path.basename(args.inputFile) + suffix + ".log")
+    logHandler = logging.StreamHandler() if args.log2stderr \
+        else ExitOnCriticalExceptionHandler(
+                filename=logFileName,
+                mode='w',
+                encoding='utf-8',
+            )
+
     logging.basicConfig(
-        handlers=[ExitOnCriticalExceptionHandler(
-            filename= logFileName,
-            mode='w',
-            encoding='utf-8',
-        )],
+        handlers=[logHandler],
         format='%(asctime)s %(funcName)s %(levelname)-8s %(message)s',
         level=logging.DEBUG if args.debug else logging.INFO
     )
     
     LOGGER.info("SETTINGS")
-    
-    checkType = CheckType[args.checkType]
-    LOGGER.info("Check Type: " + checkType.name)
             
     if args.maxConnections > 50:
         LOGGER.warning("maxConnections too high, setting to 50")
@@ -455,9 +453,9 @@ def initialize():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="", allow_abbrev=False)
     parser.add_argument('--inputFile', help="full path to input file", required=True)
+    parser.add_argument('--log2stderr', action="store_true", help="log to stderr instead of a file")
     parser.add_argument('--outputSuffix', help="suffix to append to output files to prevent overwriting; for debug/testing")
     parser.add_argument('--outputDir', default=getcwd(), help="full path to output directory; if not specified will use current working directory")
-    parser.add_argument('--format', choices=["LOAD", "LIST"], default="LOAD")
     parser.add_argument('--gusConfigFile', help="gus config file; defaults to $GUS_HOME/config/gus.config if not specified")
     parser.add_argument('--debug', action='store_true')
     parser.add_argument('--verbose', action='store_true')
@@ -467,7 +465,6 @@ if __name__ == "__main__":
     parser.add_argument('--useMarker', action='store_true')
     parser.add_argument('--keepIndelDirection', action='store_true', help="if specified will not check alt allele configurations for INDELs")
     parser.add_argument('--allHits', action='store_true', help="return all hits to a marker; if not specified will return first hit only")
-    parser.add_argument('--checkType', choices = ["NORMAL", "UPDATE", "FINAL"], default="NORMAL")
     parser.add_argument('--test', help="test run, supply # of lines to read from input file", type=int)
     parser.add_argument('--logAfter', type=int, default=500000)
     parser.add_argument('--maxConnections', type=int, default=10, help="maximum number of database connections")
