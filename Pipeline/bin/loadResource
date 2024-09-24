@@ -38,7 +38,7 @@ def run_script(sConfig, foreach=None):
         
         if 'skip' in sConfig and sConfig['skip']:
             warning("SKIPPING: " + ascii_safe_str(' '.join(cmd)))
-        elif args.stepName and stepName != args.stepName:
+        elif args.stepName and stepName not in args.stepName:
             warning("SKIPPING: " + ascii_safe_str(' '.join(cmd)))
         else:
             execute_cmd(cmd, cwd=None, printCmdOnly=args.printCmd, verbose=args.verbose)                  
@@ -54,7 +54,7 @@ def run_plugin(pConfig, foreach=None):
         cmd = get_cmd_options(cmd, pConfig, True, foreach)
         if 'skip' in pConfig and pConfig['skip']:
             warning("SKIPPING: " + ascii_safe_str(' '.join(cmd)))
-        elif args.stepName and stepName != args.stepName:
+        elif args.stepName and stepName not in args.stepName:
             warning("SKIPPING: " + ascii_safe_str(' '.join(cmd)))
         else:
             execute_cmd(cmd, cwd=None, printCmdOnly=args.printCmd, verbose=args.verbose)                  
@@ -462,7 +462,10 @@ if __name__ == "__main__":
     if args.foreach:
         if args.foreach.upper() != 'ALL':
             foreachKeys = args.foreach.split(',')
-
+            
+    if args.stepName:
+        args.stepName = args.stepName.split(',')
+        
     if args.veryVerbose:
         args.verbose = True
 
@@ -476,7 +479,7 @@ if __name__ == "__main__":
     if args.preprocess: 
         validate_preprocess_dir()
         preprocess()
-      
+
     elif args.load == 'xdbr': load_external_database_and_release()
 
     elif args.load == 'data': load_data()
