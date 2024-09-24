@@ -186,11 +186,6 @@ loadResource --config $CONFIG_DIR/reference_databases/dbsnp_merge.json --load da
 # REFERENCE BUILD - Functional Genomics
 # =================================================
 
-# Ensembl Motifs
-loadResource -c $CONFIG_DIR/reference_databases/ensembl_motifs.json --load xdbr --commit > $LOG_FILE_DIR/xdbr/load_ensembl_motifs_xdbr.log 2>&1
-loadResource -c $CONFIG_DIR/reference_databases/ensembl_motifs.json --preprocess --verbose --commit > $LOG_FILE_DIR/reference/load_ensembl_motifs_study.log 2>&1
-loadResource -c $CONFIG_DIR/reference_databases/ensembl_motifs.json --load data --verbose --commit > $LOG_FILE_DIR/reference/load_ensembl_motifs.log 2>&1
-
 
 
 # =================================================
@@ -214,22 +209,6 @@ loadResource --config $CONFIG_DIR/adsp/17K_LD.json --load data --params '{"onlyC
 loadResource --config $CONFIG_DIR/adsp/17K_LD.json --load data --params '{"onlyChr":"5,8,17,20"}' --verbose --commit > $LOG_FILE_DIR/data/load_adsp_17K_ld_part5.log 2>&1
 loadResource --config $CONFIG_DIR/adsp/17K_LD.json --load data --params '{"onlyChr":"6,7,18,21"}' --verbose --commit > $LOG_FILE_DIR/data/load_adsp_17K_ld_part6.log 2>&1
 
-# =================================================
-# ADSP R4/36K
-# =================================================
-
-# variants
-
-loadResource --config $CONFIG_DIR/adsp/R4_annotation.json --load xdbr --verbose --commit > $LOG_FILE_DIR/xdbr/load_adsp_R4_xdbr.log 2>&1
-loadResource --config $CONFIG_DIR/adsp/R4_annotation.json --load data --verbose --commit > $LOG_FILE_DIR/data/load_adsp_R4_vep.log 2>&1 # skip cadd & qc
-
-# loadResource --config $CONFIG_DIR/adsp/R4_annotation.json --load data --params '{"chr":"8,9"}' --verbose --commit > $LOG_FILE_DIR/data/load_adsp_R4_vep_8_9.log 2>&1 # skip cadd & qc
-
-loadResource --config $CONFIG_DIR/adsp/R4_annotation.json --load data --verbose --commit > $LOG_FILE_DIR/data/load_adsp_R4_cadd.log 2>&1 # skip vep & qc
-loadResource --config $CONFIG_DIR/adsp/R4_annotation.json --load data --verbose --commit > $LOG_FILE_DIR/data/load_adsp_R4_qc.log 2>&1 # skip vep & cadd
-
-
-ga GUS::Supported::Plugin::LoadGusXml --file $GUS_HOME/lib/xml/niagads/r4_36k_track_config.xml --commit
 
 # =================================================
 # 1000 Genomes LD
@@ -696,21 +675,6 @@ tar -zcvf GRCh37.tar.gz --directory $NIAGADS_GWAS_DIR/NG00115 GRCh37
 tar -zcvf GRCh38.tar.gz --directory $NIAGADS_GWAS_DIR/NG00115 GRCh38
 rm -r $NIAGADS_GWAS_DIR/NG00115/GRCh37
 rm -r $NIAGADS_GWAS_DIR/NG00115/GRCh38
-
-# NG00122
-
-mkdir $LOG_FILE_DIR/datasets/NG00122
-loadResource -c $CONFIG_DIR/datasets/NG00122.json --verbose  --preprocess  --commit > $LOG_FILE_DIR/datasets/NG00122/placeholders.log 2>&1 
-loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --stepName GenomicsDBData::GWAS::Plugin::LoadVariantGWASResult > $LOG_FILE_DIR/datasets/NG00122/preprocess.log 2>&1
-loadResource -c $CONFIG_DIR/datasets/NG00122.json --load data --params '{"load":"true", "genomeBuild":"GRCh38", "commitAfter":"50000"}' --verbose --commit > $LOG_FILE_DIR/datasets/NG00122/load_result.log 2>&1
-loadResource -c $CONFIG_DIR/datasets/NG00122.json  --load data --params '{"genomeBuild":"GRCh38", "standardize":"true"}' --verbose > $LOG_FILE_DIR/datasets/NG00122/GRCh38_standardize.log 2>&1
-
-loadResource -c $CONFIG_DIR/datasets/NG00122.json  --load data --params '{"genomeBuild":"GRCh38", "archive":"true"}' --verbose > $LOG_FILE_DIR/datasets/NG00122/GRCh38_archive.log 2>&1
-gzip $SHARED_DATA_DIR/NIAGADS/GRCh38/NG00122/GRCh38/*.txt
-gzip $LOG_FILE_DIR/datasets/NG00122/*.log
-
-tar -zcvf GRCh38.tar.gz --directory $SHARED_DATA_DIR/NIAGADS/GRCh38/NG00122 GRCh38
-rm -r $SHARED_DATA_DIR/NIAGADS/GRCh38/NG00122/GRCh38
 
 
 #### FILER Genome Browser Tracks
