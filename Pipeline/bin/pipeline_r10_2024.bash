@@ -26,19 +26,16 @@ ga GUS::Supported::Plugin::LoadGusXml --file $GUS_HOME/lib/xml/niagads/r4_36k_tr
 mkdir $LOG_FILE_DIR/datasets/NG00122
 loadResource -c $CONFIG_DIR/datasets/NG00122.json --verbose  --preprocess  --stepName GenomicsDBData::Load::Plugin::InsertStudy,GenomicsDBData::Load::Plugin::InsertProtocolAppNode --commit > $LOG_FILE_DIR/datasets/NG00122/placeholders.log 2>&1 
 loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --stepName GenomicsDBData::GWAS::Plugin::LoadVariantGWASResult > $LOG_FILE_DIR/datasets/NG00122/preprocess_input.log 2>&1
-loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --stepName  db_map_variants.py > $LOG_FILE_DIR/datasets/NG00122/preprocess_db_map.log 2>&1
+loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --stepName db_map_variants.py > $LOG_FILE_DIR/datasets/NG00122/preprocess_db_map_variants.log 2>&1
+loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --commit --stepName load_vcf_file.py > $LOG_FILE_DIR/datasets/NG00122/preprocess_load_vcf_file.log 2>&1
+loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --stepName file_map_variants.py > $LOG_FILE_DIR/datasets/NG00122/preprocess_file_map_variants.log 2>&1
 
-loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --stepName  run_vep > $LOG_FILE_DIR/datasets/NG00122/vep.log 2>&1
+# load the data
+loadResource -c $CONFIG_DIR/datasets/NG00122.json --load data --commit > $LOG_FILE_DIR/datasets/NG00122/load_result.log 2>&1
 
+# annotate newly added variants
+loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --stepName runVep > $LOG_FILE_DIR/datasets/NG00122/preprocess_runVep.log 2>&1
+loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --stepName load_vep_result.py > $LOG_FILE_DIR/datasets/NG00122/preprocess_load_vep_result.log 2>&1
+loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --stepName load_cadd_scores.py > $LOG_FILE_DIR/datasets/NG00122/preprocess_load_cadd_scores.log 2>&1
+# for this load: snpEff and FAVOR will be run against entire database
 
-
-
-oadResource -c $CONFIG_DIR/datasets/NG00122.json --load data --params '{"load":"true", "genomeBuild":"GRCh38", "commitAfter":"50000"}' --verbose --commit > $LOG_FILE_DIR/datasets/NG00122/load_result.log 2>&1
-loadResource -c $CONFIG_DIR/datasets/NG00122.json  --load data --params '{"genomeBuild":"GRCh38", "standardize":"true"}' --verbose > $LOG_FILE_DIR/datasets/NG00122/GRCh38_standardize.log 2>&1
-
-loadResource -c $CONFIG_DIR/datasets/NG00122.json  --load data --params '{"genomeBuild":"GRCh38", "archive":"true"}' --verbose > $LOG_FILE_DIR/datasets/NG00122/GRCh38_archive.log 2>&1
-gzip $SHARED_DATA_DIR/NIAGADS/GRCh38/NG00122/GRCh38/*.txt
-gzip $LOG_FILE_DIR/datasets/NG00122/*.log
-
-tar -zcvf GRCh38.tar.gz --directory $SHARED_DATA_DIR/NIAGADS/GRCh38/NG00122 GRCh38
-rm -r $SHARED_DATA_DIR/NIAGADS/GRCh38/NG00122/GRCh38

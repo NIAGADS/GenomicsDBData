@@ -41,7 +41,8 @@ def run_script(sConfig, foreach=None):
         elif args.stepName and stepName not in args.stepName:
             warning("SKIPPING: " + ascii_safe_str(' '.join(cmd)))
         else:
-            execute_cmd(cmd, cwd=None, printCmdOnly=args.printCmd, verbose=args.verbose)                  
+            execute_cmd(cmd, cwd=None, printCmdOnly=args.printCmd, verbose=args.verbose)       
+
     except KeyError as e:
         die('Missing required value in script config: "%s"' % str(e))
 

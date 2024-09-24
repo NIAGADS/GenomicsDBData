@@ -314,6 +314,8 @@ sub preprocess {
     $self->log("INFO: Cleaning $file");
 
     my ($v, $workingDir, $f) = File::Spec->splitpath($file);
+    $workingDir = PluginUtils::createDirectory($self,  $workingDir, 'preprocess');
+    
     my $inputFileName = File::Spec->catfile($workingDir, $self->getArg('sourceId') . "-input.txt");
     $self->log("INFO: Writing cleaned input to: $inputFileName");
     
@@ -450,7 +452,8 @@ sub loadResult {
        }
 
         # FIXME: decode db mapping
-        my $vrString = "";
+        # [{"bin_index": "chr1.L1.B1.L2.B1.L3.B1.L4.B1.L5.B2.L6.B1.L7.B1.L8.B2.L9.B2.L10.B2.L11.B1.L12.B2.L13.B2", "primary_key": "1:4930710:T:C:rs116069884"}]
+        my $mappedRecord = ${NULL}
         my $variantRecord  = $json->decode($vrString);
         my @mappedVariants = @{$variantRecord->{matched_variants}};
         foreach my $mv (@mappedVariants) {
