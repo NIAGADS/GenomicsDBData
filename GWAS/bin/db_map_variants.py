@@ -82,6 +82,9 @@ def write_unmapped_variants(variants: list):
             if args.debug and args.verbose:
                 LOGGER.debug("Unmapped Variant: " + xstr({'variant': variant, 'row': item[variant]}))
 
+    LOGGER.info("Sorting unmapped VCF file.") 
+    sort_file(args.unmappedFile)
+    
 
 def check_file(extension: str, fileType:str, suffix:str = ''):    
     """
@@ -353,14 +356,22 @@ def run():
                 asyncRunCount = asyncRunCount + 1
                 LOGGER.info("RUN " + xstr(asyncRunCount) + " - Processing SNVs/MNVs/short INDELs: n = " + str(len(variants)))
                 result = asyncio.run(async_db_mapping(header, variants, options, append=False if asyncRunCount == 1 else True))
-                errors = result['errors']
-                mappedCount = result['count']
-                unmapped = result['unmapped']
+                errors = errors + result['errors']
+                mappedCount = mappedCount + result['count']
+                unmapped = unmapped + result['unmapped']
                 variants = []
                 
                 if args.test and lineCount % args.test == 0:
                     LOGGER.info("DONE reading test lines.")
                     break
+        
+        asyncRunCount = asyncRunCount + 1
+        LOGGER.info("RUN " + xstr(asyncRunCount) + " - Processing Residual SNVs/MNVs/short INDELs: n = " + str(len(variants)))
+        result = asyncio.run(async_db_mapping(header, variants, options, append=False if asyncRunCount == 1 else True))
+        errors = errors + result['errors']
+        mappedCount = mappedCount + result['count']
+        unmapped = unmapped + result['unmapped']
+        variants = []
         
         if len(indels) > 0:
             LOGGER.info("Processing INDELS: n = " + str(len(indels)))
@@ -476,9 +487,7 @@ if __name__ == "__main__":
         args = initialize()
         
         errors = run()
-
-        LOGGER.info("Sorting mapping files.") 
-        sort_file(args.unmappedFile)
+        
         sort_file(args.mappedFile)
         
         if len(errors) > 0: 
