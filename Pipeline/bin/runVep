@@ -23,7 +23,7 @@ def verify_vep_environment():
 
 def run(fileName):
     cmd = ["vep.sh", fileName]
-    execute_cmd(cmd, None, False, shell=True)
+    execute_cmd(' '.join(cmd), None, False, shell=True)
     
 
 if __name__ == "__main__":
