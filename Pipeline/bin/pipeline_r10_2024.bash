@@ -36,7 +36,7 @@ loadResource -c $CONFIG_DIR/datasets/NG00122.json --load data --commit > $LOG_FI
 
 # annotate newly added variants
 loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --stepName runVep > $LOG_FILE_DIR/datasets/NG00122/preprocess_runVep.log 2>&1
-loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --stepName load_vep_result.py > $LOG_FILE_DIR/datasets/NG00122/preprocess_load_vep_result.log 2>&1
+loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --stepName load_vep_result.py --commit > $LOG_FILE_DIR/datasets/NG00122/preprocess_load_vep_result.log 2>&1
 loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --stepName load_cadd_scores.py > $LOG_FILE_DIR/datasets/NG00122/preprocess_load_cadd_scores.log 2>&1
 # for this load: snpEff and FAVOR will be run against entire database
 
@@ -46,11 +46,12 @@ loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --stepName load_c
 mkdir $LOG_FILE_DIR/datasets/NG00126
 loadResource -c $CONFIG_DIR/datasets/NG00126.json --verbose  --preprocess  --stepName GenomicsDBData::Load::Plugin::InsertStudy,GenomicsDBData::Load::Plugin::InsertProtocolAppNode --commit > $LOG_FILE_DIR/datasets/NG00126/placeholders.log 2>&1 
 
-loadResource -c $CONFIG_DIR/datasets/NG00126.json --preprocess --stepName GenomicsDBData::GWAS::Plugin::LoadVariantGWASResult --foreach WGS > $LOG_FILE_DIR/datasets/NG00126/preprocess_WGS_input.log 2>&1
-loadResource -c $CONFIG_DIR/datasets/NG00126.json --preprocess --stepName GenomicsDBData::GWAS::Plugin::LoadVariantGWASResult --foreach WES > $LOG_FILE_DIR/datasets/NG00126/preprocess_WES_input.log 2>&1
+loadResource -c $CONFIG_DIR/datasets/NG00126.json --preprocess --stepName GenomicsDBData::GWAS::Plugin::LoadVariantGWASResult > $LOG_FILE_DIR/datasets/NG00126/preprocess_WGS_input.log 2>&1
+loadResource -c $CONFIG_DIR/datasets/NG00126.json --preprocess --stepName GenomicsDBData::GWAS::Plugin::LoadVariantGWASResult > $LOG_FILE_DIR/datasets/NG00126/preprocess_WES_input.log 2>&1
 
 loadResource -c $CONFIG_DIR/datasets/NG00126.json --preprocess --stepName db_map_variants.py --foreach WES > $LOG_FILE_DIR/datasets/NG00126/preprocess_WES_db_map_variants.log 2>&1
 loadResource -c $CONFIG_DIR/datasets/NG00126.json --preprocess --stepName db_map_variants.py --foreach WGS > $LOG_FILE_DIR/datasets/NG00126/preprocess_WGS_db_map_variants.log 2>&1
 
-loadResource -c $CONFIG_DIR/datasets/NG00126.json --preprocess --commit --stepName load_vcf_file.py > $LOG_FILE_DIR/datasets/NG00126/preprocess_load_vcf_file.log 2>&1
+# no WGS unmapped
+loadResource -c $CONFIG_DIR/datasets/NG00126.json --preprocess --stepName load_vcf_file.py --foreach WES --commit > $LOG_FILE_DIR/datasets/NG00126/preprocess_WES_load_vcf_file.log 2>&1
 loadResource -c $CONFIG_DIR/datasets/NG00126.json --preprocess --stepName file_map_variants.py > $LOG_FILE_DIR/datasets/NG00126/preprocess_file_map_variants.log 2>&1

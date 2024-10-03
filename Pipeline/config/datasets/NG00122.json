@@ -21,6 +21,8 @@
             "ALL": {
                 "file": "@file.path/Sweet_RA_Meta-analysis_results_02-24-2022-w-header.txt",
                 "sourceId": "@file.accession",
+                "fileName": "@file.path/preprocess/@file.accession+-input.txt.unmap.vcf",
+                "vcfFile": "@file.path/preprocess/@file.accession+-input.txt.unmap.vcf",
                 "name": "Prediction of Psychosis in Alzheimer Disease ",
                 "description": "summary statistics from a meta-analysis of subjects (N=12,317) with probable, possible, or autopsy-confirmed Alzheimer's disease who were characterized to be negative or positive for pyschosis (delusions and/or hallucinations).",
                 "biomaterialCharacteristics": {
@@ -139,10 +141,11 @@
             }
         },
         {
+            "foreach": true,
             "script": {
                 "name": "load_vcf_file.py",
                 "parameters": {
-                    "fileName": "@file.path/preprocess/@file.accession+-input.txt.unmap.vcf",
+                    "fileName": "foreach",
                     "genomeBuild": "GRCh38",
                     "seqrepoProxyPath": "@file.seqrepo_proxy_path",
                     "commitAfter": 100,
@@ -158,35 +161,40 @@
             }
         },
         {
+            "foreach": true,
             "script": {
                 "name": "runVep",
                 "parameters": {
-                    "file": "@file.path/preprocess/@file.accession+-input.txt.unmap.vcf"
+                    "fileName": "foreach"
                 }
             }
         },
         {
+            "foreach": true,
             "comment": "update new variants w/vep result",
             "script": {
                 "name": "load_vep_result.py",
                 "parameters": {
-                    "fileName": "@file.path/preprocess/@file.accession+-input.txt.unmap.vcf.vep.json.gz",
+                    "fileName": "foreach+.vep.json.gz",
                     "genomeBuild": "GRCh38",
                     "seqrepoProxyPath": "@file.seqrepo_proxy_path",
                     "rankingFile": "@file.consequence_ranking_file",
-                    "commitAfter": 100
+                    "commitAfter": 100,
+                    "log2stderr": true,
+                    "logExisting": true
                 }
             }
         },
         {
+            "foreach": true,
             "script": {
                 "name": "load_cadd_scores.py",
                 "parameters": {
-                    "vcfFile": "@file.path/preprocess/@file.accession+-input.txt.unmap.vcf",
+                    "vcfFile": "foreach",
                     "seqrepoProxyPath": "@file.seqrepo_proxy_path",
-                    "rankingFile": "@file.consequence_ranking_file",
                     "databaseDir": "@file.cadd_path",
-                    "commitAfter": 100
+                    "commitAfter": 100,
+                    "log2stderr": true
                 }
             }
         }

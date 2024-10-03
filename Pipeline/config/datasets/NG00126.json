@@ -22,6 +22,7 @@
                 "file": "@file.path/ADSP_WGS_EU_Belloy_2022_NIAGADS_summary_stats.txt",
                 "sourceId": "@file.accession+_WGS",
                 "inputFile": "@file.path/preprocess/@file.accession+_WGS-input.txt",
+                "fileName": "@file.path/preprocess/@file.accession+_WGS-input.txt",
                 "name": "AD-risk in ADSP data filtered to remove variant-level artifacts - WGS",
                 "description": "summary statistics from whole genome risk-association analysis in ADSP whole genome sequencing data (NG00067.v5) among non-Hispanic white individuals of European ancestry, filtered to account for variant frequency differences across sequencing centers or platforms in the ADSP data.  Please see the manuscript for details regarding the filters and association models.", 
                 "biomaterialCharacteristics": {
@@ -42,6 +43,7 @@
                 "file": "@file.path/ADSP_WES_EU_Belloy_2022_NIAGADS_summary_stats.txt",
                 "sourceId": "@file.accession+_WES",
                 "inputFile": "@file.path/preprocess/@file.accession+_WES-input.txt",
+                "fileName": "@file.path/preprocess/@file.accession+_WES-input.txt.unmap.vcf",
                 "name": "AD-risk in ADSP data filtered to remove variant-level artifacts - WES",
                 "description": "summary statistics from whole genome risk-association analysis in ADSP whole exome sequencing data (NG00067.v5) among non-Hispanic white individuals of European ancestry, filtered to account for variant frequency differences across sequencing centers or platforms in the ADSP data.  Please see the manuscript for details regarding the filters and association models.", 
                 "biomaterialCharacteristics": {
@@ -142,12 +144,13 @@
             "script": {
                 "name": "load_vcf_file.py",
                 "parameters": {
-                    "fileName": "@file.path/preprocess/@file.accession+-input.txt.unmap.vcf",
+                    "fileName": "foreach",
                     "genomeBuild": "GRCh38",
                     "seqrepoProxyPath": "@file.seqrepo_proxy_path",
                     "commitAfter": 100,
                     "log2stderr": true,
-                    "datasource": "NIAGADS"
+                    "datasource": "NIAGADS",
+                    "skipExisting": true
                 }
             }
         },
@@ -162,7 +165,7 @@
             "script": {
                 "name": "runVep",
                 "parameters": {
-                    "file": "@file.path/preprocess/@file.accession+-input.txt.unmap.vcf"
+                    "fileName": "foreach"
                 }
             }
         },
@@ -172,7 +175,7 @@
             "script": {
                 "name": "load_vep_result.py",
                 "parameters": {
-                    "fileName": "@file.path/preprocess/@file.accession+-input.txt.unmap.vcf.vep.json.gz",
+                    "fileName": "foreach+.vep.json.gz",
                     "genomeBuild": "GRCh38",
                     "seqrepoProxyPath": "@file.seqrepo_proxy_path",
                     "rankingFile": "@file.consequence_ranking_file",
