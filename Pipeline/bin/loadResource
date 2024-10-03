@@ -106,7 +106,7 @@ def use_foreach(stepConfig):
     if 'foreach' in stepConfig:
         if stepConfig['foreach']:
             if 'foreach' not in config:
-                die("foreach option specified in a plugin, but no foreach config provided");
+                die("foreach option specified in a plugin, but no foreach config provided")
             return True
     return False
 
@@ -128,8 +128,9 @@ def get_cmd_options(cmd, cmdConfig, isPlugin=False, foreach=None):
     if len(params) > 0:
         try:
             for option, value in params.items():
-                if foreach is not None:
-                    if value == 'foreach': # lookup value from foreach config
+                if isinstance(value, str) and foreach is not None:
+                    if 'foreach' in value: # lookup value from foreach config
+                        addons = value.split('+') # to handle foreach+additional-text
                         value = foreach[option]
                         if isinstance(value, dict):
                             value = json.dumps(value)
@@ -137,6 +138,8 @@ def get_cmd_options(cmd, cmdConfig, isPlugin=False, foreach=None):
                             if '@' in value:
                                 value = extract_value_from_config(value)
                             value = replace_environmental_variables(value)
+                            if len(addons) > 1:
+                                value = value + addons[1]
 
                 if option == 'description': # so special chars don't get parsed
                     cmd.extend(['--' + option, value])
