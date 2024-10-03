@@ -23,6 +23,8 @@
                 "sourceId": "@file.accession",
                 "fileName": "@file.path/preprocess/@file.accession+-input.txt.unmap.vcf",
                 "vcfFile": "@file.path/preprocess/@file.accession+-input.txt.unmap.vcf",
+                "inputFile": "@file.path/preprocess/@file.accession+-input.txt", 
+                "idMap": "@file.path/preprocess/@file.accession+-input.txt.unmap.vcf.mapping",
                 "name": "Prediction of Psychosis in Alzheimer Disease ",
                 "description": "summary statistics from a meta-analysis of subjects (N=12,317) with probable, possible, or autopsy-confirmed Alzheimer's disease who were characterized to be negative or positive for pyschosis (delusions and/or hallucinations).",
                 "biomaterialCharacteristics": {
@@ -125,11 +127,12 @@
             }
         },
         {
+            "foreach": true,
             "script": {
                 "comment": "too many mismatches when indel direction is preserved",
                 "name": "db_map_variants.py",
                 "parameters": {
-                    "inputFile": "@file.path/preprocess/@file.accession+-input.txt",
+                    "inputFile": "foreach",
                     "outputDir": "@file.path/preprocess",
                     "maxConnections": 20,
                     "logAfter": 10000,
@@ -155,9 +158,14 @@
             }
         },
         {
+            "foreach": true,
             "script": {
                 "name": "file_map_variants.py",
-                "parameters": {}
+                "parameters": {
+                    "inputFile": "foreach+.map",
+                    "idMap": "foreach",
+                    "log2stderr": true
+                }
             }
         },
         {
