@@ -1,44 +1,70 @@
 #!/usr/bin/env python3
 
 import logging
-import json
 import argparse
-import asyncio
+import csv 
 
-from typing import List
-from os import getcwd, path, remove as delete_file
-from csv import DictReader
-from enum import Enum
-from math import modf
-from pydantic import BaseModel
+from os import path
+
 
 from niagads.utils.logging import ExitOnCriticalExceptionHandler
-from niagads.utils.sys import verify_path, file_line_count, execute_cmd
+from niagads.utils.sys import rename_file
 from niagads.utils.reg_ex import regex_replace
 from niagads.utils.list import qw, chunker
 from niagads.utils.string import eval_null, xstr
-from niagads.db.postgres import AsyncDatabase
+
 
 LOGGER = logging.getLogger(__name__)
 
-
-INPUT_FIELDS = qw('chr bp allele1 allele2 marker metaseq_id freq1 pvalue neg_log10_p display_p gwas_flags test_allele restricted_stats_json mapped_variant bin_index')
-
-
-def sort_file(fileName: str):
-    sortedFileName = fileName + "-sorted.tmp"
-    LOGGER.info("Sorting " + fileName)
-    cmd = "(head -n 1 " + fileName + " && tail -n +2 " + fileName + " | sort -T " + args.outputDir + " -V -k1,1 -k2,2) > " + sortedFileName
-    execute_cmd(cmd, shell=True)
-    execute_cmd("mv " + sortedFileName + " " + fileName, shell=True)
+def read_mapping():
+    LOGGER.info("Parsing Mapping File: %s", args.idMap)
     
+    mapping = None
+    with open(args.idMap, 'r') as fh:
+        reader = csv.reader(fh, delimiter='\t')
+        mapping = dict(reader)
+    LOGGER.info("Read %s variants", len(mapping))
+    
+    if args.debug:
+        LOGGER.debug("id mapping check: %s", dict(list(mapping.items())[0:10])
+)
+    
+    return mapping
 
 def run():
-    pass
+    idMap = read_mapping()    
+    
+    with open(args.inputFile, 'r') as fh, open(args.inputFile + '.tmp', 'w') as tfh:
+        reader = csv.DictReader(fh, delimiter='\t')
+        
+        writer = csv.DictWriter(tfh, delimiter='\t', fieldnames = reader.fieldnames)
+        writer.writeheader()
+        
+        mappedCount = 0
+        lineCount = 0
+        for row in reader:
+            lineCount = lineCount + 1
+            if row['db_mapped_variant'] == 'NULL':
+                try: 
+                    row['db_mapped_variant'] = idMap[row['metaseq_id']]
+                    mappedCount = mappedCount + 1
+                except KeyError as err:
+                    LOGGER.critical("Variant not mapped: %s", row['metaseq_id'] )
+                    raise(err)   
+            
+            if lineCount % 1000000 == 0:
+                LOGGER.info("Parsed %s lines; mapped %s variants", lineCount, mappedCount)  
 
+            writer.writerow(row)
+
+    LOGGER.info("DONE: Mapped %s variants", mappedCount)
+    LOGGER.info("Backing up old mapping file %s and replacing", args.inputFile)
+    rename_file(args.inputFile + '.tmp', args.inputFile, backupExistingTarget=True)
+            
 
 
 if __name__ == "__main__":
+    
     parser = argparse.ArgumentParser(description="", allow_abbrev=False)
     parser.add_argument('--inputFile', help="full path to input file", required=True)
     parser.add_argument('--idMap', help="metaseq -> pk map", required=True)
@@ -49,7 +75,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     
-    logFileName = path.join(args.outputDir, path.basename(args.inputFile) + "-file-based-mapping.log")
+    logFileName = path.join(args.inputFile + "-file-based-mapping.log")
     logHandler = logging.StreamHandler() if args.log2stderr \
         else ExitOnCriticalExceptionHandler(
                 filename=logFileName,
@@ -62,14 +88,10 @@ if __name__ == "__main__":
         level=logging.DEBUG if args.debug else logging.INFO
     )
     try:
-        
-        mappingFileName = run()
 
-        LOGGER.info("Sorting mapping file: " + mappingFileName) 
-        sort_file(mappingFileName)
-        
+        run()
+
         LOGGER.info("SUCCESS")
         
     except Exception as err:
-
-        LOGGER.critical(str(err), stack_info=True, exc_info=True)
+        raise(err)
