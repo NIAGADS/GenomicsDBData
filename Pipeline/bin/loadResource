@@ -35,13 +35,16 @@ def run_script(sConfig, foreach=None):
         stepName = sConfig['name']
         cmd = [stepName]
         cmd = get_cmd_options(cmd, sConfig, False, foreach)
+        useShell = True if 'shell' in sConfig and sConfig['shell'] else False
         
         if 'skip' in sConfig and sConfig['skip']:
             warning("SKIPPING: " + ascii_safe_str(' '.join(cmd)))
         elif args.stepName and stepName not in args.stepName:
             warning("SKIPPING: " + ascii_safe_str(' '.join(cmd)))
         else:
-            execute_cmd(cmd, cwd=None, printCmdOnly=args.printCmd, verbose=args.verbose)       
+            if useShell:
+                cmd = ' '.join(cmd)
+            execute_cmd(cmd, cwd=None, printCmdOnly=args.printCmd, verbose=args.verbose, shell=useShell)       
 
     except KeyError as e:
         die('Missing required value in script config: "%s"' % str(e))
@@ -116,7 +119,9 @@ def get_cmd_options(cmd, cmdConfig, isPlugin=False, foreach=None):
     if additionalParams: # hopefull this will overwrite common params from config with what is passed from the command line
         for option, value in additionalParams.items():
             if value == 'true':
-                params.update({option: True})    
+                params.update({option: True})  
+            elif value == 'false': # don't add the option
+                continue
             else:
                 params.update({option: xstr(value)})
                 
