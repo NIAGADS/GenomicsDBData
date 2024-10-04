@@ -38,8 +38,8 @@ if __name__ == "__main__":
     
     verify_vep_environment()
     
-    if args.file:
-        run(args.file)
+    if args.fileName:
+        run(args.fileName)
     else:
         if not args.filePattern or not args.directory:
             raise ValueError("Must supply both --directory and --filePattern to match if bulk processing a directory contents")
