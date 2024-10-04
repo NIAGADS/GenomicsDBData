@@ -70,7 +70,7 @@
             "plugin": {
                 "name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
                 "parameters": {
-                    "attribution": "Sweets et al. 2021",
+                    "attribution": "Sweets et al. 2021|PMID:34112972",
                     "type": "Genetic variation",
                     "subtype": "GWAS summary statistics",
                     "description": "foreach",
