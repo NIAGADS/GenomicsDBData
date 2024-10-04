@@ -6,13 +6,9 @@ import csv
 
 from os import path
 
-
 from niagads.utils.logging import ExitOnCriticalExceptionHandler
 from niagads.utils.sys import rename_file
-from niagads.utils.reg_ex import regex_replace
-from niagads.utils.list import qw, chunker
-from niagads.utils.string import eval_null, xstr
-
+from niagads.utils.string import xstr
 
 LOGGER = logging.getLogger(__name__)
 
@@ -36,10 +32,9 @@ def run():
     
     with open(args.inputFile, 'r') as fh, open(args.inputFile + '.tmp', 'w') as tfh:
         reader = csv.DictReader(fh, delimiter='\t')
-        
-        writer = csv.DictWriter(tfh, delimiter='\t', fieldnames = reader.fieldnames)
-        writer.writeheader()
-        
+
+        print('\t'.join(reader.fieldnames), file=tfh, flush=True)
+    
         mappedCount = 0
         lineCount = 0
         for row in reader:
@@ -52,19 +47,18 @@ def run():
                     LOGGER.critical("Variant not mapped: %s", row['metaseq_id'] )
                     raise(err)   
             
+            newLine = [xstr(row[field]) for field in reader.fieldnames]
+            print('\t'.join(newLine), file=tfh)
+                
             if lineCount % 1000000 == 0:
                 LOGGER.info("Parsed %s lines; mapped %s variants", lineCount, mappedCount)  
 
-            writer.writerow(row)
-
-    LOGGER.info("DONE: Mapped %s variants", mappedCount)
+    LOGGER.info("Mapped %s variants", mappedCount)
     LOGGER.info("Backing up old mapping file %s and replacing", args.inputFile)
     rename_file(args.inputFile + '.tmp', args.inputFile, backupExistingTarget=True)
-            
-
+    LOGGER.info("DONE")    
 
 if __name__ == "__main__":
-    
     parser = argparse.ArgumentParser(description="", allow_abbrev=False)
     parser.add_argument('--inputFile', help="full path to input file", required=True)
     parser.add_argument('--idMap', help="metaseq -> pk map", required=True)
