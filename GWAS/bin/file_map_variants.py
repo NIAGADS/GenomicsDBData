@@ -41,7 +41,7 @@ def run():
             lineCount = lineCount + 1
             if row['db_mapped_variant'] == 'NULL':
                 try: 
-                    row['db_mapped_variant'] = idMap[row['metaseq_id']]
+                    row['db_mapped_variant'] = idMap[row['metaseq_id']].replace("'", '"') # perl v python json parsing issue
                     mappedCount = mappedCount + 1
                 except KeyError as err:
                     LOGGER.critical("Variant not mapped: %s", row['metaseq_id'] )
