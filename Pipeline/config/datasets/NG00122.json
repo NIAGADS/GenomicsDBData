@@ -138,8 +138,7 @@
                     "logAfter": 10000,
                     "chunkSize": 1000,
                     "overwrite": true,
-                    "log2stderr": true,
-                    "skipExisting": true
+                    "log2stderr": true
                 }
             }
         },
@@ -153,7 +152,8 @@
                     "seqrepoProxyPath": "@file.seqrepo_proxy_path",
                     "commitAfter": 100,
                     "log2stderr": true,
-                    "datasource": "NIAGADS"
+                    "datasource": "NIAGADS",
+                    "skipExisting": true
                 }
             }
         },
@@ -214,7 +214,8 @@
                 "name": "GenomicsDBData::GWAS::Plugin::LoadVariantGWASResult",
                 "parameters": {
                     "file": "foreach",
-                    "sourceId": "foreach"
+                    "sourceId": "foreach",
+                    "skipUndoSummary": true
                 }
             }
         }

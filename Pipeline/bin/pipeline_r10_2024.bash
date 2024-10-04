@@ -19,6 +19,7 @@ ga GUS::Supported::Plugin::LoadGusXml --file $GUS_HOME/lib/xml/niagads/r4_36k_tr
 
 # =================================================
 # Datasets
+# NOTE: for this load: snpEff and FAVOR will be run against entire database
 # =================================================
 
 # NG00122
@@ -31,14 +32,14 @@ loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --stepName db_map
 loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --commit --stepName load_vcf_file.py > $LOG_FILE_DIR/datasets/NG00122/preprocess_load_vcf_file.log 2>&1
 loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --stepName file_map_variants.py > $LOG_FILE_DIR/datasets/NG00122/preprocess_file_map_variants.log 2>&1
 
-# load the data
-loadResource -c $CONFIG_DIR/datasets/NG00122.json --load data --commit > $LOG_FILE_DIR/datasets/NG00122/load_result.log 2>&1
-
 # annotate newly added variants
 loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --stepName runVep > $LOG_FILE_DIR/datasets/NG00122/preprocess_runVep.log 2>&1
 loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --stepName load_vep_result.py --commit > $LOG_FILE_DIR/datasets/NG00122/preprocess_load_vep_result.log 2>&1
-loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --stepName load_cadd_scores.py > $LOG_FILE_DIR/datasets/NG00122/preprocess_load_cadd_scores.log 2>&1
-# for this load: snpEff and FAVOR will be run against entire database
+loadResource -c $CONFIG_DIR/datasets/NG00122.json --preprocess --stepName load_cadd_scores.py --commit > $LOG_FILE_DIR/datasets/NG00122/preprocess_load_cadd_scores.log 2>&1
+
+# load the data
+loadResource -c $CONFIG_DIR/datasets/NG00122.json --load data --commit > $LOG_FILE_DIR/datasets/NG00122/load_result.log 2>&1
+
 
 # NG00126
 # -------------------------------------
@@ -54,4 +55,20 @@ loadResource -c $CONFIG_DIR/datasets/NG00126.json --preprocess --stepName db_map
 
 # no WGS unmapped
 loadResource -c $CONFIG_DIR/datasets/NG00126.json --preprocess --stepName load_vcf_file.py --foreach WES --commit > $LOG_FILE_DIR/datasets/NG00126/preprocess_WES_load_vcf_file.log 2>&1
-loadResource -c $CONFIG_DIR/datasets/NG00126.json --preprocess --stepName file_map_variants.py > $LOG_FILE_DIR/datasets/NG00126/preprocess_file_map_variants.log 2>&1
+loadResource -c $CONFIG_DIR/datasets/NG00126.json --preprocess --stepName file_map_variants.py --foreach WES > $LOG_FILE_DIR/datasets/NG00126/preprocess_WES_file_map_variants.log 2>&1
+loadResource -c $CONFIG_DIR/datasets/NG00126.json --preprocess --stepName runVep --forech WES > $LOG_FILE_DIR/datasets/NG00126/preprocess_WES_runVep.log 2>&1
+loadResource -c $CONFIG_DIR/datasets/NG00126.json --preprocess --stepName load_vep_result.py --foreach WES --commit > $LOG_FILE_DIR/datasets/NG00126/preprocess_WES_load_vep_result.log 2>&1
+loadResource -c $CONFIG_DIR/datasets/NG00126.json --preprocess --stepName load_cadd_scores.py --foreach WES --commit > $LOG_FILE_DIR/datasets/NG00126/preprocess_WES_load_cadd_scores.log 2>&1
+
+# load the data
+loadResource -c $CONFIG_DIR/datasets/NG00126.json --load data --commit > $LOG_FILE_DIR/datasets/NG00126/load_result.log 2>&1
+
+# =================================================
+# Garbage Collection
+# =================================================
+
+rm -r $LOG_FILE_DIR/datasets/NG00122
+rm -r $DATA_DIR/NG00122
+
+rm -r $LOG_FILE_DIR/datasets/NG00126
+rm -r $DATA_DIR/NG00126

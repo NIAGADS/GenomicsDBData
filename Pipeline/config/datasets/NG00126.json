@@ -22,7 +22,9 @@
                 "file": "@file.path/ADSP_WGS_EU_Belloy_2022_NIAGADS_summary_stats.txt",
                 "sourceId": "@file.accession+_WGS",
                 "inputFile": "@file.path/preprocess/@file.accession+_WGS-input.txt",
-                "fileName": "@file.path/preprocess/@file.accession+_WGS-input.txt",
+                "fileName": "@file.path/preprocess/@file.accession+_WGS-input.txt.unmap.vcf",
+                "vcfFile": "@file.path/preprocess/@file.accession+_WGS-input.txt.unmap.vcf",
+                "idMap": "@file.path/preprocess/@file.accession+_WGS-input.txt.unmap.vcf.mapping",
                 "name": "AD-risk in ADSP data filtered to remove variant-level artifacts - WGS",
                 "description": "summary statistics from whole genome risk-association analysis in ADSP whole genome sequencing data (NG00067.v5) among non-Hispanic white individuals of European ancestry, filtered to account for variant frequency differences across sequencing centers or platforms in the ADSP data.  Please see the manuscript for details regarding the filters and association models.", 
                 "biomaterialCharacteristics": {
@@ -44,6 +46,8 @@
                 "sourceId": "@file.accession+_WES",
                 "inputFile": "@file.path/preprocess/@file.accession+_WES-input.txt",
                 "fileName": "@file.path/preprocess/@file.accession+_WES-input.txt.unmap.vcf",
+                "vcfFile": "@file.path/preprocess/@file.accession+_WES-input.txt.unmap.vcf",
+                "idMap": "@file.path/preprocess/@file.accession+_WES-input.txt.unmap.vcf.mapping",
                 "name": "AD-risk in ADSP data filtered to remove variant-level artifacts - WES",
                 "description": "summary statistics from whole genome risk-association analysis in ADSP whole exome sequencing data (NG00067.v5) among non-Hispanic white individuals of European ancestry, filtered to account for variant frequency differences across sequencing centers or platforms in the ADSP data.  Please see the manuscript for details regarding the filters and association models.", 
                 "biomaterialCharacteristics": {
@@ -155,9 +159,14 @@
             }
         },
         {
+            "foreach": true,
             "script": {
                 "name": "file_map_variants.py",
-                "parameters": {}
+                "parameters": {
+                    "inputFile": "foreach+.map",
+                    "idMap": "foreach",
+                    "log2stderr": true
+                }
             }
         },
         {
@@ -179,19 +188,22 @@
                     "genomeBuild": "GRCh38",
                     "seqrepoProxyPath": "@file.seqrepo_proxy_path",
                     "rankingFile": "@file.consequence_ranking_file",
-                    "commitAfter": 100
+                    "commitAfter": 100,
+                    "log2stderr": true,
+                    "logExisting": true
                 }
             }
         },
         {
+            "foreach": true,
             "script": {
                 "name": "load_cadd_scores.py",
                 "parameters": {
-                    "vcfFile": "@file.path/preprocess/@file.accession+-input.txt.unmap.vcf",
+                    "vcfFile": "foreach",
                     "seqrepoProxyPath": "@file.seqrepo_proxy_path",
-                    "rankingFile": "@file.consequence_ranking_file",
                     "databaseDir": "@file.cadd_path",
-                    "commitAfter": 100
+                    "commitAfter": 100,
+                    "log2stderr": true
                 }
             }
         }
@@ -202,8 +214,9 @@
             "plugin": {
                 "name": "GenomicsDBData::GWAS::Plugin::LoadVariantGWASResult",
                 "parameters": {
-                    "path": "@file.path/preprocess",
-                    "sourceId": "foreach"
+                    "file": "foreach",
+                    "sourceId": "foreach",
+                    "skipUndoSummary": true
                 }
             }
         }
