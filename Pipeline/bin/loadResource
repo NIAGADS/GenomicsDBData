@@ -120,8 +120,11 @@ def get_cmd_options(cmd, cmdConfig, isPlugin=False, foreach=None):
         for option, value in additionalParams.items():
             if value == 'true':
                 params.update({option: True})  
-            elif value == 'false': # don't add the option
-                continue
+            elif value == 'false': 
+                if option in params: # remove the boolean
+                    del params[option]
+                else: # just don't add the option
+                    continue
             else:
                 params.update({option: xstr(value)})
                 
