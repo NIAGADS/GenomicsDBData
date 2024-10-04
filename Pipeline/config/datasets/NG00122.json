@@ -213,7 +213,7 @@
             "plugin": {
                 "name": "GenomicsDBData::GWAS::Plugin::LoadVariantGWASResult",
                 "parameters": {
-                    "path": "@file.path/preprocess",
+                    "file": "foreach",
                     "sourceId": "foreach"
                 }
             }
