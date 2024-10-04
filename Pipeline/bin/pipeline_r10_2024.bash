@@ -63,6 +63,34 @@ loadResource -c $CONFIG_DIR/datasets/NG00126.json --preprocess --stepName load_c
 # load the data
 loadResource -c $CONFIG_DIR/datasets/NG00126.json --load data --commit > $LOG_FILE_DIR/datasets/NG00126/load_result.log 2>&1
 
+# GCST90027158
+# -------------------------------------
+
+mkdir $LOG_FILE_DIR/datasets/GCST90027158
+loadResource --config $CONFIG_DIR/datasets/GCST90027158.json --load xdbr --commit > $LOG_FILE_DIR/datasets/GCST90027158/load_xdbr.log  2>&1
+loadResource -c $CONFIG_DIR/datasets/GCST90027158.json --verbose  --preprocess  --stepName GenomicsDBData::Load::Plugin::InsertStudy,GenomicsDBData::Load::Plugin::InsertProtocolAppNode --commit > $LOG_FILE_DIR/datasets/GCST90027158/placeholders.log 2>&1 
+
+loadResource -c $CONFIG_DIR/datasets/GCST90027158.json --preprocess --stepName GenomicsDBData::GWAS::Plugin::LoadVariantGWASResult > $LOG_FILE_DIR/datasets/GCST90027158/preprocess_input.log 2>&1
+
+loadResource -c $CONFIG_DIR/datasets/GCST90027158.json --preprocess --stepName db_map_variants.py > $LOG_FILE_DIR/datasets/GCST90027158/preprocess_db_map_variants.log 2>&1
+
+loadResource -c $CONFIG_DIR/datasets/GCST90027158.json --preprocess --stepName load_vcf_file.py > $LOG_FILE_DIR/datasets/GCST90027158/preprocess_load_vcf_file.log 2>&1
+# all duplicates are indels that need to be switched (ref <-> alt)
+loadResource -c $CONFIG_DIR/datasets/GCST90027158.json --preprocess --stepName load_vcf_file.py --params '{"logExisting":"false"}' --commit > $LOG_FILE_DIR/datasets/GCST90027158/preprocess_load_vcf_file.log 2>&1
+
+
+loadResource -c $CONFIG_DIR/datasets/GCST90027158.json --preprocess --stepName file_map_variants.py  > $LOG_FILE_DIR/datasets/GCST90027158/preprocess_file_map_variants.log 2>&1
+loadResource -c $CONFIG_DIR/datasets/GCST90027158.json --preprocess --stepName runVep  > $LOG_FILE_DIR/datasets/GCST90027158/preprocess_runVep.log 2>&1
+loadResource -c $CONFIG_DIR/datasets/GCST90027158.json --preprocess --stepName load_vep_result.py --commit > $LOG_FILE_DIR/datasets/GCST90027158/preprocess_load_vep_result.log 2>&1
+loadResource -c $CONFIG_DIR/datasets/GCST90027158.json --preprocess --stepName load_cadd_scores.py --commit > $LOG_FILE_DIR/datasets/GCST90027158/preprocess_load_cadd_scores.log 2>&1
+
+# load the data
+loadResource -c $CONFIG_DIR/datasets/GCST90027158.json --load data --commit > $LOG_FILE_DIR/datasets/GCST90027158/load_result.log 2>&1
+
+# GWAS Catalog
+# -------------------------------------
+
+
 # =================================================
 # Garbage Collection
 # =================================================
