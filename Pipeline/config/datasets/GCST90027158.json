@@ -1,0 +1,217 @@
+{
+    "file": {
+        "path": "$DATA_DIR/NHGRI/full_summary_stats/Bellenguez",
+        "accession": "GCST90027158",
+        "working_directory": "@file.path/@file.accession",
+        "cadd_path": "$DATA_DIR/CADD",
+        "seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
+        "consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
+        "chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt"
+    },
+    "external_database": {
+        "name": "NHGRI-EBI GWAS Catalog",
+        "version": "buildGRCh38",
+        "download_url": "http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics",
+        "id_url": "https://www.ebi.ac.uk/gwas/",
+        "description": "The NHGRI-EBI GWAS Catalog is a catalog of published genome-wide association studies",
+        "accession": "NHGRI_GWAS_CATALOG_STUDIES",
+        "type": "Genetic variation"
+    },
+    "foreach": [
+        {
+            "ALL": {
+                "file": "@file.working_directory/GCST90027158_buildGRCh38.tsv",
+                "sourceId": "@file.accession",
+                "uri": "http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90027001-GCST90028000/GCST90027158",
+                "fileName": "@file.working_directory/preprocess/@file.accession+-input.txt.unmap.vcf",
+                "vcfFile": "@file.working_directory/preprocess/@file.accession+-input.txt.unmap.vcf",
+                "inputFile": "@file.working_directory/preprocess/@file.accession+-input.txt", 
+                "idMap": "@file.working_directory/preprocess/@file.accession+-input.txt.unmap.vcf.mapping",
+                "name": "New insights into the genetic etiology of Alzheimer’s disease and related dementias",
+                "description": "summary statistics from a two-stage genome-wide association study totaling 111,326 clinically diagnosed/‘proxy’ AD cases and 677,663 controls.",                     
+                "biomaterialCharacteristics": {
+                    "diagnosis": [
+                        "late-onset Alzheimers disease"
+                    ],
+                    "population": "European",
+                    "covariate specification": "value:sex and population stratification"
+                },
+                "trackSummary": {
+                    "cohorts": [
+                        "GR@CE",
+                        "EADB",
+                        "EADI",
+                        "GERADE",
+                        "PERADES",
+                        "DemGene",
+                        "Bonn",
+                        "RS",
+                        "CCHS",
+                        "UKB",
+                        "Other"
+                    ],
+                    "ncase": {"clinically_diagnosed": 39106, "proxy": 46828},
+                    "ncontrol": 401577
+                }
+            }
+        }
+    ],
+    "preprocess": [
+        {
+            "plugin": {
+                "name": "GenomicsDBData::Load::Plugin::InsertStudy",
+                "parameters": {
+                    "attribution": "Bellenguez et al. 2022|PMID:35379992",
+                    "name": "New insights into the genetic etiology of Alzheimer’s disease and related dementias",
+                    "description": "summary statistics from a two-stage genome-wide association study totaling 111,326 clinically diagnosed/‘proxy’ AD cases and 677,663 controls.",                     
+                    "sourceId": "@file.accession",
+                    "extDbRlsSpec": "@external_database.name|@external_database.version"
+                }
+            }
+        },
+        {
+            "foreach": true,
+            "plugin": {
+                "name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
+                "parameters": {
+                    "attribution":  "Bellenguez et al. 2022|PMID:35379992",
+                    "type": "Genetic variation",
+                    "subtype": "GWAS summary statistics",
+                    "description": "foreach",
+                    "extDbRlsSpec": "@external_database.name|@external_database.version",
+                    "biomaterialCharacteristics": "foreach",
+                    "sourceId": "foreach",
+                    "name": "foreach",
+                    "studyId": "@file.accession",
+                    "trackSummary": "foreach",
+                    "uri": "foreach"
+                }
+            }
+        },
+        {
+            "foreach": true,
+            "plugin": {
+                "name": "GenomicsDBData::GWAS::Plugin::LoadVariantGWASResult",
+                "parameters": {
+                    "file": "foreach",
+                    "preprocess": true,
+                    "sourceId": "foreach",
+                    "testAllele": "effect_allele",
+                    "chromosome": "chromosome",
+                    "position": "base_pair_location",
+                    "marker": "variant_alternate_id",
+                    "pvalue": "p_value",
+                    "gwsThreshold": "5e-8",
+                    "frequency": "effect_allele_frequency",
+                    "restrictedStats": {
+                        "std_err": "standard_error",
+                        "odds_ratio": "odds_ratio",
+                        "het_i_sq": "het_isq",
+                        "het_pvalue": "het_pvalue",
+                        "beta": "beta",
+                        "other": [
+                            "n_cases",
+                            "n_controls",
+                            "ci_lower",
+                            "ci_upper"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "foreach": true,
+            "script": {
+                "name": "db_map_variants.py",
+                "parameters": {
+                    "inputFile": "foreach",
+                    "outputDir": "@file.working_directory/preprocess",
+                    "maxConnections": 20,
+                    "logAfter": 10000,
+                    "chunkSize": 1000,
+                    "overwrite": true,
+                    "log2stderr": true,
+                    "keepIndelDirection": true
+                }
+            }
+        },
+        {
+            "foreach": true,
+            "script": {
+                "name": "load_vcf_file.py",
+                "parameters": {
+                    "fileName": "foreach",
+                    "genomeBuild": "GRCh38",
+                    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
+                    "commitAfter": 100,
+                    "log2stderr": true,
+                    "datasource": "NIAGADS",
+                    "skipExisting": true,
+                    "logExisting": true
+                }
+            }
+        },
+        {
+            "foreach": true,
+            "script": {
+                "name": "file_map_variants.py",
+                "parameters": {
+                    "inputFile": "foreach+.map",
+                    "idMap": "foreach",
+                    "log2stderr": true
+                }
+            }
+        },
+        {
+            "foreach": true,
+            "script": {
+                "name": "runVep",
+                "parameters": {
+                    "fileName": "foreach"
+                }
+            }
+        },
+        {
+            "foreach": true,
+            "comment": "update new variants w/vep result",
+            "script": {
+                "name": "load_vep_result.py",
+                "parameters": {
+                    "fileName": "foreach+.vep.json.gz",
+                    "genomeBuild": "GRCh38",
+                    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
+                    "rankingFile": "@file.consequence_ranking_file",
+                    "commitAfter": 100,
+                    "log2stderr": true,
+                    "logExisting": true
+                }
+            }
+        },
+        {
+            "foreach": true,
+            "script": {
+                "name": "load_cadd_scores.py",
+                "parameters": {
+                    "vcfFile": "foreach",
+                    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
+                    "databaseDir": "@file.cadd_path",
+                    "commitAfter": 100,
+                    "log2stderr": true
+                }
+            }
+        }
+    ],
+    "load": [
+        {
+            "foreach": true,
+            "plugin": {
+                "name": "GenomicsDBData::GWAS::Plugin::LoadVariantGWASResult",
+                "parameters": {
+                    "file": "foreach",
+                    "sourceId": "foreach",
+                    "skipUndoSummary": true
+                }
+            }
+        }
+    ]
+}
