@@ -351,12 +351,17 @@ sub preprocess {
           if ( !$RESTRICTED_STATS_FIELD_MAP );
     }
 
-    # arg validation done in `processArgs`
-    my $testAlleleC = $self->getColumnIndex(\%columns, $self->getArg('testAllele'));
-    my $refAlleleC = $self->getColumnIndex(\%columns, $self->getArg('refAllele'));
+    # NOTE: arg validation done in `processArgs`
+
     my $chrC = $self->getColumnIndex(\%columns, $self->getArg('chromosome'));
     my $positionC = $self->getColumnIndex(\%columns, $self->getArg('position'));
     
+    # alleles
+    my $testAlleleC = $self->getColumnIndex(\%columns, $self->getArg('testAllele'));
+    my $refAlleleC = ($self->getArg('refAllele')) 
+        ? $self->getColumnIndex(\%columns, $self->getArg('refAllele'))
+        : undef;
+
     # optional
     my $altAlleleC = ($self->getArg('altAllele'))
       ? $self->getColumnIndex( \%columns, $self->getArg('altAllele'))
@@ -404,10 +409,24 @@ sub preprocess {
         my $frequency = (defined $frequencyC) ? $values[$frequencyC] : undef;
         my $marker = (defined $markerC) ? $values[$markerC] : undef;
         $marker = 'NULL' if $marker eq 'NA' or $marker eq '.';
-
-        my $ref = uc($values[$refAlleleC]);
-        my $alt = ($altAlleleC) ? uc($values[$altAlleleC]) : uc( $values[$testAlleleC]);
         my $test = uc($values[$testAlleleC]);
+
+        my $ref = undef;
+        my $alt = undef;
+        if (defined $refAlleleC) {
+            $ref = uc($values[$refAlleleC]);
+            $alt = (defined $altAlleleC) ? uc($values[$altAlleleC]) : uc($values[$testAlleleC]);
+        }
+        else { # need to pull from marker
+            if ($marker =~ /:/) {
+                my @varDetails = split /:/, $marker; # assume chr:pos:ref:alt 0,1,2,3
+                $ref = $varDetails[2];
+                $alt = $varDetails[3];
+            }
+            else { # we'll see what other cases appear
+                $self->error("Unable to extract alleles from marker: $marker");
+            }
+        }
 
         my $metaseqId  = "$chromosome:$position:$ref:$alt";
 
@@ -508,15 +527,25 @@ sub processArgs {
         ? $self->generateCustomChrMap()
         : undef;
 
+        $self->error("must specify testAllele")
+          if ( !$self->getArg('testAllele'));
+        $self->error("must specify pvalue") 
+            if (!$self->getArg('pvalue'));
         $self->error("must specify chromomosome")
             if (!$self->getArg('chromosome'));
         $self->error("must specify position")
             if (!$self->getArg('position'));
-        $self->error("must specify testAllele")
-          if ( !$self->getArg('testAllele'));
-        $self->error("must specify refAllele")
-          if ( !$self->getArg('refAllele') && !$self->getArg('marker'));
-        $self->error("must specify pvalue") if (!$self->getArg('pvalue'));
+        if (!$self->getArg('refAllele')) {
+            if ($self->getArg('marker')) {
+                $self->log("WARNING: no reference allele specified; assuming alleles will be extracted from marker");
+            }
+            else {
+                $self->error("must specify refAllele");
+            }
+        }   
+
+        $self->log("WARNING: no alt allele specified; assuming test = alt until mapped to reference")
+            if (!$self->getArg('altAllele') && $self->getArg('refAllele'));
     }
 
     else {
