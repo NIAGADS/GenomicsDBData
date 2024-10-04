@@ -39,6 +39,8 @@ pvalue_display,
 frequency,
 allele,
 restricted_stats,
+chromosome,
+position,
 $HOUSEKEEPING_FIELDS
 )
 FROM STDIN 
@@ -196,6 +198,17 @@ sub getArgumentsDeclaration {
             }
         ),
 
+        booleanArg(
+            {
+                name  => 'skipUndoSummary',
+                descr =>
+                  'do not calculate table entries for UNDO; can take a while',
+                constraintFunc => undef,
+                isList         => 0,
+                reqd           => 0
+            }
+        ),
+
         integerArg(
             {
                 name  => 'commitAfter',
@@ -266,7 +279,7 @@ sub new {
     $self->initialize(
         {
             requiredDbVersion => 4.0,
-            cvsRevision       => '$Revision: 1$',
+            cvsRevision       => '$Revision: 3$',
             name              => ref($self),
             revisionNotes     => '',
             argsDeclaration   => $argumentDeclaration,
@@ -373,7 +386,7 @@ sub preprocess {
         my $chromosome = $values[$chrC];
         if ($chromosome eq "0" || $chromosome eq "NULL" || !defined $chromosome) {
             $self->log("WARNING: chromosome undefined; skipping: $line")
-                if $self->getArg('veryVerbose');
+                if $self->getArg('verbose');
             $skipCount++;
             $skip = 1;
         }
@@ -382,7 +395,7 @@ sub preprocess {
         my $position   = $values[$positionC];
         if ($position == 0)  {
             $self->log("WARNING: position = 0; skipping line: $line")
-                if ($self->getArg('veryVerbose'));
+                if ($self->getArg('verbose'));
             $skipCount++;
             $skip = 1;
         }
@@ -425,7 +438,9 @@ sub preprocess {
 sub loadResult {
     my ($self) = @_;
     $self->log("INFO: Loading GWAS summary statistics into Results.VariantGWAS");
-    my $inputFileName = $self->getArg('file') . ".map";
+
+    my ($v, $workingDir, $f) = File::Spec->splitpath($self->getArg('file'));
+    my $inputFileName = File::Spec->catfile($workingDir, 'preprocess', $self->getArg('sourceId') . "-input.txt.map");
     $self->log("INFO: Loading from file: $inputFileName");
 
     open(my $fh, $inputFileName) || $self->error("Unable to open $inputFileName for reading");
@@ -441,6 +456,8 @@ sub loadResult {
     my %row;
     my $json            = JSON::XS->new();
 
+    push(@INPUT_FIELDS, ("db_mapped_variant"));
+
     while (my $line = <$fh>) {
         chomp($line);
         @row{@INPUT_FIELDS} = split /\t/, $line;
@@ -451,14 +468,13 @@ sub loadResult {
             next;
        }
 
-        # FIXME: decode db mapping
-        # [{"bin_index": "chr1.L1.B1.L2.B1.L3.B1.L4.B1.L5.B2.L6.B1.L7.B1.L8.B2.L9.B2.L10.B2.L11.B1.L12.B2.L13.B2", "primary_key": "1:4930710:T:C:rs116069884"}]
-        my $mappedRecord = ${NULL}
-        my $variantRecord  = $json->decode($vrString);
-        my @mappedVariants = @{$variantRecord->{matched_variants}};
-        foreach my $mv (@mappedVariants) {
-            $insertStrBuffer .= $self->generateInsertStr($mv->{genomicsdb_id},
-                $variantRecord->{bin_index}, \%row);
+        $self->error("Unmapped variant found: " . $row{metaseq_id}) 
+            if $row{db_mapped_variant} eq 'NULL';
+       
+        my $mappedVariants  = $json->decode($row{db_mapped_variant});
+        foreach my $mv (@$mappedVariants) {
+            $insertStrBuffer .= $self->generateInsertStr($mv->{primary_key},
+                $mv->{bin_index}, \%row);
             if (++$recordCount % $commitAfter == 0) {
                 PluginUtils::bulkCopy($self, $insertStrBuffer, $COPY_SQL);
                 $insertStrBuffer = "";
@@ -538,9 +554,9 @@ sub generateInsertStr {
         $self->{protocol_app_node_id}, $recordPK,
         $binIndex,                     $data->{neg_log10_p},
         $data->{display_p},            $data->{freq1},
-        $data->{test_allele},          $data->{restricted_stats_json}
+        $data->{test_allele},          $data->{restricted_stats_json},
+        'chr' . $data->{chr},          $data->{bp}
     );
-
     push( @values, GenomicsDBData::Load::Utils::getCurrentTime() );
     push( @values, $self->{housekeeping} );
     my $str = join( "|", @values );
@@ -722,7 +738,7 @@ sub buildGWASFlags {
 # ----------------------------------------------------------------------
 sub undoTables {
     my ($self) = @_;
-    if (!$self->getArg('preprocess')) {
+    if (!$self->getArg('skipUndoSummary') && !$self->getArg('preprocess')) {
         return ('Results.VariantGWAS') 
     }
     return ();
