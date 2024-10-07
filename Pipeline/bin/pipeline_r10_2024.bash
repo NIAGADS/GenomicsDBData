@@ -74,6 +74,7 @@ loadResource -c $CONFIG_DIR/datasets/GCST90027158.json --preprocess --stepName G
 
 loadResource -c $CONFIG_DIR/datasets/GCST90027158.json --preprocess --stepName db_map_variants.py > $LOG_FILE_DIR/datasets/GCST90027158/preprocess_db_map_variants.log 2>&1
 
+# pre-commit test
 loadResource -c $CONFIG_DIR/datasets/GCST90027158.json --preprocess --stepName load_vcf_file.py > $LOG_FILE_DIR/datasets/GCST90027158/preprocess_load_vcf_file.log 2>&1
 # all duplicates are indels that need to be switched (ref <-> alt)
 loadResource -c $CONFIG_DIR/datasets/GCST90027158.json --preprocess --stepName load_vcf_file.py --params '{"logExisting":"false"}' --commit > $LOG_FILE_DIR/datasets/GCST90027158/preprocess_load_vcf_file.log 2>&1
