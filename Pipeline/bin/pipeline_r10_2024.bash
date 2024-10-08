@@ -92,6 +92,14 @@ loadResource -c $CONFIG_DIR/datasets/GCST90027158.json --load data --commit > $L
 # -------------------------------------
 
 
+
+# Refresh Dataset MVs -- note: populationkeys MV will take some time to refresh
+# -------------------------------------
+psql -h $DB_HOST -U $DB_USER -d $DB_NAME --file /home/allenem/GRCh38/project_home/GenomicsDBData/Util/lib/sql/db_admin/scripts/refresh_niagads_mviews.sql 
+
+# Manhattan plots
+# -------------------------------------
+manhattan.py --tracks GCST90027158,NG00126_WES,NG00126_WGS,NG00122 --outputPath $DATA_DIR/manhattan --fetchData --generatePlots --plotType all
 # =================================================
 # Garbage Collection
 # =================================================
