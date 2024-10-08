@@ -74,17 +74,19 @@ details->'most_severe_consequence'->>'impacted_gene_symbol' AS "GENE",
 replace(details->>'chromosome', 'chr', '') AS "CHR",
 (details->'position')::int AS "BP",
 CASE WHEN details->>'ref_snp_id' IS NOT NULL THEN details->>'ref_snp_id' ELSE details->>'display_id' END AS "SNP",
-r.neg_log10_pvalue,
+to_char(r.neg_log10_pvalue, '99D999')::float AS neg_log10_pvalue,
 r.pvalue_display AS "P",
 CASE WHEN r.neg_log10_pvalue > -1 * log('5e-8') THEN 2 -- gws
 WHEN r.neg_log10_pvalue > 5 THEN 1 -- relaxed
 ELSE 0 END  -- nope
 AS genome_wide_significance_level
-FROM Results.VariantGWAS r,  get_variant_display_details(variant_record_primary_key) d,
+FROM Results.VariantGWAS r,  
+get_variant_display_details(variant_record_primary_key) details,
 NIAGADS.TrackAttributes ta
 WHERE ta.track = %(track)s
 AND ta.protocol_app_node_id = r.protocol_app_node_id
 AND neg_log10_pvalue > -1 * log(0.5)
+AND details.record_primary_key = r.variant_record_primary_key
 """
 
 GENE_SQL='''
@@ -241,7 +243,9 @@ class GWASTrack(object):
             
         if self._cap is not None:
             sql = sql.replace('r.pvalue_display AS "P"',
-                              "CASE WHEN r.neg_log10_pvalue > " + str(self._cap) + "THEN '1e-" + str(self._cap) +"' ELSE r.pvalue_display END AS" + '"P"')
+                "CASE WHEN r.neg_log10_pvalue > " + str(self._cap) 
+                + "THEN '1e-" + str(self._cap) 
+                + "' ELSE r.pvalue_display END AS" + '"P"')
         
         warning("Fetching track data")
         self._data = pd.read_sql_query(sql, self._database, params={'track': self._track}, index_col = 'variant_record_primary_key')

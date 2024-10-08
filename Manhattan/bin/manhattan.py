@@ -4,16 +4,20 @@
 import argparse
 import os
 
+import logging
+
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from GenomicsDBData.Manhattan.gwas_track import GWASTrack
-from GenomicsDBData.Util.utils import warning, create_dir, execute_cmd
+from GenomicsDBData.Util.utils import create_dir, execute_cmd
+
+LOGGER = logging.getLogger(__name__)
             
 def run(options, trackId):
     accession = trackId.split('_')[0]
     outputPath = os.path.join(options.outputPath, accession)
     create_dir(outputPath)
-    warning("Fetching track: ", trackId, "- writing to: ", outputPath)
+    LOGGER.info("Fetching track: %s - writing to: %s ", trackId, outputPath)
     
     track = GWASTrack(trackId)
     track.connect(None)
@@ -28,7 +32,7 @@ def run(options, trackId):
         fetch_data(trackId, track, outputPath, options.annotateOnly)
 
     if options.generatePlots:
-        warning("Plotting track: ", trackId)
+        LOGGER.info("Plotting track: %s", trackId)
         create_dir(os.path.join(outputPath, "png"))
         create_dir(os.path.join(outputPath, "pdf"))
         cmd = ["generateManhattanPlots.R", trackId, outputPath, str(options.cap), options.plotType]
