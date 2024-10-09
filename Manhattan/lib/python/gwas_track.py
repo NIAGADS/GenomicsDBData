@@ -74,7 +74,7 @@ details->'most_severe_consequence'->>'impacted_gene_symbol' AS "GENE",
 replace(details->>'chromosome', 'chr', '') AS "CHR",
 (details->'position')::int AS "BP",
 CASE WHEN details->>'ref_snp_id' IS NOT NULL THEN details->>'ref_snp_id' ELSE details->>'display_id' END AS "SNP",
-to_char(r.neg_log10_pvalue, '99D999')::float AS neg_log10_pvalue,
+to_char(r.neg_log10_pvalue, '999D999')::float AS neg_log10_pvalue,
 r.pvalue_display AS "P",
 CASE WHEN r.neg_log10_pvalue > -1 * log('5e-8') THEN 2 -- gws
 WHEN r.neg_log10_pvalue > 5 THEN 1 -- relaxed
@@ -265,5 +265,4 @@ class GWASTrack(object):
 
 
 
-    
- 
+

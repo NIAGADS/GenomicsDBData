@@ -29,7 +29,11 @@ def run(options, trackId):
         track.set_cap(options.cap)
 
     if options.fetchData:
-        fetch_data(trackId, track, outputPath, options.annotateOnly)
+        try:
+            fetch_data(trackId, track, outputPath, options.annotateOnly)
+        except Exception as err:
+            LOGGER.error("Problem processing track %s: %s", trackId, str(err))
+            raise(err)
 
     if options.generatePlots:
         LOGGER.info("Plotting track: %s", trackId)
