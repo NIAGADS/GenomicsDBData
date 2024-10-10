@@ -1,7 +1,7 @@
 {
     "file": {
-        "path": "$SHARED_DATA_DIR/nhgri",
-        "file": "gwas_catalog_v1.0.2-associations_e106_r2022-07-09.tsv",
+        "path": "$DATA_DIR/NHGRI",
+        "file": "gwas_catalog_v1.0.2-associations_e112_r2024-09-22",
         "cadd_path": "$DATA_DIR/CADD",
         "seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
         "consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
@@ -20,7 +20,6 @@
     "preprocess": [
         {
             "plugin": {
-                "skip": true,
                 "name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
                 "parameters": {
                     "type": "Genetic variation",
@@ -34,11 +33,27 @@
         },
         {
             "script": {
-                "name": "generateNhgriGwasCatalogLoadFile",
+                "name": "clean_NHGRI_gwas_catalog.py",
                 "parameters": {
-                    "fileName": "@file.file",
-                    "dir": "@file.path/GRCh38",
-                    "genomeBuild": "$GENOME_BUILD"
+                    "rawFile": "@file.file",
+                    "genomeBuild": "GRCh38",
+                    "log2stderr": true
+                }
+            }
+        },
+        {
+            "script": {
+                "name": "db_map_variants.py",
+                "parameters": {
+                    "inputFile": "@file.file+.clean",
+                    "outputDir": "@file.path/preprocess",
+                    "maxConnections": 20,
+                    "logAfter": 10000,
+                    "chunkSize": 1000,
+                    "useMarker": true,
+                    "allHits": true,
+                    "overwrite": true,
+                    "log2stderr": true
                 }
             }
         }
