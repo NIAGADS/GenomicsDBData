@@ -35,7 +35,7 @@
             "script": {
                 "name": "clean_NHGRI_gwas_catalog.py",
                 "parameters": {
-                    "rawFile": "@file.file",
+                    "rawFile": "@file.path/@file.file",
                     "genomeBuild": "GRCh38",
                     "log2stderr": true
                 }
@@ -45,7 +45,7 @@
             "script": {
                 "name": "db_map_variants.py",
                 "parameters": {
-                    "inputFile": "@file.file+.clean",
+                    "inputFile": "@file.path/@file.file+.clean",
                     "outputDir": "@file.path/preprocess",
                     "maxConnections": 20,
                     "logAfter": 10000,
