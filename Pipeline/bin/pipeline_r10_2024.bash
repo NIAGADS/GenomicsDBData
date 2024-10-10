@@ -91,7 +91,12 @@ loadResource -c $CONFIG_DIR/datasets/GCST90027158.json --load data --commit > $L
 # GWAS Catalog
 # -------------------------------------
 
+mkdir $LOG_FILE_DIR/reference/NHGRI
+loadResource --config $CONFIG_DIR/reference_databases/gwas_catalog.json --load xdbr --commit > $LOG_FILE_DIR/reference/NHGRI/load_xdbr.log 2>&1
+ga GUS::Supported::Plugin::LoadGusXml --file $PROJECT_HOME/GenomicsDBData/Load/lib/xml/update_gwas_catalog_external_db.xml --commit > $LOG_FILE_DIR/reference/NHGRI/placeholders.log 2>&1 
 
+loadResource --config $CONFIG_DIR/reference_databases/gwas_catalog.json --preprocess --stepName clean_NHGRI_gwas_catalog.py > $LOG_FILE_DIR/reference/NHGRI/preprocess_clean.log
+loadResource --config $CONFIG_DIR/reference_databases/gwas_catalog.json --preprocess --stepName db_map_variants.py > $LOG_FILE_DIR/reference/NHGRI/preprocess_db_map_variants.log
 
 # Refresh Dataset MVs -- note: populationkeys MV will take some time to refresh
 # -------------------------------------
