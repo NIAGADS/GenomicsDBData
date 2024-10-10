@@ -164,8 +164,10 @@ def build_variant_id(row):
     if args.useMarker:     
         if marker.count(':') == 3: # assume marker is metaseq_id
             variantId = marker
-        else:
+        elif row['allele1'] != 'NULL' and row['allele2'] != 'NULL':
             variantId = ':'.join((marker, row['allele1'], row['allele2']) )
+        else:
+            variantId = marker
     else:        
         if metaseqId is None:
             chrom = eval_null(row['chr'])
