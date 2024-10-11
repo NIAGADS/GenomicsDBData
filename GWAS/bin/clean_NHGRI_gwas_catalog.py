@@ -331,7 +331,7 @@ def clean():
                     marker = variant
                     if tAllele != '?':
                         if 'rs' in marker or (':' in marker and marker.count(':') == 1): # refsnp or chr:pos only
-                            marker = marker + ':' + tAllele
+                            marker = ':'.join((marker, tAllele, 'N')) 
         
                     values = ['NULL', 'NULL', 'NULL', 'NULL', marker, 'NULL', xstr(frequency), xstr(pvalue), xstr(nl10p), xstr(pvalue), 'NULL', tAllele, json.dumps(row)]
                     print('\t'.join(values), file=ofh)
