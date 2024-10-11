@@ -48,13 +48,14 @@
                 "parameters": {
                     "inputFile": "@file.path/@file.file+.clean",
                     "outputDir": "@file.path/preprocess",
-                    "maxConnections": 10,
+                    "maxConnections": 15,
                     "logAfter": 1000,
-                    "chunkSize": 50,
+                    "chunkSize": 5,
                     "useMarker": true,
                     "allHits": true,
                     "overwrite": true,
-                    "log2stderr": true
+                    "log2stderr": true,
+                    "dropUnmapped": true
                 }
             }
         }
