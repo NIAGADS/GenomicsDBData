@@ -42,14 +42,15 @@
             }
         },
         {
+            "comment": "do fewer lookups b/c most are by rsId which involve index scans on all partitions; so slower",
             "script": {
                 "name": "db_map_variants.py",
                 "parameters": {
                     "inputFile": "@file.path/@file.file+.clean",
                     "outputDir": "@file.path/preprocess",
-                    "maxConnections": 20,
-                    "logAfter": 10000,
-                    "chunkSize": 1000,
+                    "maxConnections": 10,
+                    "logAfter": 1000,
+                    "chunkSize": 50,
                     "useMarker": true,
                     "allHits": true,
                     "overwrite": true,
