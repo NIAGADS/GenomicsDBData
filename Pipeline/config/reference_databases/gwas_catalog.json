@@ -50,7 +50,7 @@
                     "outputDir": "@file.path/preprocess",
                     "maxConnections": 15,
                     "logAfter": 1000,
-                    "chunkSize": 5,
+                    "chunkSize": 50,
                     "useMarker": true,
                     "allHits": true,
                     "overwrite": true,
