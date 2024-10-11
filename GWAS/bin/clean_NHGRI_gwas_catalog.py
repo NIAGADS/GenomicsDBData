@@ -209,7 +209,10 @@ def clean_marker(marker: str):
         marker = marker.replace('23:', 'X:')
     if marker.startswith('24:'):
         marker = marker.replace('24:', 'Y')
-        
+    
+    if args.genomeBuild == 'GRCh38' and marker == '2:179179368916': # one off typo --> 179 is duplicated
+        marker = '2:179368916'   
+    
     if '*' in marker: 
         LOGGER.debug("invalid %s", marker)
         return None
@@ -323,7 +326,13 @@ def clean():
             
                 # qw('chr bp allele1 allele2 marker metaseq_id freq1 pvalue neg_log10_p display_p gwas_flags test_allele restricted_stats_json')
                 for index, variant in enumerate(cleanMarkers):
-                    values = ['NULL', 'NULL', 'NULL', 'NULL', variant, 'NULL', xstr(frequency), xstr(pvalue), xstr(nl10p), xstr(pvalue), 'NULL', alleles[index], json.dumps(row)]
+                    tAllele = alleles[index]
+                    marker = variant
+                    if tAllele != '?':
+                        if 'rs' in marker or (':' in marker and marker.count(':') == 1): # refsnp or chr:pos only
+                            marker = marker + ':' + tAllele
+        
+                    values = ['NULL', 'NULL', 'NULL', 'NULL', marker, 'NULL', xstr(frequency), xstr(pvalue), xstr(nl10p), xstr(pvalue), 'NULL', tAllele, json.dumps(row)]
                     print('\t'.join(values), file=ofh)
                 
         LOGGER.info("Parsed %s lines", lineCount)
