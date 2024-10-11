@@ -111,8 +111,6 @@ variantTuple = (xstr(chrm), pos, xstr(marker.rstrip()), refAllele)
 """
 
 def clean_snps(snp: str, extractAlleles=False):    
-        
-    
     if not extractAlleles and '-' in snp:
         # missing chrN-pos-? but neglible
         if ':' in snp:
@@ -236,6 +234,10 @@ def clean_marker(marker: str):
         if not validChr:
             LOGGER.warning("Found invalid chromosome: %s (marker = %s)", markerInfo[0], marker)
             return None
+        
+        if len(markerInfo) == 3:
+            if 'I' in markerInfo[2] or 'D' in markerInfo[2]:
+                marker = ':'.join(markerInfo[0:2]) # need to catch 4:135285067:I-? or :D-?
     
     if 'rs' not in marker and is_number(marker):
         marker = 'rs' + xstr(marker)
@@ -305,8 +307,7 @@ def clean():
                     frequency = 'NULL'
                 elif ' ' in frequency:
                     frequency = frequency.split(' ')[0]
-                    
-
+                
                 frequency = re.sub(pattern, '', frequency)
                 
                 markers = xstr(row['ref_snp_id'], nullStr='NULL')
