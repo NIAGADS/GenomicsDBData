@@ -36,6 +36,7 @@ class LookupOptions(BaseModel):
     chunkSize: int
     maxConnections: int
     logAfter: int 
+    dropUnmapped: bool
     
     def update(self, data: dict):
         """
@@ -289,15 +290,21 @@ async def async_db_mapping(header:list, lookups:list, options:LookupOptions, app
                 row = list(item.values())[0]
                 mappedVariant = mappings[variant]
                 if mappedVariant is None:
-                    unmapped.append(item)
-                    row['db_mapped_variant'] = 'NULL' # placeholder so it can be found & updated later
-                    print('\t'.join([ row[field] for field in mappedHeader]), file = mfh)  
+                    if 'rs' in variant or options.dropUnmapped: # unmappable refsnp / review or choose not to keep unmapped
+                        print('\t'.join([row[field] for field in header]), file = efh)   
+                        errors.append({variant: 'not mapped'})
+
+                    else:
+                        unmapped.append(item)
+                        row['db_mapped_variant'] = 'NULL' # placeholder so it can be found & updated later
+                        print('\t'.join([row[field] for field in mappedHeader]), file = mfh)  
+                    
                 elif 'error' in mappedVariant:
-                    print('\t'.join([ row[field] for field in header]), file = efh)   
+                    print('\t'.join([row[field] for field in header]), file = efh)   
                     errors.append(mappedVariant)
                 else:      
                     row['db_mapped_variant'] = mapping_to_string(mappings[variant])
-                    print('\t'.join([ row[field] for field in mappedHeader]), file = mfh)
+                    print('\t'.join([row[field] for field in mappedHeader]), file = mfh)
                     mCount = mCount + 1
                 
                 if count % options.logAfter == 0:
@@ -317,7 +324,8 @@ def run():
         maxConnections = args.maxConnections, 
         checkAltVariants = True,
         firstHitOnly = not args.allHits,
-        logAfter = args.logAfter
+        logAfter = args.logAfter,
+        dropUnmapped = args.dropUnmapped
     )
     
 
@@ -482,6 +490,7 @@ if __name__ == "__main__":
     parser.add_argument('--logAfter', type=int, default=500000)
     parser.add_argument('--maxConnections', type=int, default=10, help="maximum number of database connections")
     parser.add_argument('--overwrite', action='store_true', help="overwrite existing files")
+    parser.add_argument('--dropUnmapped', action='store_true', help="do not output unmapped to '.map' file; for cases when unammped variants will be ignored (e.g., NHGRI GWAS Catalog which lacks sufficient allelic information)")
                         
     args = parser.parse_args()
     errors = []
