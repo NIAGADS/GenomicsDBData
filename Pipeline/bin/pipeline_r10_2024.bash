@@ -98,6 +98,11 @@ ga GUS::Supported::Plugin::LoadGusXml --file $PROJECT_HOME/GenomicsDBData/Load/l
 loadResource --config $CONFIG_DIR/reference_databases/gwas_catalog.json --preprocess --stepName clean_NHGRI_gwas_catalog.py > $LOG_FILE_DIR/reference/NHGRI/preprocess_clean.log 2>&1
 loadResource --config $CONFIG_DIR/reference_databases/gwas_catalog.json --preprocess --stepName db_map_variants.py > $LOG_FILE_DIR/reference/NHGRI/preprocess_db_map_variants.log 2>&1
 
+# load the data
+cp $DATA_DIR/NHGRI/preprocess/gwas_catalog_v1.0.2-associations_e112_r2024-09-22.clean.map $DATA_DIR/NHGRI/preprocess/gwas_catalog_v1.0.2-associations_e112_r2024-09-22.clean.map.bak
+mv $DATA_DIR/NHGRI/preprocess/gwas_catalog_v1.0.2-associations_e112_r2024-09-22.clean.map $DATA_DIR/NHGRI/preprocess/NHGRI_GWAS_CATALOG-input.txt.map
+loadResource --config $CONFIG_DIR/reference_databases/gwas_catalog.json --load data --commit > $LOG_FILE_DIR/reference/NHGRI/load_result.log 2>&1
+
 # Refresh Dataset MVs -- note: populationkeys MV will take some time to refresh
 # -------------------------------------
 psql -h $DB_HOST -U $DB_USER -d $DB_NAME --file /home/allenem/GRCh38/project_home/GenomicsDBData/Util/lib/sql/db_admin/scripts/refresh_niagads_mviews.sql 

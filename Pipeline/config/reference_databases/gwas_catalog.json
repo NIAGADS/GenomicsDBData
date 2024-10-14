@@ -5,7 +5,8 @@
         "cadd_path": "$DATA_DIR/CADD",
         "seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
         "consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
-        "chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt"
+        "chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt",
+        "accession": "NHGRI_GWAS_CATALOG"
     },
     "external_database": {
         "name": "NHGRI-EBI GWAS Catalog",
@@ -14,7 +15,7 @@
         "release_date": "2024-09-22",
         "id_url": "https://www.ebi.ac.uk/gwas/",
         "download_url": "https://www.ebi.ac.uk/gwas/docs/file-downloads",
-        "accession": "NHGRI_GWAS_CATALOG",
+        "accession": "@file.accession",
         "type": "Genetic variation"
     },
     "preprocess": [
@@ -42,15 +43,15 @@
             }
         },
         {
-            "comment": "do fewer lookups b/c most are by rsId which involve index scans on all partitions; so slower",
+            "comment": "do fewer lookups b/c there are many positions unmatched; very slow",
             "script": {
                 "name": "db_map_variants.py",
                 "parameters": {
                     "inputFile": "@file.path/@file.file+.clean",
                     "outputDir": "@file.path/preprocess",
-                    "maxConnections": 15,
-                    "logAfter": 1000,
-                    "chunkSize": 50,
+                    "maxConnections": 30,
+                    "logAfter": 100,
+                    "chunkSize": 10,
                     "useMarker": true,
                     "allHits": true,
                     "overwrite": true,
@@ -61,68 +62,14 @@
         }
     ],
     "load": [
-        {
-            "comment": "'resume' parameter will check before each insert;handle all the duplicates",
+        {     
             "plugin": {
-                "name": "GenomicsDBData::Load::Plugin::LoadVariantGWASResult",
+                "name": "GenomicsDBData::GWAS::Plugin::LoadVariantGWASResult",
                 "parameters": {
-                    "file": "@file.file+-preprocess.txt",
-                    "sourceId": "@external_database.accession",
-                    "fileDir": "@file.path",
-                    "vepWebhook": "$WEBHOOK_SERVER/hooks/vep",
-                    "seqrepoProxyPath": "@file.seqrepo_proxy_path",
-                    "adspConsequenceRankingFile": "@file.consequence_ranking_file",
-                    "liftOverChainFile": "@file.chain_file",
-                    "remapAssemblies": "GCF_000001405.25|GCF_000001405.26",
-                    "caddDatabaseDir": "@file.cadd_path",
-                    "testAllele": "test_allele",
-                    "refAllele": "ref_allele",
-                    "pvalue": "pvalue",
-                    "frequency": "frequency",
-                    "genomeBuild": "GRCh38",
-                    "marker": "marker",
-                    "position": "position",
-                    "chromosome": "chromosome",
-                    "mapThruMarker": true,
-                    "allowAlleleMismatches": true,
-                    "resume": true,
-                    "genomeWideSignificanceThreshold": "1e-6",
-                    "restrictedStats": {
-                        "other": [
-                            "DATE ADDED TO CATALOG",
-                            "PUBMEDID",
-                            "FIRST AUTHOR",
-                            "DATE",
-                            "JOURNAL",
-                            "LINK",
-                            "STUDY",
-                            "DISEASE/TRAIT",
-                            "INITIAL SAMPLE SIZE",
-                            "REPLICATION SAMPLE SIZE",
-                            "REGION",
-                            "REPORTED GENE(S)",
-                            "MAPPED_GENE",
-                            "UPSTREAM_GENE_ID",
-                            "DOWNSTREAM_GENE_ID",
-                            "SNP_GENE_IDS",
-                            "UPSTREAM_GENE_DISTANCE",
-                            "DOWNSTREAM_GENE_DISTANCE",
-                            "STRONGEST SNP-RISK ALLELE",
-                            "SNPS",
-                            "MERGED",
-                            "SNP_ID_CURRENT",
-                            "CONTEXT",
-                            "INTERGENIC",
-                            "OR or BETA",
-                            "95% CI (TEXT)",
-                            "PLATFORM [SNPS PASSING QC]",
-                            "CNV",
-                            "MAPPED_TRAIT",
-                            "MAPPED_TRAIT_URI",
-                            "STUDY ACCESSION",
-                            "GENOTYPING TECHNOLOGY"
-                        ]
-                    }
+                    "file": "@file.path/@file.file+.clean",
+                    "sourceId": "@file.accession",
+                    "skipUndoSummary": true,
+                    "commitAfter": 1000
                 }
             }
         }
