@@ -78,6 +78,7 @@ def clean_row(row):
     row = {key : value.replace('"', '') if value is not None else value for key, value in row.items()}
     row = {key : value.replace('|', '-') if value is not None else value for key, value in row.items()}
     row = {key : value.replace('\\x3b', ';') if value is not None else value for key, value in row.items()}
+    row = {key : value.replace('\\h', '|') if value is not None else value for key, value in row.items()}
     return { HEADER_MAP[key]: xstr(value, nullStr='NULL') for key, value in row.items()} # get rid of quotes in json & map fields
 
 def is_null_value(value):
