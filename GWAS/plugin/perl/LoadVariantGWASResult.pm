@@ -767,9 +767,8 @@ sub buildGWASFlags {
 # ----------------------------------------------------------------------
 sub undoTables {
     my ($self) = @_;
-    if (!$self->getArg('skipUndoSummary') && !$self->getArg('preprocess')) {
-        return ('Results.VariantGWAS') 
-    }
+
+    $self->log('To UNDO: run PGUndo plugin with the option: `--undoTables Results.VariantGWAS`');
     return ();
 }
 1;
