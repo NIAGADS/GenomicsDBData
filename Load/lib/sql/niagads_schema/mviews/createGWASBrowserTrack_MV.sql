@@ -9,7 +9,7 @@ AS json_obj
 FROM NIAGADS.TrackAttributes ta  LEFT OUTER JOIN NIAGADS.ProtocolAppNodeCharacteristic c 
 ON c.track = ta.track
 AND c.characteristic_type = 'covariate specification' 
-WHERE ta.track LIKE 'NG0%'
+WHERE ta.track LIKE 'NG0%' or ta.track LIKE 'GCST%' --gwas catalog study
 GROUP BY ta.track),
 Phenotypes AS (
 SELECT ta.track,
@@ -21,7 +21,7 @@ AND c.characteristic_type != 'covariate specification'
 AND c.characteristic_type != 'covariate_list' 
 AND c.characteristic_type != 'full_list'
 AND c.characteristic_type != 'phenotype_list'
-WHERE ta.track LIKE 'NG0%'
+WHERE ta.track LIKE 'NG0%' or ta.track LIKE 'GCST%' --gwas catalog study
 GROUP BY  ta.track, c.characteristic_type),
 Biosamples AS (
 SELECT track, jsonb_build_object('biosample_characteristics',
