@@ -6,19 +6,15 @@
 generic function for loading data based on info in a json config file
 """
 
-from __future__ import with_statement
-from __future__ import print_function
-
 import argparse
 import json
-import csv
 
 from os import path, listdir, environ
-from GenomicsDBData.Util.utils import warning, die, create_dir, xstr, execute_cmd, ascii_safe_str, is_number, xstr
-from GenomicsDBData.Util.list_utils import qw
+
+from niagads.utils.sys import warning, die, create_dir, execute_cmd, ascii_safe_str
+from niagads.utils.string import is_number, xstr
 
 ENVIRONMENTAL_VARS = ['NIAGADS_GWAS_DIR', 'GUS_HOME', 'PROJECT_HOME', 'DATA_DIR', 'GENOME_BUILD', 'SHARED_DATA_DIR', 'CONFIG_DIR', 'WEBHOOK_URL']
-
 
 def tune():
     ''' run tuning SQL '''
@@ -35,13 +31,21 @@ def tune():
 
 def run_script(sConfig, foreach=None):
     ''' runs a script '''
-    try: 
-        cmd = [sConfig['name']]
+    try:         
+        stepName = sConfig['name']
+        cmd = [stepName]
         cmd = get_cmd_options(cmd, sConfig, False, foreach)
+        useShell = True if 'shell' in sConfig and sConfig['shell'] else False
+        
         if 'skip' in sConfig and sConfig['skip']:
             warning("SKIPPING: " + ascii_safe_str(' '.join(cmd)))
+        elif args.stepName and stepName not in args.stepName:
+            warning("SKIPPING: " + ascii_safe_str(' '.join(cmd)))
         else:
-            execute_cmd(cmd, cwd=None, printCmdOnly=args.printCmd, verbose=args.verbose)                  
+            if useShell:
+                cmd = ' '.join(cmd)
+            execute_cmd(cmd, cwd=None, printCmdOnly=args.printCmd, verbose=args.verbose, shell=useShell)       
+
     except KeyError as e:
         die('Missing required value in script config: "%s"' % str(e))
 
@@ -49,9 +53,12 @@ def run_script(sConfig, foreach=None):
 def run_plugin(pConfig, foreach=None):
     ''' runs a plugin '''
     try: 
-        cmd = ['ga', pConfig['name']] 
+        stepName = pConfig['name']
+        cmd = ['ga', stepName] 
         cmd = get_cmd_options(cmd, pConfig, True, foreach)
         if 'skip' in pConfig and pConfig['skip']:
+            warning("SKIPPING: " + ascii_safe_str(' '.join(cmd)))
+        elif args.stepName and stepName not in args.stepName:
             warning("SKIPPING: " + ascii_safe_str(' '.join(cmd)))
         else:
             execute_cmd(cmd, cwd=None, printCmdOnly=args.printCmd, verbose=args.verbose)                  
@@ -94,14 +101,12 @@ def preprocess():
                 die("Unrecognized preprocessing step: " + json.dumps(step))
             
 
-
-
 def use_foreach(stepConfig):
     ''' check whether expecting to have to run cmd for multiple conditions'''
     if 'foreach' in stepConfig:
         if stepConfig['foreach']:
             if 'foreach' not in config:
-                die("foreach option specified in a plugin, but no foreach config provided");
+                die("foreach option specified in a plugin, but no foreach config provided")
             return True
     return False
 
@@ -114,15 +119,21 @@ def get_cmd_options(cmd, cmdConfig, isPlugin=False, foreach=None):
     if additionalParams: # hopefull this will overwrite common params from config with what is passed from the command line
         for option, value in additionalParams.items():
             if value == 'true':
-                params.update({option: True})    
+                params.update({option: True})  
+            elif value == 'false': 
+                if option in params: # remove the boolean
+                    del params[option]
+                else: # just don't add the option
+                    continue
             else:
                 params.update({option: xstr(value)})
                 
     if len(params) > 0:
         try:
             for option, value in params.items():
-                if foreach is not None:
-                    if value == 'foreach': # lookup value from foreach config
+                if isinstance(value, str) and foreach is not None:
+                    if 'foreach' in value: # lookup value from foreach config
+                        addons = value.split('+') # to handle foreach+additional-text
                         value = foreach[option]
                         if isinstance(value, dict):
                             value = json.dumps(value)
@@ -130,6 +141,8 @@ def get_cmd_options(cmd, cmdConfig, isPlugin=False, foreach=None):
                             if '@' in value:
                                 value = extract_value_from_config(value)
                             value = replace_environmental_variables(value)
+                            if len(addons) > 1:
+                                value = value + addons[1]
 
                 if option == 'description': # so special chars don't get parsed
                     cmd.extend(['--' + option, value])
@@ -382,7 +395,7 @@ def parse_config():
     try:
         with open(args.config, 'r') as f:
             data = json.load(f)
-         
+
     except (OSError, IOError) as e: # FileNotFoundError does not exist below python 3.3
         warning("Could not open config file " + args.config)
         die(e)
@@ -437,6 +450,7 @@ if __name__ == "__main__":
     parser.add_argument('--gusConfigFile', help="full path to gusConfig File; if not specified uses $GUS_HOME/config/gus.config")
     parser.add_argument('--preprocess', help="preprocess", action='store_true')
     parser.add_argument('--commit', help="commit", action='store_true')
+    parser.add_argument('--stepName', help="name of step to process")
     parser.add_argument('--load', help="specify type of load: External Database (xdbr), Data (data), Patch (patch)",
                         choices=['xdbr', 'data', 'patch'])
     parser.add_argument('--verbose', help="run in verbose mode", action='store_true')
@@ -460,7 +474,10 @@ if __name__ == "__main__":
     if args.foreach:
         if args.foreach.upper() != 'ALL':
             foreachKeys = args.foreach.split(',')
-
+            
+    if args.stepName:
+        args.stepName = args.stepName.split(',')
+        
     if args.veryVerbose:
         args.verbose = True
 
@@ -474,13 +491,12 @@ if __name__ == "__main__":
     if args.preprocess: 
         validate_preprocess_dir()
         preprocess()
-        exit(0) # don't want to accidently load data w/out verifying preprocessing
 
-    if args.load == 'xdbr': load_external_database_and_release()
+    elif args.load == 'xdbr': load_external_database_and_release()
 
-    if args.load == 'data': load_data()
+    elif args.load == 'data': load_data()
 
-    if args.load == 'patch': run_patch()
+    elif args.load == 'patch': run_patch()
     
-    if args.tuning:
+    elif args.tuning:
         tune()

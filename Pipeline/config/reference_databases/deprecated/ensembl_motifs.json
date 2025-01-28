@@ -1,7 +1,7 @@
 {
     "file": {
         "path": "$DATA_DIR/Ensembl",
-        "file": "homo_sapiens.GRCh38.motif_features.gff.gz"
+        "file": "homo_sapiens.GRCh38.motif_features.gff"
     },
     "external_database": {
         "name": "Ensembl Regulatory Build",
@@ -25,6 +25,17 @@
                     "extDbRlsSpec": "@external_database.name|@external_database.version"
                 }
             }
+        },
+        {
+            "script": {
+                "skip": true,
+                "name": "splitGFF3byChr",
+                "parameters": {
+                    "outputPath": "@file.path/motifs",
+                    "file": "@file.path/@file.file",
+                    "skipChrs": "X,Y,M,MT"
+                }
+            }
         }
     ],
     "load": [
@@ -33,8 +44,7 @@
                 "name": "GenomicsDBData::Load::Plugin::LoadEnsemblMotifFeatures",
                 "parameters": {
                     "extDbRlsSpec": "@external_database.name|@external_database.version",
-                    "fileDir": "@file.path",
-                    "filePattern": "@file.pattern",
+                    "fileDir": "@file.path/motifs",
                     "schema": "results"
                 }
             }

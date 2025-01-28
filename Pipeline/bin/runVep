@@ -6,65 +6,46 @@
 call loading pipeline to do vep run; allows for parallel runs
 """
 
-
 import argparse
-import threading
-import datetime
+import glob
 from concurrent.futures import ThreadPoolExecutor
+from os import environ
 
-from GenomicsDBData.Util.utils import warning, die, xstr, qw, execute_cmd
+from niagads.utils.sys import warning, die, execute_cmd
+from niagads.utils.string import xstr
+from niagads.reference.chromosomes import Human
 
-CHROMOSOMES = qw('1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y MT');
 
-def run_vep(chromosome):
-    """
-    build the command (run the config file w/foreach for the specified chr)
-    """
-    if chromosome == 'MT' and args.chrM == 'M':
-        chromosomes = 'M'
+def verify_vep_environment():
+    vepHome = environ['VEP_HOME']
+    vepCacheDir = environ['VEP_CACHE_DIR']
+        
 
-    if args.useChrPrefix:
-        chromosome = 'chr' + xstr(chromosome)
-
-    cmd = ["loadResource", "--config", args.configFile, "--preprocess", "--verbose", "--foreach", xstr(chromosome)]
-    if args.printCmdOnly:
-        cmd.append('--printCmd')
-
-    if args.logFilePrefix:
-        cmd.append('> ' + args.logFilePrefix + xstr(chromosome) + '.log 2>&1')
-        cmd = ' '.join(cmd)
-        warning("Executing: ", cmd)
-        execute_cmd(cmd, verbose=False, shell=True)
-    else:
-        warning("Executing:", ' '.join(cmd))
-        execute_cmd(cmd, verbose=False)
-
+def run(fileName):
+    cmd = ["vep.sh", fileName]
+    execute_cmd(' '.join(cmd), None, False, shell=True)
     
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="run vep in parallel")
-    parser.add_argument('-c', '--configFile', help="full path to config file; make sure skip=true for anything other than the vep command; assumes foreach exists for each chr see dbsnp.json config file for example", required=True)
-    parser.add_argument('--useChrPrefix', help="add chr prefix to chromosome", action='store_true')
-    parser.add_argument('--chrM', help="specify chr M as M or MT", default="M")
-    parser.add_argument('-l', '--logFilePrefix', help="full path to log filel ending in a prefix (chrN.log will be concatenated")
     parser.add_argument('--maxWorkers', help="number of threads", type=int, default=5)
     parser.add_argument('--printCmdOnly', help="print command only as test", action='store_true')
-    parser.add_argument('--skipChr', help="comma separated list of chrs to skip e.g. 1,5,7,M")
-    parser.add_argument('--onlyChr', help="comma separated list of chrs to do e.g. 1,5,7,M")
+    parser.add_argument('--fileName')
+    parser.add_argument('--directory')
+    parser.add_argument('--filePattern')
+    
     args = parser.parse_args()
-
-    skip = []
-    if args.skipChr:
-        skip = args.skipChr.split(',')
-
-    chrList = CHROMOSOMES
-    if args.onlyChr:
-        chrList = args.onlyChr.split(',')
-
-    with ThreadPoolExecutor(max_workers=args.maxWorkers) as executor:
-        for c in chrList:          
-            if c in skip:
-                warning("Skipping chromosome", xstr(c))
-            else:
-                warning("Create and start thread for chromosome:", xstr(c))
-                executor.submit(run_vep, c)
+    
+    verify_vep_environment()
+    
+    if args.fileName:
+        run(args.fileName)
+    else:
+        if not args.filePattern or not args.directory:
+            raise ValueError("Must supply both --directory and --filePattern to match if bulk processing a directory contents")
+        files = glob.glob(args.directory + '/' + args.pattern)
+        with ThreadPoolExecutor(max_workers=args.maxWorkers) as executor:
+            for f in files:  
+                warning("Create and start thread for: " + f)
+                executor.submit(run, f)
 

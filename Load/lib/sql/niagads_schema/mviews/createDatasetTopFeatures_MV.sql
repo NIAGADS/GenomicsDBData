@@ -5,7 +5,7 @@ CREATE MATERIALIZED VIEW NIAGADS.DatasetTopFeatures AS (
 SELECT * FROM (
 WITH 
 hits AS (
-                    SELECT track,
+    SELECT track,
 '@PROJECT_ID@'::text AS project_id,
 variant_record_primary_key AS record_primary_key,
 neg_log10_pvalue,

@@ -34,6 +34,13 @@
 	<url>https://www.ensembl.org/Homo_sapiens/Gene/Summary?g=</url>
 </CBIL::DBRefLink>
 <CBIL::DBRefLink>
+	<dbref_id>ensembl_gene_id</dbref_id>
+	<resource_type>gene</resource_type>
+	<resource_full_name>Agora</resource_full_name>
+	<resource_abbrev>Agora</resource_abbrev>
+	<url>https://agora.adknowledgeportal.org/genes/</url>
+</CBIL::DBRefLink>
+<CBIL::DBRefLink>
 	<dbref_id>entrez_id</dbref_id>
 	<resource_type>gene</resource_type>
 	<resource_full_name>NCBI Gene Database</resource_full_name>

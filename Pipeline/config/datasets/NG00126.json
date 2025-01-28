@@ -1,7 +1,7 @@
 {
     "file": {
-        "path": "$DATA_DIR/NIAGADS/NG00122",
-        "accession": "NG00122",
+        "path": "$DATA_DIR/NIAGADS/NG00126",
+        "accession": "NG00126",
         "cadd_path": "$DATA_DIR/CADD",
         "seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
         "consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt",
@@ -18,36 +18,48 @@
     },
     "foreach": [
         {
-            "ALL": {
-                "file": "@file.path/Sweet_RA_Meta-analysis_results_02-24-2022-w-header.txt",
-                "sourceId": "@file.accession",
-                "fileName": "@file.path/preprocess/@file.accession+-input.txt.unmap.vcf",
-                "vcfFile": "@file.path/preprocess/@file.accession+-input.txt.unmap.vcf",
-                "inputFile": "@file.path/preprocess/@file.accession+-input.txt", 
-                "idMap": "@file.path/preprocess/@file.accession+-input.txt.unmap.vcf.mapping",
-                "name": "Prediction of Psychosis in Alzheimer Disease ",
-                "description": "summary statistics from a meta-analysis of subjects (N=12,317) with probable, possible, or autopsy-confirmed Alzheimer's disease who were characterized to be negative or positive for pyschosis (delusions and/or hallucinations).",
+            "WGS": {
+                "file": "@file.path/ADSP_WGS_EU_Belloy_2022_NIAGADS_summary_stats.txt",
+                "sourceId": "@file.accession+_WGS",
+                "inputFile": "@file.path/preprocess/@file.accession+_WGS-input.txt",
+                "fileName": "@file.path/preprocess/@file.accession+_WGS-input.txt.unmap.vcf",
+                "vcfFile": "@file.path/preprocess/@file.accession+_WGS-input.txt.unmap.vcf",
+                "idMap": "@file.path/preprocess/@file.accession+_WGS-input.txt.unmap.vcf.mapping",
+                "name": "AD-risk in ADSP data filtered to remove variant-level artifacts - WGS",
+                "description": "summary statistics from whole genome risk-association analysis in ADSP whole genome sequencing data (NG00067.v5) among non-Hispanic white individuals of European ancestry, filtered to account for variant frequency differences across sequencing centers or platforms in the ADSP data.  Please see the manuscript for details regarding the filters and association models.", 
                 "biomaterialCharacteristics": {
                     "diagnosis": [
-                        "late-onset Alzheimers disease",
-                        "psychosis"
+                        "late-onset Alzheimers disease"
                     ],
                     "population": "European",
-                    "covariate specification": "value:sex and population stratification"
+                    "covariate specification": "value:sequencing center,platform"
                 },
                 "trackSummary": {
-                    "cohorts": [
-                        "ACE/GR@CE",
-                        "NEXGENS",
-                        "ADC",
-                        "LILLY",
-                        "NIA-LOAD",
-                        "NIMH",
-                        "PITT-ADRC",
-                        "UK-Cardiff"
+                    "ncase": 3584,
+                    "ncontrol": 2949
+                }
+            }
+        },
+        {
+            "WES": {
+                "file": "@file.path/ADSP_WES_EU_Belloy_2022_NIAGADS_summary_stats.txt",
+                "sourceId": "@file.accession+_WES",
+                "inputFile": "@file.path/preprocess/@file.accession+_WES-input.txt",
+                "fileName": "@file.path/preprocess/@file.accession+_WES-input.txt.unmap.vcf",
+                "vcfFile": "@file.path/preprocess/@file.accession+_WES-input.txt.unmap.vcf",
+                "idMap": "@file.path/preprocess/@file.accession+_WES-input.txt.unmap.vcf.mapping",
+                "name": "AD-risk in ADSP data filtered to remove variant-level artifacts - WES",
+                "description": "summary statistics from whole genome risk-association analysis in ADSP whole exome sequencing data (NG00067.v5) among non-Hispanic white individuals of European ancestry, filtered to account for variant frequency differences across sequencing centers or platforms in the ADSP data.  Please see the manuscript for details regarding the filters and association models.", 
+                "biomaterialCharacteristics": {
+                    "diagnosis": [
+                        "late-onset Alzheimers disease"
                     ],
-                    "ncase": 5445,
-                    "ncontrol": 6872
+                    "population": "European",
+                    "covariate specification": "value:sequencing center,platform"
+                },
+                "trackSummary": {
+                    "ncase": 6155,
+                    "ncontrol": 5418
                 }
             }
         }
@@ -57,9 +69,9 @@
             "plugin": {
                 "name": "GenomicsDBData::Load::Plugin::InsertStudy",
                 "parameters": {
-                    "attribution": "Sweets et al. 2021|PMID:34112972",
-                    "name": "Prediction of Psychosis in Alzheimer Disease",
-                    "description": "Subjects included this study (N=12,317) originated from eight program sources, had probable, possible, or autopsy-confirmed AD, and were characterized to be negative or positive for psychosis (delusions and/or hallucinations). Program sources provided either whole blood, DNA, single nucleotide polymorphism (SNP) array data, or genome-wide association statistics. Data from the eight program sources were processed as four cohorts (Phase 1, Phase 2, GR@ACE, and NEXGENS), based on timing of receipt of the data. Data processing, QC, and statistical analyses were uniform across three of the cohorts for which there were genotypes (Phase 1, Phase 2, GR@ACE), whereas only summary statistics were available for the fourth cohort (NEXGENS). Separate GWA analyses were performed for the Phase 1, Phase 2, and GR@ACE cohorts, to contrast AD+P versus AD-P for the 9,200,578 SNPs using the Plink option --logistic and with adjustment for three ancestry dimensions. For chromosome X, an additional covariate for sex was included. For NEXGENS, separate logistic regressions, implemented in PLINK for each of the five NEXGENS consortium datasets was used to contrast AD+P versus AD-P for each SNP, with adjustment for the first 10 ancestry principal components. METAL software was used to conduct inverse-variance weighted fixed effects meta-analysis across the five NEXGENS datasets, applying genomic control, to generate the summary statistics used in the current analysis. The four GWAS statistics (Phase 1, Phase 2, GR@ACE, NEXGENS summary), per SNP, were then meta-analyzed using METAL.",
+                    "attribution": "Belloy et al. 2022|PMID:35966919",
+                    "name": "AD-risk in ADSP data filtered to remove variant-level artifacts - WES",
+                    "description": "summary statistics from whole genome risk-association analysis in ADSP WES and WGS data (NG00067.v5) among non-Hispanic white individuals of European ancestry, filtered to account for variant frequency differences across sequencing centers or platforms in the ADSP data.  Please see the manuscript for details regarding the filters and association models.", 
                     "sourceId": "@file.accession",
                     "extDbRlsSpec": "@external_database.name|@external_database.version"
                 }
@@ -70,7 +82,7 @@
             "plugin": {
                 "name": "GenomicsDBData::Load::Plugin::InsertProtocolAppNode",
                 "parameters": {
-                    "attribution": "Sweets et al. 2021|PMID:34112972",
+                    "attribution": "Belloy et al. 2022|PMID:35966919",
                     "type": "Genetic variation",
                     "subtype": "GWAS summary statistics",
                     "description": "foreach",
@@ -91,36 +103,26 @@
                     "file": "foreach",
                     "preprocess": true,
                     "sourceId": "foreach",
-                    "testAllele": "Allele1",
-                    "refAllele": "Allele2",
+                    "testAllele": "ALLELE1",
+                    "refAllele": "ALLELE0",
+                    "frequency": "A1FREQ",  
                     "chromosome": "CHR",
-                    "position": "LOC.hg38",
-                    "marker": "RS",
-                    "pvalue": "P-value",
+                    "position": "BP",
+                    "marker": "SNP",
+                    "pvalue": "model2_P",
                     "gwsThreshold": "5e-8",
                     "restrictedStats": {
-                        "effect": "Effect",
-                        "std_err": "StdErr",
-                        "odds_ratio": "OR",
-                        "direction": "Direction",
-                        "het_chi_sq": "HetChiSq",
-                        "het_i_sq": "HetISq",
-                        "het_df": "HetDf",
-                        "het_pvalue": "HetPVal",
+                        "std_err": "model2_SE",
+                        "beta": "model2_BETA",
                         "other": [
-                            "95%CI",
-                            "b.PHASE1",
-                            "b.PHASE2",
-                            "b.GR@CE",
-                            "b.NEXGENS",
-                            "OR.PHASE1",
-                            "OR.PHASE2",
-                            "OR.GR@CE",
-                            "OR.NEXGENS",
-                            "p.PHASE1",
-                            "p.PHASE2",
-                            "p.GR@CE",
-                            "p.NEXGENS"
+                            "model1_BETA",
+                            "model1_SE",
+                            "model1_P",
+                            "Filtered",
+                            "Center_Fisher_test_P",
+                            "Platform_Fisher_test_P",
+                            "gnomAD_filter",
+                            "Duplicate_check"
                         ]
                     }
                 }
@@ -129,7 +131,6 @@
         {
             "foreach": true,
             "script": {
-                "comment": "too many mismatches when indel direction is preserved",
                 "name": "db_map_variants.py",
                 "parameters": {
                     "inputFile": "foreach",
