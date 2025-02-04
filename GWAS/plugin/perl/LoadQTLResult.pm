@@ -17,19 +17,24 @@ use JSON::XS;
 use Data::Dumper;
 use File::Spec;
 
-my $RESTRICTED_STATS_FIELD_MAP = undef;
-
 my $HOUSEKEEPING_FIELDS = PluginUtils::getHouseKeepingSql();
 
-#chrom	chromStart	chromEnd	variant_id	pval	target_strand	ref	alt	target_gene_symbol	target_ensembl_id	target	z_score_non_refbeta_non_ref	beta_se_non_ref	FDR	non_ref_af	qtl_dist_to_target	QC_info	target_info	user_input
+my @EXPECTED_FIELDS = 
+qw(#chrom chromStart chromEnd variant_id pval target_strand ref alt target_gene_symbol target_ensembl_id target z_score_non_ref beta_non_ref beta_se_non_ref FDR non_ref_af qtl_dist_to_target QC_info target_info user_input)
+
+my %OTHER_STATS_FIELD_MAP = {
+    target_strand => 1,
+    target => 1, 
+    z_score_non_ref => 1,
+    beta_non_ref => 1,
+    beta_se_non_ref => 1,
+    FDR non_ref_af target_info => 1
+}
 
 my @INPUT_FIELDS =
-  qw(chr bp marker metaseq_id freq1 pvalue neg_log10_p display_p gwas_flags test_allele restricted_stats_json);
+  qw(chr bp marker metaseq_id pvalue neg_log10_p display_p target_ensembl_id dist_to_target other_stats_json);
 my @RESULT_FIELDS =
-  qw(chr bp allele1 allele2 freq1 pvalue neg_log10_p display_p gwas_flags test_allele restricted_stats_json db_variant_json);
-my @RESTRICTED_STATS_ORDER =
-  qw(num_observations coded_allele_frequency minor_allele_count call_rate test min_frequency max_frequency frequency_se effect beta t_statistic std_err odds_ratio beta_std_err beta_L95 beta_U95 odds_ratio_L95 odds_ratio_U95 hazard_ratio hazard_ratio_CI95 direction het_chi_sq het_i_sq het_df het_pvalue probe maf_case maf_control p_additive p_dominant p_recessive Z_additive Z_dominant Z_recessive);
-my @VCF_FIELDS = qw(#CHROM POS ID REF ALT QUAL FILTER INFO);
+  qw(chr bp allele1 allele2 pvalue neg_log10_p display_p target_ensembl_id dist_to_target other_stats_json db_variant_json);
 
 my $COPY_SQL = <<COPYSQL;
 COPY Results.QTL(
@@ -78,107 +83,6 @@ sub getArgumentsDeclaration {
             }
         ),
 
-        stringArg(
-            {
-                name           => 'marker',
-                descr          => '(optional) column containing marker name',
-                constraintFunc => undef,
-                reqd           => 0,
-                isList         => 0
-            }
-        ),
-
-        stringArg(
-            {
-                name           => 'testAllele',
-                descr          => 'column containg test allele',
-                constraintFunc => undef,
-                reqd           => 0,
-                isList         => 0
-            }
-        ),
-
-        stringArg(
-            {
-                name           => 'refAllele',
-                descr          => 'column containg ref allele',
-                constraintFunc => undef,
-                reqd           => 0,
-                isList         => 0
-            }
-        ),
-
-        stringArg(
-            {
-                name  => 'altAllele',
-                descr => '(optional) only specify if input has 3 allele columns (e.g., major, minor, test)',
-                constraintFunc => undef,
-                reqd           => 0,
-                isList         => 0
-            }
-        ),
-
-        stringArg(
-            {
-                name           => 'chromosome',
-                descr          => 'column containg chromosome',
-                constraintFunc => undef,
-                reqd           => 0,
-                isList         => 0
-            }
-        ),
-
-        stringArg(
-            {
-                name  => 'gwsThreshold',
-                descr => 'threshold for flagging result has having genome wide signficiance; provide in scientific notation',
-                constraintFunc => undef,
-                reqd           => 0,
-                isList         => 0,
-                default        => '5e-8'
-            }
-        ),
-
-        stringArg(
-            {
-                name           => 'position',
-                descr          => 'column containing position',
-                constraintFunc => undef,
-                reqd           => 0,
-                isList         => 0
-            }
-        ),
-
-        stringArg(
-            {
-                name           => 'pvalue',
-                descr          => 'column containing pvalue',
-                constraintFunc => undef,
-                reqd           => 0,
-                isList         => 0
-            }
-        ),
-
-        stringArg(
-            {
-                name  => 'restrictedStats',
-                descr => 'json object of key value pairs for additional scores/annotations that have restricted access',
-                constraintFunc => undef,
-                reqd           => 0,
-                isList         => 0
-            }
-        ),
-
-        stringArg(
-            {
-                name  => 'customChrMap',
-                descr => 'json object defining custom mappings (e.g., {"25":"M", "Z": "5"}',
-                constraintFunc => undef,
-                reqd           => 0,
-                isList         => 0
-            }
-        ),
-
         booleanArg(
             {
                 name  => 'preprocess',
@@ -221,13 +125,13 @@ sub getArgumentsDeclaration {
 # ----------------------------------------------------------------------
 
 sub getDocumentation {
-    my $purposeBrief = 'Loads Variant GWAS result';
+    my $purposeBrief = 'Loads QTL result';
 
     my $purpose =
-'Loads Variant GWAS result in multiple passes: 1) generate input file that can be passed on to DB mapping scripts; 2) load a result';
+'Loads  QTL result in multiple passes: 1) generate input file that can be passed on to DB mapping scripts; 2) load a result';
 
     my $tablesAffected =
-      [ [ 'Results::QTL', 'Enters a row for each variant feature' ]];
+      [ [ 'Results::QTL', 'Enters a row for each feature' ]];
 
     my $tablesDependedOn =
       [ [ 'Study::ProtocolAppNode', 'lookup analysis source_id' ] ];
@@ -239,8 +143,7 @@ sub getDocumentation {
     my $notes = <<NOTES;
 
 Written by Emily Greenfest-Allen
-modified from GenomicsDBData/Load/plugin/perl/deprecated/LoadQTLResult
-Copyright Trustees of University of Pennsylvania 2024. 
+Copyright Trustees of University of Pennsylvania 2025. 
 NOTES
 
     my $documentation = {
@@ -334,39 +237,8 @@ sub preprocess {
     my $header = <$fh>;
     chomp($header);
     my @fields = split /\t/, $header;
-    @fields = split /\s/, $header if ( scalar @fields == 1 );
-    @fields = split /,/,  $header if ( scalar @fields == 1 );
-
     my %columns = map { $fields[$_] => $_ } 0 .. $#fields;
-    if ( $self->getArg('restrictedStats') ) {
-        $self->generateRestrictedStatsFieldMapping( \%columns )
-          if ( !$RESTRICTED_STATS_FIELD_MAP );
-    }
-
-    # NOTE: arg validation done in `processArgs`
-
-    my $chrC = $self->getColumnIndex(\%columns, $self->getArg('chromosome'));
-    my $positionC = $self->getColumnIndex(\%columns, $self->getArg('position'));
-    
-    # alleles
-    my $testAlleleC = $self->getColumnIndex(\%columns, $self->getArg('testAllele'));
-    my $refAlleleC = ($self->getArg('refAllele')) 
-        ? $self->getColumnIndex(\%columns, $self->getArg('refAllele'))
-        : undef;
-
-    # optional
-    my $altAlleleC = ($self->getArg('altAllele'))
-      ? $self->getColumnIndex( \%columns, $self->getArg('altAllele'))
-      : undef;
-
-    my $frequencyC =  ($self->getArg('frequency'))
-        ? $self->getColumnIndex(\%columns, $self->getArg('frequency'))
-        : undef;
-
-    my $markerC = ($self->getArg('marker'))
-      ? $self->getColumnIndex( \%columns, $self->getArg('marker'))
-      : undef;
-
+      
     # process the file
     my $lineCount = 0;
     my $skipCount = 0;
@@ -375,59 +247,27 @@ sub preprocess {
         chomp $line;
 
         my @values = split /\t/, $line;
-        @values = split /\s/, $line if (scalar @values == 1);
-        @values = split /,/,  $line if (scalar @values == 1);
-
         my $skip = 0;
 
-        my $chromosome = $values[$chrC];
-        if ($chromosome eq "0" || $chromosome eq "NULL" || !defined $chromosome) {
-            $self->log("WARNING: chromosome undefined; skipping: $line")
-                if $self->getArg('verbose');
-            $skipCount++;
-            $skip = 1;
+        my $chromosome = $values[0]; #chrom
+        $chromosome =~ s/chr//g;
+
+        my $position   = $values[2]; # chromEnd
+
+        my $metaseqId = $values[3]; # variant_id
+        my $marker = undef;
+        if ($metaseqId =~ /rs/) {
+            $marker = $metasedId
+            # 6,7 are ref, alt respectively
+            $metaseqId = join(':', ($chromosome, $position, $values[6], $values[7]))
         }
-        $chromosome = $self->correctChromosome($chromosome);
-
-        my $position   = $values[$positionC];
-        if ($position == 0)  {
-            $self->log("WARNING: position = 0; skipping line: $line")
-                if ($self->getArg('verbose'));
-            $skipCount++;
-            $skip = 1;
+        else {
+            $metaseqId =~ s/chr//g;
         }
-
-
-        my $frequency = (defined $frequencyC) ? $values[$frequencyC] : undef;
-        my $marker = (defined $markerC) ? $values[$markerC] : undef;
-        $marker = 'NULL' if $marker eq 'NA' or $marker eq '.';
-        my $test = uc($values[$testAlleleC]);
-
-        my $ref = undef;
-        my $alt = undef;
-        if (defined $refAlleleC) {
-            $ref = uc($values[$refAlleleC]);
-            $alt = (defined $altAlleleC) ? uc($values[$altAlleleC]) : uc($values[$testAlleleC]);
-        }
-        else { # need to pull from marker
-            if ($marker =~ /:/) {
-                my @varDetails = split /:/, $marker; # assume chr:pos:ref:alt 0,1,2,3
-                $ref = $varDetails[2];
-                $alt = $varDetails[3];
-            }
-            else { # we'll see what other cases appear
-                $self->error("Unable to extract alleles from marker: $marker");
-            }
-        }
-
-        my $metaseqId  = "$chromosome:$position:$ref:$alt";
 
         my $rv = {
             chromosome => $chromosome,
             position   => $position,
-            refAllele  => $ref,
-            altAllele  => $alt,
-            testAllele => $test,
             marker     => $marker,
             metaseq_id => $metaseqId
         };
@@ -513,34 +353,7 @@ sub processArgs {
 
     my $preprocess = $self->getArg('preprocess');
 
-    if ($preprocess) {
-        $self->{custom_chr_map} =
-        ( $self->getArg('customChrMap') )
-        ? $self->generateCustomChrMap()
-        : undef;
-
-        $self->error("must specify testAllele")
-          if ( !$self->getArg('testAllele'));
-        $self->error("must specify pvalue") 
-            if (!$self->getArg('pvalue'));
-        $self->error("must specify chromomosome")
-            if (!$self->getArg('chromosome'));
-        $self->error("must specify position")
-            if (!$self->getArg('position'));
-        if (!$self->getArg('refAllele')) {
-            if ($self->getArg('marker')) {
-                $self->log("WARNING: no reference allele specified; assuming alleles will be extracted from marker");
-            }
-            else {
-                $self->error("must specify refAllele");
-            }
-        }   
-
-        $self->log("WARNING: no alt allele specified; assuming test = alt until mapped to reference")
-            if (!$self->getArg('altAllele') && $self->getArg('refAllele'));
-    }
-
-    else {
+    if (!$preprocess) {
         $self->{protocol_app_node_id} = $self->getProtocolAppNodeId();   
     }
 
@@ -600,48 +413,23 @@ sub getColumnIndex {
 sub writeCleanedInput {
     my ( $self, $fh, $resultVariant, $fields, @values ) = @_;
 
-    my $frequencyC =
-      ( $self->getArg('frequency') )
-      ? $fields->{ $self->getArg('frequency') }
-      : undef;
-    my $frequency = ( defined $frequencyC ) ? $values[$frequencyC] : 'NULL';
-    my $pvalueC   = $fields->{ $self->getArg('pvalue') };
     my ( $pvalue, $negLog10p, $displayP ) =
-      $self->formatPvalue( $values[$pvalueC] );
+      $self->formatPvalue( $values[4] );
 
-    my $restrictedStats = 'NULL';
-    if ( $self->getArg('restrictedStats') ) {
-        $restrictedStats = $self->buildRestrictedStatsJson(@values);
-    }
+    $otherStats = $self->buildOtherStatsJson(@values);
 
-    my $gwasFlags =
-      ( $pvalue <= 0.001 )
-      ? $self->buildGWASFlags( $pvalue, $displayP )
-      : undef;
-
-# (chr bp allele1 allele2 marker metaseq_id freq1 pvalue neg_log10_p display_p gws_flags test_allele restricted_stats_json)
+    # qw(chr bp marker metaseq_id pvalue neg_log10_p display_p target_ensembl_id dist_to_target other_stats_json);
     print $fh join(
         "\t",
         (
-            $resultVariant->{chromosome} ? $resultVariant->{chromosome}
-            : "NULL",
-            $resultVariant->{position} ? $resultVariant->{position} : "NULL",
-            $resultVariant->{altAllele},
-            $resultVariant->{refAllele},
-            ( $resultVariant->{marker} ) ? $resultVariant->{marker}
-            : "NULL",
-            (
-                $resultVariant->{metaseq_id} =~ m/NA/g
-                  || !$resultVariant->{metaseq_id}
-              ) ? "NULL"
-            : $resultVariant->{metaseq_id},
-            $frequency,
+            $resultVariant->{chromosome},
+            $resultVariant->{position}
+            $resultVariant->{marker} ) ? $resultVariant->{marker} : "NULL",
+            $resultVariant->{metaseq_id},
             $pvalue,
             $negLog10p,
             $displayP,
-            $gwasFlags ? $gwasFlags : "NULL",
-            $resultVariant->{testAllele},
-            $restrictedStats
+            $otherStats
         )
     ) . "\n";
 }
@@ -722,7 +510,7 @@ sub generateRestrictedStatsFieldMapping {
     }
 }
 
-sub buildRestrictedStatsJson {
+sub buildOtherStatsJson {
     my ( $self, @values ) = @_;
     my $stats = {};
     while ( my ( $stat, $index ) = each %$RESTRICTED_STATS_FIELD_MAP ) {
