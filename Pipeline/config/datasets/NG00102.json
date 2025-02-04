@@ -1,0 +1,63 @@
+{
+    "file": {
+        "path": "$DATA_DIR/QTL",
+        "accession": "NG00102",
+        "seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
+        "chromosome_map": "$PROJECT_HOME/GenomicsDBData/Load/data/chr_map_gencode36_grch38_p13.txt"
+    },
+    "external_database": {
+        "name": "NIAGADS",
+        "version": "current",
+        "download_url": "https://www.niagads.org/datasets/",
+        "id_url": "https://www.niagads.org/",
+        "description": "NIAGADS is the National Institute on Aging Genetics of Alzheimer's Disease Data Storage Site. NIAGADS is a national genetics repository created by NIA to facilitate access by qualified investigators to genotypic data for the study of genetics of late-onset Alzheimer's disease.",
+        "accession": "NIAGADS",
+        "type": "Genetic variation"
+    },
+    "preprocess": [
+        {
+            "plugin": {
+                "name": "GenomicsDBData::Load::Plugin::InsertStudy",
+                "parameters": {
+                    "attribution": "Yang et al. 2021|PMID:34239129",
+                    "name": "Genomic atlas of the proteome from brain, CSF and plasma prioritizes proteins implicated in neurological disorders",
+                    "description": "pQTL summary statistics generated from protein levels in three tissues relevant to neurological disorders (brain, cerebrospinal fluid and plasma) profiled in 1,300 proteins from Knight ADRC AD case and control indivdiuals",
+                    "sourceId": "@file.accession",
+                    "extDbRlsSpec": "@external_database.name|@external_database.version"
+                }
+            }
+        },
+        {
+            "script": {
+                "name": "qtl_track_json2xml.py",
+                "parameters": {
+                    "attribution": "Yang et al. 2021|PMID:34239129",
+                    "input": "@file.path/@file.accession/metadata_json.txt",
+                    "outputPath": "@file.path/@file.accession",
+                    "studyId": 37
+                }
+            }
+        },
+        {
+            "plugin": {
+                "name": "GUS::Supported::Plugin::LoadGusXml",
+                "parameters": {
+                    "file": "@file.path/@file.accession/protocol_app_node.xml"
+                }
+            }
+        }
+    ],
+    "load": [
+        {
+            "foreach": true,
+            "plugin": {
+                "name": "GenomicsDBData::GWAS::Plugin::LoadQTL",
+                "parameters": {
+                    "file": "foreach",
+                    "sourceId": "foreach",
+                    "skipUndoSummary": true
+                }
+            }
+        }
+    ]
+}

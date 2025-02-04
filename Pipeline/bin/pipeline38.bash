@@ -693,6 +693,18 @@ loadResource -c $CONFIG_DIR/tracks/lz_recombination.json --load data --commit > 
 # gnomAD gene constraint (required or gene tracks will fail)
 
 
+# =================================================
+# QTLs
+# =================================================
+
+# NG00102
+
+mkdir $LOG_FILE_DIR/datasets/NG00102
+loadResource -c $CONFIG_DIR/datasets/NG00102.json --verbose  --preprocess --stepName "GenomicsDBData::Load::Plugin::InsertStudy" --commit > $LOG_FILE_DIR/datasets/NG00102/study.log 2>&1 
+loadResource -c $CONFIG_DIR/datasets/NG00102.json --verbose  --preprocess --stepName "qtl_track_json2xml.py"  > $LOG_FILE_DIR/datasets/NG00102/generate_xml.log 2>&1 
+loadResource -c $CONFIG_DIR/datasets/NG00102.json --verbose  --preprocess --stepName "GUS::Supported::Plugin::LoadGusXml" --commit > $LOG_FILE_DIR/datasets/NG00102/load_gus_xml.log 2>&1 
+
+
 
 #### FILER GeneOverlap POC / brain only
 
