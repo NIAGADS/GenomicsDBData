@@ -66,6 +66,39 @@ AND ta.protocol_app_node_id = r.protocol_app_node_id
 # , position
 # """
 
+BED_FULL_SUM_STATS_SQL="""
+SELECT details->>'chromosome' AS "#chrom",
+(details->>'position')::int - 1 AS "chromStart",
+(details->>'position')::int AS "chromEnd",
+CASE WHEN details->>'ref_snp_id' IS NOT NULL 
+THEN details->>'ref_snp_id' 
+ELSE details->>'metaseq_id' END AS name,
+r.neg_log10_pvalue AS score,
+jsonb_build_object('test_allele', r.allele, 'display_p', r.pvalue_display, 'genomicsdb_id', variant_record_primary_key)::text AS info,
+--(details - 'bin_index' - 'location' - 'position' - 'chromosome')::text AS annotations,
+(r.restricted_stats || jsonb_build_object('test_allele_freq', r.frequency))::text AS restricted_stats
+FROM Results.VariantGWAS r,  get_variant_display_details(variant_record_primary_key) d,
+NIAGADS.TrackAttributes ta
+WHERE ta.track = %(track)s
+AND ta.protocol_app_node_id = r.protocol_app_node_id
+"""
+
+BED_PUBLIC_SUM_STATS_SQL="""
+SELECT details->>'chromosome' AS "#chrom",
+(details->>'position')::int - 1 AS "chromStart",
+(details->>'position')::int AS "chromEnd",
+CASE WHEN details->>'ref_snp_id' IS NOT NULL 
+THEN details->>'ref_snp_id' 
+ELSE details->>'metaseq_id' END AS name,
+r.neg_log10_pvalue AS score,
+jsonb_build_object('test_allele', r.allele, 
+'display_p', r.pvalue_display, 'genomicsdb_id', variant_record_primary_key)::text AS info
+FROM Results.VariantGWAS r,  get_variant_display_details(variant_record_primary_key) d,
+NIAGADS.TrackAttributes ta
+WHERE ta.track = %(track)s
+AND ta.protocol_app_node_id = r.protocol_app_node_id
+"""
+
 
 DATA_SQL="""
 SELECT variant_record_primary_key, 
@@ -105,6 +138,8 @@ ORDER BY rank
 '''
 
 TITLE_SQL='''SELECT name, attribution FROM Study.ProtocolAppNode where source_id = %(track)s'''
+
+LIST_TRACKS_SQL="""SELECT track, name from NIAGADS.TrackAttributes WHERE subcategory = 'GWAS summary statistics"""
 
 
 class GWASTrack(object):
@@ -162,28 +197,30 @@ class GWASTrack(object):
         return self._data
 
 
-    def get_restricted_stats(self):
-        raise NotImplementedError;
-    
-
     def get_database(self):
         return self._database
     
     
-    def set_strack(self, track):
+    def set_track(self, track):
         self._track = track
         
 
     def set_data(self, data):
         self._data = data
 
-    
-    def set_restricted_stats(self):
-        raise NotImplementedError
-
 
     def get_title(self):
         return self._track + ': ' + self._name + ' (' + self._attribution + ')'
+
+
+    def list_available_tracks(self):
+        if self._database is None:
+            raise ConnectionDoesNotExist("gwas_track object database connection not initialized")
+        
+        with self._database.cursor(cursorFactory='RealDictCursor') as cursor:
+            cursor.execute(LIST_TRACKS_SQL)
+            return cursor.fetchall()
+            
 
 
     def fetch_title(self):
@@ -197,6 +234,10 @@ class GWASTrack(object):
             cursor.execute(TITLE_SQL, {'track': self._track})
             self._name, self._attribution = cursor.fetchone()
 
+        with self._database.cursor() as cursor:
+            cursor.execute(TRACK_METADATA_SQL, {'accession': self._track})
+            self._metadata_json = cursor.fetchone()[0]
+            
 
     def fetch_metadata(self):
         if self._database is None:
@@ -209,6 +250,24 @@ class GWASTrack(object):
             cursor.execute(TRACK_METADATA_SQL, {'accession': self._track})
             self._metadata_json = cursor.fetchone()[0]
 
+
+    def fetch_bed_sum_stats(self, inclRestricted=False):
+        ''' fetch sum stats w/annotations & restricted stats in JSON objects only '''
+        if self._database is None:
+            raise ConnectionDoesNotExist("gwas_track object database connection not initialized")
+
+        if self._track is None:
+            raise ValueError("Must set track value")
+
+        sql = BED_FULL_SUM_STATS_SQL if inclRestricted else BED_PUBLIC_SUM_STATS_SQL
+        if self._limit is not None:
+            sql = sql + " LIMIT " + self._limit
+            # sql = sql.replace("Results.VariantGWAS r", "Results.VariantGWAS r TABLESAMPLE SYSTEM (0.01)")
+                    
+        warning("Fetching track data -- full stats only")
+        self._data = pd.read_sql_query(sql, self._database, params={'track': self._track}, index_col = None)
+        warning("Done", "Fetched", len(self._data), "rows")
+        
 
     def fetch_public_sum_stats(self):
         ''' fetch pvalues only '''
@@ -226,7 +285,6 @@ class GWASTrack(object):
         warning("Fetching track data -- pvalues only")
         self._data = pd.read_sql_query(sql, self._database, params={'track': self._track}, index_col = None)
         warning("Done", "Fetched", len(self._data), "rows")
-        
 
             
     def fetch_track_data(self):
