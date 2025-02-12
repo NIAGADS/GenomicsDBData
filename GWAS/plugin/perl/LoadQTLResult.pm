@@ -19,35 +19,39 @@ use File::Spec;
 
 my $HOUSEKEEPING_FIELDS = PluginUtils::getHouseKeepingSql();
 
-my @EXPECTED_FIELDS = 
-qw(#chrom chromStart chromEnd variant_id pval target_strand ref alt target_gene_symbol target_ensembl_id target z_score_non_ref beta_non_ref beta_se_non_ref FDR non_ref_af qtl_dist_to_target QC_info target_info user_input)
 
-my %OTHER_STATS_FIELD_MAP = {
-    target_strand => 1,
-    target => 1, 
-    z_score_non_ref => 1,
-    beta_non_ref => 1,
-    beta_se_non_ref => 1,
-    FDR non_ref_af target_info => 1
-}
+my %OTHER_STATS_FIELD_MAP = (
+    target_strand => 5,
+    target => 10, 
+    z_score_non_ref => 11,
+    beta_non_ref => 12,
+    beta_se_non_ref => 13,
+    FDR => 14,
+    non_ref_af => 15,
+    target_info => 18
+);
+
+my @EXPECTED_FIELDS = 
+qw(#chrom chromStart chromEnd variant_id pval target_strand ref alt target_gene_symbol target_ensembl_id target z_score_non_ref beta_non_ref beta_se_non_ref FDR non_ref_af qtl_dist_to_target QC_info target_info user_input);
 
 my @INPUT_FIELDS =
-  qw(chr bp marker metaseq_id pvalue neg_log10_p display_p target_ensembl_id dist_to_target other_stats_json);
-my @RESULT_FIELDS =
-  qw(chr bp allele1 allele2 pvalue neg_log10_p display_p target_ensembl_id dist_to_target other_stats_json db_variant_json);
+  qw(chr bp allele1 allele2 marker metaseq_id pvalue neg_log10_p display_p target_ensembl_id dist_to_target other_stats_json);
+
 
 my $COPY_SQL = <<COPYSQL;
 COPY Results.QTL(
 protocol_app_node_id,
 variant_record_primary_key,
 bin_index,
-neg_log10_pvalue,
-pvalue_display,
-frequency,
-allele,
-restricted_stats,
 chromosome,
 position,
+test_allele,
+neg_log10_pvalue,
+pvalue_display,
+target_ensembl_id,
+dist_to_target,
+other_stats,
+
 $HOUSEKEEPING_FIELDS
 )
 FROM STDIN 
@@ -83,22 +87,25 @@ sub getArgumentsDeclaration {
             }
         ),
 
+        
+
         booleanArg(
             {
-                name  => 'preprocess',
+                name  => 'skipUnmappedVariants',
                 descr =>
-                  'generate input file that can be passed to DB lookup scripts',
+                  'skip unmapped variants',
                 constraintFunc => undef,
                 isList         => 0,
                 reqd           => 0
             }
         ),
 
+
         booleanArg(
             {
-                name  => 'skipUndoSummary',
+                name  => 'preprocess',
                 descr =>
-                  'do not calculate table entries for UNDO; can take a while',
+                  'generate input file that can be passed to DB lookup scripts',
                 constraintFunc => undef,
                 isList         => 0,
                 reqd           => 0
@@ -174,7 +181,7 @@ sub new {
     $self->initialize(
         {
             requiredDbVersion => 4.0,
-            cvsRevision       => '$Revision: 3$',
+            cvsRevision       => '$Revision: 4$',
             name              => ref($self),
             revisionNotes     => '',
             argsDeclaration   => $argumentDeclaration,
@@ -247,6 +254,10 @@ sub preprocess {
         chomp $line;
 
         my @values = split /\t/, $line;
+
+        #TODO: replace with @values{@EXPECTEDFIELDS} = split /\t/, $line; 
+        # so we can use field names instead of indexes
+
         my $skip = 0;
 
         my $chromosome = $values[0]; #chrom
@@ -257,9 +268,9 @@ sub preprocess {
         my $metaseqId = $values[3]; # variant_id
         my $marker = undef;
         if ($metaseqId =~ /rs/) {
-            $marker = $metasedId
+            $marker = $metaseqId;
             # 6,7 are ref, alt respectively
-            $metaseqId = join(':', ($chromosome, $position, $values[6], $values[7]))
+            $metaseqId = join(':', ($chromosome, $position, $values[6], $values[7]));
         }
         else {
             $metaseqId =~ s/chr//g;
@@ -269,7 +280,9 @@ sub preprocess {
             chromosome => $chromosome,
             position   => $position,
             marker     => $marker,
-            metaseq_id => $metaseqId
+            metaseq_id => $metaseqId,
+            allele1 => $values[6],
+            allele2 => $values[7]
         };
 
         $self->writeCleanedInput($pfh, $rv, \%columns, @values ) 
@@ -299,6 +312,7 @@ sub loadResult {
     my $header          = <$fh>;
     my $recordCount     = 0;
     my $nullSkipCount = 0;
+    my $unmappedSkipCount = 0;
 
     my $commitAfter     = $self->getArg('commitAfter');
     my $msgPrefix     = ($self->getArg('commit')) ? 'COMMITTED' : 'PROCESSED';
@@ -319,8 +333,15 @@ sub loadResult {
             next;
        }
 
-        $self->error("Unmapped variant found: " . $row{metaseq_id}) 
-            if $row{db_mapped_variant} eq 'NULL';
+        if($row{db_mapped_variant} eq 'NULL') {
+            if ($self->getArg('skipUnmappedVariants')) {
+                $unmappedSkipCount++;
+                next;
+            }
+            else {
+                $self->error("Unmapped variant found: " . $row{metaseq_id});
+            }
+        }
        
         my $mappedVariants  = $json->decode($row{db_mapped_variant});
         foreach my $mv (@$mappedVariants) {
@@ -342,6 +363,7 @@ sub loadResult {
 
     $self->log("DONE - $msgPrefix: $recordCount Results");
     $self->log("WARNING - SKIPPED: $nullSkipCount Results with NULL p-value");
+    $self->log("WARNING - SKIPPED: $unmappedSkipCount Results not mapped to the database.");
 }
 
 # ----------------------------------------------------------------------
@@ -382,18 +404,23 @@ sub generateCustomChrMap {
     return $chrMap;
 }
 
+
+
 sub generateInsertStr {
     my ( $self, $recordPK, $binIndex, $data ) = @_;
+    # $self->log("DEBUG: " . Dumper($data));
+
     my @values = (
         $self->{protocol_app_node_id}, $recordPK,
-        $binIndex,                     $data->{neg_log10_p},
-        $data->{display_p},            $data->{freq1},
-        $data->{test_allele},          $data->{restricted_stats_json},
-        'chr' . $data->{chr},          $data->{bp}
+        $binIndex, 'chr' . $data->{chr},
+        $data->{bp}, $data->{allele2}, $data->{neg_log10_p},
+        $data->{display_p}, $data->{target_ensembl_id},
+        $data->{dist_to_target}, $data->{other_stats_json}        
     );
     push( @values, GenomicsDBData::Load::Utils::getCurrentTime() );
     push( @values, $self->{housekeeping} );
     my $str = join( "|", @values );
+    # $self->log("DEBUG: $str");
     return "$str\n";
 }
 
@@ -416,19 +443,32 @@ sub writeCleanedInput {
     my ( $pvalue, $negLog10p, $displayP ) =
       $self->formatPvalue( $values[4] );
 
-    $otherStats = $self->buildOtherStatsJson(@values);
+    my $otherStats = $self->buildOtherStatsJson(@values);
 
-    # qw(chr bp marker metaseq_id pvalue neg_log10_p display_p target_ensembl_id dist_to_target other_stats_json);
+    my $distToTarget = $values[16];
+    if ($distToTarget == '.') {
+        $distToTarget = "NULL";
+    }
+
+    my $targetGene = $values[9];
+    $targetGene =~ s/\|/;/g;
+
+# qw(#chrom chromStart chromEnd variant_id pval target_strand ref alt target_gene_symbol target_ensembl_id target z_score_non_ref beta_non_ref beta_se_non_ref FDR non_ref_af qtl_dist_to_target QC_info target_info user_input);
+# qw(chr bp allele1 allele2 marker metaseq_id pvalue neg_log10_p display_p target_ensembl_id dist_to_target other_stats_json)
     print $fh join(
         "\t",
         (
             $resultVariant->{chromosome},
-            $resultVariant->{position}
-            $resultVariant->{marker} ) ? $resultVariant->{marker} : "NULL",
+            $resultVariant->{position},
+            $resultVariant->{allele1},
+            $resultVariant->{allele2},
+            $resultVariant->{marker} ? $resultVariant->{marker} : "NULL",
             $resultVariant->{metaseq_id},
             $pvalue,
             $negLog10p,
             $displayP,
+            $targetGene,
+            $distToTarget,
             $otherStats
         )
     ) . "\n";
@@ -489,54 +529,25 @@ sub formatPvalue {
     return ( $pvalue, $negLog10p, $displayP );
 }
 
-sub generateRestrictedStatsFieldMapping {
-    my ( $self, $columns ) = @_;
-    my $json  = JSON::XS->new;
-    my $stats = $json->decode( $self->getArg('restrictedStats') )
-      || $self->error("Error parsing restricted stats JSON");
 
-    $RESTRICTED_STATS_FIELD_MAP = {};
-    while ( my ( $stat, $field ) = each %$stats ) {
-        if ( $stat eq "other" ) {
-            foreach my $fd (@$field) {
-                $RESTRICTED_STATS_FIELD_MAP->{$fd} =
-                  $self->getColumnIndex( $columns, $fd );
-            }
-        }
-        else {
-            $RESTRICTED_STATS_FIELD_MAP->{$stat} =
-              $self->getColumnIndex( $columns, $field );
-        }
-    }
-}
 
 sub buildOtherStatsJson {
     my ( $self, @values ) = @_;
     my $stats = {};
-    while ( my ( $stat, $index ) = each %$RESTRICTED_STATS_FIELD_MAP ) {
+    while ( my ( $stat, $index ) = each %OTHER_STATS_FIELD_MAP ) {
         my $tValue = lc( $values[$index] );
         if ( $tValue eq "infinity" or $tValue =~ m/^inf$/ ) {
             $stats->{$stat} = "Infinity";
         }
         else
         { # otherwise replaces Infinity w/inf which will cause problems w/load b/c inf s not a number in postgres
-            $stats->{$stat} = Utils::toNumber( $values[$index] );
+            my $cValue = $values[$index];
+            $cValue =~ s/"//g;
+            $cValue =~ s/\|/;/g;
+            $stats->{$stat} = Utils::toNumber( $cValue );
         }
     }
     return Utils::to_json($stats);
-}
-
-sub buildGWASFlags {
-    my ( $self, $pvalue, $displayP ) = @_;
-    my $flags = {
-        $self->getArg('sourceId') => {
-            p_value => Utils::toNumber($displayP),
-            is_gws  => $pvalue <=
-              $self->getArg('gwsThreshold') ? 1 : 0
-        }
-    };
-
-    return Utils::to_json($flags);
 }
 
 # ----------------------------------------------------------------------
