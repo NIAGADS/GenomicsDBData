@@ -30,13 +30,14 @@ jsonb_build_object(
 'accession', da.accession, 'pubmed_id', 
 split_part(da.attribution, '|', 2), 
 'attribution', split_part(da.attribution, '|', 1)) AS provenance,
-pan.track_summary->>'experimental_design' AS experimental_design,
-pan.track_summary->>'biosample_characteristics' AS biosample_characteristics,
+pan.track_summary->'experimental_design' AS experimental_design,
+pan.track_summary->'biosample_characteristics' AS biosample_characteristics,
 CASE WHEN pan.track_summary->>'cohorts' NOT LIKE '%[%' --some are saved as concatenated and some as arrays
 THEN to_jsonb(string_to_array(pan.track_summary->>'cohorts', ',')) 
 ELSE pan.track_summary->'cohorts' END as cohorts,
-jsonb_build_array(jsonb_build_object('group', 'Cases', 'num_samples', pan.track_summary->'ncase'),
-jsonb_build_object('group', 'Control', 'num_samples', pan.track_summary->'ncontrol')) AS study_groups,
+CASE WHEN pan.track_summary->'ncase' IS NOT NULL 
+THEN jsonb_build_array(jsonb_build_object('group', 'Cases', 'num_samples', pan.track_summary->'ncase'),
+jsonb_build_object('group', 'Control', 'num_samples', pan.track_summary->'ncontrol')) ELSE NULL END AS study_groups,
 ta.description
 FROM NIAGADS.TrackAttributes ta,
 NIAGADS.DatasetAttributes da,
