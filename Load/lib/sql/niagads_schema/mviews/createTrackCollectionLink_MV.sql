@@ -16,7 +16,7 @@ SELECT nt.protocol_app_node_id AS track_id, c.collection_id
 FROM NIAGADS.TrackAttributes ta, NIAGADSTracks nt, NIAGADS.Collection c
 WHERE ta.subcategory = 'QTL'
 AND ta.protocol_app_node_id = nt.protocol_app_node_id
-AND c.name = 'xQTL-Project') q
+AND c.name = 'ADSP-FunGen-xQTL') q
 
 UNION ALL
 
@@ -71,3 +71,5 @@ ORDER BY collection_id, track_id
 );
 
 CREATE INDEX CTL_IDX_01 ON NIAGADS.TrackCollectionLink(COLLECTION_ID);
+
+GRANT SELECT ON NIAGADS.TrackCollectionLink TO comm_wdk_w, gus_r, gus_w;
