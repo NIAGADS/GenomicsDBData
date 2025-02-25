@@ -51,6 +51,7 @@ pvalue_display,
 target_ensembl_id,
 dist_to_target,
 other_stats,
+rank,
 
 $HOUSEKEEPING_FIELDS
 )
@@ -122,6 +123,16 @@ sub getArgumentsDeclaration {
                 reqd           => 0
             }
         ),
+
+        integerArg(
+            {
+                name  => 'topN',
+                descr => 'retain only the top N results (sorted by significance)',
+                constraintFunc => undef,
+                isList         => 0,
+                reqd           => 0
+            }
+        ),
     
     ];
     return $argumentDeclaration;
@@ -181,7 +192,7 @@ sub new {
     $self->initialize(
         {
             requiredDbVersion => 4.0,
-            cvsRevision       => '$Revision: 4$',
+            cvsRevision       => '$Revision: 5$',
             name              => ref($self),
             revisionNotes     => '',
             argsDeclaration   => $argumentDeclaration,
@@ -293,9 +304,34 @@ sub preprocess {
         }
     }
 
+    $pfh->close();
+
+    
+    my $truncateTo = $self->getArg('topN');
+    $truncateTo = $truncateTo + 1; # incl header
+    if ($truncateTo) {
+        $self->log("INFO: sorting by -log10p");
+        my $sortedFileName = $inputFileName . ".sorted";
+        my $cmd = `(head -n 1 $inputFileName && tail -n +2 $inputFileName | sort -T $workingDir -V -r -k8 ) > $sortedFileName`;
+        $self->log("Created sorted  file: $sortedFileName");
+        
+        my $numLines = Utils::fileLineCount($sortedFileName);
+        if ($numLines > $truncateTo) {
+            $cmd = `head -n $truncateTo $sortedFileName > $inputFileName`;
+            $cmd = `rm $sortedFileName`;
+        }
+        else {
+            $cmd = `mv $sortedFileName $inputFileName`;
+        }
+    }
+
     $self->log("INFO: Cleaned $lineCount lines");
     $self->log("INFO: Skipped $skipCount lines due to missing positional information.");
+    $self->log("INFO: Truncated file to $truncateTo lines.")
+        if ($truncateTo);
+
     return $inputFileName;
+
 }    # end preprocess
 
 
@@ -307,7 +343,15 @@ sub loadResult {
     my $inputFileName = File::Spec->catfile($workingDir, 'preprocess', $self->getArg('sourceId') . "-input.txt.map");
     $self->log("INFO: Loading from file: $inputFileName");
 
-    open(my $fh, $inputFileName) || $self->error("Unable to open $inputFileName for reading");
+    $self->log("INFO: sorting by -log10p");
+    my $sortedFileName = $inputFileName . ".sorted";
+    my $cmd = `(head -n 1 $inputFileName && tail -n +2 $inputFileName | sort -T $workingDir -V -r -k8 ) > $sortedFileName`;
+    $self->log("Created sorted  file: $sortedFileName");
+
+    $self->log("INFO: Loading from file: $sortedFileName");
+
+    open(my $fh, $sortedFileName) || $self->error("Unable to open $sortedFileName for reading");
+
 
     my $header          = <$fh>;
     my $recordCount     = 0;
@@ -345,9 +389,9 @@ sub loadResult {
        
         my $mappedVariants  = $json->decode($row{db_mapped_variant});
         foreach my $mv (@$mappedVariants) {
-            $insertStrBuffer .= $self->generateInsertStr($mv->{primary_key},
+            $insertStrBuffer .= $self->generateInsertStr(++$recordCount, $mv->{primary_key},
                 $mv->{bin_index}, \%row);
-            if (++$recordCount % $commitAfter == 0) {
+            if ($recordCount % $commitAfter == 0) {
                 PluginUtils::bulkCopy($self, $insertStrBuffer, $COPY_SQL);
                 $insertStrBuffer = "";
                 $self->log("$msgPrefix: $recordCount Results");
@@ -407,7 +451,7 @@ sub generateCustomChrMap {
 
 
 sub generateInsertStr {
-    my ( $self, $recordPK, $binIndex, $data ) = @_;
+    my ( $self, $rank, $recordPK, $binIndex, $data ) = @_;
     # $self->log("DEBUG: " . Dumper($data));
 
     my @values = (
@@ -415,7 +459,8 @@ sub generateInsertStr {
         $binIndex, 'chr' . $data->{chr},
         $data->{bp}, $data->{allele2}, $data->{neg_log10_p},
         $data->{display_p}, $data->{target_ensembl_id},
-        $data->{dist_to_target}, $data->{other_stats_json}        
+        $data->{dist_to_target}, $data->{other_stats_json},
+        $rank     
     );
     push( @values, GenomicsDBData::Load::Utils::getCurrentTime() );
     push( @values, $self->{housekeeping} );
