@@ -53,3 +53,5 @@ LEFT OUTER JOIN Covariates c ON c.protocol_app_node_id = m.protocol_app_node_id
 
 CREATE INDEX NTM_IND01 ON NIAGADS.TrackMetadata(id);
 CREATE INDEX NTM_IND02 ON NIAGADS.TrackMetadata(track_id);
+
+GRANT SELECT ON NIAGADS.TrackMetadata TO comm_wdk_w, gus_r, gus_w;
