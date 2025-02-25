@@ -3,10 +3,10 @@ SET MAINTENANCE_WORK_MEM TO '8GB';
 
 SELECT 
     string_agg(
-       'REFRESH MATERIALIZED VIEW "' || schemaname || '"."' || relname || '";',
+       'ANALYZE "' || schemaname || '"."' || relname || '";',
        E'\n' ORDER BY refresh_order) AS script
-FROM mat_view_refresh_order WHERE schemaname='niagads'
-AND relname != 'populationkeys' \gset
+FROM mat_view_refresh_order WHERE schemaname IN ('cbil', 'niagads')
+AND relname not in ('populationkeys') \gset
 
 -- Visualize the script
 \echo :script
