@@ -14492,7 +14492,8 @@
                 "parameters": {
                     "file": "foreach",
                     "sourceId": "foreach",
-                    "preprocess": true
+                    "preprocess": true,
+                    "topN": 10000
                 }
             }
         },

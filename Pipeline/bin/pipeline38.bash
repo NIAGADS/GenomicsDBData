@@ -720,10 +720,10 @@ loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --s
 
 # test
 # loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --stepName "GenomicsDBData::GWAS::Plugin::LoadQTLResult" --foreach "NGFGXQTL03448" > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/preprocess-test.log 2>&1 
-# loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --stepName "db_map_variants.py"  --foreach "NGFGXQTL03448" > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/db_map_variants-test.log 2>&1 
-# loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --load data --foreach "NGFGXQTL03448"  > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/load-test.log 2>&1 
+# loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --stepName "db_map_variants.py"  --foreach "NGFGXQTL00766" > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/db_map_variants-test.log 2>&1 
+# loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --load data --foreach "NGFGXQTL00766"  > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/load-test.log 2>&1 
 
-# undo GenomicsDBData::GWAS::Plugin::LoadQTLResult for the test - AlgInvocationId	3983
+# undo GenomicsDBData::GWAS::Plugin::LoadQTLResult for the test - AlgInvocationId	3987
 
 loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --stepName "db_map_variants.py" > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/db_map_variants.log 2>&1 
 
