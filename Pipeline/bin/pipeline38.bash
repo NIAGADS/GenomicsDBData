@@ -718,14 +718,13 @@ loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --s
 loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --stepName "GUS::Supported::Plugin::LoadGusXml" --commit > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/load_gus_xml.log 2>&1 
 loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --stepName "GenomicsDBData::GWAS::Plugin::LoadQTLResult" > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/preprocess.log 2>&1 
 
-# test
-# loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --stepName "GenomicsDBData::GWAS::Plugin::LoadQTLResult" --foreach "NGFGXQTL03448" > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/preprocess-test.log 2>&1 
-# loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --stepName "db_map_variants.py"  --foreach "NGFGXQTL00766" > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/db_map_variants-test.log 2>&1 
-# loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --load data --foreach "NGFGXQTL00766"  > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/load-test.log 2>&1 
+# use parallel_db_map_variants.bash instead
+# loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --stepName "db_map_variants.py" > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/db_map_variants.log 2>&1 
 
-# undo GenomicsDBData::GWAS::Plugin::LoadQTLResult for the test - AlgInvocationId	3987
+loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --stepName "load_vcf_file.py" --commit > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/load_vcf_file.log 2>&1 
+loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --stepName "file_map_variants.py" --commit > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/file_map_variants.log 2>&1 
 
-loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --stepName "db_map_variants.py" > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/db_map_variants.log 2>&1 
+
 
 loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --load data --commit > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/load.log 2>&1 
 
