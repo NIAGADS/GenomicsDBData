@@ -7,13 +7,14 @@ import csv
 from os import path
 
 from niagads.utils.logging import ExitOnCriticalExceptionHandler
-from niagads.utils.sys import rename_file
+from niagads.utils.sys import rename_file, verify_path
 from niagads.utils.string import xstr
 
 LOGGER = logging.getLogger(__name__)
 
 def read_mapping():
     LOGGER.info("Parsing Mapping File: %s", args.idMap)
+    
     
     mapping = None
     with open(args.idMap, 'r') as fh:
@@ -28,6 +29,11 @@ def read_mapping():
     return mapping
 
 def run():
+    if not verify_path(args.idMap):
+        LOGGER.infop(f'idMap {args.idMap} not found. EXITING')
+        LOGGER.info("DONE")   
+        return
+    
     idMap = read_mapping()    
     
     with open(args.inputFile, 'r') as fh, open(args.inputFile + '.tmp', 'w') as tfh:
@@ -68,7 +74,7 @@ if __name__ == "__main__":
                         
     args = parser.parse_args()
     
-    
+  
     logFileName = path.join(args.inputFile + "-file-based-mapping.log")
     logHandler = logging.StreamHandler() if args.log2stderr \
         else ExitOnCriticalExceptionHandler(
