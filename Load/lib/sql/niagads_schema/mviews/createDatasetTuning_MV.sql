@@ -66,7 +66,9 @@ WHERE 'study_' || sl.study_id = da.dataset_id
 AND sl.protocol_app_node_id = pan.protocol_app_node_id
 AND t.ontology_term_id = pan.type_id
 AND st.ontology_term_id = pan.subtype_id
+
 UNION ALL
+
 SELECT da.dataset_id AS dataset_id,
 da.accession AS dataset_accession,
 da.version AS dataset_version,
@@ -85,6 +87,7 @@ WHERE 'db_' || pan.external_database_release_id = da.dataset_id
 AND t.ontology_term_id = pan.type_id
 AND st.ontology_term_id = pan.subtype_id
 AND pan.protocol_app_node_id NOT IN (SELECT protocol_app_node_id FROM Study.StudyLink)
+
 );
 
 
