@@ -263,6 +263,11 @@ sub preprocess {
 
         my $skip = 0;
 
+        if ($values[4] == 0) { # pvalue
+            $skipCount++;
+            next;
+        }
+
         my $chromosome = $values[0]; #chrom
         $chromosome =~ s/chr//g;
 
@@ -355,7 +360,7 @@ sub preprocess {
     $fh->close();
 
     $self->log("INFO: Cleaned $lineCount lines");
-    $self->log("INFO: Skipped $skipCount lines due to missing positional information.");
+    $self->log("INFO: Skipped $skipCount lines due to missing or invalid information.");
     $self->log("INFO: Found $geneCount genes.");
 
     my $cmd = `rm $sortedFileName`;
