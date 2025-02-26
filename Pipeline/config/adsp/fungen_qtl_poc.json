@@ -14488,12 +14488,11 @@
         {
             "foreach": true,
             "plugin": {
-                "name": "GenomicsDBData::GWAS::Plugin::LoadQTLResult",
+                "name": "GenomicsDBData::GWAS::Plugin::LoadQTLGeneResult",
                 "parameters": {
                     "file": "foreach",
                     "sourceId": "foreach",
-                    "preprocess": true,
-                    "topN": 10000
+                    "preprocess": true
                 }
             }
         },
@@ -14518,7 +14517,7 @@
         {
             "foreach": true,
             "plugin": {
-                "name": "GenomicsDBData::GWAS::Plugin::LoadQTLResult",
+                "name": "GenomicsDBData::GWAS::Plugin::LoadQTLGeneResult",
                 "parameters": {
                     "file": "foreach",
                     "sourceId": "foreach",
