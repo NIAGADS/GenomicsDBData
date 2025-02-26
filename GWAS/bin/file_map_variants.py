@@ -30,7 +30,7 @@ def read_mapping():
 
 def run():
     if not verify_path(args.idMap):
-        LOGGER.infop(f'idMap {args.idMap} not found. EXITING')
+        LOGGER.info(f'idMap {args.idMap} not found. EXITING')
         LOGGER.info("DONE")   
         return
     
