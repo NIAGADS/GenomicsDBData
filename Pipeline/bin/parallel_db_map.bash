@@ -1,9 +1,18 @@
 #!/bin/bash
+# Get the options
+while getopts d: flag
+do
+    case "${flag}" in
+        d) WORKING_DIR=${OPTARG};;
+        p) PATTERN=${OPTARG};;
+    esac
+done
+
 
 # Function to simulate some work
 do_work() {
    echo "Starting job: $1"
-   db_map_variants.py --inputFile $1 --outputDir /mnt/efs/trx/genomicsdb/data/GRCh38/ADSP/FunGen_QTL/preprocess --maxConnections 10 --logAfter 10000 --chunkSize 1000 --overwrite --log2stderr > $1-db_map.log 2>&1
+   db_map_variants.py --inputFile $1 --outputDir /mnt/efs/trx/genomicsdb/data/GRCh38/ADSP/FunGen_QTL/preprocess --maxConnections 10 --logAfter 10000 --chunkSize 5000 --overwrite --log2stderr > $1-db_map.log 2>&1
    echo "Finished job: $1"
 }
 
@@ -13,7 +22,7 @@ num_parallel=5
 # Counter for running jobs
 running_jobs=0
 
-files=($(ls *-input.txt))
+files=($(ls ${WORKING_DIR}/*${PATTERN}))
 
 # Loop through the job
 
