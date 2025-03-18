@@ -716,15 +716,17 @@ loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --s
 
 
 loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --stepName "GUS::Supported::Plugin::LoadGusXml" --commit > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/load_gus_xml.log 2>&1 
-loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --stepName "GenomicsDBData::GWAS::Plugin::LoadQTLResult" > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/preprocess.log 2>&1 
+loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --stepName "GenomicsDBData::GWAS::Plugin::LoadQTLGeneResult" > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/preprocess.log 2>&1 
 
 # use parallel_db_map_variants.bash instead
 # loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --stepName "db_map_variants.py" > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/db_map_variants.log 2>&1 
 
 loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --stepName "load_vcf_file.py" --commit > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/load_vcf_file.log 2>&1 
-loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --stepName "file_map_variants.py" --commit > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/file_map_variants.log 2>&1 
+loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --stepName "runVep" > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/runVep.log 2>&1 
 
 
+loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --stepName "file_map_variants.py" > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/file_map_variants.log 2>&1 
+loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --preprocess --stepName "load_vep_result.py" --commit > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/load_vep_result.log 2>&1 
 
 loadResource -c $CONFIG_DIR/adsp/fungen_qtl_poc.json --verbose  --load data --commit > $LOG_FILE_DIR/datasets/ADSP_FunGenQTL/load.log 2>&1 
 

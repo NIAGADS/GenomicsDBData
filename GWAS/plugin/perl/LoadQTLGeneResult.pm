@@ -17,8 +17,9 @@ use JSON::XS;
 use Data::Dumper;
 use File::Spec;
 
-my $HOUSEKEEPING_FIELDS = PluginUtils::getHouseKeepingSql();
+my $SHORT_INDEL_LENGTH = 5;
 
+my $HOUSEKEEPING_FIELDS = PluginUtils::getHouseKeepingSql();
 
 my %OTHER_STATS_FIELD_MAP = (
     target_strand => 5,
@@ -35,7 +36,7 @@ my @EXPECTED_FIELDS =
 qw(#chrom chromStart chromEnd variant_id pval target_strand ref alt target_gene_symbol target_ensembl_id target z_score_non_ref beta_non_ref beta_se_non_ref FDR non_ref_af qtl_dist_to_target QC_info target_info user_input);
 
 my @INPUT_FIELDS =
-  qw(chr bp allele1 allele2 marker metaseq_id pvalue neg_log10_p display_p target_ensembl_id dist_to_target other_stats_json);
+  qw(chr bp ref alt marker metaseq_id pvalue neg_log10_p display_p target_ensembl_id dist_to_target other_stats_json);
 
 
 my $COPY_SQL = <<COPYSQL;
@@ -51,7 +52,7 @@ pvalue_display,
 target_ensembl_id,
 dist_to_target,
 other_stats,
-num_qtls_in_gene,
+num_qtls_targeting_gene,
 rank,
 
 $HOUSEKEEPING_FIELDS
@@ -184,7 +185,7 @@ sub new {
     $self->initialize(
         {
             requiredDbVersion => 4.0,
-            cvsRevision       => '$Revision: 6$',
+            cvsRevision       => '$Revision: 7$',
             name              => ref($self),
             revisionNotes     => '',
             argsDeclaration   => $argumentDeclaration,
@@ -242,7 +243,16 @@ sub preprocess {
     print $pfh join( "\t", @INPUT_FIELDS ) . "\n";
     $pfh->autoflush(1);
 
-    open( my $fh, $file ) || $self->error("Unable to open original file $file for reading");
+    my $fh = undef;
+    if ($file =~ m/\.gz$/) {
+        $self->log("Opening gzipped file $file.");
+        open($fh, "zcat $file |")  || $self->error("Can't open gzipped $file.");
+        $self->log("Done opening file.");
+    }
+    else {
+        open ($fh, $file) || $self->error("Can't open $file.");
+    }
+
 
     my $header = <$fh>;
     chomp($header);
@@ -289,8 +299,8 @@ sub preprocess {
             position   => $position,
             marker     => $marker,
             metaseq_id => $metaseqId,
-            allele1 => $values[6],
-            allele2 => $values[7]
+            ref => $values[6],
+            alt => $values[7]
         };
 
         $self->writeCleanedInput($pfh, $rv, \%columns, @values ) 
@@ -312,31 +322,41 @@ sub preprocess {
     $self->log("Created sorted  file: $sortedFileName");
 
     my $pfh = undef;
+    my $inputFileName = File::Spec->catfile($workingDir, $self->getArg('sourceId') . "-gene-summary-input.txt");
     open( $pfh, '>', $inputFileName ) || $self->error("Unable to create final input file $inputFileName for writing");
-    push(@INPUT_FIELDS, 'num_qtls_in_gene');
-    print $pfh join( "\t", @INPUT_FIELDS ) . "\n";
     $pfh->autoflush(1);
 
-    my $header = <$fh>; # skip header
+    my @header = @INPUT_FIELDS;
+    push(@header, 'num_qtls_targeting_gene');
+    print $pfh join( "\t", @header ) . "\n";
 
-    # qw(chr bp allele1 allele2 marker metaseq_id pvalue neg_log10_p display_p target_ensembl_id dist_to_target other_stats_json);
+    # qw(chr bp ref alt marker metaseq_id pvalue neg_log10_p display_p target_ensembl_id dist_to_target other_stats_json);
     open( my $fh, $sortedFileName ) || $self->error("Unable to open sorted file $sortedFileName for reading");
-    my $currentGene = undef;
-    my $hitCounts = 0;
-    my $topHit = undef;
+
     my $json = JSON::XS->new();
     my $geneCount = 0;
+    my $currentGene = undef;
+    my $topHit = undef;
+    my $hitCounts = 0;
+    my $topIsSNV = 0;
+    my %row;
+
+    my $h = <$fh>; # skip header
     while (my $line = <$fh>) {
         chomp $line;  
+        @row{@INPUT_FIELDS} = split /\t/, $line; 
         my @values = split /\t/, $line;
 
-        my $targetGene = $values[9];
+        # qw(chr bp ref alt marker metaseq_id pvalue neg_log10_p display_p target_ensembl_id dist_to_target other_stats_json);
+        my $targetGene = $row{target_ensembl_id};
+        my $isSNV = $self->isSNV($row{ref}, $row{alt});
 
         if (!$currentGene) {
             $currentGene = $targetGene;
             $hitCounts = 1;
             $topHit = \@values;
             $geneCount = 1;
+            $topIsSNV = $isSNV;
         }
 
         else {
@@ -351,6 +371,10 @@ sub preprocess {
                 $geneCount++;
             }
             else {
+                if ($isSNV && !$topIsSNV) { # if the top was an indel but we found an SNV, switch to that
+                    $topHit = \@values;
+                    $topIsSNV = $isSNV;
+                }
                 $hitCounts++;
             }
         }
@@ -369,7 +393,6 @@ sub preprocess {
 
 }    # end preprocess
 
-
 sub loadResult {
     my ($self) = @_;
     $self->log("INFO: Loading GWAS summary statistics into Results.QTL");
@@ -386,7 +409,6 @@ sub loadResult {
     $self->log("INFO: Loading from file: $sortedFileName");
 
     open(my $fh, $sortedFileName) || $self->error("Unable to open $sortedFileName for reading");
-
 
     my $header          = <$fh>;
     my $recordCount     = 0;
@@ -407,7 +429,7 @@ sub loadResult {
         @row{@INPUT_FIELDS} = split /\t/, $line;
 
         # don't load NULL (missing) pvalues as they are useless for project
-        if ($row{pvalue} eq 'NULL') {  
+        if ($row{pvalue} eq 'NULL' || $row{pvalue} eq '0') {  
             $nullSkipCount++;
             next;
        }
@@ -448,6 +470,11 @@ sub loadResult {
 # ----------------------------------------------------------------------
 # helper methods
 # ----------------------------------------------------------------------
+
+sub isSNV {
+    my ($self, $ref, $alt) = @_;
+    return (length($ref) == 1 && length($alt) == 1);
+}
 
 sub processArgs {
     my ($self) = @_;
@@ -492,7 +519,7 @@ sub generateInsertStr {
     my @values = (
         $self->{protocol_app_node_id}, $recordPK,
         $binIndex, 'chr' . $data->{chr},
-        $data->{bp}, $data->{allele2}, $data->{neg_log10_p},
+        $data->{bp}, $data->{alt}, $data->{neg_log10_p},
         $data->{display_p}, $data->{target_ensembl_id},
         $data->{dist_to_target}, $data->{other_stats_json},
         $data->{num_qtls_in_gene},
@@ -535,14 +562,14 @@ sub writeCleanedInput {
     $targetGene =~ s/\|/;/g;
 
 # qw(#chrom chromStart chromEnd variant_id pval target_strand ref alt target_gene_symbol target_ensembl_id target z_score_non_ref beta_non_ref beta_se_non_ref FDR non_ref_af qtl_dist_to_target QC_info target_info user_input);
-# qw(chr bp allele1 allele2 marker metaseq_id pvalue neg_log10_p display_p target_ensembl_id dist_to_target other_stats_json)
+# qw(chr bp ref alt marker metaseq_id pvalue neg_log10_p display_p target_ensembl_id dist_to_target other_stats_json)
     print $fh join(
         "\t",
         (
             $resultVariant->{chromosome},
             $resultVariant->{position},
-            $resultVariant->{allele1},
-            $resultVariant->{allele2},
+            $resultVariant->{ref},
+            $resultVariant->{alt},
             $resultVariant->{marker} ? $resultVariant->{marker} : "NULL",
             $resultVariant->{metaseq_id},
             $pvalue,
