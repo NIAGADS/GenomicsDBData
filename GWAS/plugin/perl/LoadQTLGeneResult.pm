@@ -17,7 +17,7 @@ use JSON::XS;
 use Data::Dumper;
 use File::Spec;
 
-my $SHORT_INDEL_LENGTH = 5;
+my $SHARD_PATTERN = "_chr(\d{1,2}|[XYM]|MT)_";
 
 my $HOUSEKEEPING_FIELDS = PluginUtils::getHouseKeepingSql();
 
@@ -68,15 +68,24 @@ COPYSQL
 
 sub getArgumentsDeclaration {
     my $argumentDeclaration = [  
-        fileArg(
+        stringArg(
             {
-                name           => 'file',
-                descr          => 'full path to input file',
+                name           => 'fileDir',
+                descr          => 'full path to input file directory',
                 constraintFunc => undef,
                 reqd           => 1,
-                mustExist      => 1,
                 isList         => 0,
-                format         => 'tab delim text'
+
+            }
+        ),
+
+        stringArg(
+            {
+                name           => 'pattern',
+                descr          => 'file pattern to match for original input files; required for preprocessing',
+                constraintFunc => undef,
+                reqd           => 0,
+                isList         => 0,
             }
         ),
 
@@ -185,7 +194,7 @@ sub new {
     $self->initialize(
         {
             requiredDbVersion => 4.0,
-            cvsRevision       => '$Revision: 7$',
+            cvsRevision       => '$Revision: 8$',
             name              => ref($self),
             revisionNotes     => '',
             argsDeclaration   => $argumentDeclaration,
@@ -229,168 +238,42 @@ sub initializePlugin {
 sub preprocess {
     my ( $self ) = @_;
 
-    my $file = $self->getArg("file");
-    $self->log("INFO: Cleaning $file");
+    my $fileDir = $self->getArg("fileDir");
+    my $pattern = $self->getArg('pattern');
+    $self->log("INFO: Processing files in $fileDir that match $pattern");
 
-    my ($v, $workingDir, $f) = File::Spec->splitpath($file);
-    $workingDir = PluginUtils::createDirectory($self,  $workingDir, 'preprocess');
-    
+    my $workingDir = PluginUtils::createDirectory($self,  $fileDir, 'preprocess');
+    my $geneSummary = {};
+
+
+    opendir(my $dh, $fileDir) || $self->error("Path does not exists: $fileDir");
+    my @files = grep(/${pattern}/, readdir($dh));
+    $dh->close();
+
+    foreach my $fName (@files) {
+        my $cleanedFileName = $self->cleanFile($fName, $workingDir);
+        $geneSummary = $self->updateGeneSummary($cleanedFileName, $workingDir, $geneSummary);
+    }
+
     my $inputFileName = File::Spec->catfile($workingDir, $self->getArg('sourceId') . "-input.txt");
-    $self->log("INFO: Writing cleaned input to: $inputFileName");
-    
-    my $pfh = undef;
-    open( $pfh, '>', $inputFileName ) || $self->error("Unable to create cleaned file $inputFileName for writing");
-    print $pfh join( "\t", @INPUT_FIELDS ) . "\n";
-    $pfh->autoflush(1);
-
-    my $fh = undef;
-    if ($file =~ m/\.gz$/) {
-        $self->log("Opening gzipped file $file.");
-        open($fh, "zcat $file |")  || $self->error("Can't open gzipped $file.");
-        $self->log("Done opening file.");
-    }
-    else {
-        open ($fh, $file) || $self->error("Can't open $file.");
-    }
-
-
-    my $header = <$fh>;
-    chomp($header);
-    my @fields = split /\t/, $header;
-    my %columns = map { $fields[$_] => $_ } 0 .. $#fields;
-      
-    # process the file
-    my $lineCount = 0;
-    my $skipCount = 0;
-
-    while (my $line = <$fh>) {
-        chomp $line;
-
-        my @values = split /\t/, $line;
-
-        #TODO: replace with @values{@EXPECTEDFIELDS} = split /\t/, $line; 
-        # so we can use field names instead of indexes
-
-        my $skip = 0;
-
-        if ($values[4] == 0) { # pvalue
-            $skipCount++;
-            next;
-        }
-
-        my $chromosome = $values[0]; #chrom
-        $chromosome =~ s/chr//g;
-
-        my $position   = $values[2]; # chromEnd
-
-        my $metaseqId = $values[3]; # variant_id
-        my $marker = undef;
-        if ($metaseqId =~ /rs/) {
-            $marker = $metaseqId;
-            # 6,7 are ref, alt respectively
-            $metaseqId = join(':', ($chromosome, $position, $values[6], $values[7]));
-        }
-        else {
-            $metaseqId =~ s/chr//g;
-        }
-
-        my $rv = {
-            chromosome => $chromosome,
-            position   => $position,
-            marker     => $marker,
-            metaseq_id => $metaseqId,
-            ref => $values[6],
-            alt => $values[7]
-        };
-
-        $self->writeCleanedInput($pfh, $rv, \%columns, @values ) 
-            if (!$skip);
-
-        if ( ++$lineCount % 500000 == 0 ) {
-            $self->log("INFO: Cleaned $lineCount lines");
-        }
-    }
-
-    $pfh->close();
-    $fh->close();
-
-    # sort to find most significant hit per gene
-    
-    $self->log("INFO: sorting by gene/-log10p");
-    my $sortedFileName = $inputFileName . ".sorted";
-    my $cmd = `(head -n 1 $inputFileName && tail -n +2 $inputFileName | sort -T $workingDir -V -k10,10 -k8,8nr)  > $sortedFileName`;
-    $self->log("Created sorted  file: $sortedFileName");
-
-    my $pfh = undef;
-    my $inputFileName = File::Spec->catfile($workingDir, $self->getArg('sourceId') . "-gene-summary-input.txt");
-    open( $pfh, '>', $inputFileName ) || $self->error("Unable to create final input file $inputFileName for writing");
-    $pfh->autoflush(1);
-
+    open( my $fh, '>', $inputFileName ) || $self->error("Unable to create final input file $inputFileName for writing");
+    $fh->autoflush(1);
+       
     my @header = @INPUT_FIELDS;
     push(@header, 'num_qtls_targeting_gene');
-    print $pfh join( "\t", @header ) . "\n";
+    print $fh join( "\t", @header ) . "\n";
 
-    # qw(chr bp ref alt marker metaseq_id pvalue neg_log10_p display_p target_ensembl_id dist_to_target other_stats_json);
-    open( my $fh, $sortedFileName ) || $self->error("Unable to open sorted file $sortedFileName for reading");
-
-    my $json = JSON::XS->new();
-    my $geneCount = 0;
-    my $currentGene = undef;
-    my $topHit = undef;
-    my $hitCounts = 0;
-    my $topIsSNV = 0;
-    my %row;
-
-    my $h = <$fh>; # skip header
-    while (my $line = <$fh>) {
-        chomp $line;  
-        @row{@INPUT_FIELDS} = split /\t/, $line; 
-        my @values = split /\t/, $line;
-
-        # qw(chr bp ref alt marker metaseq_id pvalue neg_log10_p display_p target_ensembl_id dist_to_target other_stats_json);
-        my $targetGene = $row{target_ensembl_id};
-        my $isSNV = $self->isSNV($row{ref}, $row{alt});
-
-        if (!$currentGene) {
-            $currentGene = $targetGene;
-            $hitCounts = 1;
-            $topHit = \@values;
-            $geneCount = 1;
-            $topIsSNV = $isSNV;
-        }
-
-        else {
-            if ($currentGene ne $targetGene) {
-                # print
-                push(@$topHit, $hitCounts);
-                print $pfh join("\t", @$topHit) . "\n";
-
-                $currentGene = $targetGene;
-                $hitCounts = 1;
-                $topHit = \@values;
-                $geneCount++;
-            }
-            else {
-                if ($isSNV && !$topIsSNV) { # if the top was an indel but we found an SNV, switch to that
-                    $topHit = \@values;
-                    $topIsSNV = $isSNV;
-                }
-                $hitCounts++;
-            }
-        }
+    while (my ($gene, $summary) = each %$geneSummary) {
+        my $values = $summary->{hit};
+        push(@$values, $summary->{hitCount});
+        print $fh join("\t", @$values) . "\n";
     }
 
-    $pfh->close();
     $fh->close();
 
-    $self->log("INFO: Cleaned $lineCount lines");
-    $self->log("INFO: Skipped $skipCount lines due to missing or invalid information.");
+    my $geneCount = scalar keys %$geneSummary;
     $self->log("INFO: Found $geneCount genes.");
-
-    my $cmd = `rm $sortedFileName`;
-
-    return $inputFileName;
-
+    $self->log("INFO: Gene summary written to $inputFileName");
 }    # end preprocess
 
 sub loadResult {
@@ -471,11 +354,6 @@ sub loadResult {
 # helper methods
 # ----------------------------------------------------------------------
 
-sub isSNV {
-    my ($self, $ref, $alt) = @_;
-    return (length($ref) == 1 && length($alt) == 1);
-}
-
 sub processArgs {
     my ($self) = @_;
 
@@ -544,6 +422,144 @@ sub getColumnIndex {
 # ----------------------------------------------------------------------
 # file manipulation methods
 # ----------------------------------------------------------------------
+
+sub updateGeneSummary {
+    my ($self, $file, $workingDir, $geneSummary) = @_;
+
+    my $json = JSON::XS->new();
+    my %row;
+
+    # qw(chr bp ref alt marker metaseq_id pvalue neg_log10_p display_p target_ensembl_id dist_to_target other_stats_json);
+    open( my $fh, $file ) || $self->error("Unable to open file $file for reading");
+    my $h = <$fh>; # skip header
+
+    while (my $line = <$fh>) {
+        chomp $line;  
+        @row{@INPUT_FIELDS} = split /\t/, $line; 
+
+        # qw(chr bp ref alt marker metaseq_id pvalue neg_log10_p display_p target_ensembl_id dist_to_target other_stats_json);
+        my $targetGene = $row{target_ensembl_id};
+        my $negLog10p = $row{neg_log10_p};
+        my @values = split /\t/, $line;
+
+        if (exists $geneSummary->{$targetGene}) {
+            my $hitCount = $geneSummary->{$targetGene}->{hitCount};
+
+            if ($negLog10p > $geneSummary->{$targetGene}->{p}) {
+                $geneSummary->{$targetGene} = {
+                    chromosome => $self->{chromosome},
+                    p => $negLog10p,
+                    hit => \@values,
+                    hitCount => ++$hitCount
+                };
+                $self->log("New best hit: " . Dumper($geneSummary->{$targetGene}));
+            }
+
+            else {
+                $geneSummary->{$targetGene}->{hitCount} = ++$hitCount;
+            }
+        }
+        else {
+            $geneSummary->{$targetGene} = { 
+                chromosome => $self->{chromosome},
+                p => $negLog10p,
+                hit => \@values,
+                hitCount => 1
+            };
+            $self->log("First hit: " . Dumper($geneSummary->{$targetGene}));
+        }
+    }
+    
+    return $geneSummary;
+}
+   
+
+sub cleanFile {
+    my ($self, $file, $workingDir) = @_;
+    $file =~ /$SHARD_PATTERN/;
+    $self->{chromosome} = $1;
+
+    my $inputFileName = File::Spec->catfile($workingDir, $self->getArg('sourceId') . "_chr" . $self->{chromosome} . "-input.txt");
+    open( my $pfh, '>', $inputFileName ) || $self->error("Unable to create sharded input file $inputFileName for writing");
+    $pfh->autoflush(1);
+    print $pfh join( "\t", @INPUT_FIELDS) . "\n";
+
+    my $fh = undef;
+    if ($file =~ m/\.gz$/) {
+        $self->log("Opening gzipped file $file.");
+        open($fh, "zcat $file |")  || $self->error("Can't open gzipped $file.");
+        $self->log("Done opening file.");
+    }
+    else {
+        open ($fh, $file) || $self->error("Can't open $file.");
+    }
+
+    my $header = <$fh>;
+    chomp($header);
+    my @fields = split /\t/, $header;
+    my %columns = map { $fields[$_] => $_ } 0 .. $#fields;
+      
+    # process the file
+    my $lineCount = 0;
+    my $skipCount = 0;
+
+    while (my $line = <$fh>) {
+        chomp $line;
+
+        my @values = split /\t/, $line;
+
+        #TODO: replace with @values{@EXPECTEDFIELDS} = split /\t/, $line; 
+        # so we can use field names instead of indexes
+
+        my $skip = 0;
+
+        if ($values[4] == 0) { # pvalue
+            $skipCount++;
+            next;
+        }
+
+        my $chromosome = $values[0]; #chrom
+        $chromosome =~ s/chr//g;
+
+        my $position   = $values[2]; # chromEnd
+
+        my $metaseqId = $values[3]; # variant_id
+        my $marker = undef;
+        if ($metaseqId =~ /rs/) {
+            $marker = $metaseqId;
+            # 6,7 are ref, alt respectively
+            $metaseqId = join(':', ($chromosome, $position, $values[6], $values[7]));
+        }
+        else {
+            $metaseqId =~ s/chr//g;
+        }
+
+        my $rv = {
+            chromosome => $chromosome,
+            position   => $position,
+            marker     => $marker,
+            metaseq_id => $metaseqId,
+            ref => $values[6],
+            alt => $values[7]
+        };
+
+        $self->writeCleanedInput($pfh, $rv, \%columns, @values ) 
+            if (!$skip);
+
+        if ( ++$lineCount % 500000 == 0 ) {
+            $self->log("INFO: Cleaned $lineCount lines");
+        }
+    }
+
+    $self->log("INFO: Cleaned $lineCount lines");
+    $self->log("INFO: Skipped $skipCount lines due to missing or invalid information.");
+
+    $pfh->close();
+    $fh->close();
+
+    return $inputFileName;
+}
+
 
 sub writeCleanedInput {
     my ( $self, $fh, $resultVariant, $fields, @values ) = @_;
