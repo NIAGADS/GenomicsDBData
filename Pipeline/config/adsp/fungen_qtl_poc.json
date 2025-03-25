@@ -539,7 +539,7 @@
             "plugin": {
                 "name": "GenomicsDBData::GWAS::Plugin::LoadQTLGeneResult",
                 "parameters": {
-                    "file": "foreach",
+                    "fileDir": "@file.path",
                     "sourceId": "foreach",
                     "skipUnmappedVariants": true
                 }

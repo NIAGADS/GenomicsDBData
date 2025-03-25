@@ -281,8 +281,8 @@ sub loadResult {
     my ($self) = @_;
     $self->log("INFO: Loading GWAS summary statistics into Results.QTL");
 
-    my ($v, $workingDir, $f) = File::Spec->splitpath($self->getArg('file'));
-    my $inputFileName = File::Spec->catfile($workingDir, 'preprocess', $self->getArg('sourceId') . "-input.txt.map");
+    my $workingDir = File::Spec->catfile($self->getArg('fileDir'), 'preprocess');
+    my $inputFileName = File::Spec->catfile($workingDir, $self->getArg('sourceId') . "-input.txt.map");
     $self->log("INFO: Loading from file: $inputFileName");
 
     $self->log("INFO: sorting by -log10p");
@@ -306,7 +306,7 @@ sub loadResult {
     my %row;
     my $json            = JSON::XS->new();
 
-    push(@INPUT_FIELDS, ("db_mapped_variant"));
+    push(@INPUT_FIELDS, ("num_qtls_targeting_gene", "db_mapped_variant"));
 
     while (my $line = <$fh>) {
         chomp($line);
@@ -386,7 +386,7 @@ sub generateInsertStr {
         $data->{bp}, $data->{alt}, $data->{neg_log10_p},
         $data->{display_p}, $data->{target_ensembl_id},
         $data->{dist_to_target}, $data->{other_stats_json},
-        $data->{num_qtls_in_gene},
+        $data->{num_qtls_targeting_gene},
         $rank     
     );
     push( @values, GenomicsDBData::Load::Utils::getCurrentTime() );
