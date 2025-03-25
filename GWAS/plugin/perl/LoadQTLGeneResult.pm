@@ -41,7 +41,7 @@ my @INPUT_FIELDS =
 
 my $COPY_SQL = <<COPYSQL;
 COPY Results.QTLGene(
-protocol_app_node_id,
+track_id,
 variant_record_primary_key,
 bin_index,
 chromosome,
@@ -154,7 +154,7 @@ sub getDocumentation {
       [ [ 'Results::QTLGene', 'Enters a row for each gene' ]];
 
     my $tablesDependedOn =
-      [ [ 'Study::ProtocolAppNode', 'lookup analysis source_id' ] ];
+      [];
 
     my $howToRestart = '';
 
@@ -242,18 +242,19 @@ sub preprocess {
     my $pattern = $self->getArg('pattern');
     $self->log("INFO: Processing files in $fileDir that match $pattern");
 
+    my $filePattern = File::Spec->catfile($fileDir, $pattern);
+    my @files = glob($filePattern);
+    $self->log("INFO: Found " . scalar @files . " files matching $pattern.");
+
     my $workingDir = PluginUtils::createDirectory($self,  $fileDir, 'preprocess');
     my $geneSummary = {};
-
-
-    opendir(my $dh, $fileDir) || $self->error("Path does not exists: $fileDir");
-    my @files = grep(/${pattern}/, readdir($dh));
-    $dh->close();
-
+    my $cleanedFileName;
     foreach my $fName (@files) {
-        my $cleanedFileName = $self->cleanFile($fName, $workingDir);
+        $cleanedFileName = $self->cleanFile($fName, $workingDir);
         $geneSummary = $self->updateGeneSummary($cleanedFileName, $workingDir, $geneSummary);
     }
+
+    my $cmd = `rm $cleanedFileName`;  # remove the temporary file
 
     my $inputFileName = File::Spec->catfile($workingDir, $self->getArg('sourceId') . "-input.txt");
     open( my $fh, '>', $inputFileName ) || $self->error("Unable to create final input file $inputFileName for writing");
@@ -329,7 +330,8 @@ sub loadResult {
        
         my $mappedVariants  = $json->decode($row{db_mapped_variant});
         foreach my $mv (@$mappedVariants) {
-            $insertStrBuffer .= $self->generateInsertStr(++$recordCount, $mv->{primary_key},
+            $insertStrBuffer .= $self->generateInsertStr(++$recordCount, 
+                $mv->{primary_key},
                 $mv->{bin_index}, \%row);
             if ($recordCount % $commitAfter == 0) {
                 PluginUtils::bulkCopy($self, $insertStrBuffer, $COPY_SQL);
@@ -359,25 +361,9 @@ sub processArgs {
 
     my $preprocess = $self->getArg('preprocess');
 
-    if (!$preprocess) {
-        $self->{protocol_app_node_id} = $self->getProtocolAppNodeId();   
-    }
-
     return $preprocess
 }
 
-sub getProtocolAppNodeId {
-    my ($self) = @_;
-
-    my $protocolAppNode = GUS::Model::Study::ProtocolAppNode->new(
-        { source_id => $self->getArg('sourceId') } );
-
-    $self->error(
-        "No protocol app node found for " . $self->getArg('sourceId') )
-      unless $protocolAppNode->retrieveFromDB();
-
-    return $protocolAppNode->getProtocolAppNodeId();
-}
 
 sub generateCustomChrMap {
     my ($self) = @_;
@@ -395,7 +381,7 @@ sub generateInsertStr {
     # $self->log("DEBUG: " . Dumper($data));
 
     my @values = (
-        $self->{protocol_app_node_id}, $recordPK,
+        $self->getArg('sourceId'), $recordPK,
         $binIndex, 'chr' . $data->{chr},
         $data->{bp}, $data->{alt}, $data->{neg_log10_p},
         $data->{display_p}, $data->{target_ensembl_id},
@@ -426,6 +412,8 @@ sub getColumnIndex {
 sub updateGeneSummary {
     my ($self, $file, $workingDir, $geneSummary) = @_;
 
+    $self->log("INFO: Updating Gene Summary");
+
     my $json = JSON::XS->new();
     my %row;
 
@@ -447,12 +435,11 @@ sub updateGeneSummary {
 
             if ($negLog10p > $geneSummary->{$targetGene}->{p}) {
                 $geneSummary->{$targetGene} = {
-                    chromosome => $self->{chromosome},
                     p => $negLog10p,
                     hit => \@values,
                     hitCount => ++$hitCount
                 };
-                $self->log("New best hit: " . Dumper($geneSummary->{$targetGene}));
+                # $self->log("DEBUG: New best hit: " . Dumper($geneSummary->{$targetGene}));
             }
 
             else {
@@ -461,12 +448,11 @@ sub updateGeneSummary {
         }
         else {
             $geneSummary->{$targetGene} = { 
-                chromosome => $self->{chromosome},
                 p => $negLog10p,
                 hit => \@values,
                 hitCount => 1
             };
-            $self->log("First hit: " . Dumper($geneSummary->{$targetGene}));
+            # $self->log("DEBUG: First hit: " . Dumper($geneSummary->{$targetGene}));
         }
     }
     
@@ -476,19 +462,16 @@ sub updateGeneSummary {
 
 sub cleanFile {
     my ($self, $file, $workingDir) = @_;
-    $file =~ /$SHARD_PATTERN/;
-    $self->{chromosome} = $1;
 
-    my $inputFileName = File::Spec->catfile($workingDir, $self->getArg('sourceId') . "_chr" . $self->{chromosome} . "-input.txt");
+    my $inputFileName = File::Spec->catfile($workingDir, $self->getArg('sourceId') . "-temp-input.txt");
     open( my $pfh, '>', $inputFileName ) || $self->error("Unable to create sharded input file $inputFileName for writing");
     $pfh->autoflush(1);
     print $pfh join( "\t", @INPUT_FIELDS) . "\n";
 
     my $fh = undef;
+    $self->log("INFO: Processing file $file.");
     if ($file =~ m/\.gz$/) {
-        $self->log("Opening gzipped file $file.");
-        open($fh, "zcat $file |")  || $self->error("Can't open gzipped $file.");
-        $self->log("Done opening file.");
+         open($fh, "zcat $file |")  || $self->error("Can't open gzipped $file.");
     }
     else {
         open ($fh, $file) || $self->error("Can't open $file.");
