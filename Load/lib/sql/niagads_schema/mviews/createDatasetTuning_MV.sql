@@ -1,7 +1,7 @@
 DROP MATERIALIZED VIEW IF EXISTS NIAGADS.NeuropathologyTrackCategories;
-DROP MATERIALIZED VIEW IF EXISTS NIAGADS.ProtocolAppNodeCharacteristic;
-DROP MATERIALIZED VIEW IF EXISTS NIAGADS.TrackAttributes;
-DROP MATERIALIZED VIEW IF EXISTS NIAGADS.DatasetAttributes;
+DROP MATERIALIZED VIEW IF EXISTS NIAGADS.ProtocolAppNodeCharacteristic CASCADE;
+--DROP MATERIALIZED VIEW IF EXISTS NIAGADS.TrackAttributes;
+--DROP MATERIALIZED VIEW IF EXISTS NIAGADS.DatasetAttributes;
 
 
 -------------------------------
@@ -126,7 +126,7 @@ FROM Biomarkers b),
 TempCharacteristics AS (
 SELECT pan.protocol_app_node_id,
 pan.source_id AS track,
-REPLACE(ot.name, '_', '') AS characteristic,
+CASE WHEN ot.name LIKE 'late onset%' THEN 'Alzheimer''s disease' ELSE REPLACE(ot.name, '_', '') END AS characteristic,
 ot.ontology_term_id,
 ot.source_id AS term_source_id,
 q.name AS characteristic_type,
@@ -251,6 +251,24 @@ NULL AS filter_category,
 NULL AS filter_category_parent,
 NULL AS is_value
 FROM TempCharacteristics
+GROUP BY protocol_app_node_id, track
+
+UNION ALL
+
+SELECT protocol_app_node_id, track, string_agg(characteristic_type || '=' || characteristic, ';' ORDER BY characteristic_type),
+NULL AS ontology_term, NULL AS term_source_id,
+'full_info_string' AS characteristic_type,
+NULL AS definition,
+NULL AS filter_category,
+NULL AS filter_category_parent,
+NULL AS is_value
+FROM (SELECT track, string_agg(characteristic, '//' ORDER by characteristic) AS characteristic, 
+protocol_app_node_id, 
+characteristic_type 
+FROM TempCharacteristics 
+WHERE characteristic_type NOT LIKE 'covariate%'
+GROUP BY protocol_app_node_id, track, characteristic_type
+) c
 GROUP BY protocol_app_node_id, track
 
 UNION ALL
