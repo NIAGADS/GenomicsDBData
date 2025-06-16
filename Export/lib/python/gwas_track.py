@@ -162,12 +162,10 @@ class GWASTrack(object):
             self._metadata_json = cursor.fetchone()[0]
 
     def __info_qualifier(self, field: str, type: str, description: str):
-        return f"## <ID={field},Number=.Type={type},Description={description}>"
-        # INFO=<ID=UCSC.conservation,Number=.,Type=Integer,Description="Score from 0-1000 (conservation scores based on a phylo-HMM)">
+        return f"## <ID={field},Number=.,Type={type},Description={description}>"
+
 
     def __vcf_header(self, inclRestricted=False):
-        #    ['chromosome', 'position', 'variant_id', 'ref_snp_id', 'pvalue', 'test_allele', 'neg_log10_pvalue', 'annotation', 'restricted_stats']
-
         fields = ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"]
         fieldStr = "#" + "\t".join(fields)
 
