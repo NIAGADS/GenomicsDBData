@@ -162,7 +162,7 @@ class GWASTrack(object):
             self._metadata_json = cursor.fetchone()[0]
 
     def __info_qualifier(self, field: str, type: str, description: str):
-        return f"## <ID={field},Number=.,Type={type},Description={description}>"
+        return f"##INFO=<ID={field},Number=.,Type={type},Description={description}>"
 
 
     def __vcf_header(self, inclRestricted=False):
@@ -172,7 +172,7 @@ class GWASTrack(object):
         # fmt:off
         header = ["##fileformat=VCFv4.1",
              self.__info_qualifier("TEST_ALLELE", "String","the specific allele at the genomic location that is being examined" ),
-             self.__info_qualifier("PVALUE", "Float", "p-value"),
+             self.__info_qualifier("PVALUE", "String", "p-value"),
              self.__info_qualifier("NEG_LOG10_PVALUE", "Float", "-log10 p-value"),
              self.__info_qualifier("ANNOTATION", "String", "(JSON) summary functional annotation for the tested allelic variant"),
              self.__info_qualifier("ADJUSTED", 'Boolean', "if `True`, alleles were swapped so test allele is the alterative; frequency, beta, effect adjusted accordingly"),
