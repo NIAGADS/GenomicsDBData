@@ -12,4 +12,14 @@ BEGIN
 END;
 $$
 
-LANGUAGE plpgsql
+LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION jsonb_strip_nulls(input jsonb)
+RETURNS jsonb LANGUAGE sql IMMUTABLE AS $$
+
+        SELECT jsonb_object_agg(key, value) AS obj
+        FROM jsonb_each(input)
+        WHERE value IS NOT NULL
+    
+$$;
