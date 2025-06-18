@@ -126,9 +126,10 @@ FROM Biomarkers b),
 TempCharacteristics AS (
 SELECT pan.protocol_app_node_id,
 pan.source_id AS track,
-CASE WHEN ot.name LIKE 'late onset%' THEN 'Alzheimer''s disease' ELSE REPLACE(ot.name, '_', '') END AS characteristic,
-ot.ontology_term_id,
-ot.source_id AS term_source_id,
+-- this is a patch
+CASE WHEN ot.name LIKE '%Alzh%' THEN 'Alzheimer''s disease' ELSE REPLACE(ot.name, '_', '') END AS characteristic,
+CASE WHEN ot.name LIKE '%Alzh%' THEN 82907 ELSE ot.ontology_term_id END AS ontology_term_id,
+CASE WHEN ot.name LIKE '%Alzh%' THEN 'EFO_1001870' ELSE ot.source_id END AS term_source_id,
 q.name AS characteristic_type,
 REPLACE(ot.definition, '"', '') AS definition,
 
@@ -302,7 +303,7 @@ CREATE INDEX PAC_INDX07 ON NIAGADS.ProtocolAppNodeCharacteristic(track) WHERE tr
 CREATE MATERIALIZED VIEW NIAGADS.NeuropathologyTrackCategories AS (
 SELECT track, characteristic_type,  characteristic,
 CASE --WHEN characteristic LIKE '%late onset%'  THEN 'LOAD'
-WHEN characteristic LIKE '%Alz%' THEN 'AD/LOAD'
+WHEN characteristic LIKE '%Alz%' THEN 'AD'
 WHEN characteristic LIKE 'Progressive%' THEN 'PSP'
 WHEN characteristic LIKE 'Fronto%' THEN 'FTD'
 WHEN characteristic SIMILAR TO '%(plaques|dementia|memory|visuospatial|tangles|amyloid|aging|score|Braak|CERAD|measurement|impairment)%' THEN 'Other Neuropathology'
@@ -314,7 +315,7 @@ WHEN characteristic LIKE 'Parkinson%' THEN 'PD'
 ELSE characteristic END AS category_abbrev,
 
 CASE --WHEN characteristic LIKE '%late onset%'  THEN 'late onset Alzheimer''s disease'
-WHEN characteristic LIKE '%Alz%' THEN 'Alzheimer''s disease/late onset AD'
+WHEN characteristic LIKE '%Alz%' THEN 'Alzheimer''s disease'
 WHEN characteristic LIKE 'Progressive%' THEN 'Progressive supranuclear palsy'
 WHEN characteristic LIKE 'Fronto%' THEN 'Frontotemporal demential'
 WHEN characteristic SIMILAR TO '%(plaques|dementia|memory|visuospatial|tangles|amyloid|aging|score|Braak|CERAD|measurement|impairment)%' THEN 'AD/ADRD related neuropathology'
