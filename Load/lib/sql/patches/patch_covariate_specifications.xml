@@ -1,0 +1,18 @@
+<Study::Characteristic>
+<protocol_app_node_id>19049</protocol_app_node_id>
+<qualifier_id>49910</qualifier_id>
+<value>platform</value>
+</Study::Characteristic>
+
+<Study::Characteristic>
+<protocol_app_node_id>19050</protocol_app_node_id>
+<qualifier_id>49910</qualifier_id>
+<value>platform</value>
+</Study::Characteristic>
+
+
+<Study::Characteristic>
+<protocol_app_node_id>19048</protocol_app_node_id>
+<qualifier_id>49910</qualifier_id>
+<value>population stratification</value>
+</Study::Characteristic>

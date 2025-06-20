@@ -1,6 +1,7 @@
 -- migrate from NIAGADS views and Study Tables to Metadata.Track
 -- temporary stop-gap
--- TODO: searchable text; see --FIXME note below
+
+-- DELETE FROM Metadata.Track WHERE data_store = 'GENOMICS';
 
 INSERT INTO Metadata.Track (track_id, data_store, name, description, genome_build, 
 feature_type, is_download_only, searchable_text, 
@@ -12,6 +13,12 @@ experimental_design,
 cohorts)
 SELECT * FROM (
 WITH 
+pubmed AS (
+SELECT ta.track AS track_id,
+NULLIF(split_part(da.attribution, '|', 2),'') AS pubmed_id
+FROM NIAGADS.DatasetAttributes da, NIAGADS.TrackAttributes ta
+WHERE da.accession = ta.dataset_accession),
+
 disease AS (
 SELECT track AS track_id, 
 json_agg(jsonb_build_object('term', characteristic, 'term_id', term_source_id)) AS terms
@@ -42,7 +49,7 @@ GROUP BY track_id),
 
 ethnicity AS (
 SELECT track AS track_id, 
-json_agg(jsonb_build_object('term', characteristic, 'term_id', term_source_id)) AS terms
+json_agg(jsonb_build_object('term', CASE WHEN characteristic IS NULL THEN 'European' ELSE characteristic END, 'term_id', term_source_id)) AS terms
 FROM NIAGADS.ProtocolAppNodeCharacteristic
 WHERE characteristic_type = 'population'
 GROUP BY track_id),
@@ -99,7 +106,7 @@ NULLIF (jsonb_strip_nulls(
 jsonb_build_object(
 'data_source', CASE WHEN ta.track LIKE 'NG0%' THEN 'NIAGADS DSS' ELSE 'NHGRI-EBI CATALOG' END,
 'accession', ta.dataset_accession,
-'pubmed_id', (SELECT NULLIF(split_part(attribution, '|', 2),'') FROM NIAGADS.DatasetAttributes WHERE accession = ta.dataset_accession),
+'pubmed_id', CASE WHEN pubmed.pubmed_id IS NULL THEN NULL ELSE ARRAY[pubmed.pubmed_id] END,
 'attribution', pan.attribution,
 'consortium', string_to_array(pan.track_summary->>'consortium', ',')
 )), '{}') AS provenance,
@@ -122,5 +129,6 @@ LEFT OUTER JOIN ethnicity ON ethnicity.track_id = ta.track
 LEFT OUTER JOIN biomarker ON biomarker.track_id = ta.track
 LEFT OUTER JOIN tissue ON tissue.track_id = ta.track
 LEFT OUTER JOIN covariates ON covariates.track_id = ta.track
+LEFT OUTER JOIN pubmed ON pubmed.track_id = ta.track
 LEFT OUTER JOIN Study.ProtocolAppNode pan ON pan.source_id = ta.track
 WHERE ta.track LIKE 'NG0%' OR ta.track LIKE 'GCST%') a;
