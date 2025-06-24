@@ -1,7 +1,7 @@
 -- migrate from NIAGADS views and Study Tables to Metadata.Track
 -- temporary stop-gap
 
--- DELETE FROM Metadata.Track WHERE data_store = 'GENOMICS';
+DELETE FROM Metadata.Track WHERE data_store = 'GENOMICS';
 
 INSERT INTO Metadata.Track (track_id, data_store, name, description, genome_build, 
 feature_type, is_download_only, searchable_text, 
@@ -10,9 +10,17 @@ biosample_characteristics,
 file_properties,
 provenance,
 experimental_design,
-cohorts)
+cohorts) 
+
 SELECT * FROM (
 WITH 
+
+searchable_phenotypes AS (
+SELECT track AS track_id, 
+replace(CASE WHEN track LIKE 'NG00041%' THEN 'European//' || characteristic ELSE characteristic END,'//',';') AS terms
+FROM NIAGADS.ProtocolAppNodeCharacteristic
+WHERE characteristic_type = 'full_list'),
+
 pubmed AS (
 SELECT ta.track AS track_id,
 NULLIF(split_part(da.attribution, '|', 2),'') AS pubmed_id
@@ -24,6 +32,7 @@ SELECT track AS track_id,
 json_agg(jsonb_build_object('term', characteristic, 'term_id', term_source_id)) AS terms
 FROM NIAGADS.ProtocolAppNodeCharacteristic
 WHERE characteristic_type = 'diagnosis'
+AND characteristic NOT LIKE '%autopsy%'
 GROUP BY track_id),
 
 genotype AS (
@@ -82,7 +91,11 @@ ta.description,
 'GRCh38' AS genome_build,
 'variant' AS feature_type,
 FALSE AS is_download_only,
-ta.name || ';' || ta.description AS searchable_text, -- FIXME to include phenotypes, consortium, attribution, etc
+ta.name || ';' || ta.description || ';' 
+|| split_part(pan.attribution, ' ' , 1) || ';' 
+|| CASE WHEN searchable_phenotypes.terms IS NULL THEN '' ELSE searchable_phenotypes.terms || ';' END
+|| CASE WHEN pan.track_summary->'consortium' is NULL THEN  '' ELSE replace(pan.track_summary->>'consortium', ',', ';') END
+AS searchable_text, -- FIXME to include phenotypes, consortium, attribution, etc
 
 NULLIF(jsonb_strip_nulls(
 jsonb_build_object(
@@ -90,7 +103,8 @@ jsonb_build_object(
 'neuropathology', neuropathology.terms,
 'biological_sex', sex.terms,
 'genotype', genotype.terms,
-'ethnicity', ethnicity.terms)), '{}') AS subject_phenotypes,
+'ethnicity', ethnicity.terms,
+'study_diagnosis', NULLIF(jsonb_strip_nulls(transform_case_control_json(track_summary)), '[{}]'))), '{}') AS subject_phenotypes,
 
 NULLIF(jsonb_strip_nulls(jsonb_build_object('biomarker', biomarker.terms, 'tissue', tissue.terms)), '{}') 
 AS biosample_characteristics,
@@ -115,10 +129,10 @@ NULLIF (jsonb_strip_nulls(
 jsonb_build_object(
 'data_category', 'summary statistics',
 'classification', 'genetic association',
-'is_lifted', CASE WHEN ta.track LIKE '%GRCh38' THEN TRUE ELSE NULL END,
+'is_lifted', CASE WHEN ta.track LIKE '%GRCh38%' THEN TRUE ELSE NULL END,
 'analysis', 'GWAS',
 'covariates', covariates.terms )), '{}') AS experimental_design,
-string_to_array(pan.track_summary->>'cohorts', ',') AS cohorts
+NULLIF(string_to_array(pan.track_summary->>'cohorts', ','), '{}') AS cohorts
 
 FROM NIAGADS.TrackAttributes ta
 LEFT OUTER JOIN sex ON sex.track_id = ta.track
@@ -129,6 +143,7 @@ LEFT OUTER JOIN ethnicity ON ethnicity.track_id = ta.track
 LEFT OUTER JOIN biomarker ON biomarker.track_id = ta.track
 LEFT OUTER JOIN tissue ON tissue.track_id = ta.track
 LEFT OUTER JOIN covariates ON covariates.track_id = ta.track
+LEFT OUTER JOIN searchable_phenotypes ON searchable_phenotypes.track_id = ta.track
 LEFT OUTER JOIN pubmed ON pubmed.track_id = ta.track
 LEFT OUTER JOIN Study.ProtocolAppNode pan ON pan.source_id = ta.track
 WHERE ta.track LIKE 'NG0%' OR ta.track LIKE 'GCST%') a;
