@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-#pylint: disable=invalid-name
-#pylint: disable=multiple-statements
+# pylint: disable=invalid-name
+# pylint: disable=multiple-statements
 
 """
 call loading pipeline to do vep run; allows for parallel runs
@@ -17,35 +17,38 @@ from niagads.reference.chromosomes import Human
 
 
 def verify_vep_environment():
-    vepHome = environ['VEP_HOME']
-    vepCacheDir = environ['VEP_CACHE_DIR']
-        
+    vepHome = environ["VEP_HOME"]
+    vepCacheDir = environ["VEP_CACHE_DIR"]
+
 
 def run(fileName):
     cmd = ["vep.sh", fileName]
-    execute_cmd(' '.join(cmd), None, False, shell=True)
-    
+    execute_cmd(" ".join(cmd), None, False, shell=True)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="run vep in parallel")
-    parser.add_argument('--maxWorkers', help="number of threads", type=int, default=5)
-    parser.add_argument('--printCmdOnly', help="print command only as test", action='store_true')
-    parser.add_argument('--fileName')
-    parser.add_argument('--directory')
-    parser.add_argument('--filePattern')
-    
+    parser.add_argument("--maxWorkers", help="number of threads", type=int, default=5)
+    parser.add_argument(
+        "--printCmdOnly", help="print command only as test", action="store_true"
+    )
+    parser.add_argument("--fileName")
+    parser.add_argument("--directory")
+    parser.add_argument("--pattern")
+
     args = parser.parse_args()
-    
+
     verify_vep_environment()
-    
+
     if args.fileName:
         run(args.fileName)
     else:
-        if not args.filePattern or not args.directory:
-            raise ValueError("Must supply both --directory and --filePattern to match if bulk processing a directory contents")
-        files = glob.glob(args.directory + '/' + args.pattern)
+        if not args.pattern or not args.directory:
+            raise ValueError(
+                "Must supply both --directory and --filePattern to match if bulk processing a directory contents"
+            )
+        files = glob.glob(args.directory + "/" + args.pattern)
         with ThreadPoolExecutor(max_workers=args.maxWorkers) as executor:
-            for f in files:  
+            for f in files:
                 warning("Create and start thread for: " + f)
                 executor.submit(run, f)
-
