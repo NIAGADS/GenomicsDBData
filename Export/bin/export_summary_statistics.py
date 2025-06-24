@@ -5,7 +5,7 @@ import argparse
 import os
 from csv import QUOTE_NONE
 
-from GenomicsDBData.Export.gwas_track import GWASTrack
+from GenomicsDBData.GWAS.gwas_track import GWASTrack
 from GenomicsDBData.Util.utils import create_dir, execute_cmd, print_dict, warning
 
 if __name__ == "__main__":
@@ -79,3 +79,5 @@ if __name__ == "__main__":
 
                 warning("Cleaning up (removing temp files)")
                 execute_cmd(["rm", fn])
+
+            track.close()
