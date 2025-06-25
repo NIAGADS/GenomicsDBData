@@ -19,17 +19,40 @@ CREATE OR REPLACE FUNCTION get_variant_annotation_summary(variant JSONB)
     RETURNS JSONB AS $$
 DECLARE result JSONB;
 BEGIN
+
 	SELECT 
 	jsonb_build_object(	
+        'variant_id', variant->>'metaseq_id',
+        'ref_snp_id', variant->>'ref_snp_id',
+        'variant_class', variant->'display_attributes'->>'variant_class_abbrev',
+        'chromosome', variant->'chromosome',
+        'position', variant->'position',
+        'location', jsonb_build_object(
+            'chromosome', variant->>'chromosome',
+            'start', (variant->'display_attributes'->>'location_start')::INT,
+            'end', (variant->'display_attributes'->>'location_end')::INT 
+        ), 
+
+        'length', length(split_part(variant->>'metaseq_id', ':', 3)), -- length ref
+        'ref', split_part(variant->>'metaseq_id', ':', 3),
+        'alt', ARRAY[split_part(variant->>'metaseq_id', ':', 4)],
+
+        'is_adsp_variant', variant->>'is_adsp_variant',
+        'is_multi_allelic', variant->>'is_multi_allelic',
+        'is_structural_variant', variant->>'is_structural_variant',
+
         'associations', variant->'gwas_flags',
         'allele_frequencies', variant->'allele_frequencies', 
         'cadd_scores', variant->'cadd_scores',
-        'most_severe_consequence', variant->'adsp_most_severe_consequence',
+        'most_severe_consequence', CASE WHEN (variant->'most_severe_consequence')::text = 'null' THEN variant->'adsp_most_severe_consequence' ELSE variant->'most_severe_consequence' END,
         'adsp_qc', get_restricted_adsp_qc(variant->'adsp_qc'),
-        'ranked_consequences', variant->'adsp_ranked_consequences',
-        'loss_of_function', variant->'loss_of_function',
-        'clinvar', 'Not Yet Available',
-        'other_annotations', 'Not Yet Available')
+        'ranked_consequences', CASE WHEN (variant->'ranked_consequences')::text = 'null'  THEN variant->'adsp_ranked_consequences' ELSE variant->'ranked_consequences' END,
+
+        'bin_index', variant->>'bin_index'
+        --'loss_of_function', variant->'loss_of_function',
+        --'clinvar', 'Not Yet Available',
+        --'other_annotations', 'Not Yet Available'
+        )
     INTO result;
 
     RETURN result;
