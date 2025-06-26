@@ -1,0 +1,87 @@
+{
+	"file": {
+		"path": "$DATA_DIR/ADSP/R4/structural/processed",
+		"vep_result_dir": "vep_json",
+		"seqrepo_proxy_path": "$SHARED_DATA_DIR/seqrepo/2021-01-29/",
+		"consequence_ranking_file": "$PROJECT_HOME/AnnotatedVDB/Load/data/custom_consequence_ranking.txt"
+	},
+	"external_database": {
+		"name": "ADSP Variants",
+		"version": "V11_36K_R4",
+		"release_date": "03-24-2024",
+		"id_url": "https://dss.niagads.org/datasets/ng00067",
+		"description": "Quality-controlled ADSP variants joint called VCF from 36,361 whole-genomes",
+		"accession": "NG00067",
+		"type": "Genetic variation"
+	},
+	"load": [
+		{
+			"script": {
+				"name": "load_vcf_file.py",
+				"parameters": {
+					"dir": "@file.path/",
+					"pattern": "*.vcf",
+					"genomeBuild": "GRCh38",
+					"seqrepoProxyPath": "@file.seqrepo_proxy_path",
+					"commitAfter": 100,
+					"log2stderr": true,
+					"datasource": "ADSP",
+					"skipExisting": true,
+					"chr": "autosome",
+					"logExisting": true,
+					"sv": true,
+					"logAfter": 1000
+				}
+			}
+		},
+		{
+			"script": {
+				"skip": true,
+				"name": "load_vep_result.py",
+				"parameters": {
+					"dir": "@file.path/@file.vep_result_dir",
+					"genomeBuild": "GRCh38",
+					"seqrepoProxyPath": "@file.seqrepo_proxy_path",
+					"rankingFile": "@file.consequence_ranking_file",
+					"extension": ".ALL.site_only.vcf.bgz.vep.json.gz",
+					"commitAfter": 100000,
+					"chr": "autosome",
+					"maxWorkers": 10,
+					"datasource": "ADSP",
+					"skipExisting": true
+				}
+			}
+		},
+		{
+			"script": {
+				"name": "load_cadd_scores.py",
+				"parameters": {
+					"databaseDir": "@file.cadd_path",
+					"logFilePath": "@file.path/logs",
+					"genomeBuild": "GRCh38",
+					"seqrepoProxyPath": "@file.seqrepo_proxy_path",
+					"commitAfter": 5000,
+					"chr": "autosome",
+					"maxWorkers": 10
+				}
+			}
+		},
+		{
+			"script": {
+				"skip": true,
+				"name": "update_from_qc_pvcf_file.py",
+				"parameters": {
+					"dir": "@file.qc_result_dir",
+					"genomeBuild": "GRCh38",
+					"seqrepoProxyPath": "@file.seqrepo_proxy_path",
+					"extension": ".ALL.site_only.vcf.bgz",
+					"commitAfter": 5000,
+					"chr": "autosome",
+					"maxWorkers": 25,
+					"version": "R4",
+					"vcfHeaderFields": "#CHROM,POS,ID,REF,ALT,QUAL,FILTER,INFO"
+				}
+			}
+		}
+	]
+}
