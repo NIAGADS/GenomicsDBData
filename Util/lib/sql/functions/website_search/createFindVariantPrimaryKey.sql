@@ -49,7 +49,9 @@ WHEN LOWER(variant.id) LIKE 'rs%' AND LOWER(variant.id) LIKE '%:%' THEN -- refsn
 WHEN LOWER(variant.id) LIKE '%:%' AND LOWER(variant.id) NOT LIKE '%:rs%' THEN
     (SELECT jsonb_agg(record_primary_key) FROM find_variant_by_metaseq_id_variations(variant.id, firstHitOnly))
 WHEN LOWER(variant.id) LIKE '%:rs%' AND LOWER(variant.id) LIKE '%:%' THEN
-    jsonb_agg(variant.id) -- assume since it is in our format (chr:pos:ref:alt:refsnp), it is a valid NIAGADS GenomicsDB variant id
+    (SELECT jsonb_agg(av.record_primary_key) FROM AnnotatedVDB.Variant av, variant WHERE record_primary_key = variant.id) -- assume since it is in our format (chr:pos:ref:alt:refsnp), it is a valid NIAGADS GenomicsDB variant id
+WHEN UPPER(variant.id) LIKE '%_CHR%' AND variant.id NOT LIKE '%:%' THEN -- structural
+    (SELECT jsonb_agg(av.record_primary_key) FROM AnnotatedVDB.Variant av, variant WHERE record_primary_key = variant.id) 
 END AS mapped_variant
 FROM variant GROUP BY variant.id
 )
@@ -81,8 +83,10 @@ CASE WHEN firstHitOnly THEN -- return a jsonb object
      WHEN LOWER(variant.id) LIKE '%:%' AND LOWER(variant.id) NOT LIKE '%:rs%' THEN
           (SELECT row_to_json(find_variant_by_metaseq_id_variations(variant.id, firstHitOnly, checkAltAlleles, checkNormalizedAlleles))::jsonb)
      WHEN LOWER(variant.id) LIKE '%:rs%' AND LOWER(variant.id) LIKE '%:%' THEN
+     	  -- assume since it is in our format (chr:pos:ref:alt:refsnp), it is a valid NIAGADS GenomicsDB variant id
           jsonb_build_object('variant_primary_key', variant.id)
-	  -- assume since it is in our format (chr:pos:ref:alt:refsnp), it is a valid NIAGADS GenomicsDB variant id
+    WHEN UPPER(variant.id) LIKE '%_CHR%' AND variant.id NOT LIKE '%:%' THEN -- structural
+          jsonb_build_object('variant_primary_key', variant.id)
      END
 ELSE -- return a jsonb array b/c may have multiple hits
      CASE WHEN LOWER(variant.id) LIKE 'rs%' AND LOWER(variant.id) NOT LIKE '%:%' THEN
@@ -92,8 +96,11 @@ ELSE -- return a jsonb array b/c may have multiple hits
      WHEN LOWER(variant.id) LIKE '%:%' AND LOWER(variant.id) NOT LIKE '%:rs%' THEN
 	(SELECT json_agg(r)::jsonb FROM (SELECT * FROM find_variant_by_metaseq_id_variations(variant.id, firstHitOnly, checkAltAlleles, checkNormalizedAlleles)) AS r)
      WHEN LOWER(variant.id) LIKE '%:rs%' AND LOWER(variant.id) LIKE '%:%' THEN
+     	   -- assume since it is in our format (chr:pos:ref:alt:refsnp), it is a valid NIAGADS GenomicsDB variant id
            jsonb_agg(jsonb_build_object('variant_primary_key', variant.id))
-	   -- assume since it is in our format (chr:pos:ref:alt:refsnp), it is a valid NIAGADS GenomicsDB variant id
+     WHEN UPPER(variant.id) LIKE '%_CHR%' AND variant.id NOT LIKE '%:%' THEN -- structural
+        jsonb_agg(jsonb_build_object('variant_primary_key', variant.id))
+
      END
 END AS mapped_variant
 FROM variant GROUP BY variant.id
@@ -128,6 +135,8 @@ CASE WHEN firstHitOnly THEN -- return a jsonb object
      WHEN LOWER(variant.id) LIKE '%:rs%' AND LOWER(variant.id) LIKE '%:%' THEN
           jsonb_build_object('variant_primary_key', variant.id)
 	  -- assume since it is in our format (chr:pos:ref:alt:refsnp), it is a valid NIAGADS GenomicsDB variant id
+        WHEN UPPER(variant.id) LIKE '%_CHR%' AND variant.id NOT LIKE '%:%' THEN -- structural
+          jsonb_build_object('variant_primary_key', variant.id)
      END
 ELSE -- return a jsonb array b/c may have multiple hits
      CASE WHEN LOWER(variant.id) LIKE 'rs%' AND LOWER(variant.id) NOT LIKE '%:%' THEN
@@ -139,6 +148,8 @@ ELSE -- return a jsonb array b/c may have multiple hits
      WHEN LOWER(variant.id) LIKE '%:rs%' AND LOWER(variant.id) LIKE '%:%' THEN
            jsonb_agg(jsonb_build_object('variant_primary_key', variant.id))::jsonb
 	   -- assume since it is in our format (chr:pos:ref:alt:refsnp), it is a valid NIAGADS GenomicsDB variant id
+    WHEN UPPER(variant.id) LIKE '%_CHR%' AND variant.id NOT LIKE '%:%' THEN -- structural
+        jsonb_agg(jsonb_build_object('variant_primary_key', variant.id))
      END
 END AS mapped_variant
 FROM variant GROUP BY variant.id
