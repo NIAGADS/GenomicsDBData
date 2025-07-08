@@ -1,9 +1,9 @@
 -- migrate from NIAGADS views and Study Tables to Metadata.Track
 -- temporary stop-gap
 
-DELETE FROM Metadata.Track WHERE data_store = 'GENOMICS';
+DELETE FROM Dataset.Track WHERE data_store = 'GENOMICS';
 
-INSERT INTO Metadata.Track (track_id, data_store, name, description, genome_build, 
+INSERT INTO Dataset.Track (track_id, data_store, name, description, genome_build, 
 feature_type, is_download_only, searchable_text, 
 subject_phenotypes,
 biosample_characteristics, 
@@ -147,3 +147,5 @@ LEFT OUTER JOIN searchable_phenotypes ON searchable_phenotypes.track_id = ta.tra
 LEFT OUTER JOIN pubmed ON pubmed.track_id = ta.track
 LEFT OUTER JOIN Study.ProtocolAppNode pan ON pan.source_id = ta.track
 WHERE ta.track LIKE 'NG0%' OR ta.track LIKE 'GCST%') a;
+
+

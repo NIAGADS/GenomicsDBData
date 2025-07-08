@@ -1,6 +1,6 @@
 SET work_mem TO '64MB';
 
-INSERT INTO Index.DatasetInterval (bin_index, track_id, num_hits, span)
+INSERT INTO Dataset.DatasetInterval (bin_index, track_id, num_hits, span)
 SELECT r.bin_index, 
 pan.source_id AS track_id,
 count(r.variant_gwas_id) AS num_hits,
