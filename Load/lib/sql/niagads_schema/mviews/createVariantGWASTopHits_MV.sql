@@ -7,7 +7,7 @@ DROP MATERIALIZED VIEW IF EXISTS NIAGADS.VariantGWASTopHits CASCADE;
 
 CREATE MATERIALIZED VIEW NIAGADS.VariantGWASTopHits AS (
 SELECT 
-row_number() over (order by r.protocol_app_node_id, r.variant_record_primary_key) AS variant_gwas_top_hits_id, -- required by SQLAlchemy for API
+row_number() over (order by pan.source_id ASC, v.metaseq_id ASC, r.neg_log10_pvalue DESC) AS variant_gwas_top_hits_id, -- required by SQLAlchemy for API
 r.protocol_app_node_id,
 pan.source_id AS track,
 r.variant_record_primary_key,
@@ -16,8 +16,8 @@ v.chromosome, v.position,
 v.display_attributes,
 v.is_adsp_variant,
 
-jsonb_build_object('CADD_SCORES', v.cadd_scores, 'ADSP_MOST_SEVERE_CONSEQUENCE', 
-v.adsp_most_severe_consequence, 'ALLELE_FREQUENCIES', 
+jsonb_build_object('cadd_scores', v.cadd_scores, 'adsp_most_severe_consequence', 
+v.adsp_most_severe_consequence, 'allele_frequencies', 
 allele_frequencies /*, 'ADSP_QC_STATUS', adsp_qc->'STATUS'*/) AS annotation,
 
 r.bin_index,
@@ -33,6 +33,7 @@ AND r.neg_log10_pvalue >= 3
 AND r.neg_log10_pvalue != 'NaN'
 --AND pan.source_id NOT ILIKE '%Catalog%'
 AND v.record_primary_key = r.variant_record_primary_key
+AND length(v.metaseq_id) < 50 -- indels and snvs only for now
 );
 
 
@@ -41,15 +42,14 @@ GRANT SELECT ON NIAGADS.VariantGWASTopHits TO gus_r, gus_w, comm_wdk_w;
 
 
 -- cluster
-CREATE INDEX TOP_GWAS_VIEW_ORDER ON NIAGADS.VariantGWASTopHits(TRACK, CHROMOSOME, NEG_LOG10_PVALUE DESC);
+CREATE INDEX TOP_GWAS_VIEW_ORDER ON NIAGADS.VariantGWASTopHits(variant_gwas_top_hits_id);
 ALTER MATERIALIZED VIEW NIAGADS.VariantGWASTopHits CLUSTER ON TOP_GWAS_VIEW_ORDER;
 
 -- INDEXES
-CREATE INDEX TOP_GWAS_VIEW_VRPK ON NIAGADS.VariantGWASTopHits (VARIANT_RECORD_PRIMARY_KEY);
+CREATE INDEX TOP_GWAS_VIEW_VRPK ON NIAGADS.VariantGWASTopHits (METASEQ_ID);
+CREATE INDEX TOP_GWAS_VIEW_RSID ON NIAGADS.VariantGWASTopHits (REF_SNP_ID);
 
 CREATE INDEX TOP_GWAS_VIEW_NL10P ON NIAGADS.VariantGWASTopHits(NEG_LOG10_PVALUE DESC);
-
-CREATE INDEX TOP_GWAS_VIEW_DATASET ON NIAGADS.VariantGWASTopHits USING BRIN(track);
 
 CREATE INDEX TOP_GWAS_VIEW_DATASET_GWS ON NIAGADS.VariantGWASTopHits(TRACK, NEG_LOG10_PVALUE DESC)
        WHERE neg_log10_pvalue >=  (-1 * log(10, 5e-8)); --5e-8
@@ -58,5 +58,4 @@ CREATE INDEX TOP_GWAS_VIEW_BIN_INDEX ON NIAGADS.VariantGWASTopHits USING GIST(BI
 
 CREATE INDEX TOP_GWAS_VIEW_PER_TRACK_LOC ON NIAGADS.VariantGWASTopHits(TRACK, CHROMOSOME, POSITION);
 
-CREATE INDEX TOP_GWAS_VIEW_NO_CAT ON NIAGADS.VariantGWASTopHits(track) WHERE track NOT IN ('NHGRI_GWAS_CATALOG');
 
