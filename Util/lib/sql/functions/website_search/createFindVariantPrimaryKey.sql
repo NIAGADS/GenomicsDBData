@@ -9,12 +9,12 @@ BEGIN
 WITH
 MatchedVariants AS (
 SELECT CASE 
- WHEN LOWER(variantID) LIKE 'rs%' AND LOWER(variantID) NOT LIKE '%:%' THEN 
-        (SELECT record_primary_key FROM find_variant_by_refsnp(LOWER(variantID), TRUE))
- WHEN LOWER(variantID) LIKE '%:%' AND LOWER(variantID) NOT LIKE '%_rs%' THEN
-        (SELECT record_primary_key AS source_id FROM find_variant_by_metaseq_id_variations(variantID, TRUE))
- WHEN LOWER(variantID) LIKE '%_rs%' AND LOWER(variantID) LIKE '%:%' THEN
-        variantID -- assume since it is in our format (chr:pos:ref:alt_refsnp), it is a valid NIAGADS GenomicsDB variant id
+ WHEN LOWER(variantID) LIKE 'rs%'  THEN 
+        (SELECT metaseq_id FROM find_variant_by_refsnp(LOWER(variantID), TRUE))
+ WHEN LOWER(variantID) LIKE '%:%' THEN
+        (SELECT metaseq_id FROM find_variant_by_metaseq_id_variations(variantID, TRUE))
+ WHEN UPPER(variant.id) LIKE '%_CHR%' THEN -- structural
+    (SELECT metaseq_id FROM AnnotatedVDB.Variant av, variant WHERE record_primary_key = variant.id) 
  END AS variant_primary_key
 )
 --SELECT CASE WHEN variant_primary_key IS NULL THEN variantID
@@ -28,6 +28,8 @@ END;
 
 $$ LANGUAGE plpgsql;
 
+
+--FIXME: bulk lookups
 
 /* NOTE may also need to change functions in ../find_variants/createMapVariantsForLoad.sql to match */
 
