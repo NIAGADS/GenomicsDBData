@@ -13,8 +13,8 @@ SELECT CASE
         (SELECT metaseq_id FROM find_variant_by_refsnp(LOWER(variantID), TRUE))
  WHEN LOWER(variantID) LIKE '%:%' THEN
         (SELECT metaseq_id FROM find_variant_by_metaseq_id_variations(variantID, TRUE))
- WHEN UPPER(variant.id) LIKE '%_CHR%' THEN -- structural
-    (SELECT metaseq_id FROM AnnotatedVDB.Variant av, variant WHERE record_primary_key = variant.id) 
+ WHEN UPPER(variantID) LIKE '%_CHR%' THEN -- structural
+    (SELECT metaseq_id FROM AnnotatedVDB.Variant WHERE metaseq_id = variantID) 
  END AS variant_primary_key
 )
 --SELECT CASE WHEN variant_primary_key IS NULL THEN variantID
