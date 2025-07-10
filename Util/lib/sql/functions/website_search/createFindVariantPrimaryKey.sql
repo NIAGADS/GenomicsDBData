@@ -43,7 +43,7 @@ SELECT CASE
  WHEN LOWER(variantID) LIKE '%:%' THEN
         (SELECT metaseq_id FROM find_variant_by_metaseq_id_variations(variantID, TRUE))
  WHEN UPPER(variantID) LIKE '%_CHR%' THEN -- structural
-    (SELECT metaseq_id FROM AnnotatedVDB.Variant WHERE metaseq_id = variantID) 
+    (SELECT metaseq_id FROM find_structural_variant_by_id(UPPER(variantID)))
  END AS variant_primary_key
 )
 --SELECT CASE WHEN variant_primary_key IS NULL THEN variantID
@@ -62,6 +62,8 @@ $$ LANGUAGE plpgsql;
 
 /* NOTE may also need to change functions in ../find_variants/createMapVariantsForLoad.sql to match */
 
+-- FIXME: always returns a list for each row; not sure if this is what we want
+
 --DROP FUNCTION get_variant_primary_keys(text, boolean);
 CREATE OR REPLACE FUNCTION get_variant_primary_keys(variantID TEXT, firstHitOnly BOOLEAN DEFAULT TRUE) 
        RETURNS TABLE(search_term TEXT, variant_primary_key JSONB) AS $$
@@ -74,15 +76,13 @@ WITH variant AS (SELECT regexp_split_to_table(variantID, ',') AS id),
 MatchedVariants AS (
 SELECT variant.id AS search_term,
 CASE WHEN LOWER(variant.id) LIKE 'rs%' AND LOWER(variant.id) NOT LIKE '%:%' THEN 
-    (SELECT jsonb_agg(record_primary_key) FROM find_variant_by_refsnp(LOWER(variant.id), firstHitOnly))
+    (SELECT jsonb_agg(metaseq_id) FROM find_variant_by_refsnp(LOWER(variant.id), firstHitOnly))
 WHEN LOWER(variant.id) LIKE 'rs%' AND LOWER(variant.id) LIKE '%:%' THEN -- refsnp & alleles
-    (SELECT jsonb_agg(record_primary_key) FROM find_variant_by_refsnp_and_alleles(variant.id, firstHitOnly))
+    (SELECT jsonb_agg(metaseq_id) FROM find_variant_by_refsnp_and_alleles(variant.id, firstHitOnly))
 WHEN LOWER(variant.id) LIKE '%:%' AND LOWER(variant.id) NOT LIKE '%:rs%' THEN
-    (SELECT jsonb_agg(record_primary_key) FROM find_variant_by_metaseq_id_variations(variant.id, firstHitOnly))
-WHEN LOWER(variant.id) LIKE '%:rs%' AND LOWER(variant.id) LIKE '%:%' THEN
-    (SELECT jsonb_agg(av.record_primary_key) FROM AnnotatedVDB.Variant av, variant WHERE record_primary_key = variant.id) -- assume since it is in our format (chr:pos:ref:alt:refsnp), it is a valid NIAGADS GenomicsDB variant id
-WHEN UPPER(variant.id) LIKE '%_CHR%' AND variant.id NOT LIKE '%:%' THEN -- structural
-    (SELECT jsonb_agg(av.record_primary_key) FROM AnnotatedVDB.Variant av, variant WHERE record_primary_key = variant.id) 
+    (SELECT jsonb_agg(metaseq_id) FROM find_variant_by_metaseq_id_variations(variant.id, firstHitOnly))
+WHEN UPPER(variant.id) LIKE '%_CHR%' THEN -- structural
+    (SELECT jsonb_agg(metaseq_id) FROM find_structural_variant_by_id(UPPER(variant.id)))
 END AS mapped_variant
 FROM variant GROUP BY variant.id
 )
@@ -113,11 +113,8 @@ CASE WHEN firstHitOnly THEN -- return a jsonb object
      	  (SELECT row_to_json(find_variant_by_refsnp_and_alleles(variant.id, firstHitOnly))::jsonb)
      WHEN LOWER(variant.id) LIKE '%:%' AND LOWER(variant.id) NOT LIKE '%:rs%' THEN
           (SELECT row_to_json(find_variant_by_metaseq_id_variations(variant.id, firstHitOnly, checkAltAlleles, checkNormalizedAlleles))::jsonb)
-     WHEN LOWER(variant.id) LIKE '%:rs%' AND LOWER(variant.id) LIKE '%:%' THEN
-     	  -- assume since it is in our format (chr:pos:ref:alt:refsnp), it is a valid NIAGADS GenomicsDB variant id
-          jsonb_build_object('variant_primary_key', variant.id)
-    WHEN UPPER(variant.id) LIKE '%_CHR%' AND variant.id NOT LIKE '%:%' THEN -- structural
-          jsonb_build_object('variant_primary_key', variant.id)
+     WHEN UPPER(variant.id) LIKE '%_CHR%' THEN -- structural
+        (SELECT row_to_json(find_structural_variant_by_id(UPPER(variant.id)))::jsonb)
      END
 ELSE -- return a jsonb array b/c may have multiple hits
      CASE WHEN LOWER(variant.id) LIKE 'rs%' AND LOWER(variant.id) NOT LIKE '%:%' THEN
@@ -125,12 +122,10 @@ ELSE -- return a jsonb array b/c may have multiple hits
      WHEN LOWER(variant.id) LIKE 'rs%' AND LOWER(variant.id) LIKE '%:%' THEN -- refsnp & alleles
       	  (SELECT json_agg(r)::jsonb FROM (SELECT * FROM find_variant_by_refsnp_and_alleles(variant.id, firstHitOnly)) AS r)
      WHEN LOWER(variant.id) LIKE '%:%' AND LOWER(variant.id) NOT LIKE '%:rs%' THEN
-	(SELECT json_agg(r)::jsonb FROM (SELECT * FROM find_variant_by_metaseq_id_variations(variant.id, firstHitOnly, checkAltAlleles, checkNormalizedAlleles)) AS r)
-     WHEN LOWER(variant.id) LIKE '%:rs%' AND LOWER(variant.id) LIKE '%:%' THEN
-     	   -- assume since it is in our format (chr:pos:ref:alt:refsnp), it is a valid NIAGADS GenomicsDB variant id
-           jsonb_agg(jsonb_build_object('variant_primary_key', variant.id))
-     WHEN UPPER(variant.id) LIKE '%_CHR%' AND variant.id NOT LIKE '%:%' THEN -- structural
-        jsonb_agg(jsonb_build_object('variant_primary_key', variant.id))
+	    (SELECT json_agg(r)::jsonb FROM (SELECT * FROM find_variant_by_metaseq_id_variations(variant.id, firstHitOnly, checkAltAlleles, checkNormalizedAlleles)) AS r)
+    WHEN UPPER(variant.id) LIKE '%_CHR%' THEN -- structural
+        (SELECT json_agg(r)::jsonb FROM (SELECT * FROM find_structural_variant_by_id(UPPER(variant.id))) AS r)
+
 
      END
 END AS mapped_variant
@@ -163,11 +158,8 @@ CASE WHEN firstHitOnly THEN -- return a jsonb object
      	  (SELECT row_to_json(find_variant_by_refsnp_and_alleles(variant.id, firstHitOnly))::jsonb)
      WHEN LOWER(variant.id) LIKE '%:%' AND LOWER(variant.id) NOT LIKE '%:rs%' THEN
           (SELECT row_to_json(find_variant_by_metaseq_id_variations(variant.id, firstHitOnly, checkAltAlleles, checkNormalizedAlleles))::jsonb)
-     WHEN LOWER(variant.id) LIKE '%:rs%' AND LOWER(variant.id) LIKE '%:%' THEN
-          jsonb_build_object('variant_primary_key', variant.id)
-	  -- assume since it is in our format (chr:pos:ref:alt:refsnp), it is a valid NIAGADS GenomicsDB variant id
-        WHEN UPPER(variant.id) LIKE '%_CHR%' AND variant.id NOT LIKE '%:%' THEN -- structural
-          jsonb_build_object('variant_primary_key', variant.id)
+    WHEN UPPER(variant.id) LIKE '%_CHR%' THEN -- structural
+        (SELECT row_to_json(find_structural_variant_by_id(UPPER(variant.id)))::jsonb)
      END
 ELSE -- return a jsonb array b/c may have multiple hits
      CASE WHEN LOWER(variant.id) LIKE 'rs%' AND LOWER(variant.id) NOT LIKE '%:%' THEN
@@ -176,11 +168,9 @@ ELSE -- return a jsonb array b/c may have multiple hits
       	  (SELECT json_agg(r)::jsonb FROM (SELECT * FROM find_variant_by_refsnp_and_alleles(variant.id, firstHitOnly)) AS r)
      WHEN LOWER(variant.id) LIKE '%:%' AND LOWER(variant.id) NOT LIKE '%:rs%' THEN
 	(SELECT json_agg(r)::jsonb FROM (SELECT * FROM find_variant_by_metaseq_id_variations(variant.id, firstHitOnly, checkAltAlleles, checkNormalizedAlleles)) AS r)
-     WHEN LOWER(variant.id) LIKE '%:rs%' AND LOWER(variant.id) LIKE '%:%' THEN
-           jsonb_agg(jsonb_build_object('variant_primary_key', variant.id))::jsonb
-	   -- assume since it is in our format (chr:pos:ref:alt:refsnp), it is a valid NIAGADS GenomicsDB variant id
-    WHEN UPPER(variant.id) LIKE '%_CHR%' AND variant.id NOT LIKE '%:%' THEN -- structural
-        jsonb_agg(jsonb_build_object('variant_primary_key', variant.id))
+    WHEN UPPER(variant.id) LIKE '%_CHR%' THEN -- structural
+        (SELECT json_agg(r)::jsonb FROM (SELECT * FROM find_structural_variant_by_id(UPPER(variant.id))) AS r)
+
      END
 END AS mapped_variant
 FROM variant GROUP BY variant.id
