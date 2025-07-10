@@ -30,13 +30,15 @@ BEGIN
         'location', jsonb_build_object(
             'chromosome', variant->>'chromosome',
             'start', (variant->'display_attributes'->>'location_start')::INT,
-            'length', length(split_part(variant->>'metaseq_id', ':', 3)) -- length ref; TODO -> adjust for structural variants
+            'length', CASE WHEN (variant->>'is_structural_variant')::boolean IS TRUE THEN (variant->'display_attributes'->>'sv_size')::INT
+            ELSE length(split_part(variant->>'metaseq_id', ':', 3)) --length REF
+            END
         ), 
        
-        'ref', split_part(variant->>'metaseq_id', ':', 3),
-        'alt', split_part(variant->>'metaseq_id', ':', 4), -- todo adjust for structural variants   
+        'ref', CASE WHEN (variant->>'is_structural_variant')::boolean IS TRUE THEN NULL ELSE split_part(variant->>'metaseq_id', ':', 3) END,
+        'alt', CASE WHEN (variant->>'is_structural_variant')::boolean IS TRUE THEN NULL ELSE split_part(variant->>'metaseq_id', ':', 4) END, -- todo adjust for structural variants   
 
-        'allele_string', variant->'display_attributes'->>'display_allele',
+        'allele_string', CASE WHEN (variant->>'is_structural_variant')::boolean IS TRUE THEN NULL ELSE variant->'display_attributes'->>'display_allele' END,
 
         'is_adsp_variant', variant->>'is_adsp_variant',
         'is_multi_allelic', variant->>'is_multi_allelic',
