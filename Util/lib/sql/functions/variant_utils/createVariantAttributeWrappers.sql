@@ -7,6 +7,7 @@ BEGIN
             fullQC
                 #- '{17k,info,AF}' #- '{17k,info,AC}' #- '{17k,info,AN}'    
                 #- '{r4,info,AF}' #- '{r4,info,AC}' #- '{r4,info,AN}'
+                #- '{r4,info,PASS_AC}' #- '{r4,info,PASS_AN}'
     END INTO result;
     RETURN result;
 END;
