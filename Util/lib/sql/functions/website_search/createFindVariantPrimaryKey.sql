@@ -1,5 +1,34 @@
 -- finds variant by chr:pos:ref:alt id
 
+DROP FUNCTION find_variants_by_range(text,bigint,bigint);
+CREATE OR REPLACE FUNCTION find_variants_by_range(chrm TEXT, locStart BIGINT, locEnd BIGINT)
+    RETURNS TABLE(variant_id TEXT, annotation JSONB) AS $$
+
+DECLARE 
+    binIndex LTREE;
+BEGIN
+    SELECT find_bin_index(chrm, locStart, locEnd) INTO binIndex;
+
+    RETURN QUERY
+    SELECT t.variant_id, row_to_json(t)::jsonb FROM (
+    SELECT v.metaseq_id AS variant_id, v.ref_snp_id,
+    v.display_attributes->>'display_allele' AS alleles,
+	v.display_attributes->>'variant_class_abbrev' AS variant_class,
+    v.chromosome,
+    v.position,
+    -- (v.display_attributes->>'location_end')::int - (v.display_attributes->>'location_start')::int AS length,
+	CASE WHEN v.is_adsp_variant THEN TRUE ELSE FALSE END AS is_adsp_variant, v.bin_index,
+	get_variant_annotation_summary(row_to_json(v)::jsonb) AS annotation
+    
+    FROM AnnotatedVDB.Variant v
+    WHERE v.chromosome = chrm
+    AND v.bin_index @> binIndex
+    AND int8range(locStart,locEnd, '[]') 
+    && int8range((v.display_attributes->>'location_start')::int, (v.display_attributes->>'location_end')::int, '[]')) t;
+
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION find_variant_primary_key(variantID TEXT)
        RETURNS TEXT AS $$
 DECLARE
