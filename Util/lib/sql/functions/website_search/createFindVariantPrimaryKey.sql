@@ -1,7 +1,7 @@
 -- finds variant by chr:pos:ref:alt id
 
-DROP FUNCTION find_variants_by_range(text,bigint,bigint);
-CREATE OR REPLACE FUNCTION find_variants_by_range(chrm TEXT, locStart BIGINT, locEnd BIGINT)
+DROP FUNCTION find_variants_by_range(text,int,int);
+CREATE OR REPLACE FUNCTION find_variants_by_range(chrm TEXT, locStart INT, locEnd INT)
     RETURNS TABLE(variant_id TEXT, annotation JSONB) AS $$
 
 DECLARE 
@@ -22,9 +22,24 @@ BEGIN
     
     FROM AnnotatedVDB.Variant v
     WHERE v.chromosome = chrm
-    AND v.bin_index @> binIndex
-    AND int8range(locStart,locEnd, '[]') 
-    && int8range((v.display_attributes->>'location_start')::int, (v.display_attributes->>'location_end')::int, '[]')) t;
+     AND (
+      -- contained, location_start = location_end
+      (v.display_attributes->>'location_start' = v.display_attributes->>'location_end'
+      AND binIndex @> v.bin_index 
+      AND int4range(locStart, locEnd, '[]') @> int4range(v.position, v.position + 1))
+     
+      OR 
+      
+      -- in same bin and overlaps
+      (binIndex @> v.bin_index 
+      AND int4range(locStart, locEnd, '[]') && int4range((v.display_attributes->>'location_start')::int, (v.display_attributes->>'location_end')::int ))
+      
+      OR
+      -- sv in containing bin and overlaps
+      (v.bin_index @> binIndex
+      AND int4range(locStart, locEnd, '[]') && int4range((v.display_attributes->>'location_start')::int, (v.display_attributes->>'location_end')::int ))
+     )
+    ) t;
 
 END;
 $$ LANGUAGE plpgsql;

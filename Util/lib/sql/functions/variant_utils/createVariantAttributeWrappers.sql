@@ -45,7 +45,7 @@ BEGIN
         'is_multi_allelic', variant->>'is_multi_allelic',
         'is_structural_variant', variant->>'is_structural_variant',
 
-        'associations', variant->'gwas_flags',
+        --'associations', variant->'gwas_flags',
         'allele_frequencies', variant->'allele_frequencies', 
         'cadd_scores', variant->'cadd_scores',
         'most_severe_consequence', CASE WHEN (variant->'most_severe_consequence')::text = 'null' THEN variant->'adsp_most_severe_consequence' ELSE variant->'most_severe_consequence' END,
