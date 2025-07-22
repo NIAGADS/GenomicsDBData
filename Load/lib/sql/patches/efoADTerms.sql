@@ -1,3 +1,6 @@
+
+DROP TABLE IF EXISTS NIAGADS.ADTerms;
+
 CREATE TABLE NIAGADS.ADTerms (
     term_id VARCHAR(20) PRIMARY KEY,
     term TEXT NOT NULL,
@@ -28,7 +31,12 @@ INSERT INTO NIAGADS.ADTerms (term_id, term, category) VALUES
 ('EFO_0002508', 'Parkinson’s disease', 'ADRD'),
 ('EFO_0009706', 'Corticobasal degeneration (CBD)', 'ADRD'),
 ('EFO_0006069', 'Pick’s disease (a subtype of Frontotemporal dementia, FTD)', 'ADRD'),
-('EFO_0005250', 'Frontotemporal dementia (general)', 'ADRD');
+('EFO_0005250', 'Frontotemporal dementia (general)', 'ADRD'),
+('EFO_0004615', 'Apolipoprotein B levels', 'Biomarker'),
+('EFO_0004874', 'Memory performance', 'Biomarker'),
+('EFO_0007998', 'Impaired cognition measurement', 'Biomarker'),
+('EFO_0001072', 'Memory impairment', 'Biomarker')
+;
 
-GRANT SELECT  ON NIAGADS.ADTerms TO 'genomicsdb';
+GRANT SELECT  ON NIAGADS.ADTerms TO genomicsdb;
   GRANT SELECT ON NIAGADS.ADTerms TO comm_wdk_w;
