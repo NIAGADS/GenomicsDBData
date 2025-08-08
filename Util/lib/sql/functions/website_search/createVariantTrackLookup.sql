@@ -65,8 +65,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-drop function get_adsp_variants(text,  INTEGER,  INTEGER);
-CREATE OR REPLACE FUNCTION get_adsp_variants(chrm TEXT, locStart INTEGER, locEnd INTEGER, release TEXT)
+drop function get_adsp_variants(text,  INTEGER,  INTEGER, TEXT);
+CREATE OR REPLACE FUNCTION get_adsp_variants(chrm TEXT, locStart INTEGER, locEnd INTEGER, release TEXT, svsOnly BOOLEAN DEFAULT FALSE)
        RETURNS JSONB AS $$
 
 DECLARE binIndex LTREE;
@@ -91,7 +91,8 @@ BEGIN
   WHERE binIndex @> v.bin_index
   AND int4range(locStart, locEnd, '[]') @> v.position
   AND v.chromosome = chrm
-  AND is_adsp_variant
+  AND is_adsp_variant = TRUE
+  AND ((svsOnly = TRUE AND is_structural_variant IS TRUE) OR (NOT svsOnly = TRUE AND is_structural_variant IS NOT TRUE))
   AND jsonb_path_exists(v.adsp_qc, ('$.' || lower(release))::jsonpath)
   )
 SELECT jsonb_agg(row_json) AS RESULT FROM vcfRows INTO trackInfo;

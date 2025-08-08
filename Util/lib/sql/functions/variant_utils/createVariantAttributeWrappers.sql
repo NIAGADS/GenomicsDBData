@@ -31,6 +31,8 @@ BEGIN
         'location', jsonb_build_object(
             'chromosome', variant->>'chromosome',
             'start', (variant->'display_attributes'->>'location_start')::INT,
+            'end', CASE WHEN (variant->>'is_structural_variant')::boolean IS TRUE THEN (variant->'display_attributes'->>'sv_size')::INT + (variant->'display_attributes'->>'location_start')::INT
+            ELSE (variant->'display_attributes'->>'location_start')::INT END ,
             'length', CASE WHEN (variant->>'is_structural_variant')::boolean IS TRUE THEN (variant->'display_attributes'->>'sv_size')::INT
             ELSE length(split_part(variant->>'metaseq_id', ':', 3)) --length REF
             END

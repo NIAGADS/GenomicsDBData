@@ -7,13 +7,11 @@ BEGIN
     IF a @> b THEN
         RETURN 'contains';
     ELSIF b @> a THEN
-        RETURN 'contained_within';
-    ELSIF upper(a) > upper(b) AND lower(a) < lower(b) AND a && b THEN
-        RETURN 'overlaps_both';
+        RETURN 'is_contained_within';
     ELSIF upper(a) <= upper(b) AND upper(a) > lower(b) AND a && b THEN
-        RETURN 'overlaps_start';
+        RETURN 'overlaps';
     ELSIF lower(a) >= lower(b) AND lower(a) < upper(b) AND a && b THEN
-        RETURN 'overlaps_end';
+        RETURN 'overlaps';
     ELSE
         RETURN 'none';
     END IF;

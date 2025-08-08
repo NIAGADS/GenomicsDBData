@@ -13,12 +13,15 @@ from random import shuffle
 
 from GenomicsDBData.Util.utils import xstr, die, warning
 
-from GenomicsDBData.GWAS.gwas_track import Database
+from GenomicsDBData.GWAS.gwas_track import Database, GWASTrack
 
 CATALOGS = [68, 748]  # skip catalogs; we'll drop and reload after patching PKs
 
 SELECT_GWAS_SQL = """
-SELECT variant_gwas_id, allele, frequency, restricted_stats::text,
+SELECT variant_gwas_id, allele as test_allele, frequency, restricted_stats::text, 
+chromosome, position,
+split_part(details->>'metaseq_id', ':', 3) AS ref,
+split_part(details->>'metaseq_id', ':', 4) AS alt,
 details->>'metaseq_id'AS variant_id,
 details->>'ref_snp_id' AS ref_snp_id,
 FROM Results.VariantGWAS r, 
@@ -30,7 +33,9 @@ WHERE r.protocol_app_node_id = %s
 PAN_SELECT_SQL = "SELECT DISTINCT protocol_app_node_id::int FROM Results.VariantGWAS"
 
 # have to do this sequentially b/c of deletes from AnnotatedVDB.Variant
-DELETE_SQL = "DELETE FROM Results.VariantGWAS WHERE variant_record_primary_key = %s "
+DELETE_VARIANT_GWAS_SQL = (
+    "DELETE FROM Results.VariantGWAS WHERE variant_record_primary_key = %s "
+)
 
 DELETE_VARIANT_SQL = (
     "DELETE FROM AnnotatedVDB.Variant WHERE record_primary_key = %s and chromosome = %s"
@@ -59,11 +64,6 @@ def commit(count: int, db: Database, lfh):
 
 
 def patch_table(panId: int):
-    # get variant ids for the protocol app node
-    # fetch chr, pos
-    # update chr, pos if found,
-    # else remove add to list of invalid variant ids (deleting while selecting will cause a lock)
-    # delete invalid variants
     logFileName = path.join(args.logFilePath, xstr(panId) + ".log")
     cname = "variants_" + xstr(panId)
     modificationCount = 0
@@ -73,6 +73,7 @@ def patch_table(panId: int):
     warning("Processing " + xstr(panId) + "; logging to: " + logFileName)
 
     try:
+        validator = GWASTrack(fastaDir=args.fastaRefDir)
         dbSelect = Database(
             args.gusConfigFile
         )  # otherwise named cursor is lost on commit
@@ -87,15 +88,32 @@ def patch_table(panId: int):
 
             warning("Reviewing variants from: " + xstr(panId), file=lfh, flush=True)
             selectCursor.itersize = ITERATION_SIZE
-            selectCursor.execute(RESULT_SELECT_SQL, [panId])
+            selectCursor.execute(SELECT_GWAS_SQL, [panId])
             for record in selectCursor:
                 recordCount = recordCount + 1
-                vpk = record["variant_record_primary_key"]
-                if "I" in vpk or "R" in vpk or "D" in vpk or "N" in vpk or "?" in vpk:
-                    validCursor.execute(VALID_PK_SQL, [vpk])
-                    lookup = validCursor.fetchone()
-                    if lookup is None:
-                        updates.append([vpk])
+                # get the metaseq_id
+                # check against the genome
+                variant = record["variant_id"]
+                alt = record["alt"]
+                ref = record["ref"]
+                chrm = record["chromosome"]
+                pos = record["position"]
+                if len(alt) > 1 and len(ref) > 1:
+                    continue  # don't adjust indels
+
+                if record["ref_snp_id"] is not None:
+                    # trust dbSNP, but still may need to adjust alleles
+                    validator.adjust_test_allele(record)
+
+                elif validator.matches_reference_sequence(chrm, pos, ref):
+                    # all good, but still may need to adjust test allele
+                    validator.adjust_test_allele(record)
+                else:
+                    if validator.matches_reference_sequence(chrm, pos, alt):
+                        # alt matches reference sequence
+                        # swap alleles
+                        pass
+
                 if recordCount % 100000 == 0:
                     warning(
                         "PROCESSED: " + xstr(recordCount) + " variants.",
@@ -132,6 +150,7 @@ if __name__ == "__main__":
     parser.add_argument("--test", action="store_true")
     parser.add_argument("--veryVerbose", action="store_true")
     parser.add_argument("--logFilePath", required=True)
+    parser.add_argument("--fastaRefDir", required=True)
     parser.add_argument("--panId")
     parser.add_argument(
         "--gusConfigFile",
@@ -165,13 +184,3 @@ if __name__ == "__main__":
 
     for pid in panIds:
         patch_table(pid)
-
-    """
-    with ProcessPoolExecutor(args.maxWorkers) as executor:
-        futureUpdate = {executor.submit(patch_table, panId=pid) : pid for pid in panIds}
-        for future in as_completed(futureUpdate): # this should allow catching errors 
-            try:
-                future.result()
-            except Exception as err:
-                raise(err)       
-    """

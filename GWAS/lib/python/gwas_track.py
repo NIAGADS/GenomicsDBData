@@ -222,7 +222,7 @@ class GWASTrack(object):
 
         return self.__dict_to_string(info)
 
-    def __adjust_stats(self, record):
+    def adjust_stats(self, record):
         restrictedStats = json.loads(record["restricted_stats"])
         if "beta" in restrictedStats:
             restrictedStats["beta"] = -1 * restrictedStats["beta"]
@@ -253,33 +253,37 @@ class GWASTrack(object):
         ).upper()
         return sequence == refSequence
 
-    def __adjust_test_allele(self, record):
+    def adjust_test_allele(self, record):
         # check test allele
         if record["alt"] != record["test_allele"]:
             # set test allele to alt and then swap the stats
             # warning(f"{record['ref_snp_id']} - {record['variant_id']} - test = {record['test_allele']}; ADJUSTING")
             record["test_allele"] = record["alt"]
-            self.__adjust_stats(record)
+            self.adjust_stats(record)
 
             record["adjusted"] = True
 
     def adjust_alleles(self, record):
         """record updated by reference ?"""
         chrom, pos, ref, alt = record["variant_id"].split(":")
+        
+        # do this for snvs only
+        if len(ref) > 1 and len(alt) > 1:
+            return 
 
         if record["ref_snp_id"] is not None:
             # trust dbSNP mapping to reference assembly
             record["alt"] = alt
             record["ref"] = ref
 
-            self.__adjust_test_allele(record)
+            self.adjust_test_allele(record)
 
         else:  # check to see if reference matches sequence
             if self.matches_reference_sequence(chrom, pos, ref):
                 # variant ID is correct
                 record["alt"] = alt
                 record["ref"] = ref
-                self.__adjust_test_allele(record)
+                self.adjust_test_allele(record)
 
             elif self.matches_reference_sequence(chrom, pos, alt):
                 # swap and adjust variant id
@@ -287,14 +291,14 @@ class GWASTrack(object):
                 record["ref"] = alt
                 record["variant_id"] = ":".join((xstr(chrom), xstr(pos), alt, ref))
 
-                self.__adjust_test_allele(record)
+                self.adjust_test_allele(record)
 
             else:  # if neither matches, keep original orientation
                 record["alt"] = alt
                 record["ref"] = ref
                 record["no_sequence_match"] = True
                 
-                self.__adjust_test_allele(record)
+                self.adjust_test_allele(record)
 
     def export_annotated_sum_stats_as_vcf(self, dir: str = None):
         """fetch sum stats w/annotations & restricted stats in JSON objects only"""

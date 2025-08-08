@@ -94,15 +94,25 @@ WHERE st.term LIKE '%:%' AND array_length(regexp_split_to_array(st.term, ':'),1)
 
 UNION
 
+
 -- by position
 SELECT st.search_term, st.term, f.record_primary_key, f.metaseq_id, f.ref_snp_id, 
 f.is_adsp_variant, f.alleles, f.variant_class, f.annotation, 
 'positional' AS match_type, 3 AS match_ranking 
 FROM STerm st, find_variant_by_position('chr' || split_part(st.term, ':', 1), split_part(st.term, ':', 2)::integer) f
 WHERE st.term LIKE '%:%' AND array_length(regexp_split_to_array(st.term, ':'),1) = 2
+
+UNION --by sv id
+
+SELECT st.search_term, st.term, f.record_primary_key, f.metaseq_id, f.ref_snp_id, 
+f.is_adsp_variant, f.alleles, f.variant_class, f.annotation, 
+'exact' AS match_type, 1 AS match_ranking
+FROM STerm st, find_structural_variant_by_id(UPPER(st.term)) f
+WHERE UPPER(st.term) LIKE '%_CHR%'
+
 )
 
-SELECT record_primary_key AS primary_key, 
+SELECT metaseq_id AS primary_key, 
 truncate_str(metaseq_id, '25') || COALESCE(' (' || ref_snp_id || ') ', '') AS display,
 'variant' AS record_type,
 match_ranking,

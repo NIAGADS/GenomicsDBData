@@ -1,7 +1,7 @@
 
-DROP FUNCTION gene_by_range_lookup(text,int,int);
-CREATE OR REPLACE FUNCTION gene_by_range_lookup(chrm TEXT, locStart INT, locEnd INT)
-    RETURNS TABLE(gene JSONB, location JSONB, range_relation TEXT) AS $$
+DROP FUNCTION genes_by_range_lookup(text,int,int);
+CREATE OR REPLACE FUNCTION genes_by_range_lookup(chrm TEXT, locStart INT, locEnd INT)
+    RETURNS TABLE(gene JSONB, gene_type TEXT, location JSONB, range_relation TEXT) AS $$
 
 DECLARE 
     binIndex LTREE;
@@ -9,7 +9,7 @@ BEGIN
     SELECT find_bin_index(chrm, locStart, locEnd) INTO binIndex;
 
     RETURN QUERY
-        SELECT jsonb_build_object('id', source_id, 'gene_symbol', gene_symbol) as gene, 
+        SELECT jsonb_build_object('id', source_id, 'gene_symbol', gene_symbol) as gene, ga.gene_type,
         jsonb_build_object('chromosome', chrm, 'start', ga.location_start, 'end', ga.location_end) AS location,
         compare_ranges(int4range(locStart, locEnd, '[]'), int4range(ga.location_start, ga.location_end)) AS range_relation 
         FROM CBIL.GeneAttributes ga
@@ -23,14 +23,56 @@ BEGIN
             -- range is a containing bin that overlaps
             (binIndex <@ ga.bin_index 
             AND int4range(locStart, locEnd, '[]') && int4range(ga.location_start, ga.location_end))  
+
+           /* OR 
+            (binIndex = ga.bin_index 
+             AND  locStart = ga.location_start and locEnd = ga.location_end)*/
         );
 END;
 
 $$ LANGUAGE plpgsql;
 
-DROP FUNCTION variant_by_range_lookup(text,int,int);
-CREATE OR REPLACE FUNCTION variant_by_range_lookup(chrm TEXT, locStart INT, locEnd INT)
-    RETURNS TABLE(variant JSONB, location JSONB,range_relation TEXT) AS $$
+
+DROP FUNCTION summarize_genes_by_range(text,int,int);
+CREATE OR REPLACE FUNCTION summarize_genes_by_range(chrm TEXT, locStart INT, locEnd INT)
+    RETURNS TABLE(num_genes INT, range_relation TEXT, gene_type TEXT) AS $$
+
+DECLARE 
+    binIndex LTREE;
+BEGIN
+    SELECT find_bin_index(chrm, locStart, locEnd) INTO binIndex;
+
+    RETURN QUERY
+        WITH g AS (
+            SELECT source_id as gene_id, 
+            ga.gene_type,
+            compare_ranges(int4range(locStart, locEnd, '[]'), int4range(ga.location_start, ga.location_end)) AS range_relation 
+            FROM CBIL.GeneAttributes ga
+            WHERE chromosome = chrm
+            AND (
+                -- in same bin and overlaps
+                (binIndex @> ga.bin_index 
+                AND int4range(locStart, locEnd, '[]') && int4range(ga.location_start, ga.location_end))
+                
+                OR
+                -- range is a containing bin that overlaps
+                (binIndex <@ ga.bin_index 
+                AND int4range(locStart, locEnd, '[]') && int4range(ga.location_start, ga.location_end))  
+            )
+        )
+    
+            SELECT COUNT (gene_id)::int AS num_genes, g.range_relation, g.gene_type 
+            FROM g GROUP BY g.gene_type, g.range_relation ORDER BY num_genes DESC
+  ;
+END;
+
+$$ LANGUAGE plpgsql;
+
+
+
+DROP FUNCTION variants_by_range_lookup(text,int,int);
+CREATE OR REPLACE FUNCTION variants_by_range_lookup(chrm TEXT, locStart INT, locEnd INT)
+    RETURNS TABLE(variant JSONB, variant_type TEXT, location JSONB, range_relation TEXT) AS $$
 
 DECLARE 
 
@@ -39,7 +81,8 @@ BEGIN
         WITH v AS (
         SELECT annotation->'annotation' AS variant -- FIXME
         FROM find_variants_by_range(chrm, locStart,locEnd))
-        SELECT v.variant, v.variant->'location' AS location, 
+        SELECT v.variant, CASE WHEN (v.variant->'annotation'->>'is_structural_variant')::boolean IS TRUE THEN 'structural variant' ELSE 'small variant' END AS variant_type,
+        v.variant->'location' AS location, 
         compare_ranges(int4range(locStart, locEnd, '[]') ,
         int4range((v.variant->'location'->>'start')::int, 
         CASE WHEN (v.variant->'location'->>'length')::int = 1 THEN (v.variant->'location'->>'start')::int
@@ -52,14 +95,14 @@ $$ LANGUAGE plpgsql;
 
 DROP FUNCTION summarize_variants_by_range(text,int,int, boolean);
 CREATE OR REPLACE FUNCTION summarize_variants_by_range(chrm TEXT, locStart INT, locEnd INT, svsOnly BOOLEAN DEfAULT FALSE)
-    RETURNS JSONB AS $$
+     RETURNS TABLE(num_variants INT, range_relation TEXT, variant_type TEXT) AS $$
 
 DECLARE 
     binIndex LTREE;
 BEGIN
     SELECT find_bin_index(chrm, locStart, locEnd) INTO binIndex;
 
-    RETURN (
+    RETURN QUERY 
        WITH RESULT AS (SELECT 
       v.metaseq_id AS variant_id, 
       jsonb_build_object(
@@ -99,13 +142,10 @@ BEGIN
         int4range((r.location->>'start')::int, 
         CASE WHEN (r.location->>'length')::int = 1 THEN (r.location->>'start')::int
         ELSE (r.location->>'start')::int + (r.location->>'length')::int END)) AS range_relation
-    FROM Result r),
-    COUNTS AS (
-    SELECT COUNT (variant_id)::int AS num_variants, range_relation, 
-    variant_type FROM RangeTypes GROUP BY variant_type, range_relation)
-    SELECT jsonb_object_agg(variant_type, jsonb_build_object(range_relation, num_variants) ORDER BY variant_type) AS summary 
-    FROM counts
-    );
+    FROM Result r)
+    SELECT COUNT (variant_id)::int AS num_variants, r.range_relation, r.variant_type 
+    FROM RangeTypes r GROUP BY r.variant_type, r.range_relation ORDER BY num_variants DESC
+    ;
  
 
 END;
@@ -153,7 +193,7 @@ $$ LANGUAGE plpgsql;
 
 DROP FUNCTION sv_by_range_lookup(text,int,int);
 CREATE OR REPLACE FUNCTION sv_by_range_lookup(chrm TEXT, locStart INT, locEnd INT)
-    RETURNS TABLE(variant JSONB, location JSONB,range_relation TEXT) AS $$
+    RETURNS TABLE(variant JSONB, variant_type TEXT, location JSONB,range_relation TEXT) AS $$
 
 DECLARE 
 
@@ -162,7 +202,7 @@ BEGIN
         WITH v AS (
         SELECT annotation->'annotation' AS variant -- FIXME
         FROM find_svs_by_range(chrm, locStart,locEnd))
-        SELECT v.variant, v.variant->'location' AS location, 
+        SELECT v.variant, 'structural variant' AS variant_type, v.variant->'location' AS location, 
         compare_ranges(int4range(locStart, locEnd, '[]') ,
         int4range((v.variant->'location'->>'start')::int, 
         CASE WHEN (v.variant->'location'->>'length')::int = 1 THEN (v.variant->'location'->>'start')::int
